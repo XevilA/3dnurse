@@ -1,51 +1,20 @@
-import React, { useState, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
-import MotherAvatar from '../avatars/MotherAvatar';
-import BabyAvatar from '../avatars/BabyAvatar';
 import PlayerController from '../player/PlayerController';
-
-const PulsingMesh = ({ position, rotation, children, onClick, active, color }) => {
-  const meshRef = useRef();
-  useFrame((state) => {
-    if (active && meshRef.current) {
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.05;
-      meshRef.current.scale.set(scale, scale, scale);
-    } else if (meshRef.current) {
-      meshRef.current.scale.set(1, 1, 1);
-    }
-  });
-
-  return (
-    <group position={position} rotation={rotation} onClick={active ? onClick : undefined}>
-      <mesh ref={meshRef}>
-        {children}
-        <meshStandardMaterial 
-          color={color} 
-          emissive={active ? '#ffffbb' : '#000000'} 
-          emissiveIntensity={active ? 0.6 : 0} 
-        />
-      </mesh>
-      {active && (
-        <Html position={[0, 2, 0]} center>
-          <div style={{ background: 'rgba(0,0,0,0.7)', color: 'white', padding: '8px 12px', borderRadius: '8px', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-            คลิกเพื่อเรียนรู้
-          </div>
-        </Html>
-      )}
-    </group>
-  );
-};
+import BabyBathtub from '../furniture/BabyBathtub';
+import Washbasin from '../furniture/Washbasin';
+import MedicalTable from '../furniture/MedicalTable';
+import BabyAvatar from '../avatars/BabyAvatar';
 
 export default function NewbornCare2Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
   const [step, setStep] = useState(0);
 
   const stepsData = [
-    { title: "การเตรียมอุปกรณ์", desc: "เตรียมน้ำอุ่น 37-38°C สบู่อาบน้ำทารก ผ้าเช็ดตัว เสื้อผ้าสะอาด และผ้าอ้อม ให้พร้อมก่อนเริ่ม" },
-    { title: "ขั้นตอนการอาบน้ำ", desc: "ประคองศีรษะและคอ เช็ดหน้าก่อน (ไม่ใช้สบู่) จากนั้นลูบสบู่และล้างตัวอย่างนุ่มนวล" },
-    { title: "การเช็ดตัวและแต่งตัว", desc: "ซับตัวให้แห้ง (ไม่ถู) ทาครีม และรีบแต่งตัวเพื่อป้องกันทารกสูญเสียความร้อน" }
+    { title: "1. การเตรียมน้ำอุ่นและอุปกรณ์", desc: "เตรียมน้ำอุ่นอุณหภูมิ 37-38°C (ทดสอบด้วยหลังมือหรือข้อศอก) สบู่เด็ก ผ้าขนหนูนุ่ม และเสื้อผ้าชุดใหม่" },
+    { title: "2. การสระผมและล้างหน้า", desc: "อุ้มท่ารักแร้ ล็อคคอและใบหู พับใบหูปิดรูหูไม่ให้น้ำเข้า สระผมเบาๆ และเช็ดให้แห้งทันที" },
+    { title: "3. การอาบตัวและทำความสะอาด", desc: "ใช้มือประคองคอและไหล่ทารก ค่อยๆ หย่อนตัวลงน้ำ ฟอกสบู่จากบนลงล่าง ล้างตามข้อพับ ซับตัวให้แห้งสนิท" }
   ];
 
   const handleNext = () => {
@@ -60,77 +29,78 @@ export default function NewbornCare2Room() {
 
   return (
     <group>
-      {/* Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial color="#e0f7fa" />
+      {/* ── Floor & Walls ── */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
+        <planeGeometry args={[18, 18]} />
+        <meshStandardMaterial color="#f0fdfa" roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 4, -9]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#e0f2f1" />
+      </mesh>
+      <mesh position={[-9, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#e0f2f1" />
+      </mesh>
+      <mesh position={[9, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#e0f2f1" />
       </mesh>
 
-      {/* Walls */}
-      <mesh position={[0, 6, -15]} receiveShadow>
-        <boxGeometry args={[30, 12, 1]} />
-        <meshStandardMaterial color="#b2ebf2" />
-      </mesh>
-      <mesh position={[-15, 6, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[30, 12, 1]} />
-        <meshStandardMaterial color="#b2ebf2" />
-      </mesh>
+      {/* Header Info */}
+      <Html position={[0, 6.5, -8.5]} center transform>
+        <div style={{ background: 'white', padding: '16px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(0,150,136,0.15)', border: '2px solid #80cbc4' }}>
+          <h2 style={{ color: '#00897b', margin: 0, fontSize: '20px' }}>🛁 บทเรียนที่ 2: การอาบน้ำและทำความสะอาดทารก</h2>
+          <p style={{ color: '#555', margin: '6px 0 0 0', fontWeight: 'bold' }}>ขั้นตอน: {Math.min(step + 1, stepsData.length)} / {stepsData.length}</p>
+        </div>
+      </Html>
 
-      {/* Decorative Plant */}
-      <group position={[12, 0, -12]}>
-        <mesh position={[0, 1, 0]}>
-          <cylinderGeometry args={[0.8, 0.6, 2]} />
-          <meshStandardMaterial color="#8d6e63" />
-        </mesh>
-        <mesh position={[0, 3, 0]}>
-          <sphereGeometry args={[2]} />
-          <meshStandardMaterial color="#4caf50" />
-        </mesh>
+      {/* ── REAL 3D ASSETS ── */}
+
+      {/* Real Baby Bathtub Station with Baby Inside */}
+      <group position={[0, 0, -3.5]} onClick={handleNext}>
+        <BabyBathtub position={[0, 0, 0]} />
+        <BabyAvatar position={[0, 1.25, 0]} rotation={[-0.3, 0, 0]} scale={[0.9, 0.9, 0.9]} />
       </group>
 
-      {/* 1. Supply Table (Step 0) */}
-      <PulsingMesh position={[-6, 2.5, -8]} active={step === 0} onClick={handleNext} color="#ce93d8">
-        <boxGeometry args={[4, 5, 3]} />
-      </PulsingMesh>
+      {/* Real Porcelain Washbasin & Mirror Station (Left) */}
+      <group position={[-5.5, 0, 0]} onClick={handleNext}>
+        <Washbasin position={[0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
+      </group>
 
-      {/* 2. Bathtub / Oval Basin (Step 1) */}
-      <PulsingMesh position={[0, 3, -6]} active={step === 1} onClick={handleNext} color="#81d4fa">
-        <cylinderGeometry args={[2.5, 2, 1, 32]} />
-      </PulsingMesh>
+      {/* Real Medical Supplies Table (Right) */}
+      <group position={[5.5, 0, 0]} onClick={handleNext}>
+        <MedicalTable position={[0, 0, 0]} withBottle={true} />
+      </group>
 
-      {/* 3. Towel on Changing Table (Step 2) */}
-      <PulsingMesh position={[6, 3, -8]} active={step === 2} onClick={handleNext} color="#a5d6a7">
-        <boxGeometry args={[3, 0.5, 4]} />
-      </PulsingMesh>
-      {/* Changing Table Base */}
-      <mesh position={[6, 1.5, -8]}>
-        <boxGeometry args={[4, 3, 5]} />
-        <meshStandardMaterial color="#eeeeee" />
-      </mesh>
-
-      {/* Educational Panel */}
+      {/* Educational Interactive Panel */}
       {step < stepsData.length && (
-        <Html position={[0, 6.5, -6]} center>
-          <div style={{ background: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 6px 12px rgba(0,0,0,0.3)', width: '350px', textAlign: 'center', borderTop: '5px solid #00acc1' }}>
-            <h3 style={{ margin: '0 0 15px 0', color: '#00838f', fontSize: '22px' }}>{stepsData[step].title}</h3>
-            <p style={{ margin: 0, fontSize: '18px', color: '#424242', lineHeight: '1.5' }}>{stepsData[step].desc}</p>
+        <Html position={[0, 4.2, -4]} center>
+          <div style={{ background: 'white', padding: '22px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', width: '360px', textAlign: 'center', borderTop: '6px solid #00897b' }}>
+            <h3 style={{ margin: '0 0 10px 0', color: '#004d40', fontSize: '18px' }}>{stepsData[step].title}</h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#444', lineHeight: '1.5' }}>{stepsData[step].desc}</p>
+            <button 
+              onClick={handleNext}
+              style={{ padding: '8px 20px', background: '#00897b', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+            >
+              เข้าใจแล้ว ➜ ขั้นถัดไป
+            </button>
           </div>
         </Html>
       )}
 
       {/* Back Button */}
-      <Html position={[-12, 10, -14]} center>
+      <Html position={[-7, 7, -8.5]}>
         <button 
           onClick={() => setRoom('lobby')}
-          style={{ padding: '12px 24px', fontSize: '20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ padding: '10px 20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold' }}
         >
-          กลับหน้าหลัก
+          ⬅ กลับหน้าหลัก
         </button>
       </Html>
 
-      {/* ── GTA-Style Player Character ── */}
-      <PlayerController initialPosition={[1.5, 0, 1.5]} />
-      <BabyAvatar position={[0, 1.3, -2]} rotation={[-0.3, 0, 0]} />
+      {/* ── GTA Player Character ── */}
+      <PlayerController initialPosition={[0, 0, 1.5]} />
     </group>
   );
 }

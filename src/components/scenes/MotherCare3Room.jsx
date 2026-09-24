@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
-import MotherAvatar from '../avatars/MotherAvatar';
-import BabyAvatar from '../avatars/BabyAvatar';
 import PlayerController from '../player/PlayerController';
+import NursingChair from '../furniture/NursingChair';
+import MedicalTable from '../furniture/MedicalTable';
+import BabyCrib from '../furniture/BabyCrib';
+import BabyAvatar from '../avatars/BabyAvatar';
 
 export default function MotherCare3Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -15,153 +16,111 @@ export default function MotherCare3Room() {
       setStep(step + 1);
     } else if (step === 3) {
       completeModule('motherCare3');
-      setShowSuccessModal(true, 'เก่งมาก! คุณได้เรียนรู้เรื่องการดูแลเต้านมและให้นมบุตรครบถ้วน');
+      setShowSuccessModal(true, 'ยินดีด้วย! คุณเรียนรู้เรื่องการดูแลเต้านมและท่าให้นมจบแล้ว');
       setStep(step + 1);
     }
   };
 
-  const PulseMesh = ({ position, args, color, onClick, active, shape = 'box' }) => {
-    const meshRef = useRef();
-    useFrame(({ clock }) => {
-      if (active && meshRef.current) {
-        meshRef.current.material.emissiveIntensity = 0.5 + Math.sin(clock.elapsedTime * 4) * 0.5;
-      }
-    });
-
-    return (
-      <mesh 
-        ref={meshRef}
-        position={position} 
-        onClick={active ? onClick : undefined}
-        onPointerOver={(e) => { if(active) document.body.style.cursor = 'pointer'; }}
-        onPointerOut={(e) => { if(active) document.body.style.cursor = 'default'; }}
-      >
-        {shape === 'box' ? <boxGeometry args={args} /> : <cylinderGeometry args={args} />}
-        <meshStandardMaterial 
-          color={color} 
-          emissive={active ? '#ffff00' : '#000000'} 
-          emissiveIntensity={0} 
-        />
-      </mesh>
-    );
-  };
-
   return (
     <group>
-      {/* Floor & Walls */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[15, 15]} />
-        <meshStandardMaterial color="#ffe6f2" />
+      {/* ── Floor & Walls ── */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
+        <planeGeometry args={[18, 18]} />
+        <meshStandardMaterial color="#fff0f5" roughness={0.4} />
       </mesh>
-      <mesh position={[0, 4, -7.5]} receiveShadow>
-        <boxGeometry args={[15, 8, 0.5]} />
-        <meshStandardMaterial color="#ffcce6" />
+      <mesh position={[0, 4, -9]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#fce4ec" />
+      </mesh>
+      <mesh position={[-9, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#fce4ec" />
+      </mesh>
+      <mesh position={[9, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#fce4ec" />
       </mesh>
 
-      <Html position={[-6, 7, -7]}>
+      {/* Back Button */}
+      <Html position={[-7, 7, -8.5]}>
         <button 
           onClick={() => setRoom('lobby')}
-          style={{ padding: '10px 20px', background: '#ff3385', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' }}
+          style={{ padding: '10px 20px', background: '#e91e63', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' }}
         >
-          กลับหน้าหลัก
+          ⬅ กลับหน้าหลัก
         </button>
       </Html>
 
-      <Html position={[0, 6, -7]} center transform>
-        <div style={{ background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center', width: '400px' }}>
-          <h2 style={{ color: '#ff3385', margin: 0 }}>บทเรียน: การดูแลเต้านม</h2>
-          <p style={{ color: '#666' }}>ความก้าวหน้า: {Math.min(step + 1, 4)} / 4</p>
+      {/* Header Info */}
+      <Html position={[0, 6.5, -8.5]} center transform>
+        <div style={{ background: 'white', padding: '16px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(233,30,99,0.15)', border: '2px solid #f48fb1' }}>
+          <h2 style={{ color: '#d81b60', margin: 0, fontSize: '20px' }}>🤱 บทเรียนที่ 3: การดูแลเต้านมและเทคนิคการให้นมบุตร</h2>
+          <p style={{ color: '#555', margin: '6px 0 0 0', fontWeight: 'bold' }}>ความก้าวหน้า: {Math.min(step + 1, 4)} / 4 ฐานการเรียนรู้</p>
         </div>
       </Html>
 
-      {/* Step 0: Warm Compress */}
-      <group position={[-3, 1.5, -4]}>
-        <PulseMesh 
-          position={[0, 0, 0]} 
-          args={[0.8, 0.2, 0.8]} 
-          color="#ffb366" 
-          active={step === 0}
-          onClick={handleNextStep}
-        />
+      {/* ── REAL 3D ASSETS ── */}
+
+      {/* Station 0: REAL Nursing Armchair (การเตรียมเต้านมและการประคบอุ่น) */}
+      <group position={[-4, 0, -4]} onClick={step === 0 ? handleNextStep : undefined}>
+        <NursingChair position={[0, 0, 0]} rotation={[0, 0.4, 0]} />
         {step === 0 && (
-          <Html position={[0, 1.5, 0]} center>
-            <div style={{ background: '#fff9e6', border: '2px solid #ffcc00', padding: '15px', borderRadius: '8px', width: '250px' }}>
-              <h3 style={{ color: '#cc9900', margin: '0 0 10px 0' }}>1. การเตรียมเต้านมก่อนให้นม</h3>
-              <p style={{ margin: 0, fontSize: '14px', color: '#333' }}>ประคบเต้านมด้วยผ้าชุบน้ำอุ่น 3-5 นาที นวดคลึงเบาๆ เพื่อกระตุ้นการไหลของน้ำนม คลิกที่แผ่นประคบอุ่นเพื่อไปต่อ</p>
+          <Html position={[0, 2.2, 0]} center>
+            <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
+              <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>1. การเตรียมเต้านมก่อนให้นม</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>ประคบอุ่น 3-5 นาที นวดเต้านมเบาๆ เป็นวงกลมจากฐานสู่ลานนมเพื่อกระตุ้น Oxytocin</p>
+              <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเก้าอี้ให้นมเพื่อผ่าน ➜</div>
             </div>
           </Html>
         )}
       </group>
 
-      {/* Step 1: Nursing Chair */}
-      <group position={[3, 1, -4]}>
-        <PulseMesh 
-          position={[0, 0, 0]} 
-          args={[1.5, 1.5, 1.5]} 
-          color="#99ccff" 
-          active={step === 1}
-          onClick={handleNextStep}
-        />
+      {/* Station 1: REAL Baby Crib with Baby (ท่าอุ้มให้นมบุตร) */}
+      <group position={[3.5, 0, -4]} onClick={step === 1 ? handleNextStep : undefined}>
+        <BabyCrib position={[0, 0, 0]}>
+          <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} />
+        </BabyCrib>
         {step === 1 && (
-          <Html position={[0, 2, 0]} center>
-            <div style={{ background: '#e6ffe6', border: '2px solid #33cc33', padding: '15px', borderRadius: '8px', width: '250px' }}>
-              <h3 style={{ color: '#2eb82e', margin: '0 0 10px 0' }}>2. ท่าให้นมที่ถูกวิธี</h3>
-              <p style={{ margin: 0, fontSize: '14px', color: '#333' }}>ลูกอมลานนมได้ลึก คางชิดเต้านม ท่าที่นิยม: Cradle hold, Football hold, Side-lying คลิกที่เก้าอี้ให้นมเพื่อไปต่อ</p>
+          <Html position={[0, 2.2, 0]} center>
+            <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
+              <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>2. ท่าอุ้มให้นมบุตรที่ถูกต้อง</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>ศีรษะและลำตัวลูกเป็นเส้นตรง ท้องแนบท้อง คางชิดเต้า จมูกเปิดโล่งหายใจสะดวก</p>
+              <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเปลเด็กเพื่อผ่าน ➜</div>
             </div>
           </Html>
         )}
       </group>
 
-      {/* Step 2: Breast Pump */}
-      <group position={[-2, 1.5, 1]}>
-        <PulseMesh 
-          position={[0, 0, 0]} 
-          args={[0.5, 0.8, 0.5]} 
-          color="#ff99ff" 
-          active={step === 2}
-          onClick={handleNextStep}
-          shape="cylinder"
-        />
+      {/* Station 2: REAL Medical Nightstand Table (การบีบเก็บน้ำนมแม่) */}
+      <group position={[-4, 0, 2]} onClick={step === 2 ? handleNextStep : undefined}>
+        <MedicalTable position={[0, 0, 0]} withBottle={true} />
         {step === 2 && (
-          <Html position={[0, 1.5, 0]} center>
-            <div style={{ background: '#f2e6ff', border: '2px solid #9933ff', padding: '15px', borderRadius: '8px', width: '250px' }}>
-              <h3 style={{ color: '#7300e6', margin: '0 0 10px 0' }}>3. การบีบน้ำนมด้วยมือ</h3>
-              <p style={{ margin: 0, fontSize: '14px', color: '#333' }}>วางนิ้วหัวแม่มือและนิ้วชี้เป็นรูปตัว C ห่างจากหัวนม 2-3 ซม. กดเข้าหาหน้าอกและบีบเข้าหากัน คลิกที่เครื่องปั๊มนมเพื่อไปต่อ</p>
+          <Html position={[0, 2.2, 0]} center>
+            <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
+              <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>3. การบีบเก็บน้ำนมแม่</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>วางนิ้วโป้งและชี้เป็นรูปตัว C ห่างโคนหัวนม 3 ซม. กดเข้าหาผนังอกแล้วบีบเป็นจังหวะ</p>
+              <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกโต๊ะอุปกรณ์ปั๊มนมเพื่อผ่าน ➜</div>
             </div>
           </Html>
         )}
       </group>
 
-      {/* Step 3: Cold Pack */}
-      <group position={[2, 1.5, 1]}>
-        <PulseMesh 
-          position={[0, 0, 0]} 
-          args={[0.8, 0.2, 0.8]} 
-          color="#99ffff" 
-          active={step === 3}
-          onClick={handleNextStep}
-        />
+      {/* Station 3: Relief & Gel Pack Station (การแก้ไขปัญหาเต้านมคัดตึง) */}
+      <group position={[4.5, 0, 2]} onClick={step === 3 ? handleNextStep : undefined}>
+        <MedicalTable position={[0, 0, 0]} withBottle={false} />
         {step === 3 && (
-          <Html position={[0, 1.5, 0]} center>
-            <div style={{ background: '#e6ffff', border: '2px solid #00cccc', padding: '15px', borderRadius: '8px', width: '250px' }}>
-              <h3 style={{ color: '#009999', margin: '0 0 10px 0' }}>4. การแก้ปัญหาเต้านมคัดตึง</h3>
-              <p style={{ margin: 0, fontSize: '14px', color: '#333' }}>ให้ลูกดูดบ่อยขึ้น หรือปั๊มนมออก หากปวดมากให้ประคบเย็นหลังการให้นม คลิกที่เจลเย็นเพื่อสำเร็จบทเรียน</p>
+          <Html position={[0, 2.2, 0]} center>
+            <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
+              <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>4. การแก้ไขปัญหาเต้านมคัดตึง</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>ให้ลูกดูดบ่อยทุก 2 ชม. หากปวดเต้าหลังให้นมเสร็จ ให้ประคบเย็น 10-15 นาทีลดบวม</p>
+              <div style={{ marginTop: '10px', background: '#2e7d32', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเพื่อสำเร็จบทเรียน 🏆</div>
             </div>
           </Html>
         )}
       </group>
 
-      {/* Decorative Plants */}
-      <group position={[-6, 0, -6]}>
-        <mesh position={[0, 0.5, 0]}><cylinderGeometry args={[0.3, 0.3, 1]} /><meshStandardMaterial color="#8c8c8c" /></mesh>
-        <mesh position={[0, 1.5, 0]}><sphereGeometry args={[0.6]} /><meshStandardMaterial color="#33cc33" /></mesh>
-      </group>
-
-      {/* ── GTA-Style Player Character ── */}
+      {/* ── GTA Player Character ── */}
       <PlayerController initialPosition={[0, 0, 2]} />
-
-      {/* ── 3D Baby in Nursing Station ── */}
-      <BabyAvatar position={[1.5, 0.85, 0]} rotation={[-0.3, 0.4, 0]} />
     </group>
   );
 }

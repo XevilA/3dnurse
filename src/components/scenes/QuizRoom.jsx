@@ -3,6 +3,7 @@ import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
 import PlayerController from '../player/PlayerController';
+import NursingChair from '../furniture/NursingChair';
 
 export default function QuizRoom() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -165,8 +166,11 @@ export default function QuizRoom() {
         </button>
       </Html>
 
+      {/* ── Real 3D Quiz Seating Chair ── */}
+      <NursingChair position={[0, 0, -6.5]} rotation={[0, 0, 0]} />
+
       {/* ── GTA-Style Player Character in Quiz Room ── */}
-      <PlayerController initialPosition={[2.5, 0, 1.5]} />
+      <PlayerController initialPosition={[0, 0, -4]} />
     </group>
   );
 }

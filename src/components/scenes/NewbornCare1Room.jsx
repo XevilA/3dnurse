@@ -1,42 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
-import MotherAvatar from '../avatars/MotherAvatar';
-import BabyAvatar from '../avatars/BabyAvatar';
 import PlayerController from '../player/PlayerController';
-
-const PulsingMesh = ({ position, rotation, children, onClick, active, color }) => {
-  const meshRef = useRef();
-  useFrame((state) => {
-    if (active && meshRef.current) {
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.05;
-      meshRef.current.scale.set(scale, scale, scale);
-    } else if (meshRef.current) {
-      meshRef.current.scale.set(1, 1, 1);
-    }
-  });
-
-  return (
-    <group position={position} rotation={rotation} onClick={active ? onClick : undefined}>
-      <mesh ref={meshRef}>
-        {children}
-        <meshStandardMaterial 
-          color={color} 
-          emissive={active ? '#ffffbb' : '#000000'} 
-          emissiveIntensity={active ? 0.6 : 0} 
-        />
-      </mesh>
-      {active && (
-        <Html position={[0, 2, 0]} center>
-          <div style={{ background: 'rgba(0,0,0,0.7)', color: 'white', padding: '8px 12px', borderRadius: '8px', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-            คลิกเพื่อเรียนรู้
-          </div>
-        </Html>
-      )}
-    </group>
-  );
-};
+import NursingChair from '../furniture/NursingChair';
+import MedicalTable from '../furniture/MedicalTable';
+import BabyCrib from '../furniture/BabyCrib';
+import BabyAvatar from '../avatars/BabyAvatar';
 
 export default function NewbornCare1Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -61,82 +30,79 @@ export default function NewbornCare1Room() {
 
   return (
     <group>
-      {/* Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial color="#e0f7fa" />
+      {/* ── Floor & Walls ── */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
+        <planeGeometry args={[18, 18]} />
+        <meshStandardMaterial color="#f0f9ff" roughness={0.4} />
+      </mesh>
+      <mesh position={[0, 4, -9]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#e0f2fe" />
+      </mesh>
+      <mesh position={[-9, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#e0f2fe" />
+      </mesh>
+      <mesh position={[9, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
+        <boxGeometry args={[18, 8, 0.5]} />
+        <meshStandardMaterial color="#e0f2fe" />
       </mesh>
 
-      {/* Walls */}
-      <mesh position={[0, 6, -15]} receiveShadow>
-        <boxGeometry args={[30, 12, 1]} />
-        <meshStandardMaterial color="#b2ebf2" />
-      </mesh>
-      <mesh position={[-15, 6, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[30, 12, 1]} />
-        <meshStandardMaterial color="#b2ebf2" />
-      </mesh>
-      <mesh position={[15, 6, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[30, 12, 1]} />
-        <meshStandardMaterial color="#b2ebf2" />
-      </mesh>
+      {/* Header Info */}
+      <Html position={[0, 6.5, -8.5]} center transform>
+        <div style={{ background: 'white', padding: '16px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(2,136,209,0.15)', border: '2px solid #81d4fa' }}>
+          <h2 style={{ color: '#0288d1', margin: 0, fontSize: '20px' }}>🍼 บทเรียนที่ 1: การให้นมทารกแรกเกิด</h2>
+          <p style={{ color: '#555', margin: '6px 0 0 0', fontWeight: 'bold' }}>ขั้นตอน: {Math.min(step + 1, stepsData.length)} / {stepsData.length}</p>
+        </div>
+      </Html>
 
-      {/* Decorative Plants */}
-      <group position={[-12, 0, -12]}>
-        <mesh position={[0, 1, 0]}>
-          <cylinderGeometry args={[0.8, 0.6, 2]} />
-          <meshStandardMaterial color="#8d6e63" />
-        </mesh>
-        <mesh position={[0, 3, 0]}>
-          <sphereGeometry args={[2]} />
-          <meshStandardMaterial color="#4caf50" />
-        </mesh>
+      {/* ── REAL 3D ASSETS ── */}
+
+      {/* Real Nursing Armchair */}
+      <group position={[-3.5, 0, -3.5]} onClick={handleNext}>
+        <NursingChair position={[0, 0, 0]} rotation={[0, 0.4, 0]} />
       </group>
 
-      {/* Interactive Objects */}
-      {/* 1. Clock (Step 0) */}
-      <PulsingMesh position={[0, 8, -14.4]} active={step === 0} onClick={handleNext} color="#ffb74d">
-        <cylinderGeometry args={[1.5, 1.5, 0.2]} rotation={[Math.PI / 2, 0, 0]} />
-      </PulsingMesh>
+      {/* Real Baby Crib with Baby */}
+      <group position={[3.5, 0, -3.5]} onClick={handleNext}>
+        <BabyCrib position={[0, 0, 0]}>
+          <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} />
+        </BabyCrib>
+      </group>
 
-      {/* 2. Nursing Chair (Step 1) */}
-      <PulsingMesh position={[-4, 2, -7]} active={step === 1} onClick={handleNext} color="#f48fb1">
-        <boxGeometry args={[4, 4, 4]} />
-      </PulsingMesh>
+      {/* Real Medical Supplies Table */}
+      <group position={[-4, 0, 2]} onClick={handleNext}>
+        <MedicalTable position={[0, 0, 0]} withBottle={true} />
+      </group>
 
-      {/* 3. Baby Crib (Step 2) */}
-      <PulsingMesh position={[5, 2.5, -7]} active={step === 2} onClick={handleNext} color="#81d4fa">
-        <boxGeometry args={[5, 3, 3]} />
-      </PulsingMesh>
-
-      {/* 4. Notepad/Table (Step 3) */}
-      <PulsingMesh position={[10, 3, -12]} active={step === 3} onClick={handleNext} color="#fff59d">
-        <boxGeometry args={[3, 0.2, 2]} />
-      </PulsingMesh>
-
-      {/* Educational Panel */}
+      {/* Educational Interactive Panel */}
       {step < stepsData.length && (
-        <Html position={[0, 5, -8]} center>
-          <div style={{ background: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 6px 12px rgba(0,0,0,0.3)', width: '350px', textAlign: 'center', borderTop: '5px solid #00acc1' }}>
-            <h3 style={{ margin: '0 0 15px 0', color: '#00838f', fontSize: '22px' }}>{stepsData[step].title}</h3>
-            <p style={{ margin: 0, fontSize: '18px', color: '#424242', lineHeight: '1.5' }}>{stepsData[step].desc}</p>
+        <Html position={[0, 4.5, -5]} center>
+          <div style={{ background: 'white', padding: '22px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', width: '360px', textAlign: 'center', borderTop: '6px solid #0288d1' }}>
+            <h3 style={{ margin: '0 0 10px 0', color: '#01579b', fontSize: '18px' }}>{stepsData[step].title}</h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#444', lineHeight: '1.5' }}>{stepsData[step].desc}</p>
+            <button 
+              onClick={handleNext}
+              style={{ padding: '8px 20px', background: '#0288d1', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+            >
+              เข้าใจแล้ว ➜ ขั้นถัดไป
+            </button>
           </div>
         </Html>
       )}
 
       {/* Back Button */}
-      <Html position={[-12, 10, -14]} center>
+      <Html position={[-7, 7, -8.5]}>
         <button 
           onClick={() => setRoom('lobby')}
-          style={{ padding: '12px 24px', fontSize: '20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ padding: '10px 20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold' }}
         >
-          กลับหน้าหลัก
+          ⬅ กลับหน้าหลัก
         </button>
       </Html>
 
-      {/* ── GTA-Style Player Character ── */}
-      <PlayerController initialPosition={[-2, 0, 1]} />
-      <BabyAvatar position={[2, 1.2, -2]} rotation={[-1.57, 0, 0]} />
+      {/* ── GTA Player Character ── */}
+      <PlayerController initialPosition={[0, 0, 2]} />
     </group>
   );
 }
