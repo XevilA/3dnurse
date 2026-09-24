@@ -4,6 +4,7 @@ import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
 import BabyAvatar from '../avatars/BabyAvatar';
+import PlayerController from '../player/PlayerController';
 
 const PulsingMesh = ({ position, rotation, children, onClick, active, color }) => {
   const meshRef = useRef();
@@ -127,8 +128,8 @@ export default function NewbornCare2Room() {
         </button>
       </Html>
 
-      {/* ── 3D Production Characters in Bathtub ── */}
-      <MotherAvatar position={[1.5, 0, -2]} rotation={[0, -0.6, 0]} currentAnimation="idle" />
+      {/* ── GTA-Style Player Character ── */}
+      <PlayerController initialPosition={[1.5, 0, 1.5]} />
       <BabyAvatar position={[0, 1.3, -2]} rotation={[-0.3, 0, 0]} />
     </group>
   );

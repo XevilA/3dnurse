@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
+import PlayerController from '../player/PlayerController';
 
 export default function MotherCare1Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -154,8 +155,8 @@ export default function MotherCare1Room() {
         <mesh position={[0, 1.5, 0]}><sphereGeometry args={[0.6]} /><meshStandardMaterial color="#33cc33" /></mesh>
       </group>
 
-      {/* ── 3D Mother Avatar ── */}
-      <MotherAvatar position={[1.5, 0, 0]} rotation={[0, -0.4, 0]} currentAnimation="idle" />
+      {/* ── GTA-Style Player Character ── */}
+      <PlayerController initialPosition={[1.5, 0, 1.5]} />
     </group>
   );
 }

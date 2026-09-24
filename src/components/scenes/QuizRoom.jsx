@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
+import PlayerController from '../player/PlayerController';
 
 export default function QuizRoom() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -164,8 +165,8 @@ export default function QuizRoom() {
         </button>
       </Html>
 
-      {/* ── 3D Production Characters in Quiz Room ── */}
-      <MotherAvatar position={[3.5, 0, -2]} rotation={[0, -0.6, 0]} currentAnimation="idle" />
+      {/* ── GTA-Style Player Character in Quiz Room ── */}
+      <PlayerController initialPosition={[2.5, 0, 1.5]} />
     </group>
   );
 }

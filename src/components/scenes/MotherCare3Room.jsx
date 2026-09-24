@@ -4,6 +4,7 @@ import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
 import BabyAvatar from '../avatars/BabyAvatar';
+import PlayerController from '../player/PlayerController';
 
 export default function MotherCare3Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -156,9 +157,11 @@ export default function MotherCare3Room() {
         <mesh position={[0, 1.5, 0]}><sphereGeometry args={[0.6]} /><meshStandardMaterial color="#33cc33" /></mesh>
       </group>
 
-      {/* ── 3D Mother and Baby (Breastfeeding pose) ── */}
-      <MotherAvatar position={[1.5, 0, 0]} rotation={[0, -0.4, 0]} currentAnimation="idle" />
-      <BabyAvatar position={[1.2, 0.85, 0.2]} rotation={[-0.3, 0.4, 0]} />
+      {/* ── GTA-Style Player Character ── */}
+      <PlayerController initialPosition={[0, 0, 2]} />
+
+      {/* ── 3D Baby in Nursing Station ── */}
+      <BabyAvatar position={[1.5, 0.85, 0]} rotation={[-0.3, 0.4, 0]} />
     </group>
   );
 }

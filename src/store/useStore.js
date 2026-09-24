@@ -23,9 +23,21 @@ const useStore = create((set, get) => ({
   // ── Simulation state ──
   currentStep: 0,
 
-  // ── Avatar state ──
+  // ── Avatar & Player state (GTA Style Controls) ──
   motherClothing: 'hospitalGown',  // 'hospitalGown' | 'casual' | 'sleepwear'
   isHoldingBaby: false,
+  playerPosition: [0, 0, 2],
+  playerAnimation: 'idle', // 'idle' | 'walk' | 'run' | 'agree'
+  
+  // Virtual joystick / on-screen controls
+  virtualInput: {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    sprint: false,
+    interact: false,
+  },
 
   // ── Learning progress (tracks completed modules) ──
   learningProgress: {},
@@ -35,10 +47,17 @@ const useStore = create((set, get) => ({
   successMessage: '',
 
   // ── Actions ──
-  setRoom: (room) => set({ currentRoom: room, currentStep: 0 }),
+  setRoom: (room) => set({ currentRoom: room, currentStep: 0, playerPosition: [0, 0, 3] }),
   setStep: (step) => set({ currentStep: step }),
   setClothing: (clothing) => set({ motherClothing: clothing }),
   setHoldingBaby: (val) => set({ isHoldingBaby: val }),
+  setPlayerPosition: (pos) => set({ playerPosition: pos }),
+  setPlayerAnimation: (anim) => set({ playerAnimation: anim }),
+
+  setVirtualInput: (input) =>
+    set((state) => ({
+      virtualInput: { ...state.virtualInput, ...input },
+    })),
 
   completeModule: (moduleId) =>
     set((state) => ({
@@ -49,7 +68,7 @@ const useStore = create((set, get) => ({
     set({ showSuccessModal: show, successMessage: message }),
 
   resetSimulation: () =>
-    set({ currentStep: 0, isHoldingBaby: false }),
+    set({ currentStep: 0, isHoldingBaby: false, playerPosition: [0, 0, 3] }),
 
   // ── Computed helpers ──
   getCompletedCount: () => Object.keys(get().learningProgress).length,

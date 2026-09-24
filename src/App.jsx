@@ -1,9 +1,10 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment, OrbitControls, Loader, Stars } from '@react-three/drei';
+import { Environment, Loader, Stars } from '@react-three/drei';
 import useStore from './store/useStore';
 import HUD from './components/ui/HUD';
 import SuccessModal from './components/ui/SuccessModal';
+import GTAControlsHUD from './components/ui/GTAControlsHUD';
 
 // ── Room scenes ──
 import LobbyRoom from './components/scenes/LobbyRoom';
@@ -63,21 +64,14 @@ export default function App() {
           {/* Stars for metaverse feel */}
           {currentRoom === 'lobby' && <Stars radius={50} depth={20} count={500} factor={2} />}
 
-          {/* Current Room */}
+          {/* Current Room with Player Controller */}
           <RoomComponent />
-
-          {/* Controls */}
-          <OrbitControls
-            enablePan={false}
-            maxPolarAngle={Math.PI / 2}
-            minDistance={3}
-            maxDistance={15}
-          />
         </Suspense>
       </Canvas>
 
       {/* ── UI Overlays ── */}
       <HUD />
+      <GTAControlsHUD />
       {showSuccessModal && <SuccessModal />}
 
       {/* ── Loader ── */}
