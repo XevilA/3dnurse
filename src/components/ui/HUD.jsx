@@ -56,6 +56,61 @@ export default function HUD() {
         </div>
       </div>
 
+      {/* ── Lobby Quick Room Selector Bar (Always visible in Lobby) ── */}
+      {currentRoom === 'lobby' && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-20 w-[94%] max-w-4xl bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 p-2.5 pointer-events-auto">
+          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🚪</span>
+              <span className="text-xs font-bold text-blue-950">เลือกเข้าสู่ห้องเรียนรู้ (แตะเข้าห้องได้ทันที)</span>
+            </div>
+            <span className="text-[11px] text-gray-500 font-medium hidden sm:inline">
+              มีทั้งหมด 10 ห้องปฏิบัติการจริง
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5 text-xs">
+            {/* Mother Care Rooms */}
+            {MOTHER_ROOMS.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => setRoom(r.key)}
+                className="flex items-center gap-1.5 p-2 rounded-xl bg-pink-50/90 hover:bg-pink-100 border border-pink-200 text-pink-900 transition transform hover:scale-[1.02] active:scale-95 text-left font-medium shadow-sm cursor-pointer"
+              >
+                <span className="text-base flex-shrink-0">{r.icon}</span>
+                <span className="truncate text-[11px]">{r.label}</span>
+                {learningProgress[r.key] && <span className="ml-auto text-emerald-600 text-xs">✅</span>}
+              </button>
+            ))}
+
+            {/* Newborn Care Rooms */}
+            {NEWBORN_ROOMS.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => setRoom(r.key)}
+                className="flex items-center gap-1.5 p-2 rounded-xl bg-blue-50/90 hover:bg-blue-100 border border-blue-200 text-blue-900 transition transform hover:scale-[1.02] active:scale-95 text-left font-medium shadow-sm cursor-pointer"
+              >
+                <span className="text-base flex-shrink-0">{r.icon}</span>
+                <span className="truncate text-[11px]">{r.label}</span>
+                {learningProgress[r.key] && <span className="ml-auto text-emerald-600 text-xs">✅</span>}
+              </button>
+            ))}
+
+            {/* Quiz Room */}
+            <button
+              type="button"
+              onClick={() => setRoom('quiz')}
+              className="col-span-2 sm:col-span-3 md:col-span-5 lg:col-span-1 flex items-center justify-center gap-1.5 p-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold transition transform hover:scale-[1.02] active:scale-95 shadow-md cursor-pointer"
+            >
+              <span className="text-base">🎓</span>
+              <span className="text-[11px]">แบบทดสอบหลังเรียน</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Navigation Panel ── */}
       {showNav && (
         <div className="absolute top-12 right-2 z-20 w-80 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-100 overflow-hidden">

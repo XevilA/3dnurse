@@ -60,8 +60,14 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   useEffect(() => {
     const domElement = gl.domElement;
 
+    const isInteractive = (target) => {
+      if (!target) return false;
+      return !!target.closest('button, a, input, select, [data-interactive], .interactive-ui, .pointer-events-auto');
+    };
+
     const onMouseDown = (e) => {
-      // Left click or middle click
+      // Ignore if clicking on UI button or interactive element
+      if (isInteractive(e.target)) return;
       if (e.button === 0 || e.button === 1) {
         isDragging.current = true;
         previousMousePos.current = { x: e.clientX, y: e.clientY };
@@ -88,6 +94,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
 
     // Touch controls for mobile camera orbit
     const onTouchStart = (e) => {
+      if (isInteractive(e.target)) return;
       if (e.touches.length === 1) {
         isDragging.current = true;
         previousMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
