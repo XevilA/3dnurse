@@ -94,20 +94,7 @@ export default function HUD() {
         </div>
       </div>
 
-      {/* ── Lobby Quick Floating Action Button (Only in Lobby, Non-intrusive) ── */}
-      {currentRoom === 'lobby' && (
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-          <button
-            type="button"
-            onClick={() => setShowNav(true)}
-            className="flex items-center gap-2.5 px-6 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-2xl border-2 border-white/90 transition transform hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <span className="text-lg">🚪</span>
-            <span>เลือกเข้าห้องเรียนรู้ (10 ห้อง)</span>
-            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">➜</span>
-          </button>
-        </div>
-      )}
+
 
       {/* ── Room Selection Modal (Clean Centered Modal, Zero Clutter) ── */}
       {showNav && (

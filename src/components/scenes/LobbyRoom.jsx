@@ -43,6 +43,31 @@ export default function LobbyRoom() {
         <meshStandardMaterial color="#e0f2fe" roughness={0.3} />
       </mesh>
 
+      {/* ── Welcome Banner (Top Center, High on Back Wall) ── */}
+      <Html position={[0, 7.8, -13.2]} center transform scale={0.55}>
+        <div style={{
+          textAlign: 'center',
+          background: 'rgba(255, 255, 255, 0.98)',
+          padding: '16px 28px',
+          borderRadius: '20px',
+          boxShadow: '0 8px 24px rgba(0, 50, 100, 0.15)',
+          border: '2px solid #b3e5fc',
+          minWidth: '440px',
+          userSelect: 'none',
+          pointerEvents: 'auto'
+        }}>
+          <h1 style={{ color: '#d81b60', margin: 0, fontSize: '22px', fontWeight: 'bold' }}>
+            🌸 ยินดีต้อนรับสู่โลกแห่งการเรียนรู้ เพื่อแม่และลูก 👶
+          </h1>
+          <h2 style={{ color: '#0288d1', margin: '6px 0 0 0', fontSize: '16px', fontWeight: '600' }}>
+            สุขภาพดี เริ่มได้จากความรู้และการปฏิบัติจริง
+          </h2>
+          <p style={{ color: '#555', margin: '8px 0 0 0', fontSize: '13px', fontWeight: '500' }}>
+            ❤️ "แม่มั่นใจ...ลูกปลอดภัย...ครอบครัวอบอุ่น"
+          </p>
+        </div>
+      </Html>
+
       {/* ── Central Holographic Healthcare Hub ── */}
       <group position={[0, 0, -1]}>
         {/* Tiered Marble Plaza Pedestal */}
@@ -68,87 +93,378 @@ export default function LobbyRoom() {
       </group>
 
       {/* ── Mother Care Zone Portal (Left Side - 4 ห้องจริง) ── */}
-      <group position={[-7.5, 0, -6]}>
-        {/* Portal Arch 3D (Clickable to enter Zone) */}
-        <mesh
-          position={[0, 3.5, 0]}
-          castShadow
-          onClick={(e) => { e.stopPropagation(); setRoom('motherCare1'); }}
-          onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-          onPointerOut={() => { document.body.style.cursor = 'auto'; }}
-        >
-          <boxGeometry args={[4.2, 6.2, 0.4]} />
+      <group position={[-8.5, 0, -5]} rotation={[0, 0.25, 0]}>
+        {/* Portal Arch 3D */}
+        <mesh position={[0, 3.5, 0]} castShadow>
+          <boxGeometry args={[4.4, 6.4, 0.4]} />
           <meshStandardMaterial color="#fce4ec" roughness={0.3} />
         </mesh>
-        <mesh
-          position={[0, 3.5, 0.05]}
-          onClick={(e) => { e.stopPropagation(); setRoom('motherCare1'); }}
-          onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-          onPointerOut={() => { document.body.style.cursor = 'auto'; }}
-        >
-          <boxGeometry args={[3.8, 5.8, 0.4]} />
+        <mesh position={[0, 3.5, 0.05]}>
+          <boxGeometry args={[4.0, 6.0, 0.4]} />
           <meshStandardMaterial color="#f8bbd0" emissive="#ff80ab" emissiveIntensity={0.2} />
         </mesh>
         {/* Glowing Portal Arch Header */}
-        <mesh position={[0, 6.5, 0.2]}>
+        <mesh position={[0, 6.6, 0.2]}>
           <boxGeometry args={[4.6, 0.9, 0.25]} />
           <meshStandardMaterial color="#e91e63" emissive="#e91e63" emissiveIntensity={0.6} />
         </mesh>
         <pointLight position={[0, 3, 1]} color="#ff80ab" intensity={1.5} distance={6} />
+
+        {/* 3D Interactive Room Selection Board (Flat in 3D Space, Never Overlaps!) */}
+        <Html position={[0, 3.4, 0.25]} center transform scale={0.42}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.98)',
+            padding: '18px',
+            borderRadius: '18px',
+            boxShadow: '0 8px 24px rgba(233, 30, 99, 0.25)',
+            border: '2px solid #f48fb1',
+            width: '320px',
+            userSelect: 'none',
+            pointerEvents: 'auto'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #e91e63 0%, #c2185b 100%)',
+              color: 'white',
+              padding: '10px 14px',
+              borderRadius: '12px',
+              textAlign: 'center',
+              fontWeight: 'bold',
+              fontSize: '15px',
+              marginBottom: '12px',
+              boxShadow: '0 4px 10px rgba(233, 30, 99, 0.3)'
+            }}>
+              💗 โซนการดูแลตนเองของมารดา (4 ห้อง)
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('motherCare1'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('motherCare1'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#fce4ec',
+                  border: '1px solid #f48fb1',
+                  borderRadius: '10px',
+                  padding: '9px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#880e4f',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🏥 1.</span>
+                <span>การดูแลร่างกายและการฟื้นตัว</span>
+                {learningProgress['motherCare1'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('motherCare2'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('motherCare2'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#fce4ec',
+                  border: '1px solid #f48fb1',
+                  borderRadius: '10px',
+                  padding: '9px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#880e4f',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🩹 2.</span>
+                <span>การดูแลแผลหลังคลอด</span>
+                {learningProgress['motherCare2'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('motherCare3'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('motherCare3'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#fce4ec',
+                  border: '1px solid #f48fb1',
+                  borderRadius: '10px',
+                  padding: '9px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#880e4f',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🤱 3.</span>
+                <span>การดูแลเต้านมและท่าให้นม</span>
+                {learningProgress['motherCare3'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('motherCare4'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('motherCare4'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#fce4ec',
+                  border: '1px solid #f48fb1',
+                  borderRadius: '10px',
+                  padding: '9px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#880e4f',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🩺 4.</span>
+                <span>สังเกตอาการผิดปกติและแทรกซ้อน</span>
+                {learningProgress['motherCare4'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+            </div>
+          </div>
+        </Html>
       </group>
 
       {/* ── Newborn Care Zone Portal (Right Side - 5 ห้องจริง ครบ 100%) ── */}
-      <group position={[7.5, 0, -6]}>
-        {/* Portal Arch 3D (Clickable to enter Zone) */}
-        <mesh
-          position={[0, 3.5, 0]}
-          castShadow
-          onClick={(e) => { e.stopPropagation(); setRoom('newbornCare1'); }}
-          onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-          onPointerOut={() => { document.body.style.cursor = 'auto'; }}
-        >
-          <boxGeometry args={[4.2, 6.2, 0.4]} />
+      <group position={[8.5, 0, -5]} rotation={[0, -0.25, 0]}>
+        {/* Portal Arch 3D */}
+        <mesh position={[0, 3.5, 0]} castShadow>
+          <boxGeometry args={[4.4, 6.4, 0.4]} />
           <meshStandardMaterial color="#e1f5fe" roughness={0.3} />
         </mesh>
-        <mesh
-          position={[0, 3.5, 0.05]}
-          onClick={(e) => { e.stopPropagation(); setRoom('newbornCare1'); }}
-          onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-          onPointerOut={() => { document.body.style.cursor = 'auto'; }}
-        >
-          <boxGeometry args={[3.8, 5.8, 0.4]} />
+        <mesh position={[0, 3.5, 0.05]}>
+          <boxGeometry args={[4.0, 6.0, 0.4]} />
           <meshStandardMaterial color="#b3e5fc" emissive="#03a9f4" emissiveIntensity={0.2} />
         </mesh>
         {/* Glowing Portal Arch Header */}
-        <mesh position={[0, 6.5, 0.2]}>
+        <mesh position={[0, 6.6, 0.2]}>
           <boxGeometry args={[4.6, 0.9, 0.25]} />
           <meshStandardMaterial color="#0288d1" emissive="#0288d1" emissiveIntensity={0.6} />
         </mesh>
         <pointLight position={[0, 3, 1]} color="#40c4ff" intensity={1.5} distance={6} />
+
+        {/* 3D Interactive Room Selection Board (Flat in 3D Space, Never Overlaps!) */}
+        <Html position={[0, 3.4, 0.25]} center transform scale={0.42}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.98)',
+            padding: '18px',
+            borderRadius: '18px',
+            boxShadow: '0 8px 24px rgba(2, 136, 209, 0.25)',
+            border: '2px solid #81d4fa',
+            width: '320px',
+            userSelect: 'none',
+            pointerEvents: 'auto'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #0288d1 0%, #01579b 100%)',
+              color: 'white',
+              padding: '10px 14px',
+              borderRadius: '12px',
+              textAlign: 'center',
+              fontWeight: 'bold',
+              fontSize: '15px',
+              marginBottom: '12px',
+              boxShadow: '0 4px 10px rgba(2, 136, 209, 0.3)'
+            }}>
+              👶 โซนการดูแลทารกแรกเกิด (5 ห้อง)
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('newbornCare1'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('newbornCare1'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#e1f5fe',
+                  border: '1px solid #81d4fa',
+                  borderRadius: '10px',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#01579b',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🍼 1.</span>
+                <span>การให้นมทารก</span>
+                {learningProgress['newbornCare1'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('newbornCare2'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('newbornCare2'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#e1f5fe',
+                  border: '1px solid #81d4fa',
+                  borderRadius: '10px',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#01579b',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🛁 2.</span>
+                <span>การอาบน้ำทารก</span>
+                {learningProgress['newbornCare2'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('newbornCare3'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('newbornCare3'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#e1f5fe',
+                  border: '1px solid #81d4fa',
+                  borderRadius: '10px',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#01579b',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>👶 3.</span>
+                <span>การเปลี่ยนผ้าอ้อม</span>
+                {learningProgress['newbornCare3'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('newbornCare4'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('newbornCare4'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#e1f5fe',
+                  border: '1px solid #81d4fa',
+                  borderRadius: '10px',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#01579b',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🔗 4.</span>
+                <span>การดูแลสายสะดือ</span>
+                {learningProgress['newbornCare4'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+
+              <button
+                type="button"
+                onPointerDown={(e) => { e.stopPropagation(); setRoom('newbornCare5'); }}
+                onClick={(e) => { e.stopPropagation(); setRoom('newbornCare5'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: '#e1f5fe',
+                  border: '1px solid #81d4fa',
+                  borderRadius: '10px',
+                  padding: '8px 12px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#01579b',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>🏠 5.</span>
+                <span>การจัดสภาพแวดล้อมที่ปลอดภัย</span>
+                {learningProgress['newbornCare5'] && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              </button>
+            </div>
+          </div>
+        </Html>
       </group>
 
       {/* ── Quiz Portal (Back Center) ── */}
-      <group position={[0, 0, -11]}>
-        <mesh
-          position={[0, 2.5, 0]}
-          castShadow
-          onClick={(e) => { e.stopPropagation(); setRoom('quiz'); }}
-          onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-          onPointerOut={() => { document.body.style.cursor = 'auto'; }}
-        >
-          <cylinderGeometry args={[1.5, 1.8, 3.5, 32]} />
+      <group position={[0, 0, -11.2]}>
+        <mesh position={[0, 2.5, 0]} castShadow>
+          <cylinderGeometry args={[1.6, 1.9, 3.6, 32]} />
           <meshStandardMaterial color="#ede7f6" roughness={0.3} />
         </mesh>
-        <mesh
-          position={[0, 2.5, 0.05]}
-          onClick={(e) => { e.stopPropagation(); setRoom('quiz'); }}
-          onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-          onPointerOut={() => { document.body.style.cursor = 'auto'; }}
-        >
-          <cylinderGeometry args={[1.3, 1.6, 3.2, 32]} />
+        <mesh position={[0, 2.5, 0.05]}>
+          <cylinderGeometry args={[1.4, 1.7, 3.3, 32]} />
           <meshStandardMaterial color="#d1c4e9" emissive="#7e57c2" emissiveIntensity={0.3} />
         </mesh>
         <pointLight position={[0, 2.5, 1]} color="#b388ff" intensity={1.5} distance={6} />
+
+        {/* 3D Interactive Quiz Portal Board (Flat in 3D Space, Never Overlaps!) */}
+        <Html position={[0, 2.5, 0.65]} center transform scale={0.42}>
+          <div
+            onPointerDown={(e) => { e.stopPropagation(); setRoom('quiz'); }}
+            onClick={(e) => { e.stopPropagation(); setRoom('quiz'); }}
+            style={{
+              background: 'linear-gradient(135deg, #673ab7 0%, #512da8 100%)',
+              color: 'white',
+              padding: '18px 24px',
+              borderRadius: '20px',
+              textAlign: 'center',
+              boxShadow: '0 8px 26px rgba(103, 58, 183, 0.45)',
+              cursor: 'pointer',
+              userSelect: 'none',
+              minWidth: '270px',
+              border: '2px solid #b39ddb',
+              pointerEvents: 'auto'
+            }}
+          >
+            <div style={{ fontSize: '32px', marginBottom: '4px' }}>🎓</div>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>ห้องแบบทดสอบหลังเรียน</h3>
+            <p style={{ margin: '6px 0 0 0', fontSize: '13px', opacity: 0.9 }}>
+              ประเมินความรู้ 10 ข้อ (เกณฑ์ผ่าน ≥ 80%)
+            </p>
+            <div style={{
+              marginTop: '12px',
+              background: 'white',
+              color: '#512da8',
+              padding: '9px 16px',
+              borderRadius: '20px',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              boxShadow: '0 3px 8px rgba(0,0,0,0.15)'
+            }}>
+              เข้าทำแบบทดสอบ ➜
+            </div>
+          </div>
+        </Html>
       </group>
 
       {/* ── Authentic 3D Hospital Ambience & Nature (Trees, Plants & Furniture) ── */}
