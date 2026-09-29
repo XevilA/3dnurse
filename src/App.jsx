@@ -45,24 +45,28 @@ export default function App() {
       <Canvas
         shadows
         camera={{ position: [0, 3, 8], fov: 55 }}
-        style={{ background: 'linear-gradient(180deg, #e0f0ff 0%, #f8fcff 100%)' }}
+        style={{ background: 'linear-gradient(180deg, #dbeafe 0%, #f0fdf4 100%)' }}
       >
         <Suspense fallback={null}>
-          {/* Lighting */}
-          <ambientLight intensity={0.6} />
+          {/* Authentic Hospital Interior Lighting */}
+          <ambientLight intensity={0.75} color="#ffffff" />
           <directionalLight
-            position={[5, 8, 5]}
-            intensity={1}
+            position={[8, 12, 6]}
+            intensity={1.1}
             castShadow
             shadow-mapSize={[1024, 1024]}
+            shadow-bias={-0.0001}
           />
-          <pointLight position={[-5, 5, -5]} intensity={0.3} color="#b0d4ff" />
+          <hemisphereLight
+            skyColor="#f0f9ff"
+            groundColor="#e2e8f0"
+            intensity={0.45}
+          />
+          <pointLight position={[-6, 6, -4]} intensity={0.35} color="#bae6fd" />
+          <pointLight position={[6, 6, 4]} intensity={0.25} color="#fbcfe8" />
 
-          {/* Environment */}
-          <Environment preset="apartment" />
-
-          {/* Stars for metaverse feel */}
-          {currentRoom === 'lobby' && <Stars radius={50} depth={20} count={500} factor={2} />}
+          {/* Subtle Metaverse Stars in Lobby */}
+          {currentRoom === 'lobby' && <Stars radius={60} depth={25} count={400} factor={2} />}
 
           {/* Current Room with Player Controller */}
           <RoomComponent />
