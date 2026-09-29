@@ -15,7 +15,7 @@ import LaundryBasket from '../decorations/LaundryBasket';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
 export default function NewbornCare1Room() {
-  const { setRoom, completeModule, setShowSuccessModal } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
   const [step, setStep] = useState(0);
 
   const stepsData = [
@@ -74,7 +74,9 @@ export default function NewbornCare1Room() {
       {/* Real Baby Crib with Baby */}
       <group position={[3.5, 0, -3.5]} onClick={handleNext}>
         <BabyCrib position={[0, 0, 0]}>
-          <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} />
+          {!isHoldingBaby && (
+            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} />
+          )}
         </BabyCrib>
       </group>
 

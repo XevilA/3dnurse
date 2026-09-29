@@ -12,6 +12,8 @@ import useStore from '../../store/useStore';
 export default function GTAControlsHUD() {
   const setVirtualInput = useStore((s) => s.setVirtualInput);
   const virtualInput = useStore((s) => s.virtualInput);
+  const isHoldingBaby = useStore((s) => s.isHoldingBaby);
+  const setHoldingBaby = useStore((s) => s.setHoldingBaby);
 
   const handleTouchStart = (key) => {
     setVirtualInput({ [key]: true });
@@ -23,12 +25,28 @@ export default function GTAControlsHUD() {
 
   return (
     <div className="pointer-events-none select-none">
+      {/* ── Mother & Baby Bonding Floating Action Button (Center Bottom) ── */}
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+        <button
+          type="button"
+          onClick={() => setHoldingBaby(!isHoldingBaby)}
+          className={`flex items-center gap-2.5 px-6 py-2.5 rounded-full font-bold text-sm shadow-2xl border-2 transition transform hover:scale-105 active:scale-95 ${
+            isHoldingBaby
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-white/90 shadow-emerald-500/40 ring-4 ring-emerald-300/30'
+              : 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-white/90 shadow-pink-500/40 ring-4 ring-pink-300/30 animate-bounce'
+          }`}
+        >
+          <span className="text-xl">{isHoldingBaby ? '🧸' : '🤱'}</span>
+          <span>{isHoldingBaby ? 'วางลูกน้อยในเปล / เตียง' : 'อุ้มลูกน้อยแนบอก (แม่และลูก)'}</span>
+        </button>
+      </div>
+
       {/* ── Desktop Controls Guide (Bottom Left) ── */}
       <div className="absolute bottom-12 left-4 z-20 pointer-events-auto bg-black/75 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 shadow-2xl text-white max-w-xs">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-lg">🎮</span>
-          <span className="text-xs font-bold uppercase tracking-wider text-yellow-400">
-            GTA Player Controls
+          <span className="text-lg">🤱</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-pink-300">
+            การควบคุมแม่และลูกน้อย
           </span>
         </div>
 
@@ -46,31 +64,51 @@ export default function GTAControlsHUD() {
             </kbd>
             <span className="text-gray-200">วิ่งเร็ว (Sprint)</span>
           </div>
+
+          <div className="flex items-center gap-1.5 col-span-2 pt-1 border-t border-white/10">
+            <kbd className="px-2 py-0.5 bg-pink-500/40 border border-pink-400 rounded font-mono font-bold text-pink-200">
+              E / Space
+            </kbd>
+            <span className="text-pink-200 font-medium">🤱 อุ้มลูกน้อย / วางลูกน้อย</span>
+          </div>
         </div>
 
         <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-300">
-          <span>🎥 กล้องติดตามตัวละครอัตโนมัติ</span>
-          <span className="text-cyan-300 font-medium">3rd Person</span>
+          <span>🎥 กล้องติดตามคุณแม่ 3rd Person</span>
+          <span className="text-pink-300 font-medium">แม่ & ลูก</span>
         </div>
       </div>
 
       {/* ── Mobile / Touch Virtual Controller (Bottom Right) ── */}
       <div className="absolute bottom-12 right-4 z-20 pointer-events-auto flex flex-col items-center gap-1.5 md:hidden">
-        {/* Sprint Button */}
-        <button
-          type="button"
-          onMouseDown={() => handleTouchStart('sprint')}
-          onMouseUp={() => handleTouchEnd('sprint')}
-          onTouchStart={() => handleTouchStart('sprint')}
-          onTouchEnd={() => handleTouchEnd('sprint')}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase shadow-lg border transition ${
-            virtualInput.sprint
-              ? 'bg-yellow-500 text-black border-yellow-300 scale-95'
-              : 'bg-black/70 text-yellow-300 border-yellow-400/40 backdrop-blur-sm'
-          }`}
-        >
-          ⚡ วิ่งเร็ว (Sprint)
-        </button>
+        {/* Mobile Action Buttons: Hold Baby & Sprint */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setHoldingBaby(!isHoldingBaby)}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border transition ${
+              isHoldingBaby
+                ? 'bg-emerald-600 text-white border-white'
+                : 'bg-pink-600 text-white border-white'
+            }`}
+          >
+            {isHoldingBaby ? '🧸 วางลูก' : '🤱 อุ้มลูก'}
+          </button>
+          <button
+            type="button"
+            onMouseDown={() => handleTouchStart('sprint')}
+            onMouseUp={() => handleTouchEnd('sprint')}
+            onTouchStart={() => handleTouchStart('sprint')}
+            onTouchEnd={() => handleTouchEnd('sprint')}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase shadow-lg border transition ${
+              virtualInput.sprint
+                ? 'bg-yellow-500 text-black border-yellow-300 scale-95'
+                : 'bg-black/70 text-yellow-300 border-yellow-400/40 backdrop-blur-sm'
+            }`}
+          >
+            ⚡ วิ่งเร็ว
+          </button>
+        </div>
 
         {/* D-Pad */}
         <div className="grid grid-cols-3 gap-1.5 p-2 bg-black/60 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl">

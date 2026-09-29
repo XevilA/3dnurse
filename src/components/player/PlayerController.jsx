@@ -4,6 +4,7 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
+import BabyAvatar from '../avatars/BabyAvatar';
 
 /**
  * PlayerController — True GTA 3rd-Person Character Controller
@@ -15,6 +16,7 @@ import MotherAvatar from '../avatars/MotherAvatar';
  *   4. Walk & Sprint (กด Shift วิ่งเร็ว สปีด x2)
  *   5. Procedural Body Dynamics (ตัวละครโยกตัวตามจังหวะก้าวเดิน มีชีวิตชีวา)
  *   6. Boundary Safety (ไม่ทะลุกำแพง)
+ *   7. Mother & Child Bonding (กด E หรือ Space เพื่ออุ้มลูกน้อย / วางลูกน้อย)
  */
 export default function PlayerController({ initialPosition = [0, 0, 3], initialRotation = 0 }) {
   const playerRef = useRef();
@@ -23,6 +25,8 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
 
   const setPlayerPosition = useStore((s) => s.setPlayerPosition);
   const virtualInput = useStore((s) => s.virtualInput);
+  const isHoldingBaby = useStore((s) => s.isHoldingBaby);
+  const setHoldingBaby = useStore((s) => s.setHoldingBaby);
 
   // Animation state
   const [currentAnim, setCurrentAnim] = useState('idle');
@@ -153,6 +157,10 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         case 'ShiftLeft':
         case 'ShiftRight':
           keys.current.sprint = true;
+          break;
+        case 'KeyE':
+        case 'Space':
+          setHoldingBaby(!useStore.getState().isHoldingBaby);
           break;
         default:
           break;
@@ -314,6 +322,16 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
           rotation={[0, 0, 0]}
           currentAnimation={currentAnim}
         />
+        {/* Real 3D Infant safely nestled in Mother's loving arms */}
+        {isHoldingBaby && (
+          <group position={[0.02, 1.05, 0.32]} rotation={[-0.25, 0.35, 0.15]}>
+            <BabyAvatar
+              position={[0, 0, 0]}
+              rotation={[0, 0, 0]}
+              scale={[0.72, 0.72, 0.72]}
+            />
+          </group>
+        )}
       </group>
 
       {/* GTA Character Indicator Ring on Floor */}

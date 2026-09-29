@@ -12,7 +12,7 @@ import ExaminationLamp from '../decorations/ExaminationLamp';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
 export default function NewbornCare4Room() {
-  const { setRoom, completeModule, setShowSuccessModal } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby } = useStore();
   const [step, setStep] = useState(0);
 
   const stepsData = [
@@ -81,7 +81,9 @@ export default function NewbornCare4Room() {
           <meshStandardMaterial color="#f0f9ff" roughness={0.4} />
         </mesh>
         {/* Baby lying on back for cord care */}
-        <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
+        {!isHoldingBaby && (
+          <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
+        )}
       </group>
 
       {/* Real Porcelain Washbasin (Mandatory aseptic handwashing) */}

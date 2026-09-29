@@ -10,9 +10,11 @@ import FlowerVase from '../decorations/FlowerVase';
 import DoctorDesk from '../furniture/DoctorDesk';
 import HospitalSofa from '../furniture/HospitalSofa';
 import MedicineCabinet from '../furniture/MedicineCabinet';
+import BabyAvatar from '../avatars/BabyAvatar';
+import BabyCrib from '../furniture/BabyCrib';
 
 export default function QuizRoom() {
-  const { setRoom, completeModule, setShowSuccessModal } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
@@ -167,6 +169,32 @@ export default function QuizRoom() {
 
       {/* ── Real 3D Quiz Seating Chair ── */}
       <NursingChair position={[0, 0, -6.5]} rotation={[0, 0, 0]} />
+
+      {/* ── Real Baby Bassinet beside Mother during Quiz (แม่และลูกร่วมเรียนรู้) ── */}
+      <group position={[2.4, 0, -6.5]} rotation={[0, -0.3, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
+        <BabyCrib position={[0, 0, 0]} scale={0.9}>
+          {!isHoldingBaby && (
+            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
+          )}
+        </BabyCrib>
+        <Html position={[0, 1.6, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setHoldingBaby(!isHoldingBaby);
+            }}
+            className="cursor-pointer select-none px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+            style={{
+              background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
+              color: 'white',
+              border: '2px solid white',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อยหลับอยู่ (คลิกอุ้ม)'}
+          </div>
+        </Html>
+      </group>
 
       {/* ── GTA-Style Player Character in Quiz Room ── */}
       <PlayerController initialPosition={[0, 0, -4]} />

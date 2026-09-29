@@ -12,9 +12,11 @@ import HospitalWheelchair from '../furniture/HospitalWheelchair';
 import MedicineCabinet from '../furniture/MedicineCabinet';
 import Pillows from '../decorations/Pillows';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
+import BabyAvatar from '../avatars/BabyAvatar';
+import BabyCrib from '../furniture/BabyCrib';
 
 export default function MotherCare1Room() {
-  const { setRoom, completeModule, setShowSuccessModal } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
   const [step, setStep] = useState(0);
 
   const handleNextStep = () => {
@@ -98,6 +100,32 @@ export default function MotherCare1Room() {
             </div>
           </Html>
         )}
+      </group>
+
+      {/* Newborn Bassinet right beside Mother's bed (แม่และลูกอยู่ร่วมกัน) */}
+      <group position={[-1.7, 0, -4]} rotation={[0, -0.2, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
+        <BabyCrib position={[0, 0, 0]} scale={0.9}>
+          {!isHoldingBaby && (
+            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
+          )}
+        </BabyCrib>
+        <Html position={[0, 1.6, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setHoldingBaby(!isHoldingBaby);
+            }}
+            className="cursor-pointer select-none px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+            style={{
+              background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
+              color: 'white',
+              border: '2px solid white',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อยหลับอยู่ (คลิกอุ้ม)'}
+          </div>
+        </Html>
       </group>
 
       {/* Station 1: REAL Hospital Nightstand with Hydration Water & Fresh Flowers (โภชนาการและน้ำดื่ม) */}

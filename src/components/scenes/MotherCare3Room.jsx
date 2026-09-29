@@ -15,7 +15,7 @@ import Pillows from '../decorations/Pillows';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
 export default function MotherCare3Room() {
-  const { setRoom, completeModule, setShowSuccessModal } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
   const [step, setStep] = useState(0);
 
   const handleNextStep = () => {
@@ -99,9 +99,11 @@ export default function MotherCare3Room() {
       </group>
 
       {/* Station 1: REAL Baby Crib with Baby (ท่าอุ้มให้นมบุตร) */}
-      <group position={[3.5, 0, -4]} onClick={step === 1 ? handleNextStep : undefined}>
+      <group position={[3.5, 0, -4]} onClick={step === 1 ? handleNextStep : () => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]}>
-          <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} />
+          {!isHoldingBaby && (
+            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} />
+          )}
         </BabyCrib>
         {step === 1 && (
           <Html position={[0, 2.2, 0]} center>

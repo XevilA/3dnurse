@@ -13,7 +13,7 @@ import LaundryBasket from '../decorations/LaundryBasket';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
 export default function NewbornCare2Room() {
-  const { setRoom, completeModule, setShowSuccessModal } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby } = useStore();
   const [step, setStep] = useState(0);
 
   const stepsData = [
@@ -65,7 +65,9 @@ export default function NewbornCare2Room() {
       {/* Real Baby Bathtub Station with Baby Inside */}
       <group position={[0, 0, -3.5]} onClick={handleNext}>
         <BabyBathtub position={[0, 0, 0]} />
-        <BabyAvatar position={[0, 1.25, 0]} rotation={[-0.3, 0, 0]} scale={[0.9, 0.9, 0.9]} />
+        {!isHoldingBaby && (
+          <BabyAvatar position={[0, 1.25, 0]} rotation={[-0.3, 0, 0]} scale={[0.9, 0.9, 0.9]} />
+        )}
       </group>
 
       {/* Real Porcelain Washbasin & Mirror Station (Left) */}
