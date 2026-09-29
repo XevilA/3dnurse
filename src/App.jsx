@@ -44,6 +44,7 @@ export default function App() {
       {/* ── 3D Canvas ── */}
       <Canvas
         shadows
+        gl={{ preserveDrawingBuffer: true, antialias: true }}
         camera={{ position: [0, 3, 8], fov: 55 }}
         style={{ background: 'linear-gradient(180deg, #dbeafe 0%, #f0fdf4 100%)' }}
       >

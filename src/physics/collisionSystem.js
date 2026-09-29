@@ -1,0 +1,476 @@
+/**
+ * Realistic Kinematic Physics & Collision System for 3D Nurse Learning Metaverse
+ *
+ * Implements:
+ * 1. Continuous Swept & Sliding Collision Resolution (Wall Sliding Physics)
+ * 2. Capsule / Cylinder Humanoid & Wheelchair Colliders
+ * 3. Accurate Room Boundary & Furniture AABB/Circle Colliders for all 11 rooms
+ * 4. Zero Tunneling through walls, desks, beds, cribs, or obstacles
+ * 5. Dynamic seat deactivation when seated on specific furniture
+ */
+
+// Player physical dimensions
+export const PLAYER_RADIUS = 0.42;       // Walking character collision radius in meters
+export const WHEELCHAIR_RADIUS = 0.58;   // Wheelchair driving collision radius in meters
+
+// Comprehensive Collider Registry for all rooms
+export const ROOM_COLLIDERS = {
+  // ── 1. Grand Hospital Lobby (24x24m) ──
+  lobby: {
+    bounds: { minX: -11.0, maxX: 11.0, minZ: -11.0, maxZ: 11.0 },
+    boxes: [
+      // Central Information & Nurse Reception Desk
+      { minX: -2.5, maxX: 2.5, minZ: -4.8, maxZ: -2.8, name: 'เคาน์เตอร์ต้อนรับส่วนกลาง' },
+      // Left Mother Care Portal Wall
+      { minX: -10.8, maxX: -6.2, minZ: -5.4, maxZ: -4.6, name: 'ซุ้มทางเข้าโซนมารดา' },
+      // Right Newborn Care Portal Wall
+      { minX: 6.2, maxX: 10.8, minZ: -5.4, maxZ: -4.6, name: 'ซุ้มทางเข้าโซนทารก' },
+      // Back Quiz Portal Wall
+      { minX: -2.8, maxX: 2.8, minZ: -11.0, maxZ: -9.2, name: 'ซุ้มทางเข้าห้องสอบ' },
+      // Left Hospital Lounge Velvet Sofa
+      { minX: -10.9, maxX: -8.7, minZ: -2.0, maxZ: 1.0, name: 'โซฟาพักผ่อนฝั่งซ้าย', seatId: 'lobby_sofa_left' },
+      // Right Hospital Lounge Velvet Sofa
+      { minX: 8.7, maxX: 10.9, minZ: -2.0, maxZ: 1.0, name: 'โซฟาพักผ่อนฝั่งขวา', seatId: 'lobby_sofa_right' },
+    ],
+    circles: [
+      // 4 Real Hospital Corner Trees
+      { x: -11.2, z: -10.8, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 1' },
+      { x: 11.2, z: -10.8, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 2' },
+      { x: -11.2, z: 9.8, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 3' },
+      { x: 11.2, z: 9.8, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 4' },
+      // Potted Plants
+      { x: -5.0, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ซ้าย' },
+      { x: 5.0, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ขวา' },
+      { x: -11.2, z: 4.5, radius: 0.6, name: 'ต้นไม้รอตรวจซ้าย' },
+      { x: 11.2, z: 4.5, radius: 0.6, name: 'ต้นไม้รอตรวจขวา' },
+      // Hospital Wheelchairs (unoccupied)
+      { x: -8.5, z: 4.5, radius: 0.65, name: 'รถเข็น 1', seatId: 'lobby_wheelchair_1' },
+      { x: 8.5, z: 4.5, radius: 0.65, name: 'รถเข็น 2', seatId: 'lobby_wheelchair_2' },
+    ]
+  },
+
+  // ── 2. Ward 101: Postpartum Recovery & Body Care (18x18m) ──
+  motherCare1: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Hospital Patient Bed
+      { minX: -5.3, maxX: -2.7, minZ: -5.4, maxZ: -2.6, name: 'เตียงพักฟื้นคุณแม่', seatId: 'room101_bed' },
+      // Bedside Nightstand
+      { minX: -6.7, maxX: -5.3, minZ: -4.7, maxZ: -3.3, name: 'โต๊ะข้างเตียง' },
+      // Newborn Bassinet / Crib
+      { minX: -2.5, maxX: -0.9, minZ: -4.8, maxZ: -3.2, name: 'เตียงนอนเด็กแรกเกิด' },
+      // Doctor Consultation Desk
+      { minX: 3.2, maxX: 5.8, minZ: -4.8, maxZ: -3.2, name: 'โต๊ะตรวจแพทย์' },
+      // Washbasin
+      { minX: -8.3, maxX: -6.7, minZ: 1.2, maxZ: 2.8, name: 'อ่างล้างมือปลอดเชื้อ' },
+      // Mobile Medical Cart
+      { minX: 3.7, maxX: 5.3, minZ: 1.2, maxZ: 2.8, name: 'รถเข็นยาและการพยาบาล' },
+    ],
+    circles: [
+      { x: -7.2, z: 1.5, radius: 0.65, name: 'รถเข็นผู้ป่วย', seatId: 'room101_wheelchair' },
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้ประจำห้อง' },
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้ปรับอากาศ' },
+      { x: 6.0, z: 2.8, radius: 0.45, name: 'ถังขยะติดเชื้อ' },
+    ]
+  },
+
+  // ── 3. Ward 102: Wound Care & Perineal Hygiene (18x18m) ──
+  motherCare2: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Examination Bed
+      { minX: -5.3, maxX: -2.7, minZ: -5.4, maxZ: -2.6, name: 'เตียงตรวจแผลคุณแม่', seatId: 'room102_bed' },
+      // Medicine & Sterile Dressing Cabinet
+      { minX: 7.0, maxX: 8.3, minZ: -2.4, maxZ: -0.6, name: 'ตู้ยาและเวชภัณฑ์ทำแผล' },
+      // Washbasin
+      { minX: -8.3, maxX: -6.7, minZ: -2.8, maxZ: -1.2, name: 'อ่างล้างมือ' },
+      // Mobile Medical Cart
+      { minX: 3.2, maxX: 4.8, minZ: 1.2, maxZ: 2.8, name: 'รถทำแผลปลอดเชื้อ' },
+      // Newborn Bassinet
+      { minX: -2.5, maxX: -0.9, minZ: -4.8, maxZ: -3.2, name: 'เตียงเด็ก' },
+    ],
+    circles: [
+      { x: -7.2, z: 1.8, radius: 0.65, name: 'รถเข็นผู้ป่วย', seatId: 'room102_wheelchair' },
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+      { x: 2.5, z: -3.2, radius: 0.45, name: 'ถังขยะสำลี' },
+    ]
+  },
+
+  // ── 4. Ward 103: Breastfeeding & Lactation Support (18x18m) ──
+  motherCare3: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Nursing Mother Rest Sofa
+      { minX: 6.5, maxX: 8.3, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนให้นม', seatId: 'room103_sofa' },
+      // Ergonomic Nursing Armchair
+      { minX: -4.8, maxX: -3.2, minZ: -4.8, maxZ: -3.2, name: 'เก้าอี้ให้นมบุตร', seatId: 'room103_nursing_chair' },
+      // Nightstand
+      { minX: -6.7, maxX: -5.3, minZ: -4.7, maxZ: -3.3, name: 'โต๊ะข้างเก้าอี้' },
+      // Baby Crib
+      { minX: 2.6, maxX: 4.4, minZ: -4.8, maxZ: -3.2, name: 'เตียงทารก' },
+      // Medical Cart
+      { minX: -4.8, maxX: -3.2, minZ: 1.2, maxZ: 2.8, name: 'รถเข็นอุปกรณ์ประคบอุ่น' },
+    ],
+    circles: [
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+      { x: -5.8, z: 2.5, radius: 0.45, name: 'ถังขยะ' },
+    ]
+  },
+
+  // ── 5. Ward 104: Emergency Care & Postpartum Complications (18x18m) ──
+  motherCare4: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Emergency Patient Bed with IV Stand
+      { minX: -5.3, maxX: -2.7, minZ: -5.4, maxZ: -2.6, name: 'เตียงฉุกเฉินผู้ป่วย', seatId: 'room104_bed' },
+      // Relative Velvet Sofa
+      { minX: 3.2, maxX: 5.2, minZ: 1.0, maxZ: 3.0, name: 'โซฟาญาติผู้ป่วย', seatId: 'room104_sofa' },
+      // Emergency Crash Cart & Cabinet
+      { minX: 7.0, maxX: 8.3, minZ: -2.4, maxZ: -0.6, name: 'ตู้ฉุกเฉิน' },
+      // Doctor Consultation Desk
+      { minX: 3.2, maxX: 5.8, minZ: -4.8, maxZ: -3.2, name: 'โต๊ะแพทย์' },
+      // Baby Crib
+      { minX: -2.5, maxX: -0.9, minZ: -4.8, maxZ: -3.2, name: 'เตียงทารก' },
+      // Infection Monitoring Cart
+      { minX: -4.8, maxX: -3.2, minZ: 1.2, maxZ: 2.8, name: 'รถตรวจอุณหภูมิ' },
+    ],
+    circles: [
+      { x: -7.2, z: 1.8, radius: 0.65, name: 'รถเข็นฉุกเฉิน', seatId: 'room104_wheelchair' },
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+      { x: 6.2, z: 3.2, radius: 0.45, name: 'ถังขยะติดเชื้อ' },
+    ]
+  },
+
+  // ── 6. Newborn Room 1: Infant Feeding Technique (18x18m) ──
+  newbornCare1: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      { minX: 6.5, maxX: 8.3, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนคุณแม่', seatId: 'newborn1_sofa' },
+      { minX: -4.3, maxX: -2.7, minZ: -4.3, maxZ: -2.7, name: 'เก้าอี้ให้นมบุตร', seatId: 'newborn1_nursing_chair' },
+      { minX: 2.6, maxX: 4.4, minZ: -4.3, maxZ: -2.7, name: 'เตียงเด็ก' },
+      { minX: -6.2, maxX: -4.8, minZ: -4.2, maxZ: -2.8, name: 'โต๊ะวางขวดนม' },
+    ],
+    circles: [
+      { x: 6.0, z: 3.2, radius: 0.55, name: 'ตะกร้าผ้าอ้อม' },
+      { x: -5.8, z: 3.5, radius: 0.45, name: 'ถังขยะ' },
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+    ]
+  },
+
+  // ── 7. Newborn Room 2: Infant Bathing & Skin Care (18x18m) ──
+  newbornCare2: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Central Ergonomic Baby Bathtub
+      { minX: -1.8, maxX: 1.8, minZ: -4.5, maxZ: -2.5, name: 'อ่างอาบน้ำทารก' },
+      // Washbasin Counter
+      { minX: -6.4, maxX: -4.6, minZ: -0.9, maxZ: 0.9, name: 'อ่างล้างมือ' },
+      // Baby Skincare & Towel Mobile Cart
+      { minX: 4.3, maxX: 6.1, minZ: 0.1, maxZ: 1.9, name: 'รถเข็นผ้าขนหนูและสบู่' },
+      // Baby Toiletries Cabinet
+      { minX: 7.0, maxX: 8.3, minZ: -3.4, maxZ: -1.6, name: 'ตู้เก็บผลิตภัณฑ์อาบน้ำ' },
+      // Laundry Hamper
+      { minX: 1.5, maxX: 2.9, minZ: -3.4, maxZ: -1.8, name: 'ตะกร้าผ้าเปียก' },
+    ],
+    circles: [
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
+      { x: -5.8, z: 2.5, radius: 0.45, name: 'ถังขยะ' },
+    ]
+  },
+
+  // ── 8. Newborn Room 3: Diaper Changing & Hygiene (18x18m) ──
+  newbornCare3: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Diaper Changing Dresser Counter
+      { minX: -1.6, maxX: 1.6, minZ: -4.4, maxZ: -2.6, name: 'เบาะเปลี่ยนผ้าอ้อม' },
+      // Washbasin
+      { minX: -6.4, maxX: -4.6, minZ: -0.9, maxZ: 0.9, name: 'อ่างทำความสะอาด' },
+      // Diaper & Cleanser Cart
+      { minX: 4.3, maxX: 6.1, minZ: 0.1, maxZ: 1.9, name: 'รถเข็นผ้าอ้อม' },
+      // Cabinet
+      { minX: 7.0, maxX: 8.3, minZ: -3.4, maxZ: -1.6, name: 'ตู้สำลีและทิชชู่เปียก' },
+      // Soiled Diaper Bin
+      { minX: -2.8, maxX: -1.6, minZ: -3.8, maxZ: -2.6, name: 'ถังผ้าอ้อมใช้แล้ว' },
+    ],
+    circles: [
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+    ]
+  },
+
+  // ── 9. Newborn Room 4: Umbilical Cord Care (18x18m) ──
+  newbornCare4: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Clinical Examination & Cord Care Table
+      { minX: -1.8, maxX: 1.8, minZ: -4.6, maxZ: -2.4, name: 'เตียงตรวจสายสะดือ' },
+      // Washbasin
+      { minX: -6.4, maxX: -4.6, minZ: -0.9, maxZ: 0.9, name: 'อ่างล้างมือสเตอร์ไรล์' },
+      // Alcohol 70% & Sterile Gauze Mobile Cart
+      { minX: 2.9, maxX: 4.7, minZ: -4.0, maxZ: -2.4, name: 'รถเข็นแอลกอฮอล์เช็ดสะดือ' },
+      // Sterile Supplies Cabinet
+      { minX: 7.0, maxX: 8.3, minZ: -3.4, maxZ: -1.6, name: 'ตู้เวชภัณฑ์สเตอร์ไรล์' },
+    ],
+    circles: [
+      { x: 2.5, z: -3.2, radius: 0.45, name: 'ถังขยะติดเชื้อ' },
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+    ]
+  },
+
+  // ── 10. Newborn Room 5: Safe Sleep & Nursery Environment (18x18m) ──
+  newbornCare5: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Safe Nursery Crib (Firm mattress, no loose pillows)
+      { minX: -1.6, maxX: 1.6, minZ: -4.5, maxZ: -2.5, name: 'เตียงนอนปลอดภัยทารก' },
+      // Nursing Chair
+      { minX: -5.8, maxX: -4.2, minZ: -0.8, maxZ: 0.8, name: 'เก้าอี้คุณแม่' },
+      // Bedside Table
+      { minX: -5.8, maxX: -4.2, minZ: 1.7, maxZ: 3.3, name: 'โต๊ะข้างเตียง' },
+      // Steel Shelves (Child safety locks)
+      { minX: 6.8, maxX: 8.3, minZ: -3.0, maxZ: -0.6, name: 'ชั้นวางของความปลอดภัย' },
+    ],
+    circles: [
+      { x: 6.0, z: 2.8, radius: 0.55, name: 'ตะกร้าผ้า' },
+      { x: -5.8, z: 3.2, radius: 0.45, name: 'ถังขยะ' },
+      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
+      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+    ]
+  },
+
+  // ── 11. Final Examination & Certification Room (Quiz Room) ──
+  quiz: {
+    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    boxes: [
+      // Examiner / Doctor Desk
+      { minX: -2.6, maxX: 2.6, minZ: -10.3, maxZ: -8.7, name: 'โต๊ะกรรมการสอบ' },
+      // Big Digital Exam Screen
+      { minX: -3.8, maxX: 3.8, minZ: -10.8, maxZ: -10.0, name: 'บอร์ดข้อสอบดิจิทัล' },
+      // Examinee Nursing Chair (where mother sits to take test)
+      { minX: -0.8, maxX: 0.8, minZ: -7.3, maxZ: -5.7, name: 'เก้าอี้สอบความรู้', seatId: 'quiz_exam_chair' },
+      // Baby Crib beside examinee
+      { minX: 1.5, maxX: 3.3, minZ: -7.3, maxZ: -5.7, name: 'เตียงทารกระหว่างสอบ' },
+      // Left Waiting Sofa
+      { minX: -9.8, maxX: -8.2, minZ: -1.6, maxZ: 1.6, name: 'โซฟารอสอบฝั่งซ้าย', seatId: 'quiz_sofa_left' },
+      // Right Waiting Sofa
+      { minX: 8.2, maxX: 9.8, minZ: -1.6, maxZ: 1.6, name: 'โซฟารอสอบฝั่งขวา', seatId: 'quiz_sofa_right' },
+      // Archive Cabinet
+      { minX: 7.2, maxX: 8.3, minZ: -5.8, maxZ: -4.2, name: 'ตู้เก็บประวัติและเกียรติบัตร' },
+    ],
+    circles: [
+      { x: -5.5, z: -9.0, radius: 0.6, name: 'ต้นไม้' },
+      { x: 5.5, z: -9.0, radius: 0.6, name: 'ต้นไม้' },
+    ]
+  }
+};
+
+/**
+ * Swept & Sliding Physics Collision Resolver
+ *
+ * Separately evaluates X and Z movement with substeps.
+ * When encountering an obstacle or boundary, cancels velocity along collision normal
+ * while smoothly sliding the player along the unobstructed tangential plane.
+ *
+ * @param {number} currentX - Current X position
+ * @param {number} currentZ - Current Z position
+ * @param {number} moveX - Desired movement vector X (normalized)
+ * @param {number} moveZ - Desired movement vector Z (normalized)
+ * @param {number} speed - Movement speed (m/s)
+ * @param {number} delta - Frame delta time (seconds)
+ * @param {string} roomName - Current room ID
+ * @param {object} options - { isSitting, seatedSeatId, isDrivingWheelchair }
+ * @returns {{ x: number, z: number, collided: boolean }} - New resolved position
+ */
+export function resolveMovement(
+  currentX,
+  currentZ,
+  moveX,
+  moveZ,
+  speed,
+  delta,
+  roomName = 'lobby',
+  options = {}
+) {
+  const roomData = ROOM_COLLIDERS[roomName] || ROOM_COLLIDERS['lobby'];
+  const radius = options.isDrivingWheelchair ? WHEELCHAIR_RADIUS : PLAYER_RADIUS;
+  const seatedSeatId = options.seatedSeatId || null;
+
+  // Filter out obstacles that the player is actively sitting on
+  const activeBoxes = (roomData.boxes || []).filter(
+    (b) => !b.seatId || b.seatId !== seatedSeatId
+  );
+  const activeCircles = (roomData.circles || []).filter(
+    (c) => !c.seatId || c.seatId !== seatedSeatId
+  );
+
+  const bounds = roomData.bounds || { minX: -11, maxX: 11, minZ: -11, maxZ: 11 };
+
+  // Calculate full intended displacement
+  const totalDx = moveX * speed * delta;
+  const totalDz = moveZ * speed * delta;
+  const totalDist = Math.sqrt(totalDx * totalDx + totalDz * totalDz);
+
+  if (totalDist === 0) {
+    return { x: currentX, z: currentZ, collided: false };
+  }
+
+  // Adaptive substepping for zero-tunneling high speed / low FPS stability
+  const maxStepDist = radius * 0.4;
+  const steps = Math.max(1, Math.ceil(totalDist / maxStepDist));
+  const subDx = totalDx / steps;
+  const subDz = totalDz / steps;
+
+  let px = currentX;
+  let pz = currentZ;
+  let anyCollision = false;
+
+  for (let s = 0; s < steps; s++) {
+    // ── Substep 1: Move X axis alone, resolve collisions (Slide along Z) ──
+    let candX = px + subDx;
+
+    // 1a. Room boundary clamp along X
+    if (candX - radius < bounds.minX) {
+      candX = bounds.minX + radius;
+      anyCollision = true;
+    } else if (candX + radius > bounds.maxX) {
+      candX = bounds.maxX - radius;
+      anyCollision = true;
+    }
+
+    // 1b. Check Box Colliders along X
+    for (const box of activeBoxes) {
+      // Expanded bounding box with player radius
+      const bMinX = box.minX - radius;
+      const bMaxX = box.maxX + radius;
+      const bMinZ = box.minZ - radius;
+      const bMaxZ = box.maxZ + radius;
+
+      // If current Z is within box range and candidate X penetrates
+      if (pz >= bMinZ && pz <= bMaxZ) {
+        if (candX > bMinX && candX < bMaxX) {
+          anyCollision = true;
+          // Push out to the closest side based on previous position
+          if (px <= bMinX) {
+            candX = bMinX;
+          } else if (px >= bMaxX) {
+            candX = bMaxX;
+          } else {
+            // Penetrating: push out to nearest edge
+            candX = (candX - bMinX < bMaxX - candX) ? bMinX : bMaxX;
+          }
+        }
+      }
+    }
+
+    // 1c. Check Circle Colliders along X
+    for (const circle of activeCircles) {
+      const dx = candX - circle.x;
+      const dz = pz - circle.z;
+      const minDist = radius + circle.radius;
+      if (dx * dx + dz * dz < minDist * minDist) {
+        anyCollision = true;
+        // Project candidate X outside circle at current Z
+        const underRad = minDist * minDist - dz * dz;
+        if (underRad > 0) {
+          const pushDist = Math.sqrt(underRad);
+          candX = px <= circle.x ? circle.x - pushDist : circle.x + pushDist;
+        }
+      }
+    }
+
+    px = candX;
+
+    // ── Substep 2: Move Z axis alone, resolve collisions (Slide along X) ──
+    let candZ = pz + subDz;
+
+    // 2a. Room boundary clamp along Z
+    if (candZ - radius < bounds.minZ) {
+      candZ = bounds.minZ + radius;
+      anyCollision = true;
+    } else if (candZ + radius > bounds.maxZ) {
+      candZ = bounds.maxZ - radius;
+      anyCollision = true;
+    }
+
+    // 2b. Check Box Colliders along Z
+    for (const box of activeBoxes) {
+      const bMinX = box.minX - radius;
+      const bMaxX = box.maxX + radius;
+      const bMinZ = box.minZ - radius;
+      const bMaxZ = box.maxZ + radius;
+
+      // If current X is within box range and candidate Z penetrates
+      if (px >= bMinX && px <= bMaxX) {
+        if (candZ > bMinZ && candZ < bMaxZ) {
+          anyCollision = true;
+          if (pz <= bMinZ) {
+            candZ = bMinZ;
+          } else if (pz >= bMaxZ) {
+            candZ = bMaxZ;
+          } else {
+            candZ = (candZ - bMinZ < bMaxZ - candZ) ? bMinZ : bMaxZ;
+          }
+        }
+      }
+    }
+
+    // 2c. Check Circle Colliders along Z
+    for (const circle of activeCircles) {
+      const dx = px - circle.x;
+      const dz = candZ - circle.z;
+      const minDist = radius + circle.radius;
+      if (dx * dx + dz * dz < minDist * minDist) {
+        anyCollision = true;
+        const underRad = minDist * minDist - dx * dx;
+        if (underRad > 0) {
+          const pushDist = Math.sqrt(underRad);
+          candZ = pz <= circle.z ? circle.z - pushDist : circle.z + pushDist;
+        }
+      }
+    }
+
+    pz = candZ;
+
+    // ── Substep 3: Corner radial push (prevents diagonal snagging) ──
+    for (const box of activeBoxes) {
+      // Find closest point on unexpanded box
+      const cx = Math.max(box.minX, Math.min(px, box.maxX));
+      const cz = Math.max(box.minZ, Math.min(pz, box.maxZ));
+      const distSq = (px - cx) * (px - cx) + (pz - cz) * (pz - cz);
+      if (distSq < radius * radius && distSq > 0.0001) {
+        anyCollision = true;
+        const d = Math.sqrt(distSq);
+        const overlap = radius - d;
+        px += ((px - cx) / d) * overlap;
+        pz += ((pz - cz) / d) * overlap;
+      }
+    }
+
+    for (const circle of activeCircles) {
+      const dx = px - circle.x;
+      const dz = pz - circle.z;
+      const distSq = dx * dx + dz * dz;
+      const minDist = radius + circle.radius;
+      if (distSq < minDist * minDist && distSq > 0.0001) {
+        anyCollision = true;
+        const d = Math.sqrt(distSq);
+        const overlap = minDist - d;
+        px += (dx / d) * overlap;
+        pz += (dz / d) * overlap;
+      }
+    }
+  }
+
+  return {
+    x: px,
+    z: pz,
+    collided: anyCollision,
+  };
+}

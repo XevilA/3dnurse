@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
 import BabyAvatar from '../avatars/BabyAvatar';
+import { resolveMovement, ROOM_COLLIDERS } from '../../physics/collisionSystem';
 
 /**
  * PlayerController — True GTA 3rd-Person Character Controller
@@ -68,6 +69,28 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   const cameraDistance = useRef(4.8);
   const isDragging = useRef(false);
   const previousMousePos = useRef({ x: 0, y: 0 });
+
+  // ── Sync Position when Switching Rooms or Teleporting ──
+  const [initX, initY, initZ] = initialPosition;
+  useEffect(() => {
+    pos.current.set(initX, initY, initZ);
+    characterRotationY.current = initialRotation;
+    targetRotationY.current = initialRotation;
+  }, [currentRoom, initX, initY, initZ, initialRotation]);
+
+  useEffect(() => {
+    const unsub = useStore.subscribe((state) => {
+      const curP = pos.current;
+      const targetP = state.playerPosition;
+      if (!targetP) return;
+      const distSq = (targetP[0] - curP.x) ** 2 + (targetP[2] - curP.z) ** 2;
+      // If position was changed externally by a large jump (teleport/reset)
+      if (distSq > 1.2) {
+        curP.set(targetP[0], targetP[1], targetP[2]);
+      }
+    });
+    return unsub;
+  }, []);
 
   // ── Mouse & Touch Camera Orbit Listeners ──
   useEffect(() => {
@@ -312,11 +335,18 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
           const moveZ = forwardZ * (-inputZ) + rightZ * inputX;
 
           const driveSpeed = 2.4; // Wheelchair glide speed
-          pos.current.x += moveX * driveSpeed * delta;
-          pos.current.z += moveZ * driveSpeed * delta;
-
-          pos.current.x = THREE.MathUtils.clamp(pos.current.x, -11.5, 11.5);
-          pos.current.z = THREE.MathUtils.clamp(pos.current.z, -11.5, 11.5);
+          const resolved = resolveMovement(
+            pos.current.x,
+            pos.current.z,
+            moveX,
+            moveZ,
+            driveSpeed,
+            delta,
+            currentRoom,
+            { isSitting: true, seatedSeatId: seatedTarget?.id, isDrivingWheelchair: true }
+          );
+          pos.current.x = resolved.x;
+          pos.current.z = resolved.z;
 
           targetRotationY.current = Math.atan2(moveX, moveZ);
         }
@@ -344,7 +374,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         setStamina(stamina + delta * 20);
       }
     } else {
-      // ── 3. Standing Walk & Sprint Movement ──
+      // ── 3. Standing Walk & Sprint Movement (Physics Collision with Wall Sliding) ──
       if (isMoving) {
         const inputLen = Math.sqrt(inputX * inputX + inputZ * inputZ);
         inputX /= inputLen;
@@ -359,11 +389,18 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         const moveZ = forwardZ * (-inputZ) + rightZ * inputX;
 
         const speed = isSprint ? 6.5 : 3.4;
-        pos.current.x += moveX * speed * delta;
-        pos.current.z += moveZ * speed * delta;
-
-        pos.current.x = THREE.MathUtils.clamp(pos.current.x, -11.5, 11.5);
-        pos.current.z = THREE.MathUtils.clamp(pos.current.z, -11.5, 11.5);
+        const resolved = resolveMovement(
+          pos.current.x,
+          pos.current.z,
+          moveX,
+          moveZ,
+          speed,
+          delta,
+          currentRoom,
+          { isSitting: false }
+        );
+        pos.current.x = resolved.x;
+        pos.current.z = resolved.z;
 
         targetRotationY.current = Math.atan2(moveX, moveZ);
 
@@ -426,9 +463,16 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
       const yaw = cameraYaw.current;
       const pitch = cameraPitch.current;
 
-      const camX = pos.current.x + dist * Math.sin(yaw) * Math.cos(pitch);
-      const camY = pos.current.y + (isSitting ? 0.95 : 1.35) + dist * Math.sin(pitch);
-      const camZ = pos.current.z + dist * Math.cos(yaw) * Math.cos(pitch);
+      const rawCamX = pos.current.x + dist * Math.sin(yaw) * Math.cos(pitch);
+      const rawCamY = pos.current.y + (isSitting ? 0.95 : 1.35) + dist * Math.sin(pitch);
+      const rawCamZ = pos.current.z + dist * Math.cos(yaw) * Math.cos(pitch);
+
+      // Smart Spring-Arm Camera Collision: Clamp camera inside room bounds so it never clips through walls
+      const roomBounds = ROOM_COLLIDERS[currentRoom]?.bounds || { minX: -11, maxX: 11, minZ: -11, maxZ: 11 };
+      const safeMargin = 0.5;
+      const camX = THREE.MathUtils.clamp(rawCamX, roomBounds.minX + safeMargin, roomBounds.maxX - safeMargin);
+      const camZ = THREE.MathUtils.clamp(rawCamZ, roomBounds.minZ + safeMargin, roomBounds.maxZ - safeMargin);
+      const camY = Math.max(0.6, Math.min(7.2, rawCamY));
 
       const desiredCamPos = new THREE.Vector3(camX, camY, camZ);
       camera.position.lerp(desiredCamPos, Math.min(1, delta * 12));
