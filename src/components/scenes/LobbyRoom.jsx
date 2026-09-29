@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
-import BabyAvatar from '../avatars/BabyAvatar';
 import PlayerController from '../player/PlayerController';
 import RealPlant from '../decorations/RealPlant';
 import RealTree from '../decorations/RealTree';
@@ -10,7 +9,6 @@ import FlowerVase from '../decorations/FlowerVase';
 import HospitalSofa from '../furniture/HospitalSofa';
 import HospitalWheelchair from '../furniture/HospitalWheelchair';
 import DoctorDesk from '../furniture/DoctorDesk';
-import BabyCrib from '../furniture/BabyCrib';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import Pillows from '../decorations/Pillows';
 import ExaminationLamp from '../decorations/ExaminationLamp';
@@ -20,8 +18,6 @@ import MedicineCabinet from '../furniture/MedicineCabinet';
 export default function LobbyRoom() {
   const setRoom = useStore((state) => state.setRoom);
   const learningProgress = useStore((state) => state.learningProgress);
-  const isHoldingBaby = useStore((state) => state.isHoldingBaby);
-  const setHoldingBaby = useStore((state) => state.setHoldingBaby);
   const globeRef = useRef();
 
   useFrame((_, delta) => {
@@ -462,38 +458,7 @@ export default function LobbyRoom() {
       <HospitalTrashBin position={[1.8, 0, -4.5]} scale={0.85} />
       <HospitalTrashBin position={[-10.2, 0, 2.5]} scale={0.85} />
 
-      {/* ── Real Transparent Acrylic Baby Crib / Bassinet with Baby (Welcome Center) ── */}
-      <group
-        position={[2.4, 0, 1.8]}
-        rotation={[0, -0.3, 0]}
-        onClick={() => setHoldingBaby(!isHoldingBaby)}
-      >
-        <BabyCrib position={[0, 0, 0]} scale={0.95}>
-          {!isHoldingBaby && (
-            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
-          )}
-        </BabyCrib>
-        <Html position={[0, 1.7, 0]} center distanceFactor={14}>
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setHoldingBaby(!isHoldingBaby);
-            }}
-            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xl transition transform hover:scale-105 active:scale-95"
-            style={{
-              background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
-              color: 'white',
-              border: '2px solid white',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-            }}
-          >
-            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล (คลิก / กด E)' : '👶 ลูกน้อยหลับอยู่ (คลิก / กด E เพื่ออุ้ม)'}
-          </div>
-        </Html>
-      </group>
-
-      {/* ── GTA 3rd-Person Player Character ── */}
+      {/* ── GTA 3rd/1st-Person Player Character ── */}
       <PlayerController initialPosition={[0, 0, 3]} />
     </group>
   );

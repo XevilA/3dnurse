@@ -27,6 +27,9 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   const virtualInput = useStore((s) => s.virtualInput);
   const isHoldingBaby = useStore((s) => s.isHoldingBaby);
   const setHoldingBaby = useStore((s) => s.setHoldingBaby);
+  const currentRoom = useStore((s) => s.currentRoom);
+  const cameraMode = useStore((s) => s.cameraMode);
+  const toggleCameraMode = useStore((s) => s.toggleCameraMode);
 
   // Animation state
   const [currentAnim, setCurrentAnim] = useState('idle');
@@ -158,9 +161,14 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         case 'ShiftRight':
           keys.current.sprint = true;
           break;
+        case 'KeyV':
+          toggleCameraMode();
+          break;
         case 'KeyE':
         case 'Space':
-          setHoldingBaby(!useStore.getState().isHoldingBaby);
+          if (useStore.getState().currentRoom !== 'lobby') {
+            setHoldingBaby(!useStore.getState().isHoldingBaby);
+          }
           break;
         default:
           break;
@@ -289,56 +297,71 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     // Sync to store
     setPlayerPosition([pos.current.x, pos.current.y, pos.current.z]);
 
-    // ── GTA 3rd-Person Camera Orbit & Follow ──
-    // Player target look point (chest/head height)
-    const targetPoint = new THREE.Vector3(
-      pos.current.x,
-      pos.current.y + 1.35,
-      pos.current.z
-    );
+    // ── Camera Update (1st Person vs 3rd Person GTA) ──
+    if (cameraMode === '1stPerson') {
+      // 1st Person: Camera is positioned at mother's eyes looking in direction of cameraYaw/Pitch
+      const eyeY = pos.current.y + 1.58;
+      const eyeX = pos.current.x + 0.15 * Math.sin(characterRotationY.current);
+      const eyeZ = pos.current.z + 0.15 * Math.cos(characterRotationY.current);
+      camera.position.set(eyeX, eyeY, eyeZ);
 
-    // Calculate spherical camera position relative to player
-    const dist = cameraDistance.current;
-    const yaw = cameraYaw.current;
-    const pitch = cameraPitch.current;
+      // Target point ahead in view direction
+      const targetLook = new THREE.Vector3(
+        eyeX - 5.0 * Math.sin(cameraYaw.current) * Math.cos(cameraPitch.current),
+        eyeY - 5.0 * Math.sin(cameraPitch.current),
+        eyeZ - 5.0 * Math.cos(cameraYaw.current) * Math.cos(cameraPitch.current)
+      );
+      camera.lookAt(targetLook);
+    } else {
+      // ── GTA 3rd-Person Camera Orbit & Follow ──
+      const targetPoint = new THREE.Vector3(
+        pos.current.x,
+        pos.current.y + 1.35,
+        pos.current.z
+      );
 
-    const camX = pos.current.x + dist * Math.sin(yaw) * Math.cos(pitch);
-    const camY = pos.current.y + 1.35 + dist * Math.sin(pitch);
-    const camZ = pos.current.z + dist * Math.cos(yaw) * Math.cos(pitch);
+      const dist = cameraDistance.current;
+      const yaw = cameraYaw.current;
+      const pitch = cameraPitch.current;
 
-    const desiredCamPos = new THREE.Vector3(camX, camY, camZ);
+      const camX = pos.current.x + dist * Math.sin(yaw) * Math.cos(pitch);
+      const camY = pos.current.y + 1.35 + dist * Math.sin(pitch);
+      const camZ = pos.current.z + dist * Math.cos(yaw) * Math.cos(pitch);
 
-    // Smooth camera damping
-    camera.position.lerp(desiredCamPos, Math.min(1, delta * 10));
-    camera.lookAt(targetPoint);
+      const desiredCamPos = new THREE.Vector3(camX, camY, camZ);
+      camera.position.lerp(desiredCamPos, Math.min(1, delta * 12));
+      camera.lookAt(targetPoint);
+    }
   });
 
   return (
     <group ref={playerRef} position={initialPosition}>
       {/* Avatar Group with Procedural Bobbing */}
-      <group ref={avatarGroupRef}>
+      <group ref={avatarGroupRef} visible={cameraMode === '3rdPerson'}>
         <MotherAvatar
           position={[0, 0, 0]}
           rotation={[0, 0, 0]}
           currentAnimation={currentAnim}
         />
-        {/* Real 3D Infant safely nestled in Mother's loving arms */}
-        {isHoldingBaby && (
-          <group position={[0.02, 1.05, 0.32]} rotation={[-0.25, 0.35, 0.15]}>
+        {/* Real 3D Infant nestled in Mother's loving arms (Only in Care Rooms) */}
+        {isHoldingBaby && currentRoom !== 'lobby' && (
+          <group position={[0.02, 1.12, 0.28]} rotation={[-0.2, 0.35, 0.15]}>
             <BabyAvatar
               position={[0, 0, 0]}
               rotation={[0, 0, 0]}
-              scale={[0.72, 0.72, 0.72]}
+              scale={[0.45, 0.45, 0.45]}
             />
           </group>
         )}
       </group>
 
-      {/* GTA Character Indicator Ring on Floor */}
-      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.45, 0.55, 32]} />
-        <meshBasicMaterial color="#00e5ff" transparent opacity={0.6} />
-      </mesh>
+      {/* GTA Character Indicator Ring on Floor (Visible in 3rd Person) */}
+      {cameraMode === '3rdPerson' && (
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.45, 0.55, 32]} />
+          <meshBasicMaterial color="#00e5ff" transparent opacity={0.6} />
+        </mesh>
+      )}
     </group>
   );
 }

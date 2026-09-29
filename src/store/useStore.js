@@ -26,6 +26,7 @@ const useStore = create((set, get) => ({
   // ── Avatar & Player state (GTA Style Controls) ──
   motherClothing: 'hospitalGown',  // 'hospitalGown' | 'casual' | 'sleepwear'
   isHoldingBaby: false,
+  cameraMode: '3rdPerson', // '3rdPerson' | '1stPerson'
   playerPosition: [0, 0, 2],
   playerAnimation: 'idle', // 'idle' | 'walk' | 'run' | 'agree'
   
@@ -47,10 +48,20 @@ const useStore = create((set, get) => ({
   successMessage: '',
 
   // ── Actions ──
-  setRoom: (room) => set({ currentRoom: room, currentStep: 0, playerPosition: [0, 0, 3] }),
+  setRoom: (room) => set({
+    currentRoom: room,
+    currentStep: 0,
+    isHoldingBaby: false,
+    playerPosition: [0, 0, 3],
+  }),
   setStep: (step) => set({ currentStep: step }),
   setClothing: (clothing) => set({ motherClothing: clothing }),
   setHoldingBaby: (val) => set({ isHoldingBaby: val }),
+  setCameraMode: (mode) => set({ cameraMode: mode }),
+  toggleCameraMode: () =>
+    set((state) => ({
+      cameraMode: state.cameraMode === '3rdPerson' ? '1stPerson' : '3rdPerson',
+    })),
   setPlayerPosition: (pos) => set({ playerPosition: pos }),
   setPlayerAnimation: (anim) => set({ playerAnimation: anim }),
 

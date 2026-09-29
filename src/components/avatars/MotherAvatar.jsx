@@ -1,17 +1,19 @@
 import React, { useRef, useImperativeHandle, forwardRef, useEffect, useMemo } from 'react';
 import { useGLTF, useAnimations, useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
+import { SkeletonUtils } from 'three-stdlib';
 import useStore from '../../store/useStore';
 import * as THREE from 'three';
 
 /**
  * MotherAvatar — Authentic Postpartum Asian Thai Mother Character
  *
- * Replaces any dark/incongruous avatars with a radiant, loving Asian Thai mother:
+ * Fully rigged with Mixamo animations using SkeletonUtils.clone to prevent T-pose:
+ * - Naturally idle, walking, and running animations
  * - Radiant fair Asian skin tone, warm smile, neat dark hair
  * - Authentic hospital maternity gown in soft medical pastel pink / baby blue
  * - Patient identification wristband & soft indoor hospital slippers
- * - Natural cradling arm pose holding baby when isHoldingBaby is active
+ * - Natural cradling arm pose when holding baby in clinical care rooms
  */
 const MotherAvatar = forwardRef(({
   currentAnimation = 'idle',
@@ -41,9 +43,9 @@ const MotherAvatar = forwardRef(({
     }
   }, [motherTexture]);
 
-  // Clone scene so multiple avatars in different rooms don't collide
+  // Clone scene with SkeletonUtils so SkinnedMesh bones are properly bound and animated (Fixes T-Pose!)
   const clonedScene = useMemo(() => {
-    const clone = michelleScene.clone(true);
+    const clone = SkeletonUtils.clone(michelleScene);
     clone.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
@@ -67,8 +69,8 @@ const MotherAvatar = forwardRef(({
     return clone;
   }, [michelleScene, motherTexture]);
 
-  // Bind xbot animations to cloned rig
-  const { actions } = useAnimations(xbotAnimations, group);
+  // Bind xbot animations directly to clonedScene's skeleton hierarchy
+  const { actions } = useAnimations(xbotAnimations, clonedScene);
 
   // Expose bone search & group for external attachment
   useImperativeHandle(ref, () => ({
