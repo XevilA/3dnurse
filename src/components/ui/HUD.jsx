@@ -96,78 +96,83 @@ export default function HUD() {
 
 
 
-      {/* ── Room Selection Modal (Clean Centered Modal, Zero Clutter) ── */}
+      {/* ── Original Dropdown Room Selection Popup ── */}
       {showNav && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto"
-          onClick={() => setShowNav(false)}
-        >
+        <>
+          {/* Backdrop (click anywhere outside to close) */}
           <div
-            className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-blue-200 overflow-hidden"
+            className="fixed inset-0 z-30 pointer-events-auto"
+            onClick={() => setShowNav(false)}
+          />
+
+          <div
+            className="absolute top-12 right-2 sm:right-4 z-40 w-80 sm:w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 overflow-hidden pointer-events-auto transition-all"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl">🏥</span>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🗺️</span>
                 <div>
-                  <h2 className="text-base font-bold text-blue-950">แผนผังห้องเรียนรู้ทั้งหมด</h2>
-                  <p className="text-xs text-blue-700">เลือกห้องปฏิบัติการที่คุณต้องการเข้าเรียนรู้ได้ทันที</p>
+                  <h2 className="text-xs sm:text-sm font-bold text-blue-950">เลือกห้องเรียนรู้ (10 ห้อง)</h2>
+                  <p className="text-[10px] text-blue-700">คลิกเพื่อเข้าสู่ห้องเรียนรู้ได้ทันที</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowNav(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200/80 hover:bg-gray-300 text-gray-700 font-bold text-sm transition"
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-200/80 hover:bg-gray-300 text-gray-700 font-bold text-xs transition cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 max-h-[75vh] overflow-y-auto space-y-5">
+            {/* Content List */}
+            <div className="p-3 max-h-[75vh] overflow-y-auto space-y-3">
               {/* Lobby Button */}
               <button
                 type="button"
                 onClick={() => { setRoom('lobby'); setShowNav(false); }}
-                className={`w-full text-left p-3 rounded-2xl flex items-center gap-3 transition border ${
+                className={`w-full text-left p-2.5 rounded-xl flex items-center gap-2.5 transition border ${
                   currentRoom === 'lobby'
-                    ? 'bg-blue-100 border-blue-300 font-bold text-blue-900'
+                    ? 'bg-blue-100 border-blue-300 font-bold text-blue-900 shadow-sm'
                     : 'bg-gray-50 hover:bg-blue-50/70 border-gray-200 text-gray-800'
                 }`}
               >
-                <span className="text-2xl">🌐</span>
+                <span className="text-xl">🌐</span>
                 <div className="flex-1">
-                  <div className="text-sm font-bold text-blue-900">ห้องต้อนรับ (Metaverse Grand Lobby)</div>
-                  <div className="text-xs text-gray-500">ศูนย์รวมการเรียนรู้ สำรวจห้องโถงโรงพยาบาลเสมือนจริง</div>
+                  <div className="text-xs font-bold text-blue-900">ห้องต้อนรับ (Grand Lobby)</div>
+                  <div className="text-[10px] text-gray-500">เดินสำรวจซุ้มประตูเข้าห้องเรียนรู้ทั้ง 10 ห้อง</div>
                 </div>
-                {currentRoom === 'lobby' && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-600 text-white">ห้องปัจจุบัน</span>}
+                {currentRoom === 'lobby' && <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-600 text-white font-bold">ปัจจุบัน</span>}
               </button>
 
               {/* Mother Care Zone */}
               <div>
-                <div className="flex items-center gap-2 mb-2.5">
-                  <span className="text-lg">💗</span>
-                  <span className="text-xs font-bold text-pink-700 uppercase tracking-wider">
-                    โซนการดูแลตนเองของมารดา (4 ห้อง)
+                <div className="flex items-center gap-1.5 mb-1.5 px-1">
+                  <span className="text-sm">💗</span>
+                  <span className="text-[11px] font-bold text-pink-700 uppercase tracking-wide">
+                    โซนดูแลตนเองของมารดา (4 ห้อง)
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="space-y-1.5">
                   {MOTHER_ROOMS.map((room) => (
                     <button
                       key={room.key}
                       type="button"
                       onClick={() => { setRoom(room.key); setShowNav(false); }}
-                      className={`text-left p-3 rounded-xl flex items-center gap-3 border transition transform hover:scale-[1.02] active:scale-98 ${
+                      className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
                         currentRoom === room.key
                           ? 'bg-pink-100 border-pink-400 font-bold text-pink-900 shadow-sm'
-                          : 'bg-pink-50/70 hover:bg-pink-100/80 border-pink-200 text-gray-800'
+                          : 'bg-pink-50/60 hover:bg-pink-100/70 border-pink-100 text-gray-800'
                       }`}
                     >
-                      <span className="text-xl flex-shrink-0">{room.icon}</span>
-                      <span className="text-xs font-semibold">{room.label}</span>
-                      {learningProgress[room.key] && (
-                        <span className="ml-auto text-emerald-600 text-sm font-bold">✅</span>
+                      <span className="text-base flex-shrink-0">{room.icon}</span>
+                      <span className="text-xs font-medium flex-1">{room.label}</span>
+                      {learningProgress[room.key] ? (
+                        <span className="text-emerald-600 text-xs font-bold">✅ ผ่านแล้ว</span>
+                      ) : (
+                        <span className="text-[10px] text-pink-400">เข้าห้อง ➜</span>
                       )}
                     </button>
                   ))}
@@ -176,28 +181,30 @@ export default function HUD() {
 
               {/* Newborn Care Zone */}
               <div>
-                <div className="flex items-center gap-2 mb-2.5">
-                  <span className="text-lg">👶</span>
-                  <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">
-                    โซนการดูแลทารกแรกเกิด (5 ห้อง)
+                <div className="flex items-center gap-1.5 mb-1.5 px-1">
+                  <span className="text-sm">👶</span>
+                  <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wide">
+                    โซนดูแลทารกแรกเกิด (5 ห้อง)
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="space-y-1.5">
                   {NEWBORN_ROOMS.map((room) => (
                     <button
                       key={room.key}
                       type="button"
                       onClick={() => { setRoom(room.key); setShowNav(false); }}
-                      className={`text-left p-3 rounded-xl flex items-center gap-3 border transition transform hover:scale-[1.02] active:scale-98 ${
+                      className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
                         currentRoom === room.key
                           ? 'bg-blue-100 border-blue-400 font-bold text-blue-900 shadow-sm'
-                          : 'bg-blue-50/70 hover:bg-blue-100/80 border-blue-200 text-gray-800'
+                          : 'bg-blue-50/60 hover:bg-blue-100/70 border-blue-100 text-gray-800'
                       }`}
                     >
-                      <span className="text-xl flex-shrink-0">{room.icon}</span>
-                      <span className="text-xs font-semibold">{room.label}</span>
-                      {learningProgress[room.key] && (
-                        <span className="ml-auto text-emerald-600 text-sm font-bold">✅</span>
+                      <span className="text-base flex-shrink-0">{room.icon}</span>
+                      <span className="text-xs font-medium flex-1">{room.label}</span>
+                      {learningProgress[room.key] ? (
+                        <span className="text-emerald-600 text-xs font-bold">✅ ผ่านแล้ว</span>
+                      ) : (
+                        <span className="text-[10px] text-blue-400">เข้าห้อง ➜</span>
                       )}
                     </button>
                   ))}
@@ -209,23 +216,23 @@ export default function HUD() {
                 <button
                   type="button"
                   onClick={() => { setRoom('quiz'); setShowNav(false); }}
-                  className={`w-full text-left p-3.5 rounded-2xl flex items-center gap-3 border transition transform hover:scale-[1.01] active:scale-98 ${
+                  className={`w-full text-left p-2.5 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
                     currentRoom === 'quiz'
-                      ? 'bg-purple-100 border-purple-400 text-purple-950 font-bold'
-                      : 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold shadow-md hover:from-purple-600 hover:to-indigo-700'
+                      ? 'bg-purple-100 border-purple-400 text-purple-950 font-bold shadow-sm'
+                      : 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium shadow hover:from-purple-600 hover:to-indigo-700'
                   }`}
                 >
-                  <span className="text-2xl flex-shrink-0">🎓</span>
+                  <span className="text-xl flex-shrink-0">🎓</span>
                   <div className="flex-1">
-                    <div className="text-sm font-bold">ห้องแบบทดสอบหลังเรียน (Quiz)</div>
-                    <div className="text-xs opacity-90">ประเมินความรู้หลังเรียน 10 ข้อ (เกณฑ์ผ่าน ≥ 80%)</div>
+                    <div className="text-xs font-bold">ห้องแบบทดสอบหลังเรียน (Quiz)</div>
+                    <div className="text-[10px] opacity-90">ประเมินความรู้ 10 ข้อ (ผ่าน ≥ 80%)</div>
                   </div>
-                  <span className="text-xs bg-white/20 px-3 py-1 rounded-full font-bold">เข้าทำแบบทดสอบ ➜</span>
+                  <span className="text-[10px] bg-white/20 px-2.5 py-0.5 rounded-full font-bold">เข้าทำ ➜</span>
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* ── Bottom motto ── */}

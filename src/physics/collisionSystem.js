@@ -15,22 +15,16 @@ export const WHEELCHAIR_RADIUS = 0.58;   // Wheelchair driving collision radius 
 
 // Comprehensive Collider Registry for all rooms
 export const ROOM_COLLIDERS = {
-  // ── 1. Grand Hospital Lobby (24x24m) ──
+  // ── 1. Grand Hospital Lobby (28x28m, Walkable [-11, 11]) ──
   lobby: {
     bounds: { minX: -11.0, maxX: 11.0, minZ: -11.0, maxZ: 11.0 },
     boxes: [
       // Central Information & Nurse Reception Desk
-      { minX: -2.5, maxX: 2.5, minZ: -4.8, maxZ: -2.8, name: 'เคาน์เตอร์ต้อนรับส่วนกลาง' },
-      // Left Mother Care Portal Wall
-      { minX: -10.8, maxX: -6.2, minZ: -5.4, maxZ: -4.6, name: 'ซุ้มทางเข้าโซนมารดา' },
-      // Right Newborn Care Portal Wall
-      { minX: 6.2, maxX: 10.8, minZ: -5.4, maxZ: -4.6, name: 'ซุ้มทางเข้าโซนทารก' },
-      // Back Quiz Portal Wall
-      { minX: -2.8, maxX: 2.8, minZ: -11.0, maxZ: -9.2, name: 'ซุ้มทางเข้าห้องสอบ' },
-      // Left Hospital Lounge Velvet Sofa
-      { minX: -10.9, maxX: -8.7, minZ: -2.0, maxZ: 1.0, name: 'โซฟาพักผ่อนฝั่งซ้าย', seatId: 'lobby_sofa_left' },
-      // Right Hospital Lounge Velvet Sofa
-      { minX: 8.7, maxX: 10.9, minZ: -2.0, maxZ: 1.0, name: 'โซฟาพักผ่อนฝั่งขวา', seatId: 'lobby_sofa_right' },
+      { minX: -2.3, maxX: 2.3, minZ: -5.2, maxZ: -3.2, name: 'เคาน์เตอร์ต้อนรับส่วนกลาง' },
+      // Left Hospital Lounge Velvet Sofa (facing center plaza)
+      { minX: -7.6, maxX: -5.4, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนฝั่งซ้าย', seatId: 'lobby_sofa_left' },
+      // Right Hospital Lounge Velvet Sofa (facing center plaza)
+      { minX: 5.4, maxX: 7.6, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนฝั่งขวา', seatId: 'lobby_sofa_right' },
     ],
     circles: [
       // 4 Real Hospital Corner Trees
@@ -41,11 +35,9 @@ export const ROOM_COLLIDERS = {
       // Potted Plants
       { x: -5.0, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ซ้าย' },
       { x: 5.0, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ขวา' },
-      { x: -11.2, z: 4.5, radius: 0.6, name: 'ต้นไม้รอตรวจซ้าย' },
-      { x: 11.2, z: 4.5, radius: 0.6, name: 'ต้นไม้รอตรวจขวา' },
       // Hospital Wheelchairs (unoccupied)
-      { x: -8.5, z: 4.5, radius: 0.65, name: 'รถเข็น 1', seatId: 'lobby_wheelchair_1' },
-      { x: 8.5, z: 4.5, radius: 0.65, name: 'รถเข็น 2', seatId: 'lobby_wheelchair_2' },
+      { x: -4.5, z: 4.5, radius: 0.65, name: 'รถเข็น 1', seatId: 'lobby_wheelchair_1' },
+      { x: 4.5, z: 4.5, radius: 0.65, name: 'รถเข็น 2', seatId: 'lobby_wheelchair_2' },
     ]
   },
 
