@@ -28,7 +28,7 @@ export default function HUD() {
   return (
     <>
       {/* ── Top bar ── */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2"
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-2 pointer-events-auto"
         style={{ background: 'linear-gradient(180deg, rgba(173,216,255,0.95) 0%, rgba(173,216,255,0) 100%)' }}>
 
         {/* Title */}
@@ -42,8 +42,20 @@ export default function HUD() {
           </div>
         </div>
 
-        {/* Progress */}
-        <div className="flex items-center gap-3">
+        {/* Center: Quick Room Trigger Button */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowNav(true)}
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-lg transition transform hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <span className="text-sm">🚪</span>
+            <span>เลือกห้องเรียนรู้ (10 ห้อง)</span>
+          </button>
+        </div>
+
+        {/* Progress & Menu */}
+        <div className="flex items-center gap-2">
           <div className="bg-white/90 rounded-full px-3 py-1 text-xs font-medium text-blue-800 shadow">
             📚 {completedCount}/{totalModules} บทเรียน
           </div>
@@ -56,132 +68,150 @@ export default function HUD() {
         </div>
       </div>
 
-      {/* ── Lobby Quick Room Selector Bar (Always visible in Lobby) ── */}
+      {/* ── Lobby Quick Floating Action Button (Only in Lobby, Non-intrusive) ── */}
       {currentRoom === 'lobby' && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-20 w-[94%] max-w-4xl bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 p-2.5 pointer-events-auto">
-          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-gray-100">
-            <div className="flex items-center gap-2">
-              <span className="text-base">🚪</span>
-              <span className="text-xs font-bold text-blue-950">เลือกเข้าสู่ห้องเรียนรู้ (แตะเข้าห้องได้ทันที)</span>
-            </div>
-            <span className="text-[11px] text-gray-500 font-medium hidden sm:inline">
-              มีทั้งหมด 10 ห้องปฏิบัติการจริง
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5 text-xs">
-            {/* Mother Care Rooms */}
-            {MOTHER_ROOMS.map((r) => (
-              <button
-                key={r.key}
-                type="button"
-                onClick={() => setRoom(r.key)}
-                className="flex items-center gap-1.5 p-2 rounded-xl bg-pink-50/90 hover:bg-pink-100 border border-pink-200 text-pink-900 transition transform hover:scale-[1.02] active:scale-95 text-left font-medium shadow-sm cursor-pointer"
-              >
-                <span className="text-base flex-shrink-0">{r.icon}</span>
-                <span className="truncate text-[11px]">{r.label}</span>
-                {learningProgress[r.key] && <span className="ml-auto text-emerald-600 text-xs">✅</span>}
-              </button>
-            ))}
-
-            {/* Newborn Care Rooms */}
-            {NEWBORN_ROOMS.map((r) => (
-              <button
-                key={r.key}
-                type="button"
-                onClick={() => setRoom(r.key)}
-                className="flex items-center gap-1.5 p-2 rounded-xl bg-blue-50/90 hover:bg-blue-100 border border-blue-200 text-blue-900 transition transform hover:scale-[1.02] active:scale-95 text-left font-medium shadow-sm cursor-pointer"
-              >
-                <span className="text-base flex-shrink-0">{r.icon}</span>
-                <span className="truncate text-[11px]">{r.label}</span>
-                {learningProgress[r.key] && <span className="ml-auto text-emerald-600 text-xs">✅</span>}
-              </button>
-            ))}
-
-            {/* Quiz Room */}
-            <button
-              type="button"
-              onClick={() => setRoom('quiz')}
-              className="col-span-2 sm:col-span-3 md:col-span-5 lg:col-span-1 flex items-center justify-center gap-1.5 p-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold transition transform hover:scale-[1.02] active:scale-95 shadow-md cursor-pointer"
-            >
-              <span className="text-base">🎓</span>
-              <span className="text-[11px]">แบบทดสอบหลังเรียน</span>
-            </button>
-          </div>
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+          <button
+            type="button"
+            onClick={() => setShowNav(true)}
+            className="flex items-center gap-2.5 px-6 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-2xl border-2 border-white/90 transition transform hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <span className="text-lg">🚪</span>
+            <span>เลือกเข้าห้องเรียนรู้ (10 ห้อง)</span>
+            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">➜</span>
+          </button>
         </div>
       )}
 
-      {/* ── Navigation Panel ── */}
+      {/* ── Room Selection Modal (Clean Centered Modal, Zero Clutter) ── */}
       {showNav && (
-        <div className="absolute top-12 right-2 z-20 w-80 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-100 overflow-hidden">
-
-          {/* Lobby Button */}
-          <button
-            onClick={() => { setRoom('lobby'); setShowNav(false); }}
-            className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-blue-50 transition border-b border-blue-50
-              ${currentRoom === 'lobby' ? 'bg-blue-100 font-bold' : ''}`}
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto"
+          onClick={() => setShowNav(false)}
+        >
+          <div
+            className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-blue-200 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-xl">🌐</span>
-            <div>
-              <div className="text-sm font-semibold text-blue-900">ห้องต้อนรับ</div>
-              <div className="text-xs text-gray-500">แนะนำการใช้งาน Metaverse</div>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">🏥</span>
+                <div>
+                  <h2 className="text-base font-bold text-blue-950">แผนผังห้องเรียนรู้ทั้งหมด</h2>
+                  <p className="text-xs text-blue-700">เลือกห้องปฏิบัติการที่คุณต้องการเข้าเรียนรู้ได้ทันที</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNav(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200/80 hover:bg-gray-300 text-gray-700 font-bold text-sm transition"
+              >
+                ✕
+              </button>
             </div>
-          </button>
 
-          {/* Mother Care Zone */}
-          <div className="px-3 pt-3 pb-1">
-            <div className="text-xs font-bold text-pink-600 uppercase tracking-wide">
-              💗 โซนดูแลตนเองของมารดา
+            {/* Modal Content */}
+            <div className="p-6 max-h-[75vh] overflow-y-auto space-y-5">
+              {/* Lobby Button */}
+              <button
+                type="button"
+                onClick={() => { setRoom('lobby'); setShowNav(false); }}
+                className={`w-full text-left p-3 rounded-2xl flex items-center gap-3 transition border ${
+                  currentRoom === 'lobby'
+                    ? 'bg-blue-100 border-blue-300 font-bold text-blue-900'
+                    : 'bg-gray-50 hover:bg-blue-50/70 border-gray-200 text-gray-800'
+                }`}
+              >
+                <span className="text-2xl">🌐</span>
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-blue-900">ห้องต้อนรับ (Metaverse Grand Lobby)</div>
+                  <div className="text-xs text-gray-500">ศูนย์รวมการเรียนรู้ สำรวจห้องโถงโรงพยาบาลเสมือนจริง</div>
+                </div>
+                {currentRoom === 'lobby' && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-600 text-white">ห้องปัจจุบัน</span>}
+              </button>
+
+              {/* Mother Care Zone */}
+              <div>
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="text-lg">💗</span>
+                  <span className="text-xs font-bold text-pink-700 uppercase tracking-wider">
+                    โซนการดูแลตนเองของมารดา (4 ห้อง)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {MOTHER_ROOMS.map((room) => (
+                    <button
+                      key={room.key}
+                      type="button"
+                      onClick={() => { setRoom(room.key); setShowNav(false); }}
+                      className={`text-left p-3 rounded-xl flex items-center gap-3 border transition transform hover:scale-[1.02] active:scale-98 ${
+                        currentRoom === room.key
+                          ? 'bg-pink-100 border-pink-400 font-bold text-pink-900 shadow-sm'
+                          : 'bg-pink-50/70 hover:bg-pink-100/80 border-pink-200 text-gray-800'
+                      }`}
+                    >
+                      <span className="text-xl flex-shrink-0">{room.icon}</span>
+                      <span className="text-xs font-semibold">{room.label}</span>
+                      {learningProgress[room.key] && (
+                        <span className="ml-auto text-emerald-600 text-sm font-bold">✅</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Newborn Care Zone */}
+              <div>
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="text-lg">👶</span>
+                  <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    โซนการดูแลทารกแรกเกิด (5 ห้อง)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {NEWBORN_ROOMS.map((room) => (
+                    <button
+                      key={room.key}
+                      type="button"
+                      onClick={() => { setRoom(room.key); setShowNav(false); }}
+                      className={`text-left p-3 rounded-xl flex items-center gap-3 border transition transform hover:scale-[1.02] active:scale-98 ${
+                        currentRoom === room.key
+                          ? 'bg-blue-100 border-blue-400 font-bold text-blue-900 shadow-sm'
+                          : 'bg-blue-50/70 hover:bg-blue-100/80 border-blue-200 text-gray-800'
+                      }`}
+                    >
+                      <span className="text-xl flex-shrink-0">{room.icon}</span>
+                      <span className="text-xs font-semibold">{room.label}</span>
+                      {learningProgress[room.key] && (
+                        <span className="ml-auto text-emerald-600 text-sm font-bold">✅</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quiz Room */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => { setRoom('quiz'); setShowNav(false); }}
+                  className={`w-full text-left p-3.5 rounded-2xl flex items-center gap-3 border transition transform hover:scale-[1.01] active:scale-98 ${
+                    currentRoom === 'quiz'
+                      ? 'bg-purple-100 border-purple-400 text-purple-950 font-bold'
+                      : 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold shadow-md hover:from-purple-600 hover:to-indigo-700'
+                  }`}
+                >
+                  <span className="text-2xl flex-shrink-0">🎓</span>
+                  <div className="flex-1">
+                    <div className="text-sm font-bold">ห้องแบบทดสอบหลังเรียน (Quiz)</div>
+                    <div className="text-xs opacity-90">ประเมินความรู้หลังเรียน 10 ข้อ (เกณฑ์ผ่าน ≥ 80%)</div>
+                  </div>
+                  <span className="text-xs bg-white/20 px-3 py-1 rounded-full font-bold">เข้าทำแบบทดสอบ ➜</span>
+                </button>
+              </div>
             </div>
           </div>
-          {MOTHER_ROOMS.map((room) => (
-            <button
-              key={room.key}
-              onClick={() => { setRoom(room.key); setShowNav(false); }}
-              className={`w-full text-left px-4 py-2 flex items-center gap-3 hover:bg-pink-50 transition
-                ${currentRoom === room.key ? 'bg-pink-100 font-bold' : ''}`}
-            >
-              <span className="text-lg">{room.icon}</span>
-              <span className="text-sm text-gray-800">{room.label}</span>
-              {learningProgress[room.key] && (
-                <span className="ml-auto text-green-500 text-sm">✅</span>
-              )}
-            </button>
-          ))}
-
-          {/* Newborn Care Zone */}
-          <div className="px-3 pt-3 pb-1 border-t border-blue-50">
-            <div className="text-xs font-bold text-blue-600 uppercase tracking-wide">
-              👶 โซนดูแลทารกแรกเกิด
-            </div>
-          </div>
-          {NEWBORN_ROOMS.map((room) => (
-            <button
-              key={room.key}
-              onClick={() => { setRoom(room.key); setShowNav(false); }}
-              className={`w-full text-left px-4 py-2 flex items-center gap-3 hover:bg-blue-50 transition
-                ${currentRoom === room.key ? 'bg-blue-100 font-bold' : ''}`}
-            >
-              <span className="text-lg">{room.icon}</span>
-              <span className="text-sm text-gray-800">{room.label}</span>
-              {learningProgress[room.key] && (
-                <span className="ml-auto text-green-500 text-sm">✅</span>
-              )}
-            </button>
-          ))}
-
-          {/* Quiz */}
-          <button
-            onClick={() => { setRoom('quiz'); setShowNav(false); }}
-            className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-purple-50 transition border-t border-blue-100
-              ${currentRoom === 'quiz' ? 'bg-purple-100 font-bold' : ''}`}
-          >
-            <span className="text-xl">🎓</span>
-            <div>
-              <div className="text-sm font-semibold text-purple-900">ห้องแบบทดสอบหลังเรียน</div>
-              <div className="text-xs text-gray-500">ประเมินความรู้</div>
-            </div>
-          </button>
         </div>
       )}
 

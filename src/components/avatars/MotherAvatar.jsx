@@ -65,6 +65,11 @@ const MotherAvatar = forwardRef(({
       if (child.name) {
         child.name = child.name.replace(/^mixamorig:?/, '');
       }
+      // Fix upright orientation: michelle.glb Character root node has rotation.x = Math.PI / 2 (+90 deg)
+      // which caused the character to lie flat on the floor when playing animations.
+      if (child.name === 'Character') {
+        child.rotation.x = 0;
+      }
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
