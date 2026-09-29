@@ -8,6 +8,7 @@ import RealTree from '../decorations/RealTree';
 import FlowerVase from '../decorations/FlowerVase';
 import HospitalSofa from '../furniture/HospitalSofa';
 import HospitalWheelchair from '../furniture/HospitalWheelchair';
+import InteractiveSeat from '../furniture/InteractiveSeat';
 import DoctorDesk from '../furniture/DoctorDesk';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import Pillows from '../decorations/Pillows';
@@ -482,18 +483,54 @@ export default function LobbyRoom() {
       <RealPlant type="succulent" position={[11.5, 0, 4.5]} scale={1.25} />
 
       {/* Real 3D Hospital Lounge Sofas (Waiting Areas with Soft Cushions) */}
-      <group position={[-11.2, 0, -0.5]} rotation={[0, Math.PI / 2, 0]}>
+      <InteractiveSeat
+        id="lobby_sofa_left"
+        name="โซฟาพักผ่อนฝั่งซ้าย"
+        type="sofa"
+        position={[-9.8, 0, -0.5]}
+        rotation={[0, Math.PI / 2, 0]}
+        seatOffset={[0, 0.42, 0.15]}
+      >
         <HospitalSofa position={[0, 0, 0]} scale={1.15} />
         <Pillows position={[0.2, 0.45, 0]} scale={0.85} />
-      </group>
-      <group position={[11.2, 0, -0.5]} rotation={[0, -Math.PI / 2, 0]}>
+      </InteractiveSeat>
+
+      <InteractiveSeat
+        id="lobby_sofa_right"
+        name="โซฟาพักผ่อนฝั่งขวา"
+        type="sofa"
+        position={[9.8, 0, -0.5]}
+        rotation={[0, -Math.PI / 2, 0]}
+        seatOffset={[0, 0.42, 0.15]}
+      >
         <HospitalSofa position={[0, 0, 0]} scale={1.15} />
         <Pillows position={[-0.2, 0.45, 0]} scale={0.85} />
-      </group>
+      </InteractiveSeat>
 
-      {/* Patient Mobility Bay: 2 Real Hospital Wheelchairs */}
-      <HospitalWheelchair position={[-8.5, 0, 4.5]} rotation={[0, 0.4, 0]} scale={1.15} />
-      <HospitalWheelchair position={[-7.2, 0, 5.2]} rotation={[0, 0.6, 0]} scale={1.15} />
+      {/* Patient Mobility Bay: 2 Real Hospital Wheelchairs (Drivable!) */}
+      <InteractiveSeat
+        id="lobby_wheelchair_1"
+        name="รถเข็นโรงพยาบาล คันที่ 1"
+        type="wheelchair"
+        position={[-8.5, 0, 4.5]}
+        rotation={[0, 0.4, 0]}
+        seatOffset={[0, 0.46, 0.05]}
+        isDrivable={true}
+      >
+        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+      </InteractiveSeat>
+
+      <InteractiveSeat
+        id="lobby_wheelchair_2"
+        name="รถเข็นโรงพยาบาล คันที่ 2"
+        type="wheelchair"
+        position={[-7.2, 0, 5.2]}
+        rotation={[0, 0.6, 0]}
+        seatOffset={[0, 0.46, 0.05]}
+        isDrivable={true}
+      >
+        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+      </InteractiveSeat>
 
       {/* Nurse Information & Triage Desk with Fresh Flowers & Examination Lamp */}
       <DoctorDesk position={[0, 0, -4.2]} rotation={[0, 0, 0]} scale={1.05} />

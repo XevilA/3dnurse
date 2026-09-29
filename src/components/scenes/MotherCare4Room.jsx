@@ -11,6 +11,7 @@ import FlowerVase from '../decorations/FlowerVase';
 import HospitalWheelchair from '../furniture/HospitalWheelchair';
 import MedicineCabinet from '../furniture/MedicineCabinet';
 import HospitalSofa from '../furniture/HospitalSofa';
+import InteractiveSeat from '../furniture/InteractiveSeat';
 import Pillows from '../decorations/Pillows';
 import ExaminationLamp from '../decorations/ExaminationLamp';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
@@ -62,8 +63,18 @@ export default function MotherCare4Room() {
       <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
       <RealPlant type="house" position={[-7.5, 0, 6.5]} scale={0.9} />
 
-      {/* Emergency Transport Wheelchair right beside the bed */}
-      <HospitalWheelchair position={[-7.2, 0, 1.8]} rotation={[0, Math.PI / 4, 0]} scale={1.15} />
+      {/* Emergency Transport Wheelchair right beside the bed (Drivable!) */}
+      <InteractiveSeat
+        id="room104_wheelchair"
+        name="รถเข็นส่งต่อฉุกเฉิน"
+        type="wheelchair"
+        position={[-7.2, 0, 1.8]}
+        rotation={[0, Math.PI / 4, 0]}
+        seatOffset={[0, 0.46, 0.05]}
+        isDrivable={true}
+      >
+        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+      </InteractiveSeat>
 
       {/* Medicine & Emergency Crash Cabinet */}
       <MedicineCabinet position={[7.8, 0, -1.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
@@ -72,33 +83,42 @@ export default function MotherCare4Room() {
       <HospitalTrashBin position={[6.2, 0, 3.2]} scale={0.85} />
 
       {/* Station 0: REAL Hospital Bed with Pillows and IV Infusion Stand (การตกเลือดหลังคลอด) */}
-      <group position={[-4, 0, -4]} onClick={step === 0 ? handleNextStep : undefined}>
-        <HospitalBed position={[0, 0, 0]} />
-        <Pillows position={[0.2, 0.95, -0.6]} scale={0.8} />
+      <InteractiveSeat
+        id="room104_bed"
+        name="เตียงฉุกเฉินผู้ป่วย"
+        type="bed"
+        position={[-4, 0, -4]}
+        rotation={[0, 0, 0]}
+        seatOffset={[0, 0.72, 0]}
+      >
+        <group onClick={step === 0 ? handleNextStep : undefined}>
+          <HospitalBed position={[0, 0, 0]} />
+          <Pillows position={[0.2, 0.95, -0.6]} scale={0.8} />
 
-        {/* Real Chrome IV Drip Stand beside bed */}
-        <group position={[-1.2, 0, -0.8]}>
-          <mesh position={[0, 1.1, 0]} castShadow>
-            <cylinderGeometry args={[0.02, 0.02, 2.2, 16]} />
-            <meshStandardMaterial color="#cfd8dc" metalness={0.9} roughness={0.1} />
-          </mesh>
-          {/* IV Bag */}
-          <mesh position={[0.1, 2.05, 0]} castShadow>
-            <boxGeometry args={[0.16, 0.28, 0.06]} />
-            <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
-          </mesh>
+          {/* Real Chrome IV Drip Stand beside bed */}
+          <group position={[-1.2, 0, -0.8]}>
+            <mesh position={[0, 1.1, 0]} castShadow>
+              <cylinderGeometry args={[0.02, 0.02, 2.2, 16]} />
+              <meshStandardMaterial color="#cfd8dc" metalness={0.9} roughness={0.1} />
+            </mesh>
+            {/* IV Bag */}
+            <mesh position={[0.1, 2.05, 0]} castShadow>
+              <boxGeometry args={[0.16, 0.28, 0.06]} />
+              <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
+            </mesh>
+          </group>
+
+          {step === 0 && (
+            <Html position={[0, 2.2, 0]} center>
+              <div style={{ background: '#ffebee', border: '2px solid #c62828', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
+                <h3 style={{ color: '#b71c1c', margin: '0 0 8px 0', fontSize: '16px' }}>🚨 1. การตกเลือดหลังคลอด</h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>เลือดออกชุ่มผ้าอนามัยเกิน 1 แผ่น/ชม. มีลิ่มเลือดขนาดใหญ่ มดลูกไม่หดรัดตัว นวดคลึงทันที</p>
+                <div style={{ marginTop: '10px', background: '#c62828', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเตียงผู้ป่วยเพื่อผ่าน ➜</div>
+              </div>
+            </Html>
+          )}
         </group>
-
-        {step === 0 && (
-          <Html position={[0, 2.2, 0]} center>
-            <div style={{ background: '#ffebee', border: '2px solid #c62828', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
-              <h3 style={{ color: '#b71c1c', margin: '0 0 8px 0', fontSize: '16px' }}>🚨 1. การตกเลือดหลังคลอด</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>เลือดออกชุ่มผ้าอนามัยเกิน 1 แผ่น/ชม. มีลิ่มเลือดขนาดใหญ่ มดลูกไม่หดรัดตัว นวดคลึงทันที</p>
-              <div style={{ marginTop: '10px', background: '#c62828', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเตียงผู้ป่วยเพื่อผ่าน ➜</div>
-            </div>
-          </Html>
-        )}
-      </group>
+      </InteractiveSeat>
 
       {/* Newborn Bassinet beside mother (แม่และลูกอบอุ่นร่วมกัน) */}
       <group position={[-1.7, 0, -4]} rotation={[0, -0.2, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
@@ -157,19 +177,28 @@ export default function MotherCare4Room() {
       </group>
 
       {/* Station 3: REAL Velvet Sofa Lounge with Soft Pillows (ภาวะซึมเศร้าหลังคลอดและการประเมินจิตใจ) */}
-      <group position={[4.2, 0, 2]} onClick={step === 3 ? handleNextStep : undefined}>
-        <HospitalSofa position={[0, 0, 0]} rotation={[0, -Math.PI / 4, 0]} scale={0.95} />
-        <Pillows position={[0.1, 0.45, 0]} scale={0.8} />
-        {step === 3 && (
-          <Html position={[0, 2.2, 0]} center>
-            <div style={{ background: '#f3e5f5', border: '2px solid #7b1fa2', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
-              <h3 style={{ color: '#6a1b9a', margin: '0 0 8px 0', fontSize: '16px' }}>💙 4. สุขภาพจิตและภาวะซึมเศร้าหลังคลอด</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>Baby Blues อารมณ์อ่อนไหวช่วง 1-2 สัปดาห์แรก หากรู้สึกดิ่งสิ้นหวังเกิน 2 สัปดาห์ ควรปรึกษาจิตแพทย์</p>
-              <div style={{ marginTop: '10px', background: '#2e7d32', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเพื่อสำเร็จบทเรียน 🏆</div>
-            </div>
-          </Html>
-        )}
-      </group>
+      <InteractiveSeat
+        id="room104_sofa"
+        name="โซฟาญาติผู้ป่วย"
+        type="sofa"
+        position={[4.2, 0, 2]}
+        rotation={[0, -Math.PI / 4, 0]}
+        seatOffset={[0, 0.42, 0.15]}
+      >
+        <group onClick={step === 3 ? handleNextStep : undefined}>
+          <HospitalSofa position={[0, 0, 0]} rotation={[0, 0, 0]} scale={0.95} />
+          <Pillows position={[0.1, 0.45, 0]} scale={0.8} />
+          {step === 3 && (
+            <Html position={[0, 2.2, 0]} center>
+              <div style={{ background: '#f3e5f5', border: '2px solid #7b1fa2', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
+                <h3 style={{ color: '#6a1b9a', margin: '0 0 8px 0', fontSize: '16px' }}>💙 4. สุขภาพจิตและภาวะซึมเศร้าหลังคลอด</h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>Baby Blues อารมณ์อ่อนไหวช่วง 1-2 สัปดาห์แรก หากรู้สึกดิ่งสิ้นหวังเกิน 2 สัปดาห์ ควรปรึกษาจิตแพทย์</p>
+                <div style={{ marginTop: '10px', background: '#2e7d32', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเพื่อสำเร็จบทเรียน 🏆</div>
+              </div>
+            </Html>
+          )}
+        </group>
+      </InteractiveSeat>
 
       {/* ── GTA Player Character ── */}
       <PlayerController initialPosition={[0, 0, 2]} />

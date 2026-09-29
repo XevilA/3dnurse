@@ -1,5 +1,5 @@
 import React, { useRef, useImperativeHandle, forwardRef, useEffect, useMemo } from 'react';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import { useGLTF, useAnimations, useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { SkeletonUtils } from 'three-stdlib';
 import useStore from '../../store/useStore';
@@ -8,8 +8,9 @@ import * as THREE from 'three';
 /**
  * MotherAvatar — Authentic Postpartum Mother Character
  *
- * Uses high-res michelle.glb with authentic PBR textures.
- * Rigged with Mixamo animations from xbot.glb (idle, walk, run, agree).
+ * Uses high-res michelle.glb with authentic fair-skinned Asian Thai mother texture.
+ * Uses Mixamo skeletal animations from soldier.glb (matching identical +Y bone translation axes).
+ * Guaranteed natural resting arm posture in idle, smooth arm-swing in walking, and realistic sitting posture.
  */
 const MotherAvatar = forwardRef(({
   currentAnimation = 'idle',
@@ -18,14 +19,27 @@ const MotherAvatar = forwardRef(({
   scale = [1, 1, 1],
 }, ref) => {
   const group = useRef();
+  const avatarRigRef = useRef();
   const motherClothing = useStore((state) => state.motherClothing);
   const isHoldingBaby = useStore((state) => state.isHoldingBaby);
+  const isSitting = useStore((state) => state.isSitting);
 
   // Load the character model
   const { scene: michelleScene } = useGLTF('/models/michelle.glb');
   
-  // Load animations from xbot (shares identical Mixamo skeleton hierarchy)
-  const { animations: xbotAnimations } = useGLTF('/models/xbot.glb');
+  // Load animations from soldier (matching identical +Y bone translation axes)
+  const { animations: soldierAnimations } = useGLTF('/models/soldier.glb');
+
+  // Load authentic fair Asian skin texture with soft pink maternity outfit
+  const motherTexture = useTexture('/textures/mother_diffuse.jpg');
+
+  useEffect(() => {
+    if (motherTexture) {
+      motherTexture.flipY = false;
+      motherTexture.colorSpace = THREE.SRGBColorSpace;
+      motherTexture.needsUpdate = true;
+    }
+  }, [motherTexture]);
 
   // Clone scene with SkeletonUtils so skinned mesh bone bindings are preserved
   const clonedScene = useMemo(() => {
@@ -36,16 +50,67 @@ const MotherAvatar = forwardRef(({
         child.receiveShadow = true;
         if (child.material) {
           child.material = child.material.clone();
-          child.material.roughness = 0.55;
-          child.material.metalness = 0.05;
+          if (motherTexture) {
+            child.material.map = motherTexture;
+          }
+          child.material.color = new THREE.Color(1, 1, 1);
+          child.material.roughness = 0.5;
+          child.material.metalness = 0.0;
+          if (child.material.specularColorTexture) child.material.specularColorTexture = null;
+          if (child.material.metalnessMap) child.material.metalnessMap = null;
+          child.material.needsUpdate = true;
         }
       }
     });
     return clone;
-  }, [michelleScene]);
+  }, [michelleScene, motherTexture]);
 
-  // Bind xbot animations directly to Michelle's cloned rig
-  const { actions } = useAnimations(xbotAnimations, clonedScene);
+  // Normalize clip names and filter tracks so only Hips keeps position track,
+  // preserving Michelle's authentic female proportions without arm/body joint dislocation
+  const animClips = useMemo(() => {
+    if (!soldierAnimations || soldierAnimations.length === 0) return [];
+    return soldierAnimations.map((origClip) => {
+      const clip = origClip.clone();
+      clip.name = clip.name.toLowerCase();
+      clip.tracks = clip.tracks.filter((track) => {
+        // Drop scale tracks to prevent distortion
+        if (track.name.endsWith('.scale')) return false;
+        // Drop position tracks for all limbs/bones EXCEPT Hips
+        if (track.name.endsWith('.position')) {
+          return track.name.toLowerCase().includes('hips');
+        }
+        return true;
+      });
+      return clip;
+    });
+  }, [soldierAnimations]);
+
+  // Bind animations directly to Michelle's cloned rig
+  const { actions } = useAnimations(animClips, clonedScene);
+
+  // Find and store arm & leg bones for natural posture adjustment
+  const bones = useRef({});
+  useEffect(() => {
+    if (!clonedScene) return;
+    const b = {};
+    clonedScene.traverse((child) => {
+      if (child.isBone) {
+        if (child.name.includes('LeftArm') && !child.name.includes('Fore')) b.leftArm = child;
+        if (child.name.includes('RightArm') && !child.name.includes('Fore')) b.rightArm = child;
+        if (child.name.includes('LeftForeArm')) b.leftForeArm = child;
+        if (child.name.includes('RightForeArm')) b.rightForeArm = child;
+        if (child.name.includes('LeftUpLeg')) b.leftUpLeg = child;
+        if (child.name.includes('RightUpLeg')) b.rightUpLeg = child;
+        if (child.name.includes('LeftLeg')) b.leftLeg = child;
+        if (child.name.includes('RightLeg')) b.rightLeg = child;
+        if (child.name.includes('LeftFoot')) b.leftFoot = child;
+        if (child.name.includes('RightFoot')) b.rightFoot = child;
+        if (child.name.includes('Hips')) b.hips = child;
+      }
+    });
+    bones.current = b;
+    window.__avatarBones = b;
+  }, [clonedScene]);
 
   // Expose bone search & group for external attachment
   useImperativeHandle(ref, () => ({
@@ -65,70 +130,103 @@ const MotherAvatar = forwardRef(({
   useEffect(() => {
     if (!actions) return;
 
-    let animName = currentAnimation;
-    if (isHoldingBaby && actions['agree']) {
-      animName = 'agree';
+    let animName = currentAnimation.toLowerCase();
+    if (isSitting) {
+      animName = 'idle'; // Uses idle breathing for sitting pose
     }
 
-    const availableNames = Object.keys(actions);
-    const match = availableNames.find((n) => n.toLowerCase().includes(animName.toLowerCase())) ||
-                  availableNames.find((n) => n.toLowerCase().includes('idle')) ||
-                  availableNames[0];
+    const act = actions[animName] || actions['idle'] || Object.values(actions)[0];
 
-    if (match && actions[match]) {
-      Object.values(actions).forEach((act) => act.fadeOut(0.3));
-      actions[match].reset().fadeIn(0.3).play();
+    if (act) {
+      Object.values(actions).forEach((a) => {
+        if (a !== act) a.fadeOut(0.25);
+      });
+      act.reset().fadeIn(0.25).play();
     }
-  }, [currentAnimation, isHoldingBaby, actions]);
+  }, [currentAnimation, isSitting, actions]);
 
-  // Subtle medical hospital gown tint
+  // Keep skin and gown bright, vibrant, and fair Asian tone
   useEffect(() => {
     if (!clonedScene) return;
-    const tints = {
-      hospitalGown: new THREE.Color(0.9, 0.95, 1.0),
-      casual: new THREE.Color(1.0, 0.96, 0.96),
-      sleepwear: new THREE.Color(0.96, 0.93, 1.0),
-    };
-    const tint = tints[motherClothing] || tints.hospitalGown;
-
     clonedScene.traverse((child) => {
       if (child.isMesh && child.material) {
-        child.material.color = tint;
+        child.material.color = new THREE.Color(1, 1, 1);
         child.material.needsUpdate = true;
       }
     });
   }, [motherClothing, clonedScene]);
 
-  // Gentle arm posing to cradle infant when holding baby
+  // Procedural posture adjustments in useFrame:
+  // 1. Sitting posture on Wheelchair, Sofa, or Chair
+  // 2. Baby cradling pose
+  // 3. Relaxed natural arms alongside torso in Idle ("มือแนบลำตัว")
+  // 4. Natural arm swing in Walk
   useFrame(() => {
-    if (!clonedScene || !isHoldingBaby) return;
-    clonedScene.traverse((child) => {
-      if (child.isBone) {
-        const name = child.name;
-        if (name.includes('LeftArm') && !name.includes('Fore')) {
-          child.rotation.x = 0.95;
-          child.rotation.y = 0.25;
-          child.rotation.z = 0.35;
-        } else if (name.includes('LeftForeArm')) {
-          child.rotation.x = 0.15;
-          child.rotation.y = 0.75;
-          child.rotation.z = 0.1;
-        } else if (name.includes('RightArm') && !name.includes('Fore')) {
-          child.rotation.x = 0.9;
-          child.rotation.y = -0.2;
-          child.rotation.z = -0.35;
-        } else if (name.includes('RightForeArm')) {
-          child.rotation.x = 0.1;
-          child.rotation.y = -0.7;
-          child.rotation.z = -0.15;
-        }
+    if (!clonedScene) return;
+    const {
+      leftArm, rightArm, leftForeArm, rightForeArm,
+      leftUpLeg, rightUpLeg, leftLeg, rightLeg, hips
+    } = bones.current;
+    if (!leftArm || !rightArm) return;
+
+    if (isSitting) {
+      // ── Realistic Seated Posture ──
+      // Lower avatar onto cushion
+      if (avatarRigRef.current) {
+        avatarRigRef.current.position.y = -0.42;
       }
-    });
+
+      // Thighs bend forward horizontally
+      if (leftUpLeg) leftUpLeg.rotation.x = 1.50;
+      if (rightUpLeg) {
+        rightUpLeg.rotation.x = 1.90;
+        rightUpLeg.rotation.z = -1.00;
+      }
+
+      // Calves bend downward at 90°
+      if (leftLeg) leftLeg.rotation.x = 1.50;
+      if (rightLeg) rightLeg.rotation.x = 1.50;
+
+      // Arms resting on armrests or lap
+      if (isHoldingBaby) {
+        leftArm.rotation.set(0.65, 0.35, 0.75);
+        rightArm.rotation.set(-0.65, -0.35, 0.75);
+        if (leftForeArm) leftForeArm.rotation.set(-1.15, 0.3, 0.2);
+        if (rightForeArm) rightForeArm.rotation.set(1.15, -0.3, -0.2);
+      } else {
+        leftArm.rotation.set(0.35, 0.1, 0.45);
+        rightArm.rotation.set(-0.35, -0.1, 0.45);
+        if (leftForeArm) leftForeArm.rotation.set(-0.6, 0.2, 0.1);
+        if (rightForeArm) rightForeArm.rotation.set(0.6, -0.2, -0.1);
+      }
+    } else {
+      // ── Standing / Walking Posture ──
+      if (avatarRigRef.current) {
+        avatarRigRef.current.position.y = 0;
+      }
+
+      if (isHoldingBaby) {
+        // Gentle arm posing when cradling baby in care rooms
+        leftArm.rotation.set(0.6, 0.3, 0.8);
+        rightArm.rotation.set(-0.6, -0.3, 0.8);
+        if (leftForeArm) leftForeArm.rotation.set(-1.2, 0.3, 0.2);
+        if (rightForeArm) rightForeArm.rotation.set(1.2, -0.3, -0.2);
+      } else if (currentAnimation === 'idle') {
+        // Natural resting arm posture alongside torso ("มือแนบลำตัว")
+        // Bring shoulders gently in and let forearms hang straight
+        leftArm.rotation.z += 0.18;
+        rightArm.rotation.z += 0.18;
+        leftArm.rotation.y += 0.10;
+        rightArm.rotation.y -= 0.10;
+      }
+    }
   });
 
   return (
     <group ref={group} position={position} rotation={rotation} scale={scale} dispose={null}>
-      <primitive object={clonedScene} rotation={[-Math.PI / 2, 0, 0]} />
+      <group ref={avatarRigRef} position={[0, 0, 0]}>
+        <primitive object={clonedScene} rotation={[Math.PI, Math.PI, 0]} />
+      </group>
     </group>
   );
 });
@@ -137,4 +235,5 @@ MotherAvatar.displayName = 'MotherAvatar';
 export default MotherAvatar;
 
 useGLTF.preload('/models/michelle.glb');
-useGLTF.preload('/models/xbot.glb');
+useGLTF.preload('/models/soldier.glb');
+useTexture.preload('/textures/mother_diffuse.jpg');

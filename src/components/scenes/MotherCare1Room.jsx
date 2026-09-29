@@ -9,6 +9,7 @@ import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import FlowerVase from '../decorations/FlowerVase';
 import HospitalWheelchair from '../furniture/HospitalWheelchair';
+import InteractiveSeat from '../furniture/InteractiveSeat';
 import MedicineCabinet from '../furniture/MedicineCabinet';
 import Pillows from '../decorations/Pillows';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
@@ -61,26 +62,45 @@ export default function MotherCare1Room() {
       {/* Authentic Medicine and Vitamin Cabinet */}
       <MedicineCabinet position={[7.8, 0, -1.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
 
-      {/* Authentic Hospital Wheelchair for Mother Recovery Mobility */}
-      <HospitalWheelchair position={[-7.2, 0, 1.5]} rotation={[0, Math.PI / 3, 0]} scale={1.1} />
+      {/* Authentic Hospital Wheelchair for Mother Recovery Mobility (Drivable!) */}
+      <InteractiveSeat
+        id="ward101_wheelchair"
+        name="รถเข็นผู้ป่วย Ward 101"
+        type="wheelchair"
+        position={[-7.2, 0, 1.5]}
+        rotation={[0, Math.PI / 3, 0]}
+        seatOffset={[0, 0.46, 0.05]}
+        isDrivable={true}
+      >
+        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
+      </InteractiveSeat>
 
       {/* Sanitary Foot-pedal Waste Bin */}
       <HospitalTrashBin position={[6.0, 0, 2.8]} scale={0.85} />
 
       {/* Station 0: REAL Hospital Patient Bed with Soft Pillows (การพักผ่อนและการนอนหลับ) */}
-      <group position={[-4, 0, -4]} onClick={step === 0 ? handleNextStep : undefined}>
-        <HospitalBed position={[0, 0, 0]} />
-        <Pillows position={[0.2, 0.95, -0.6]} rotation={[0, 0, 0]} scale={0.8} />
-        {step === 0 && (
-          <Html position={[0, 2.2, 0]} center distanceFactor={12}>
-            <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
-              <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>1. การพักผ่อนและการนอนหลับ</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>นอนหลับพักผ่อนให้เพียงพอ อย่างน้อย 8-10 ชม./วัน เมื่อลูกหลับ แม่ควรหลับพักตาม</p>
-              <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเตียงเพื่อผ่าน ➜</div>
-            </div>
-          </Html>
-        )}
-      </group>
+      <InteractiveSeat
+        id="room101_bed"
+        name="เตียงพักฟื้นคุณแม่"
+        type="bed"
+        position={[-4, 0, -4]}
+        rotation={[0, 0, 0]}
+        seatOffset={[0, 0.72, 0]}
+      >
+        <group onClick={step === 0 ? handleNextStep : undefined}>
+          <HospitalBed position={[0, 0, 0]} />
+          <Pillows position={[0.2, 0.95, -0.6]} rotation={[0, 0, 0]} scale={0.8} />
+          {step === 0 && (
+            <Html position={[0, 2.2, 0]} center distanceFactor={12}>
+              <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
+                <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>1. การพักผ่อนและการนอนหลับ</h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>นอนหลับพักผ่อนให้เพียงพอ อย่างน้อย 8-10 ชม./วัน เมื่อลูกหลับ แม่ควรหลับพักตาม</p>
+                <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเตียงเพื่อผ่าน ➜</div>
+              </div>
+            </Html>
+          )}
+        </group>
+      </InteractiveSeat>
 
       {/* Newborn Bassinet right beside Mother's bed (แม่และลูกอยู่ร่วมกัน) */}
       <group position={[-1.7, 0, -4]} rotation={[0, -0.2, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>

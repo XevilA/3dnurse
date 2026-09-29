@@ -28,7 +28,14 @@ const useStore = create((set, get) => ({
   isHoldingBaby: false,
   cameraMode: '3rdPerson', // '3rdPerson' | '1stPerson'
   playerPosition: [0, 0, 2],
-  playerAnimation: 'idle', // 'idle' | 'walk' | 'run' | 'agree'
+  playerAnimation: 'idle', // 'idle' | 'walk' | 'run' | 'sit'
+
+  // ── Gamified Interactive Seating System ──
+  isSitting: false,
+  seatedTarget: null, // { id, name, type: 'wheelchair'|'sofa'|'chair'|'bed', position, rotationY, seatHeight, isDrivable }
+  nearbySeat: null,   // seat currently in range of player
+  stamina: 100,       // 0 - 100% gamified recovery
+  seats: [],          // registered interactive seats in current scene
   
   // Virtual joystick / on-screen controls
   virtualInput: {
@@ -38,6 +45,7 @@ const useStore = create((set, get) => ({
     right: false,
     sprint: false,
     interact: false,
+    sit: false,
   },
 
   // ── Learning progress (tracks completed modules) ──
@@ -52,6 +60,10 @@ const useStore = create((set, get) => ({
     currentRoom: room,
     currentStep: 0,
     isHoldingBaby: false,
+    isSitting: false,
+    seatedTarget: null,
+    nearbySeat: null,
+    seats: [],
     playerPosition: [0, 0, 3],
   }),
   setStep: (step) => set({ currentStep: step }),
@@ -63,7 +75,43 @@ const useStore = create((set, get) => ({
       cameraMode: state.cameraMode === '3rdPerson' ? '1stPerson' : '3rdPerson',
     })),
   setPlayerPosition: (pos) => set({ playerPosition: pos }),
+  setPlayerRotationY: (rot) => set({ playerRotationY: rot }),
   setPlayerAnimation: (anim) => set({ playerAnimation: anim }),
+
+  // ── Gamified Seating Actions ──
+  registerSeat: (seat) =>
+    set((state) => {
+      const exists = state.seats.some((s) => s.id === seat.id);
+      if (exists) return { seats: state.seats.map((s) => (s.id === seat.id ? seat : s)) };
+      return { seats: [...state.seats, seat] };
+    }),
+
+  unregisterSeat: (seatId) =>
+    set((state) => ({
+      seats: state.seats.filter((s) => s.id !== seatId),
+      nearbySeat: state.nearbySeat?.id === seatId ? null : state.nearbySeat,
+      seatedTarget: state.seatedTarget?.id === seatId ? null : state.seatedTarget,
+    })),
+
+  setNearbySeat: (seat) => set({ nearbySeat: seat }),
+
+  sitDown: (seat) => {
+    if (!seat) return;
+    set({
+      isSitting: true,
+      seatedTarget: seat,
+      playerAnimation: 'sit',
+    });
+  },
+
+  standUp: () =>
+    set({
+      isSitting: false,
+      seatedTarget: null,
+      playerAnimation: 'idle',
+    }),
+
+  setStamina: (val) => set({ stamina: Math.min(100, Math.max(0, val)) }),
 
   setVirtualInput: (input) =>
     set((state) => ({
@@ -79,7 +127,13 @@ const useStore = create((set, get) => ({
     set({ showSuccessModal: show, successMessage: message }),
 
   resetSimulation: () =>
-    set({ currentStep: 0, isHoldingBaby: false, playerPosition: [0, 0, 3] }),
+    set({
+      currentStep: 0,
+      isHoldingBaby: false,
+      isSitting: false,
+      seatedTarget: null,
+      playerPosition: [0, 0, 3],
+    }),
 
   // ── Computed helpers ──
   getCompletedCount: () => Object.keys(get().learningProgress).length,
@@ -88,3 +142,7 @@ const useStore = create((set, get) => ({
 
 export { useStore };
 export default useStore;
+
+if (typeof window !== 'undefined') {
+  window.useStore = useStore;
+}

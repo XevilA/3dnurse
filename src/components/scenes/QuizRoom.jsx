@@ -9,6 +9,7 @@ import RealTree from '../decorations/RealTree';
 import FlowerVase from '../decorations/FlowerVase';
 import DoctorDesk from '../furniture/DoctorDesk';
 import HospitalSofa from '../furniture/HospitalSofa';
+import InteractiveSeat from '../furniture/InteractiveSeat';
 import MedicineCabinet from '../furniture/MedicineCabinet';
 import BabyAvatar from '../avatars/BabyAvatar';
 import BabyCrib from '../furniture/BabyCrib';
@@ -90,8 +91,27 @@ export default function QuizRoom() {
       <RealPlant type="house" position={[5.5, 0, -9]} scale={1.0} />
 
       {/* Real Velvet Sofas for Examinee Waiting Area */}
-      <HospitalSofa position={[-10.2, 0, 0]} rotation={[0, Math.PI / 2, 0]} scale={1.15} />
-      <HospitalSofa position={[10.2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} scale={1.15} />
+      <InteractiveSeat
+        id="quiz_sofa_left"
+        name="โซฟารอสอบฝั่งซ้าย"
+        type="sofa"
+        position={[-9.2, 0, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+        seatOffset={[0, 0.42, 0.15]}
+      >
+        <HospitalSofa position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+      </InteractiveSeat>
+
+      <InteractiveSeat
+        id="quiz_sofa_right"
+        name="โซฟารอสอบฝั่งขวา"
+        type="sofa"
+        position={[9.2, 0, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+        seatOffset={[0, 0.42, 0.15]}
+      >
+        <HospitalSofa position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+      </InteractiveSeat>
 
       {/* Real Exam & Records Archive Cabinet */}
       <MedicineCabinet position={[10.2, 0, -5]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} withMedicalBox={false} />
@@ -158,7 +178,16 @@ export default function QuizRoom() {
       </Html>
 
       {/* ── Real 3D Quiz Seating Chair ── */}
-      <NursingChair position={[0, 0, -6.5]} rotation={[0, 0, 0]} />
+      <InteractiveSeat
+        id="quiz_exam_chair"
+        name="เก้าอี้สอบความรู้"
+        type="chair"
+        position={[0, 0, -6.5]}
+        rotation={[0, 0, 0]}
+        seatOffset={[0, 0.45, 0.05]}
+      >
+        <NursingChair position={[0, 0, 0]} rotation={[0, 0, 0]} />
+      </InteractiveSeat>
 
       {/* ── Real Baby Bassinet beside Mother during Quiz (แม่และลูกร่วมเรียนรู้) ── */}
       <group position={[2.4, 0, -6.5]} rotation={[0, -0.3, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>

@@ -11,6 +11,7 @@ import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import FlowerVase from '../decorations/FlowerVase';
 import HospitalSofa from '../furniture/HospitalSofa';
+import InteractiveSeat from '../furniture/InteractiveSeat';
 import Pillows from '../decorations/Pillows';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
@@ -60,25 +61,43 @@ export default function MotherCare3Room() {
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
 
       {/* Comfortable Relaxation Velvet Sofa for Nursing Mothers */}
-      <HospitalSofa position={[7.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} />
+      <InteractiveSeat
+        id="room103_sofa"
+        name="โซฟาพักผ่อนให้นม"
+        type="sofa"
+        position={[7.5, 0, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+        seatOffset={[0, 0.42, 0.15]}
+      >
+        <HospitalSofa position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.05} />
+      </InteractiveSeat>
 
       {/* Hospital Foot-pedal Trash Bin */}
       <HospitalTrashBin position={[-5.8, 0, 2.5]} scale={0.85} />
 
       {/* Station 0: REAL Nursing Armchair with Support Pillows (การเตรียมเต้านมและการประคบอุ่น) */}
-      <group position={[-4, 0, -4]} onClick={step === 0 ? handleNextStep : undefined}>
-        <NursingChair position={[0, 0, 0]} rotation={[0, 0.4, 0]} />
-        <Pillows position={[-0.05, 0.65, 0.05]} rotation={[0, 0.4, 0]} scale={0.85} />
-        {step === 0 && (
-          <Html position={[0, 2.2, 0]} center>
-            <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
-              <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>1. การเตรียมเต้านมก่อนให้นม</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>ประคบอุ่น 3-5 นาที นวดเต้านมเบาๆ เป็นวงกลมจากฐานสู่ลานนมเพื่อกระตุ้น Oxytocin</p>
-              <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเก้าอี้ให้นมเพื่อผ่าน ➜</div>
-            </div>
-          </Html>
-        )}
-      </group>
+      <InteractiveSeat
+        id="room103_nursing_chair"
+        name="เก้าอี้ให้นมบุตร"
+        type="chair"
+        position={[-4, 0, -4]}
+        rotation={[0, 0.4, 0]}
+        seatOffset={[0, 0.45, 0.05]}
+      >
+        <group onClick={step === 0 ? handleNextStep : undefined}>
+          <NursingChair position={[0, 0, 0]} rotation={[0, 0, 0]} />
+          <Pillows position={[-0.05, 0.65, 0.05]} rotation={[0, 0, 0]} scale={0.85} />
+          {step === 0 && (
+            <Html position={[0, 2.2, 0]} center>
+              <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
+                <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>1. การเตรียมเต้านมก่อนให้นม</h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>ประคบอุ่น 3-5 นาที นวดเต้านมเบาๆ เป็นวงกลมจากฐานสู่ลานนมเพื่อกระตุ้น Oxytocin</p>
+                <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเก้าอี้ให้นมเพื่อผ่าน ➜</div>
+              </div>
+            </Html>
+          )}
+        </group>
+      </InteractiveSeat>
 
       {/* Station 1: REAL Baby Crib with Baby (ท่าอุ้มให้นมบุตร) */}
       <group position={[3.5, 0, -4]} onClick={step === 1 ? handleNextStep : () => setHoldingBaby(!isHoldingBaby)}>

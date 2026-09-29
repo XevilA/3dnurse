@@ -10,6 +10,7 @@ import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import FlowerVase from '../decorations/FlowerVase';
 import HospitalSofa from '../furniture/HospitalSofa';
+import InteractiveSeat from '../furniture/InteractiveSeat';
 import Pillows from '../decorations/Pillows';
 import LaundryBasket from '../decorations/LaundryBasket';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
@@ -57,7 +58,16 @@ export default function NewbornCare1Room() {
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
 
       {/* Comfortable Mother Rest Sofa */}
-      <HospitalSofa position={[7.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} />
+      <InteractiveSeat
+        id="newborn1_sofa"
+        name="โซฟาพักผ่อนคุณแม่"
+        type="sofa"
+        position={[7.5, 0, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+        seatOffset={[0, 0.42, 0.15]}
+      >
+        <HospitalSofa position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.05} />
+      </InteractiveSeat>
 
       {/* Nursery Laundry Hamper for Burp Cloths & Swaddles */}
       <LaundryBasket position={[6.0, 0, 3.2]} scale={1.0} />
@@ -66,22 +76,29 @@ export default function NewbornCare1Room() {
       <HospitalTrashBin position={[-5.8, 0, 3.5]} scale={0.85} />
 
       {/* Real Nursing Armchair with Ergonomic Support Pillows (Breastfeeding Demonstration Station) */}
-      <group
+      <InteractiveSeat
+        id="newborn1_nursing_chair"
+        name="เก้าอี้ให้นมบุตร"
+        type="chair"
         position={[-3.5, 0, -3.5]}
-        onClick={() => {
-          setHoldingBaby(true);
-          handleNext();
-        }}
-        className="cursor-pointer"
+        rotation={[0, 0.4, 0]}
+        seatOffset={[0, 0.45, 0.05]}
       >
-        <NursingChair position={[0, 0, 0]} rotation={[0, 0.4, 0]} />
-        <Pillows position={[-0.05, 0.65, 0.05]} rotation={[0, 0.4, 0]} scale={0.85} />
-        {/* Soft Glowing Station Beacon */}
-        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.9, 1.15, 32]} />
-          <meshBasicMaterial color="#0288d1" transparent opacity={0.6} />
-        </mesh>
-        <Html position={[0, 1.9, 0]} center distanceFactor={14}>
+        <group
+          onClick={() => {
+            setHoldingBaby(true);
+            handleNext();
+          }}
+          className="cursor-pointer"
+        >
+          <NursingChair position={[0, 0, 0]} rotation={[0, 0, 0]} />
+          <Pillows position={[-0.05, 0.65, 0.05]} rotation={[0, 0, 0]} scale={0.85} />
+          {/* Soft Glowing Station Beacon */}
+          <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.9, 1.15, 32]} />
+            <meshBasicMaterial color="#0288d1" transparent opacity={0.6} />
+          </mesh>
+          <Html position={[0, 1.9, 0]} center distanceFactor={14}>
           <div
             onClick={(e) => {
               e.stopPropagation();
@@ -95,7 +112,8 @@ export default function NewbornCare1Room() {
             <span>เก้าอี้ให้นมบุตร (คลิกสาธิตท่าดูดนม)</span>
           </div>
         </Html>
-      </group>
+        </group>
+      </InteractiveSeat>
 
       {/* Real Baby Crib with Baby */}
       <group
