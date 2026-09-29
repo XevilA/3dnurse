@@ -43,10 +43,28 @@ const MotherAvatar = forwardRef(({
     }
   }, [motherTexture]);
 
-  // Clone scene with SkeletonUtils so SkinnedMesh bones are properly bound and animated (Fixes T-Pose!)
+  // Clean animation clips to match stripped bone names and remove missing eye tracks
+  const cleanClips = useMemo(() => {
+    if (!xbotAnimations || xbotAnimations.length === 0) return [];
+    return xbotAnimations.map((origClip) => {
+      const clip = origClip.clone();
+      clip.tracks = clip.tracks
+        .filter((t) => !t.name.includes('Eye'))
+        .map((t) => {
+          t.name = t.name.replace(/mixamorig:?/g, '');
+          return t;
+        });
+      return clip;
+    });
+  }, [xbotAnimations]);
+
+  // Clone scene with SkeletonUtils and clean bone names
   const clonedScene = useMemo(() => {
     const clone = SkeletonUtils.clone(michelleScene);
     clone.traverse((child) => {
+      if (child.name) {
+        child.name = child.name.replace(/^mixamorig:?/, '');
+      }
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
@@ -54,8 +72,8 @@ const MotherAvatar = forwardRef(({
           child.material = child.material.clone();
           child.material.map = motherTexture;
           child.material.color = new THREE.Color(1, 1, 1);
-          child.material.roughness = 0.55;
-          child.material.metalness = 0.02;
+          child.material.roughness = 0.5;
+          child.material.metalness = 0.0;
           if (child.material.specularColorTexture) {
             child.material.specularColorTexture = null;
           }
@@ -69,8 +87,8 @@ const MotherAvatar = forwardRef(({
     return clone;
   }, [michelleScene, motherTexture]);
 
-  // Bind xbot animations directly to clonedScene's skeleton hierarchy
-  const { actions } = useAnimations(xbotAnimations, clonedScene);
+  // Bind cleaned animations directly to clonedScene's skeleton hierarchy
+  const { actions } = useAnimations(cleanClips, clonedScene);
 
   // Expose bone search & group for external attachment
   useImperativeHandle(ref, () => ({
@@ -86,7 +104,7 @@ const MotherAvatar = forwardRef(({
     group: group.current,
   }));
 
-  // Play natural animations
+  // Play natural animations immediately on mount & when state changes
   useEffect(() => {
     if (!actions) return;
 
@@ -96,13 +114,17 @@ const MotherAvatar = forwardRef(({
     }
 
     const availableNames = Object.keys(actions);
+    if (availableNames.length === 0) return;
+
     const match = availableNames.find((n) => n.toLowerCase().includes(animName.toLowerCase())) ||
                   availableNames.find((n) => n.toLowerCase().includes('idle')) ||
                   availableNames[0];
 
     if (match && actions[match]) {
-      Object.values(actions).forEach((act) => act.fadeOut(0.3));
-      actions[match].reset().fadeIn(0.3).play();
+      Object.values(actions).forEach((act) => {
+        if (act !== actions[match]) act.fadeOut(0.2);
+      });
+      actions[match].reset().fadeIn(0.2).play();
     }
   }, [currentAnimation, isHoldingBaby, actions]);
 
@@ -112,19 +134,19 @@ const MotherAvatar = forwardRef(({
     clonedScene.traverse((child) => {
       if (child.isBone) {
         const name = child.name;
-        if (name.includes('LeftArm') && !name.includes('Fore')) {
+        if (name === 'LeftArm') {
           child.rotation.x = 0.95;
           child.rotation.y = 0.25;
           child.rotation.z = 0.35;
-        } else if (name.includes('LeftForeArm')) {
+        } else if (name === 'LeftForeArm') {
           child.rotation.x = 0.15;
           child.rotation.y = 0.75;
           child.rotation.z = 0.1;
-        } else if (name.includes('RightArm') && !name.includes('Fore')) {
+        } else if (name === 'RightArm') {
           child.rotation.x = 0.9;
           child.rotation.y = -0.2;
           child.rotation.z = -0.35;
-        } else if (name.includes('RightForeArm')) {
+        } else if (name === 'RightForeArm') {
           child.rotation.x = 0.1;
           child.rotation.y = -0.7;
           child.rotation.z = -0.15;
