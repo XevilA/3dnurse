@@ -3,9 +3,16 @@ import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import NursingChair from '../furniture/NursingChair';
-import MedicalTable from '../furniture/MedicalTable';
+import HospitalNightstand from '../furniture/HospitalNightstand';
 import BabyCrib from '../furniture/BabyCrib';
 import BabyAvatar from '../avatars/BabyAvatar';
+import HospitalRoomShell from '../environment/HospitalRoomShell';
+import RealPlant from '../decorations/RealPlant';
+import FlowerVase from '../decorations/FlowerVase';
+import HospitalSofa from '../furniture/HospitalSofa';
+import Pillows from '../decorations/Pillows';
+import LaundryBasket from '../decorations/LaundryBasket';
+import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
 export default function NewbornCare1Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -30,37 +37,38 @@ export default function NewbornCare1Room() {
 
   return (
     <group>
-      {/* ── Floor & Walls ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
-        <planeGeometry args={[18, 18]} />
-        <meshStandardMaterial color="#f0f9ff" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 4, -9]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#e0f2fe" />
-      </mesh>
-      <mesh position={[-9, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#e0f2fe" />
-      </mesh>
-      <mesh position={[9, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#e0f2fe" />
-      </mesh>
+      {/* ── Realistic 3D Hospital Room Architecture ── */}
+      <HospitalRoomShell
+        theme="newborn"
+        roomTitle="ห้องบริบาลทารก: การให้นมทารกแรกเกิด"
+        roomNumber="Nursery 201"
+      />
 
       {/* Header Info */}
-      <Html position={[0, 6.5, -8.5]} center transform>
-        <div style={{ background: 'white', padding: '16px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(2,136,209,0.15)', border: '2px solid #81d4fa' }}>
+      <Html position={[0, 6.6, -8.4]} center transform>
+        <div style={{ background: 'white', padding: '14px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(2,136,209,0.15)', border: '2px solid #81d4fa' }}>
           <h2 style={{ color: '#0288d1', margin: 0, fontSize: '20px' }}>🍼 บทเรียนที่ 1: การให้นมทารกแรกเกิด</h2>
           <p style={{ color: '#555', margin: '6px 0 0 0', fontWeight: 'bold' }}>ขั้นตอน: {Math.min(step + 1, stepsData.length)} / {stepsData.length}</p>
         </div>
       </Html>
 
-      {/* ── REAL 3D ASSETS ── */}
+      {/* ── REAL 3D FURNITURE & ENVIRONMENT ASSETS ── */}
+      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
+      <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
 
-      {/* Real Nursing Armchair */}
+      {/* Comfortable Mother Rest Sofa */}
+      <HospitalSofa position={[7.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} />
+
+      {/* Nursery Laundry Hamper for Burp Cloths & Swaddles */}
+      <LaundryBasket position={[6.0, 0, 3.2]} scale={1.0} />
+
+      {/* Sanitary Trash Bin */}
+      <HospitalTrashBin position={[-5.8, 0, 3.5]} scale={0.85} />
+
+      {/* Real Nursing Armchair with Ergonomic Support Pillows */}
       <group position={[-3.5, 0, -3.5]} onClick={handleNext}>
         <NursingChair position={[0, 0, 0]} rotation={[0, 0.4, 0]} />
+        <Pillows position={[-0.05, 0.65, 0.05]} rotation={[0, 0.4, 0]} scale={0.85} />
       </group>
 
       {/* Real Baby Crib with Baby */}
@@ -70,9 +78,16 @@ export default function NewbornCare1Room() {
         </BabyCrib>
       </group>
 
-      {/* Real Medical Supplies Table */}
+      {/* Real Bedside Table with Feeding Bottles & Fresh Flowers */}
       <group position={[-4, 0, 2]} onClick={handleNext}>
-        <MedicalTable position={[0, 0, 0]} withBottle={true} />
+        <HospitalNightstand position={[0, 0, 0]} scale={1.1}>
+          <FlowerVase position={[0.15, 0.82, 0.1]} scale={0.7} />
+          {/* Baby Feeding Bottle with Teat */}
+          <mesh position={[-0.15, 0.72, -0.05]} castShadow>
+            <cylinderGeometry args={[0.05, 0.05, 0.2, 24]} />
+            <meshPhysicalMaterial color="#ffffff" transmission={0.85} roughness={0.1} />
+          </mesh>
+        </HospitalNightstand>
       </group>
 
       {/* Educational Interactive Panel */}
@@ -81,7 +96,7 @@ export default function NewbornCare1Room() {
           <div style={{ background: 'white', padding: '22px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', width: '360px', textAlign: 'center', borderTop: '6px solid #0288d1' }}>
             <h3 style={{ margin: '0 0 10px 0', color: '#01579b', fontSize: '18px' }}>{stepsData[step].title}</h3>
             <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#444', lineHeight: '1.5' }}>{stepsData[step].desc}</p>
-            <button 
+            <button
               onClick={handleNext}
               style={{ padding: '8px 20px', background: '#0288d1', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
             >
@@ -92,8 +107,8 @@ export default function NewbornCare1Room() {
       )}
 
       {/* Back Button */}
-      <Html position={[-7, 7, -8.5]}>
-        <button 
+      <Html position={[-7, 6.8, -8.4]}>
+        <button
           onClick={() => setRoom('lobby')}
           style={{ padding: '10px 20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold' }}
         >

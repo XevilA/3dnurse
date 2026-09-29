@@ -3,8 +3,15 @@ import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import HospitalBed from '../furniture/HospitalBed';
-import MedicalTable from '../furniture/MedicalTable';
+import MedicalCart from '../furniture/MedicalCart';
 import Washbasin from '../furniture/Washbasin';
+import HospitalRoomShell from '../environment/HospitalRoomShell';
+import RealPlant from '../decorations/RealPlant';
+import MedicineCabinet from '../furniture/MedicineCabinet';
+import ExaminationLamp from '../decorations/ExaminationLamp';
+import HospitalTrashBin from '../decorations/HospitalTrashBin';
+import Pillows from '../decorations/Pillows';
+import HospitalWheelchair from '../furniture/HospitalWheelchair';
 
 export default function MotherCare2Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -22,47 +29,66 @@ export default function MotherCare2Room() {
 
   return (
     <group>
-      {/* ── Floor & Walls ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
-        <planeGeometry args={[18, 18]} />
-        <meshStandardMaterial color="#fff0f5" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 4, -9]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#fce4ec" />
-      </mesh>
-      <mesh position={[-9, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#fce4ec" />
-      </mesh>
-      <mesh position={[9, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#fce4ec" />
-      </mesh>
+      {/* ── Realistic 3D Hospital Room Architecture ── */}
+      <HospitalRoomShell
+        theme="mother"
+        roomTitle="ห้องบริบาลมารดา: การดูแลแผลหลังคลอด"
+        roomNumber="Wound Care Ward 102"
+      />
 
       {/* Back Button */}
-      <Html position={[-7, 7, -8.5]}>
-        <button 
+      <Html position={[-7, 6.8, -8.4]}>
+        <button
           onClick={() => setRoom('lobby')}
-          style={{ padding: '10px 20px', background: '#e91e63', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' }}
+          style={{
+            padding: '10px 20px',
+            background: '#e91e63',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
+          }}
         >
           ⬅ กลับหน้าหลัก
         </button>
       </Html>
 
       {/* Header Info */}
-      <Html position={[0, 6.5, -8.5]} center transform>
-        <div style={{ background: 'white', padding: '16px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(233,30,99,0.15)', border: '2px solid #f48fb1' }}>
+      <Html position={[0, 6.6, -8.4]} center transform>
+        <div style={{
+          background: 'white',
+          padding: '14px 24px',
+          borderRadius: '16px',
+          textAlign: 'center',
+          minWidth: '380px',
+          boxShadow: '0 8px 24px rgba(233,30,99,0.15)',
+          border: '2px solid #f48fb1'
+        }}>
           <h2 style={{ color: '#d81b60', margin: 0, fontSize: '20px' }}>🩹 บทเรียนที่ 2: การดูแลแผลหลังคลอด (แผลฝีเย็บและแผลผ่าตัด)</h2>
           <p style={{ color: '#555', margin: '6px 0 0 0', fontWeight: 'bold' }}>ความก้าวหน้า: {Math.min(step + 1, 3)} / 3 ฐานการเรียนรู้</p>
         </div>
       </Html>
 
-      {/* ── REAL 3D ASSETS ── */}
+      {/* ── REAL 3D ASSETS & NATURE ── */}
+      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
+      <RealPlant type="house" position={[-7.5, 0, 6.5]} scale={0.9} />
 
-      {/* Station 0: REAL Hospital Examination Bed (การดูแลแผลฝีเย็บ) */}
+      {/* Authentic Medicine and Sterile Wound Dressing Cabinet */}
+      <MedicineCabinet position={[7.8, 0, -1.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
+
+      {/* Wheelchair for Mobility */}
+      <HospitalWheelchair position={[-7.2, 0, 1.8]} rotation={[0, Math.PI / 4, 0]} scale={1.1} />
+
+      {/* Foot-pedal Waste Bin for Soiled Dressings */}
+      <HospitalTrashBin position={[2.5, 0, -3.2]} scale={0.9} />
+
+      {/* Station 0: REAL Hospital Examination Bed with Pillows (การดูแลแผลฝีเย็บ) */}
       <group position={[-4, 0, -4]} onClick={step === 0 ? handleNextStep : undefined}>
         <HospitalBed position={[0, 0, 0]} />
+        <Pillows position={[0.2, 0.95, -0.6]} scale={0.8} />
         {step === 0 && (
           <Html position={[0, 2.2, 0]} center>
             <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
@@ -74,15 +100,16 @@ export default function MotherCare2Room() {
         )}
       </group>
 
-      {/* Station 1: REAL Medical Table with Dressing Supplies (การดูแลแผลผ่าคลอดทางหน้าท้อง) */}
+      {/* Station 1: REAL Sterile Dressing Mobile Cart with Medical Box, Surgical Tape, and Examination Lamp */}
       <group position={[3.5, 0, -4]} onClick={step === 1 ? handleNextStep : undefined}>
-        <MedicalTable position={[0, 0, 0]} withBottle={true} />
+        <MedicalCart position={[0, 0, 0]} withMedicalBox={true} withTape={true} scale={0.9} />
+        <ExaminationLamp position={[0.45, 0.98, -0.2]} scale={0.7} />
         {step === 1 && (
           <Html position={[0, 2.2, 0]} center>
             <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
               <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>2. การดูแลแผลผ่าคลอด (Cesarean Section)</h3>
               <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>ระวังอย่าให้แผลเปียกน้ำในช่วง 7 วันแรก ไม่แกะเกาแผล สวมเสื้อผ้าหลวมสบาย</p>
-              <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกโต๊ะอุปกรณ์ทำแผลเพื่อผ่าน ➜</div>
+              <div style={{ marginTop: '10px', background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกรถทำแผลเพื่อผ่าน ➜</div>
             </div>
           </Html>
         )}

@@ -2,51 +2,46 @@ import React, { useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 
 /**
- * HospitalBed — Real 3D Patient / Hospital Bed Model
+ * HospitalBed — Authentic Full 3D Medical Hospital / Patient Bed
  *
- * Uses authentic 3D model assets with realistic metal frame, rails, mattress, and shadows.
+ * Real clinical adjustable bed with wheels, IV frame, guard rails, and ergonomic hospital mattress.
  */
-export default function HospitalBed({ position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 1] }) {
-  // Load real bed model from kira assets
-  const { nodes } = useGLTF('/models/kira.glb');
+export default function HospitalBed({
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  scale = 1
+}) {
+  const { scene } = useGLTF('/models/hospital_bed_opt.glb');
 
-  const bedMesh = useMemo(() => {
-    if (nodes && nodes.Bed_Single) {
-      const cloned = nodes.Bed_Single.clone(true);
-      cloned.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-      return cloned;
-    }
-    return null;
-  }, [nodes]);
+  const bedScene = useMemo(() => {
+    if (!scene) return null;
+    const cloned = scene.clone(true);
+    cloned.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    return cloned;
+  }, [scene]);
+
+  // Model geometry is in mm, scale by 0.001 to convert to meters
+  const s = typeof scale === 'number' ? scale * 0.00105 : scale;
+  const finalScale = Array.isArray(s) ? s : [s, s, s];
+
+  if (!bedScene) return null;
 
   return (
-    <group position={position} rotation={rotation} scale={scale}>
-      {bedMesh ? (
-        <primitive object={bedMesh} scale={[1.8, 1.8, 1.8]} position={[0, 0, 0]} />
-      ) : null}
-
-      {/* Hospital Bed Headboard & Side Guard Rails */}
-      <mesh position={[0, 0.9, -1.8]} castShadow>
-        <boxGeometry args={[2.2, 1.1, 0.1]} />
-        <meshStandardMaterial color="#b0bec5" metalness={0.6} roughness={0.3} />
-      </mesh>
-      {/* Side Rail Left */}
-      <mesh position={[-1.05, 0.7, 0]} castShadow>
-        <boxGeometry args={[0.08, 0.5, 2.4]} />
-        <meshStandardMaterial color="#90a4ae" metalness={0.7} roughness={0.2} />
-      </mesh>
-      {/* Side Rail Right */}
-      <mesh position={[1.05, 0.7, 0]} castShadow>
-        <boxGeometry args={[0.08, 0.5, 2.4]} />
-        <meshStandardMaterial color="#90a4ae" metalness={0.7} roughness={0.2} />
-      </mesh>
+    <group position={position} rotation={rotation} dispose={null}>
+      {/* Bed base offset Y +0.62m to rest wheels accurately on the floor */}
+      <primitive
+        object={bedScene}
+        scale={finalScale}
+        position={[0.2, 0.62, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+      />
     </group>
   );
 }
 
-useGLTF.preload('/models/kira.glb');
+useGLTF.preload('/models/hospital_bed_opt.glb');

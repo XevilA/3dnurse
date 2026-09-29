@@ -3,9 +3,16 @@ import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import NursingChair from '../furniture/NursingChair';
-import MedicalTable from '../furniture/MedicalTable';
+import HospitalNightstand from '../furniture/HospitalNightstand';
+import MedicalCart from '../furniture/MedicalCart';
 import BabyCrib from '../furniture/BabyCrib';
 import BabyAvatar from '../avatars/BabyAvatar';
+import HospitalRoomShell from '../environment/HospitalRoomShell';
+import RealPlant from '../decorations/RealPlant';
+import FlowerVase from '../decorations/FlowerVase';
+import HospitalSofa from '../furniture/HospitalSofa';
+import Pillows from '../decorations/Pillows';
+import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
 export default function MotherCare3Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -23,47 +30,63 @@ export default function MotherCare3Room() {
 
   return (
     <group>
-      {/* ── Floor & Walls ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
-        <planeGeometry args={[18, 18]} />
-        <meshStandardMaterial color="#fff0f5" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 4, -9]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#fce4ec" />
-      </mesh>
-      <mesh position={[-9, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#fce4ec" />
-      </mesh>
-      <mesh position={[9, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#fce4ec" />
-      </mesh>
+      {/* ── Realistic 3D Hospital Room Architecture ── */}
+      <HospitalRoomShell
+        theme="mother"
+        roomTitle="ห้องบริบาลมารดา: การดูแลเต้านมและเทคนิคการให้นมบุตร"
+        roomNumber="Lactation Ward 103"
+      />
 
       {/* Back Button */}
-      <Html position={[-7, 7, -8.5]}>
-        <button 
+      <Html position={[-7, 6.8, -8.4]}>
+        <button
           onClick={() => setRoom('lobby')}
-          style={{ padding: '10px 20px', background: '#e91e63', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' }}
+          style={{
+            padding: '10px 20px',
+            background: '#e91e63',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
+          }}
         >
           ⬅ กลับหน้าหลัก
         </button>
       </Html>
 
       {/* Header Info */}
-      <Html position={[0, 6.5, -8.5]} center transform>
-        <div style={{ background: 'white', padding: '16px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(233,30,99,0.15)', border: '2px solid #f48fb1' }}>
+      <Html position={[0, 6.6, -8.4]} center transform>
+        <div style={{
+          background: 'white',
+          padding: '14px 24px',
+          borderRadius: '16px',
+          textAlign: 'center',
+          minWidth: '380px',
+          boxShadow: '0 8px 24px rgba(233,30,99,0.15)',
+          border: '2px solid #f48fb1'
+        }}>
           <h2 style={{ color: '#d81b60', margin: 0, fontSize: '20px' }}>🤱 บทเรียนที่ 3: การดูแลเต้านมและเทคนิคการให้นมบุตร</h2>
           <p style={{ color: '#555', margin: '6px 0 0 0', fontWeight: 'bold' }}>ความก้าวหน้า: {Math.min(step + 1, 4)} / 4 ฐานการเรียนรู้</p>
         </div>
       </Html>
 
-      {/* ── REAL 3D ASSETS ── */}
+      {/* ── REAL 3D ASSETS & NATURE ── */}
+      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
+      <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
 
-      {/* Station 0: REAL Nursing Armchair (การเตรียมเต้านมและการประคบอุ่น) */}
+      {/* Comfortable Relaxation Velvet Sofa for Nursing Mothers */}
+      <HospitalSofa position={[7.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} />
+
+      {/* Hospital Foot-pedal Trash Bin */}
+      <HospitalTrashBin position={[-5.8, 0, 2.5]} scale={0.85} />
+
+      {/* Station 0: REAL Nursing Armchair with Support Pillows (การเตรียมเต้านมและการประคบอุ่น) */}
       <group position={[-4, 0, -4]} onClick={step === 0 ? handleNextStep : undefined}>
         <NursingChair position={[0, 0, 0]} rotation={[0, 0.4, 0]} />
+        <Pillows position={[-0.05, 0.65, 0.05]} rotation={[0, 0.4, 0]} scale={0.85} />
         {step === 0 && (
           <Html position={[0, 2.2, 0]} center>
             <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
@@ -91,11 +114,18 @@ export default function MotherCare3Room() {
         )}
       </group>
 
-      {/* Station 2: REAL Medical Nightstand Table (การบีบเก็บน้ำนมแม่) */}
+      {/* Station 2: REAL Hospital Nightstand Table with Breast Milk Equipment & Flowers (การบีบเก็บน้ำนมแม่) */}
       <group position={[-4, 0, 2]} onClick={step === 2 ? handleNextStep : undefined}>
-        <MedicalTable position={[0, 0, 0]} withBottle={true} />
+        <HospitalNightstand position={[0, 0, 0]} scale={1.1}>
+          <FlowerVase position={[0.15, 0.82, 0.1]} scale={0.7} />
+          {/* Milk collection bottle */}
+          <mesh position={[-0.15, 0.72, -0.05]} castShadow>
+            <cylinderGeometry args={[0.06, 0.06, 0.22, 24]} />
+            <meshPhysicalMaterial color="#ffffff" transmission={0.8} roughness={0.1} />
+          </mesh>
+        </HospitalNightstand>
         {step === 2 && (
-          <Html position={[0, 2.2, 0]} center>
+          <Html position={[0, 2.0, 0]} center>
             <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
               <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>3. การบีบเก็บน้ำนมแม่</h3>
               <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>วางนิ้วโป้งและชี้เป็นรูปตัว C ห่างโคนหัวนม 3 ซม. กดเข้าหาผนังอกแล้วบีบเป็นจังหวะ</p>
@@ -105,14 +135,14 @@ export default function MotherCare3Room() {
         )}
       </group>
 
-      {/* Station 3: Relief & Gel Pack Station (การแก้ไขปัญหาเต้านมคัดตึง) */}
-      <group position={[4.5, 0, 2]} onClick={step === 3 ? handleNextStep : undefined}>
-        <MedicalTable position={[0, 0, 0]} withBottle={false} />
+      {/* Station 3: REAL Medical Cart for Thermal Gel Pack & Engorgement Treatment (การแก้ไขปัญหาเต้านมคัดตึง) */}
+      <group position={[3.8, 0, 2]} onClick={step === 3 ? handleNextStep : undefined}>
+        <MedicalCart position={[0, 0, 0]} withMedicalBox={true} withTape={false} scale={0.88} />
         {step === 3 && (
           <Html position={[0, 2.2, 0]} center>
             <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
-              <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>4. การแก้ไขปัญหาเต้านมคัดตึง</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>ให้ลูกดูดบ่อยทุก 2 ชม. หากปวดเต้าหลังให้นมเสร็จ ให้ประคบเย็น 10-15 นาทีลดบวม</p>
+              <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>4. การแก้ไขปัญหาเต้านมคัดตึงและหัวนมแตก</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>ให้ลูกดูดบ่อยทุก 2-3 ชม. ประคบเย็นหลังให้นมเพื่อลดบวม ใช้น้ำนมทาเคลือบหัวนมแตก</p>
               <div style={{ marginTop: '10px', background: '#2e7d32', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '12px' }}>คลิกเพื่อสำเร็จบทเรียน 🏆</div>
             </div>
           </Html>

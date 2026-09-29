@@ -4,13 +4,25 @@ import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import BabyAvatar from '../avatars/BabyAvatar';
 import PlayerController from '../player/PlayerController';
+import RealPlant from '../decorations/RealPlant';
+import RealTree from '../decorations/RealTree';
+import FlowerVase from '../decorations/FlowerVase';
+import HospitalSofa from '../furniture/HospitalSofa';
+import HospitalWheelchair from '../furniture/HospitalWheelchair';
+import DoctorDesk from '../furniture/DoctorDesk';
+import BabyCrib from '../furniture/BabyCrib';
+import HospitalRoomShell from '../environment/HospitalRoomShell';
+import Pillows from '../decorations/Pillows';
+import ExaminationLamp from '../decorations/ExaminationLamp';
+import HospitalTrashBin from '../decorations/HospitalTrashBin';
+import MedicineCabinet from '../furniture/MedicineCabinet';
 
 export default function LobbyRoom() {
   const setRoom = useStore((state) => state.setRoom);
   const learningProgress = useStore((state) => state.learningProgress);
   const globeRef = useRef();
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (globeRef.current) {
       globeRef.current.rotation.y += delta * 0.4;
     }
@@ -18,42 +30,32 @@ export default function LobbyRoom() {
 
   return (
     <group>
-      {/* ── Floor ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
-        <planeGeometry args={[26, 26]} />
-        <meshStandardMaterial color="#f4f9ff" roughness={0.4} />
-      </mesh>
+      {/* ── Realistic 3D Grand Hospital Lobby Architecture ── */}
+      <HospitalRoomShell
+        theme="lobby"
+        width={28}
+        depth={28}
+        height={10}
+        roomTitle="ศูนย์การเรียนรู้สุขภาพมารดาและทารกแรกเกิด (Metaverse Grand Lobby)"
+        roomNumber="Main Reception & Triage"
+      />
 
-      {/* Decorative Floor Pathways */}
+      {/* Decorative Terrazzo Floor Pathways */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
         <ringGeometry args={[2.5, 4.5, 32]} />
-        <meshStandardMaterial color="#e1f0ff" roughness={0.3} />
-      </mesh>
-
-      {/* ── Walls ── */}
-      <mesh position={[0, 4, -12]} receiveShadow>
-        <boxGeometry args={[26, 8, 0.5]} />
-        <meshStandardMaterial color="#ebf5fb" />
-      </mesh>
-      <mesh position={[-13, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[26, 8, 0.5]} />
-        <meshStandardMaterial color="#ebf5fb" />
-      </mesh>
-      <mesh position={[13, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[26, 8, 0.5]} />
-        <meshStandardMaterial color="#ebf5fb" />
+        <meshStandardMaterial color="#e0f2fe" roughness={0.3} />
       </mesh>
 
       {/* ── Welcome Banner (Top Center) ── */}
-      <Html position={[0, 6.8, -11.5]} center transform>
+      <Html position={[0, 7.8, -13.5]} center transform>
         <div style={{
           textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.95)',
+          background: 'rgba(255, 255, 255, 0.98)',
           padding: '16px 28px',
           borderRadius: '20px',
           boxShadow: '0 8px 24px rgba(0, 50, 100, 0.15)',
           border: '2px solid #b3e5fc',
-          minWidth: '420px',
+          minWidth: '440px',
           userSelect: 'none'
         }}>
           <h1 style={{ color: '#d81b60', margin: 0, fontSize: '22px', fontWeight: 'bold' }}>
@@ -68,20 +70,29 @@ export default function LobbyRoom() {
         </div>
       </Html>
 
-      {/* ── Central Holographic Globe ── */}
-      <mesh ref={globeRef} position={[0, 3.2, -1]}>
-        <sphereGeometry args={[1.6, 24, 24]} />
-        <meshStandardMaterial
-          color="#00b0ff"
-          wireframe
-          emissive="#00b0ff"
-          emissiveIntensity={0.6}
-        />
-      </mesh>
-      <mesh position={[0, 1.2, -1]}>
-        <cylinderGeometry args={[1.8, 2.2, 0.6, 32]} />
-        <meshStandardMaterial color="#81d4fa" roughness={0.2} metalness={0.1} />
-      </mesh>
+      {/* ── Central Holographic Healthcare Hub ── */}
+      <group position={[0, 0, -1]}>
+        {/* Tiered Marble Plaza Pedestal */}
+        <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[2.4, 2.6, 0.5, 32]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.1} />
+        </mesh>
+        <mesh position={[0, 0.65, 0]} castShadow>
+          <cylinderGeometry args={[1.8, 2.2, 0.35, 32]} />
+          <meshStandardMaterial color="#bae6fd" roughness={0.3} metalness={0.2} />
+        </mesh>
+
+        {/* Rotating Holographic Earth Globe */}
+        <mesh ref={globeRef} position={[0, 2.6, 0]}>
+          <sphereGeometry args={[1.3, 24, 24]} />
+          <meshStandardMaterial
+            color="#00b0ff"
+            wireframe
+            emissive="#00b0ff"
+            emissiveIntensity={0.65}
+          />
+        </mesh>
+      </group>
 
       {/* ── Mother Care Zone Portal (Left Side - 4 ห้องจริง) ── */}
       <group position={[-7.5, 0, -6]}>
@@ -410,28 +421,49 @@ export default function LobbyRoom() {
         </Html>
       </group>
 
-      {/* ── Decorative Hospital Ambience ── */}
-      <group position={[-11, 0, -10]}>
-        <mesh position={[0, 0.5, 0]}><cylinderGeometry args={[0.5, 0.4, 1]} /><meshStandardMaterial color="#8c8c8c" /></mesh>
-        <mesh position={[0, 1.5, 0]}><sphereGeometry args={[0.8]} /><meshStandardMaterial color="#4caf50" /></mesh>
+      {/* ── Authentic 3D Hospital Ambience & Nature (Trees, Plants & Furniture) ── */}
+      {/* Real 3D Trees in 4 Corners */}
+      <RealTree position={[-11.5, 0, -11]} scale={0.9} />
+      <RealTree position={[11.5, 0, -11]} scale={0.9} />
+      <RealTree position={[-11.5, 0, 10]} scale={0.8} />
+      <RealTree position={[11.5, 0, 10]} scale={0.8} />
+
+      {/* Real 3D Potted Plants Flanking Portals & Hallways */}
+      <RealPlant type="potted" position={[-5.0, 0, -6.2]} scale={1.15} />
+      <RealPlant type="house" position={[5.0, 0, -6.2]} scale={1.05} />
+      <RealPlant type="succulent" position={[-11.5, 0, 4.5]} scale={1.25} />
+      <RealPlant type="succulent" position={[11.5, 0, 4.5]} scale={1.25} />
+
+      {/* Real 3D Hospital Lounge Sofas (Waiting Areas with Soft Cushions) */}
+      <group position={[-11.2, 0, -0.5]} rotation={[0, Math.PI / 2, 0]}>
+        <HospitalSofa position={[0, 0, 0]} scale={1.15} />
+        <Pillows position={[0.2, 0.45, 0]} scale={0.85} />
       </group>
-      <group position={[11, 0, -10]}>
-        <mesh position={[0, 0.5, 0]}><cylinderGeometry args={[0.5, 0.4, 1]} /><meshStandardMaterial color="#8c8c8c" /></mesh>
-        <mesh position={[0, 1.5, 0]}><sphereGeometry args={[0.8]} /><meshStandardMaterial color="#4caf50" /></mesh>
+      <group position={[11.2, 0, -0.5]} rotation={[0, -Math.PI / 2, 0]}>
+        <HospitalSofa position={[0, 0, 0]} scale={1.15} />
+        <Pillows position={[-0.2, 0.45, 0]} scale={0.85} />
       </group>
 
-      {/* ── 3D Baby in Welcome Bassinet ── */}
-      <group position={[1.8, 0, 1.8]}>
-        <mesh position={[0, 0.4, 0]} castShadow receiveShadow>
-          <cylinderGeometry args={[0.45, 0.45, 0.8, 24]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.3} />
-        </mesh>
-        <mesh position={[0, 0.82, 0]} castShadow>
-          <cylinderGeometry args={[0.5, 0.45, 0.1, 24]} />
-          <meshStandardMaterial color="#bbdefb" />
-        </mesh>
-        <BabyAvatar position={[0, 0.88, 0]} rotation={[-0.3, 0, 0]} />
-      </group>
+      {/* Patient Mobility Bay: 2 Real Hospital Wheelchairs */}
+      <HospitalWheelchair position={[-8.5, 0, 4.5]} rotation={[0, 0.4, 0]} scale={1.15} />
+      <HospitalWheelchair position={[-7.2, 0, 5.2]} rotation={[0, 0.6, 0]} scale={1.15} />
+
+      {/* Nurse Information & Triage Desk with Fresh Flowers & Examination Lamp */}
+      <DoctorDesk position={[0, 0, -4.2]} rotation={[0, 0, 0]} scale={1.05} />
+      <FlowerVase position={[0.65, 0.85, -4.2]} scale={1.1} />
+      <ExaminationLamp position={[-0.65, 0.85, -4.0]} scale={0.7} />
+
+      {/* Emergency First Aid & Hygiene Cabinet */}
+      <MedicineCabinet position={[12.2, 0, -4.5]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} withMedicalBox={true} />
+
+      {/* Hospital Pedal Waste Bins */}
+      <HospitalTrashBin position={[1.8, 0, -4.5]} scale={0.85} />
+      <HospitalTrashBin position={[-10.2, 0, 2.5]} scale={0.85} />
+
+      {/* ── Real Transparent Acrylic Baby Crib / Bassinet with Baby (Welcome Center) ── */}
+      <BabyCrib position={[2.4, 0, 1.8]} rotation={[0, -0.3, 0]} scale={0.95}>
+        <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
+      </BabyCrib>
 
       {/* ── GTA 3rd-Person Player Character ── */}
       <PlayerController initialPosition={[0, 0, 3]} />

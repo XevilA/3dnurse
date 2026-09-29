@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
-import MotherAvatar from '../avatars/MotherAvatar';
 import PlayerController from '../player/PlayerController';
 import NursingChair from '../furniture/NursingChair';
+import HospitalRoomShell from '../environment/HospitalRoomShell';
+import RealPlant from '../decorations/RealPlant';
+import RealTree from '../decorations/RealTree';
+import FlowerVase from '../decorations/FlowerVase';
+import DoctorDesk from '../furniture/DoctorDesk';
+import HospitalSofa from '../furniture/HospitalSofa';
+import MedicineCabinet from '../furniture/MedicineCabinet';
 
 export default function QuizRoom() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -27,7 +33,7 @@ export default function QuizRoom() {
 
   const handleAnswer = (index) => {
     const isCorrect = index === questions[currentQuestion].answer;
-    
+
     if (isCorrect) {
       setScore(score + 1);
       setFlashColor('rgba(76, 175, 80, 0.3)');
@@ -58,25 +64,15 @@ export default function QuizRoom() {
 
   return (
     <group>
-      {/* Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial color="#f3e5f5" />
-      </mesh>
-
-      {/* Walls */}
-      <mesh position={[0, 6, -15]} receiveShadow>
-        <boxGeometry args={[30, 12, 1]} />
-        <meshStandardMaterial color="#ce93d8" />
-      </mesh>
-      <mesh position={[-15, 6, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[30, 12, 1]} />
-        <meshStandardMaterial color="#ce93d8" />
-      </mesh>
-      <mesh position={[15, 6, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[30, 12, 1]} />
-        <meshStandardMaterial color="#ce93d8" />
-      </mesh>
+      {/* ── Authentic 3D Examination Grand Hall Architecture ── */}
+      <HospitalRoomShell
+        theme="quiz"
+        width={26}
+        depth={26}
+        height={10}
+        roomTitle="หอประชุมและห้องประเมินความรู้หลังเรียน (Examination Hall)"
+        roomNumber="Hall 301"
+      />
 
       {/* Flash Effect Layer */}
       {flashColor && (
@@ -85,52 +81,45 @@ export default function QuizRoom() {
         </Html>
       )}
 
-      {/* Desk */}
-      <mesh position={[0, 2, -10]}>
-        <boxGeometry args={[8, 4, 3]} />
-        <meshStandardMaterial color="#8d6e63" />
+      {/* ── Authentic 3D Nature & Ambience ── */}
+      <RealTree position={[-10.5, 0, -10]} scale={0.85} />
+      <RealTree position={[10.5, 0, -10]} scale={0.85} />
+      <RealPlant type="potted" position={[-5.5, 0, -9]} scale={1.1} />
+      <RealPlant type="house" position={[5.5, 0, -9]} scale={1.0} />
+
+      {/* Real Velvet Sofas for Examinee Waiting Area */}
+      <HospitalSofa position={[-10.2, 0, 0]} rotation={[0, Math.PI / 2, 0]} scale={1.15} />
+      <HospitalSofa position={[10.2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} scale={1.15} />
+
+      {/* Real Exam & Records Archive Cabinet */}
+      <MedicineCabinet position={[10.2, 0, -5]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} withMedicalBox={false} />
+
+      {/* Real Doctor / Examiner Desk */}
+      <DoctorDesk position={[0, 0, -9.5]} scale={1.25} />
+      <FlowerVase position={[1.4, 0.98, -9.5]} scale={0.9} />
+
+      {/* Computer Screen / Big Interactive Board for Quiz */}
+      <mesh position={[0, 5.2, -10.5]} castShadow>
+        <boxGeometry args={[7.2, 4.4, 0.2]} />
+        <meshStandardMaterial color="#1e1b4b" roughness={0.2} metalness={0.5} />
       </mesh>
 
-      {/* Graduation Cap Display (Cone + Cylinder) */}
-      <group position={[-6, 4.5, -12]}>
-        <mesh position={[0, 0.5, 0]}>
-          <coneGeometry args={[1.5, 1, 4]} />
-          <meshStandardMaterial color="#212121" />
-        </mesh>
-        <mesh position={[0, 0, 0]}>
-          <cylinderGeometry args={[1, 1, 0.5, 32]} />
-          <meshStandardMaterial color="#212121" />
-        </mesh>
-      </group>
-
-      {/* Bookshelf */}
-      <mesh position={[8, 5, -13]}>
-        <boxGeometry args={[4, 10, 2]} />
-        <meshStandardMaterial color="#795548" />
-      </mesh>
-
-      {/* Computer Screen / Big Panel for Quiz */}
-      <mesh position={[0, 5, -10.5]}>
-        <boxGeometry args={[6, 4, 0.5]} />
-        <meshStandardMaterial color="#424242" />
-      </mesh>
-
-      {/* Quiz UI */}
-      <Html position={[0, 5, -10]} transform scale={0.5}>
-        <div style={{ background: 'white', padding: '30px', borderRadius: '10px', width: '600px', height: '400px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
+      {/* Quiz UI on Digital Board */}
+      <Html position={[0, 5.2, -10.35]} transform scale={0.46}>
+        <div style={{ background: 'white', padding: '30px', borderRadius: '16px', width: '640px', minHeight: '400px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', boxShadow: '0 8px 30px rgba(0,0,0,0.3)', border: '3px solid #8b5cf6' }}>
           {!showResult ? (
             <>
-              <h2 style={{ color: '#6a1b9a', marginBottom: '30px', textAlign: 'center', fontSize: '28px' }}>
+              <h2 style={{ color: '#5b21b6', marginBottom: '25px', textAlign: 'center', fontSize: '26px', fontWeight: 'bold' }}>
                 ข้อ {currentQuestion + 1}/10: {questions[currentQuestion].q}
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', width: '100%' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', width: '100%' }}>
                 {questions[currentQuestion].options.map((opt, idx) => (
-                  <button 
+                  <button
                     key={idx}
                     onClick={() => handleAnswer(idx)}
-                    style={{ padding: '20px', fontSize: '20px', background: '#e1bee7', color: '#4a148c', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s' }}
-                    onMouseOver={(e) => e.target.style.background = '#ce93d8'}
-                    onMouseOut={(e) => e.target.style.background = '#e1bee7'}
+                    style={{ padding: '16px', fontSize: '18px', fontWeight: '600', background: '#ede9fe', color: '#4c1d95', border: '1px solid #c4b5fd', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}
+                    onMouseOver={(e) => { e.target.style.background = '#8b5cf6'; e.target.style.color = 'white'; }}
+                    onMouseOut={(e) => { e.target.style.background = '#ede9fe'; e.target.style.color = '#4c1d95'; }}
                   >
                     {opt}
                   </button>
@@ -139,16 +128,26 @@ export default function QuizRoom() {
             </>
           ) : (
             <div style={{ textAlign: 'center' }}>
-              <h1 style={{ color: score >= 8 ? '#4caf50' : '#f44336', fontSize: '36px' }}>
-                {score >= 8 ? 'ผ่านแบบทดสอบ!' : 'ยังไม่ผ่าน'}
+              <h1 style={{ color: score >= 8 ? '#16a34a' : '#dc2626', fontSize: '36px', margin: '0 0 10px 0' }}>
+                {score >= 8 ? '🎉 ผ่านเกณฑ์มาตรฐาน!' : '⚠️ ยังไม่ผ่านเกณฑ์'}
               </h1>
-              <h2 style={{ fontSize: '28px', margin: '20px 0' }}>คะแนนของคุณ: {score}/10</h2>
-              {score < 8 && (
-                <button 
+              <h2 style={{ fontSize: '26px', margin: '16px 0', color: '#333' }}>คะแนนของคุณ: {score}/10 (เกณฑ์ผ่าน 8/10)</h2>
+              <p style={{ color: '#666', fontSize: '15px', marginBottom: '20px' }}>
+                {score >= 8 ? 'คุณมีความพร้อมและความรู้ถูกต้องครบถ้วนในการดูแลมารดาและทารกแรกเกิด' : 'ทบทวนบทเรียนอีกครั้งเพื่อเพิ่มความมั่นใจ'}
+              </p>
+              {score < 8 ? (
+                <button
                   onClick={restartQuiz}
-                  style={{ padding: '15px 30px', fontSize: '22px', background: '#ff9800', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                  style={{ padding: '12px 28px', fontSize: '18px', fontWeight: 'bold', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
                 >
-                  ลองอีกครั้ง
+                  ลองทำแบบทดสอบอีกครั้ง ↻
+                </button>
+              ) : (
+                <button
+                  onClick={() => setRoom('lobby')}
+                  style={{ padding: '12px 28px', fontSize: '18px', fontWeight: 'bold', background: '#16a34a', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                >
+                  รับใบรับรองและกลับล็อบบี้ 🏆
                 </button>
               )}
             </div>
@@ -157,12 +156,12 @@ export default function QuizRoom() {
       </Html>
 
       {/* Back Button */}
-      <Html position={[-12, 10, -14]} center>
-        <button 
+      <Html position={[-11, 8.5, -12]} center>
+        <button
           onClick={() => setRoom('lobby')}
-          style={{ padding: '12px 24px', fontSize: '20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ padding: '10px 20px', fontSize: '16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
         >
-          กลับหน้าหลัก
+          ⬅ กลับหน้าหลัก
         </button>
       </Html>
 

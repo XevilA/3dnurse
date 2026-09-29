@@ -4,8 +4,13 @@ import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyBathtub from '../furniture/BabyBathtub';
 import Washbasin from '../furniture/Washbasin';
-import MedicalTable from '../furniture/MedicalTable';
+import MedicalCart from '../furniture/MedicalCart';
 import BabyAvatar from '../avatars/BabyAvatar';
+import HospitalRoomShell from '../environment/HospitalRoomShell';
+import RealPlant from '../decorations/RealPlant';
+import MedicineCabinet from '../furniture/MedicineCabinet';
+import LaundryBasket from '../decorations/LaundryBasket';
+import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
 export default function NewbornCare2Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
@@ -29,33 +34,33 @@ export default function NewbornCare2Room() {
 
   return (
     <group>
-      {/* ── Floor & Walls ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
-        <planeGeometry args={[18, 18]} />
-        <meshStandardMaterial color="#f0fdfa" roughness={0.3} />
-      </mesh>
-      <mesh position={[0, 4, -9]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#e0f2f1" />
-      </mesh>
-      <mesh position={[-9, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#e0f2f1" />
-      </mesh>
-      <mesh position={[9, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
-        <boxGeometry args={[18, 8, 0.5]} />
-        <meshStandardMaterial color="#e0f2f1" />
-      </mesh>
+      {/* ── Realistic 3D Hospital Room Architecture ── */}
+      <HospitalRoomShell
+        theme="newborn"
+        roomTitle="ห้องบริบาลทารก: การอาบน้ำและทำความสะอาดทารก"
+        roomNumber="Nursery Bath 202"
+      />
 
       {/* Header Info */}
-      <Html position={[0, 6.5, -8.5]} center transform>
-        <div style={{ background: 'white', padding: '16px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(0,150,136,0.15)', border: '2px solid #80cbc4' }}>
+      <Html position={[0, 6.6, -8.4]} center transform>
+        <div style={{ background: 'white', padding: '14px 24px', borderRadius: '16px', textAlign: 'center', minWidth: '380px', boxShadow: '0 8px 24px rgba(0,150,136,0.15)', border: '2px solid #80cbc4' }}>
           <h2 style={{ color: '#00897b', margin: 0, fontSize: '20px' }}>🛁 บทเรียนที่ 2: การอาบน้ำและทำความสะอาดทารก</h2>
           <p style={{ color: '#555', margin: '6px 0 0 0', fontWeight: 'bold' }}>ขั้นตอน: {Math.min(step + 1, stepsData.length)} / {stepsData.length}</p>
         </div>
       </Html>
 
-      {/* ── REAL 3D ASSETS ── */}
+      {/* ── REAL 3D FURNITURE & ENVIRONMENT ASSETS ── */}
+      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
+      <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
+
+      {/* Medicine & Nursery Bath Supplies Cabinet */}
+      <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
+
+      {/* Wicker Hamper for Baby Towels */}
+      <LaundryBasket position={[2.2, 0, -2.6]} scale={1.05} />
+
+      {/* Sanitary Pedal Waste Bin */}
+      <HospitalTrashBin position={[-5.8, 0, 2.5]} scale={0.85} />
 
       {/* Real Baby Bathtub Station with Baby Inside */}
       <group position={[0, 0, -3.5]} onClick={handleNext}>
@@ -68,9 +73,9 @@ export default function NewbornCare2Room() {
         <Washbasin position={[0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
       </group>
 
-      {/* Real Medical Supplies Table (Right) */}
-      <group position={[5.5, 0, 0]} onClick={handleNext}>
-        <MedicalTable position={[0, 0, 0]} withBottle={true} />
+      {/* Real Clinical Cart (Right) with Baby Wash & Supplies */}
+      <group position={[5.2, 0, 1.0]} onClick={handleNext}>
+        <MedicalCart position={[0, 0, 0]} withMedicalBox={false} withTape={false} scale={0.88} />
       </group>
 
       {/* Educational Interactive Panel */}
@@ -79,7 +84,7 @@ export default function NewbornCare2Room() {
           <div style={{ background: 'white', padding: '22px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', width: '360px', textAlign: 'center', borderTop: '6px solid #00897b' }}>
             <h3 style={{ margin: '0 0 10px 0', color: '#004d40', fontSize: '18px' }}>{stepsData[step].title}</h3>
             <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#444', lineHeight: '1.5' }}>{stepsData[step].desc}</p>
-            <button 
+            <button
               onClick={handleNext}
               style={{ padding: '8px 20px', background: '#00897b', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
             >
@@ -90,8 +95,8 @@ export default function NewbornCare2Room() {
       )}
 
       {/* Back Button */}
-      <Html position={[-7, 7, -8.5]}>
-        <button 
+      <Html position={[-7, 6.8, -8.4]}>
+        <button
           onClick={() => setRoom('lobby')}
           style={{ padding: '10px 20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold' }}
         >
