@@ -65,19 +65,70 @@ export default function NewbornCare1Room() {
       {/* Sanitary Trash Bin */}
       <HospitalTrashBin position={[-5.8, 0, 3.5]} scale={0.85} />
 
-      {/* Real Nursing Armchair with Ergonomic Support Pillows */}
-      <group position={[-3.5, 0, -3.5]} onClick={handleNext}>
+      {/* Real Nursing Armchair with Ergonomic Support Pillows (Breastfeeding Demonstration Station) */}
+      <group
+        position={[-3.5, 0, -3.5]}
+        onClick={() => {
+          setHoldingBaby(true);
+          handleNext();
+        }}
+        className="cursor-pointer"
+      >
         <NursingChair position={[0, 0, 0]} rotation={[0, 0.4, 0]} />
         <Pillows position={[-0.05, 0.65, 0.05]} rotation={[0, 0.4, 0]} scale={0.85} />
+        {/* Soft Glowing Station Beacon */}
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.9, 1.15, 32]} />
+          <meshBasicMaterial color="#0288d1" transparent opacity={0.6} />
+        </mesh>
+        <Html position={[0, 1.9, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setHoldingBaby(true);
+              handleNext();
+            }}
+            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #0288d1 0%, #01579b 100%)', border: '2px solid white' }}
+          >
+            <span>🤱</span>
+            <span>เก้าอี้ให้นมบุตร (คลิกสาธิตท่าดูดนม)</span>
+          </div>
+        </Html>
       </group>
 
       {/* Real Baby Crib with Baby */}
-      <group position={[3.5, 0, -3.5]} onClick={handleNext}>
+      <group
+        position={[3.5, 0, -3.5]}
+        onClick={() => setHoldingBaby(!isHoldingBaby)}
+        className="cursor-pointer"
+      >
         <BabyCrib position={[0, 0, 0]}>
           {!isHoldingBaby && (
-            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} />
+            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[0.55, 0.55, 0.55]} />
           )}
         </BabyCrib>
+        {/* Soft Glowing Station Beacon */}
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.9, 1.15, 32]} />
+          <meshBasicMaterial color="#ec4899" transparent opacity={0.5} />
+        </mesh>
+        <Html position={[0, 1.8, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setHoldingBaby(!isHoldingBaby);
+            }}
+            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95"
+            style={{
+              background: isHoldingBaby ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ec4899, #db2777)',
+              border: '2px solid white'
+            }}
+          >
+            <span>{isHoldingBaby ? '🧸' : '👶'}</span>
+            <span>{isHoldingBaby ? 'วางลูกน้อยลงในเปล' : 'ลูกน้อยในเปล (คลิกอุ้ม)'}</span>
+          </div>
+        </Html>
       </group>
 
       {/* Real Bedside Table with Feeding Bottles & Fresh Flowers */}
@@ -94,7 +145,7 @@ export default function NewbornCare1Room() {
 
       {/* Educational Interactive Panel */}
       {step < stepsData.length && (
-        <Html position={[0, 4.5, -5]} center>
+        <Html position={[0, 4.3, -4.5]} center distanceFactor={15}>
           <div style={{ background: 'white', padding: '22px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', width: '360px', textAlign: 'center', borderTop: '6px solid #0288d1' }}>
             <h3 style={{ margin: '0 0 10px 0', color: '#01579b', fontSize: '18px' }}>{stepsData[step].title}</h3>
             <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#444', lineHeight: '1.5' }}>{stepsData[step].desc}</p>
@@ -107,16 +158,6 @@ export default function NewbornCare1Room() {
           </div>
         </Html>
       )}
-
-      {/* Back Button */}
-      <Html position={[-7, 6.8, -8.4]}>
-        <button
-          onClick={() => setRoom('lobby')}
-          style={{ padding: '10px 20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold' }}
-        >
-          ⬅ กลับหน้าหลัก
-        </button>
-      </Html>
 
       {/* ── GTA Player Character ── */}
       <PlayerController initialPosition={[0, 0, 2]} />

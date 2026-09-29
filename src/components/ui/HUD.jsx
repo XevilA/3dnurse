@@ -16,6 +16,20 @@ const NEWBORN_ROOMS = [
   { key: 'newbornCare5', label: '5. จัดสภาพแวดล้อม', icon: '🏠' },
 ];
 
+const ROOM_TITLES = {
+  lobby: 'Grand Hospital Lobby',
+  motherCare1: '🏥 ดูแลร่างกายและฟื้นตัว (Ward 101)',
+  motherCare2: '🩹 ดูแลแผลหลังคลอด (Ward 102)',
+  motherCare3: '🤱 ดูแลเต้านมและการให้นม (Ward 103)',
+  motherCare4: '🩺 สังเกตอาการผิดปกติ (Ward 104)',
+  newbornCare1: '🍼 การให้นมทารกแรกเกิด (Nursery 201)',
+  newbornCare2: '🛁 การอาบน้ำทารก (Nursery 202)',
+  newbornCare3: '👶 เปลี่ยนผ้าอ้อม/ขับถ่าย (Nursery 203)',
+  newbornCare4: '🔗 ดูแลสายสะดือ (Nursery 204)',
+  newbornCare5: '🏠 จัดสภาพแวดล้อมปลอดภัย (Nursery 205)',
+  quiz: '🎓 แบบทดสอบประเมินความรู้ (Hall 301)',
+};
+
 export default function HUD() {
   const currentRoom = useStore((s) => s.currentRoom);
   const setRoom = useStore((s) => s.setRoom);
@@ -28,17 +42,29 @@ export default function HUD() {
   return (
     <>
       {/* ── Top bar ── */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-2 pointer-events-auto"
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 sm:px-4 py-2 pointer-events-auto"
         style={{ background: 'linear-gradient(180deg, rgba(173,216,255,0.95) 0%, rgba(173,216,255,0) 100%)' }}>
 
-        {/* Title */}
+        {/* Left: Back button if inside a room, or App branding if in lobby */}
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🏥</span>
+          {currentRoom !== 'lobby' ? (
+            <button
+              type="button"
+              onClick={() => setRoom('lobby')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-md transition transform hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <span>⬅</span>
+              <span className="hidden sm:inline">กลับล็อบบี้</span>
+              <span className="sm:hidden">ล็อบบี้</span>
+            </button>
+          ) : (
+            <span className="text-2xl">🏥</span>
+          )}
           <div>
-            <h1 className="text-sm font-bold text-blue-900 leading-tight">
-              Postpartum & Newborn Care
+            <h1 className="text-xs sm:text-sm font-bold text-blue-900 leading-tight">
+              {ROOM_TITLES[currentRoom] || 'Postpartum & Newborn Care'}
             </h1>
-            <p className="text-xs text-blue-700">Learning Metaverse</p>
+            <p className="text-[10px] sm:text-xs text-blue-700">Learning Metaverse</p>
           </div>
         </div>
 

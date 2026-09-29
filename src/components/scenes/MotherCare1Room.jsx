@@ -38,26 +38,6 @@ export default function MotherCare1Room() {
         roomNumber="Ward 101"
       />
 
-      {/* Back Button */}
-      <Html position={[-7, 6.8, -8.4]}>
-        <button
-          onClick={() => setRoom('lobby')}
-          style={{
-            padding: '10px 20px',
-            background: '#ff3385',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '15px',
-            fontWeight: 'bold',
-            boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
-          }}
-        >
-          ⬅ กลับหน้าหลัก
-        </button>
-      </Html>
-
       {/* Header Info */}
       <Html position={[0, 6.6, -8.4]} center transform>
         <div style={{
@@ -92,7 +72,7 @@ export default function MotherCare1Room() {
         <HospitalBed position={[0, 0, 0]} />
         <Pillows position={[0.2, 0.95, -0.6]} rotation={[0, 0, 0]} scale={0.8} />
         {step === 0 && (
-          <Html position={[0, 2.2, 0]} center>
+          <Html position={[0, 2.2, 0]} center distanceFactor={12}>
             <div style={{ background: '#ffffff', border: '2px solid #e91e63', padding: '16px', borderRadius: '14px', width: '280px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={handleNextStep}>
               <h3 style={{ color: '#e91e63', margin: '0 0 8px 0', fontSize: '16px' }}>1. การพักผ่อนและการนอนหลับ</h3>
               <p style={{ margin: 0, fontSize: '13px', color: '#444' }}>นอนหลับพักผ่อนให้เพียงพอ อย่างน้อย 8-10 ชม./วัน เมื่อลูกหลับ แม่ควรหลับพักตาม</p>
@@ -106,7 +86,7 @@ export default function MotherCare1Room() {
       <group position={[-1.7, 0, -4]} rotation={[0, -0.2, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
-            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
+            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[0.55, 0.55, 0.55]} />
           )}
         </BabyCrib>
         <Html position={[0, 1.6, 0]} center distanceFactor={14}>

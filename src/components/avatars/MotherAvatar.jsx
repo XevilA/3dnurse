@@ -58,17 +58,29 @@ const MotherAvatar = forwardRef(({
     });
   }, [xbotAnimations]);
 
+  // Keep references to bones and character node for direct procedural kinematic posing
+  const bonesRef = useRef({});
+  const characterNodeRef = useRef(null);
+
   // Clone scene with SkeletonUtils and clean bone names
   const clonedScene = useMemo(() => {
     const clone = SkeletonUtils.clone(michelleScene);
+    bonesRef.current = {};
+    characterNodeRef.current = null;
+
     clone.traverse((child) => {
       if (child.name) {
         child.name = child.name.replace(/^mixamorig:?/, '');
       }
+      if (child.isBone) {
+        bonesRef.current[child.name] = child;
+      }
       // Fix upright orientation: michelle.glb Character root node has rotation.x = Math.PI / 2 (+90 deg)
       // which caused the character to lie flat on the floor when playing animations.
       if (child.name === 'Character') {
-        child.rotation.x = 0;
+        child.rotation.set(0, 0, 0);
+        child.quaternion.set(0, 0, 0, 1);
+        characterNodeRef.current = child;
       }
       if (child.isMesh) {
         child.castShadow = true;
@@ -97,15 +109,7 @@ const MotherAvatar = forwardRef(({
 
   // Expose bone search & group for external attachment
   useImperativeHandle(ref, () => ({
-    getBone: (name) => {
-      let found = null;
-      clonedScene.traverse((child) => {
-        if (child.isBone && child.name.toLowerCase().includes(name.toLowerCase())) {
-          found = child;
-        }
-      });
-      return found;
-    },
+    getBone: (name) => bonesRef.current[name] || null,
     group: group.current,
   }));
 
@@ -133,32 +137,37 @@ const MotherAvatar = forwardRef(({
     }
   }, [currentAnimation, isHoldingBaby, actions]);
 
-  // Gentle arm posing to cradle infant when holding baby
-  useFrame(() => {
-    if (!clonedScene || !isHoldingBaby) return;
-    clonedScene.traverse((child) => {
-      if (child.isBone) {
-        const name = child.name;
-        if (name === 'LeftArm') {
-          child.rotation.x = 0.95;
-          child.rotation.y = 0.25;
-          child.rotation.z = 0.35;
-        } else if (name === 'LeftForeArm') {
-          child.rotation.x = 0.15;
-          child.rotation.y = 0.75;
-          child.rotation.z = 0.1;
-        } else if (name === 'RightArm') {
-          child.rotation.x = 0.9;
-          child.rotation.y = -0.2;
-          child.rotation.z = -0.35;
-        } else if (name === 'RightForeArm') {
-          child.rotation.x = 0.1;
-          child.rotation.y = -0.7;
-          child.rotation.z = -0.15;
-        }
+  // Priority 1 ensures this runs AFTER the animation mixer has updated (which runs at priority 0)
+  useFrame((state) => {
+    // 1. Permanently guarantee Character node is upright and cannot tilt/lie down
+    if (characterNodeRef.current) {
+      characterNodeRef.current.rotation.set(0, 0, 0);
+      characterNodeRef.current.quaternion.set(0, 0, 0, 1);
+    }
+
+    // 2. Realistic Breastfeeding & Infant Cradling Posture
+    if (isHoldingBaby) {
+      const b = bonesRef.current;
+      const t = state.clock.elapsedTime;
+
+      // Left arm forms a secure cradle shelf supporting infant head & neck
+      if (b['LeftArm']) b['LeftArm'].rotation.set(1.15, 0.35, 0.45);
+      if (b['LeftForeArm']) b['LeftForeArm'].rotation.set(0.2, 0.85, 0.15);
+
+      // Right arm wraps underneath supporting infant back & bottom
+      if (b['RightArm']) b['RightArm'].rotation.set(1.1, -0.32, -0.42);
+      if (b['RightForeArm']) b['RightForeArm'].rotation.set(0.18, -0.85, -0.15);
+
+      // Tender maternal gaze looking down at baby at breast
+      if (b['Neck']) b['Neck'].rotation.set(0.22, 0.05, 0);
+      if (b['Head']) b['Head'].rotation.set(0.18, 0.05, 0);
+
+      // Gentle maternal breathing rhythm
+      if (b['Spine1']) {
+        b['Spine1'].rotation.x = Math.sin(t * 2.2) * 0.025;
       }
-    });
-  });
+    }
+  }, 1);
 
   return (
     <group ref={group} position={position} rotation={rotation} scale={scale} dispose={null}>

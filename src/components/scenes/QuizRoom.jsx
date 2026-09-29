@@ -157,16 +157,6 @@ export default function QuizRoom() {
         </div>
       </Html>
 
-      {/* Back Button */}
-      <Html position={[-11, 8.5, -12]} center>
-        <button
-          onClick={() => setRoom('lobby')}
-          style={{ padding: '10px 20px', fontSize: '16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
-        >
-          ⬅ กลับหน้าหลัก
-        </button>
-      </Html>
-
       {/* ── Real 3D Quiz Seating Chair ── */}
       <NursingChair position={[0, 0, -6.5]} rotation={[0, 0, 0]} />
 
@@ -174,7 +164,7 @@ export default function QuizRoom() {
       <group position={[2.4, 0, -6.5]} rotation={[0, -0.3, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
-            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
+            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[0.55, 0.55, 0.55]} />
           )}
         </BabyCrib>
         <Html position={[0, 1.6, 0]} center distanceFactor={14}>

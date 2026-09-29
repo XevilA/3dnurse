@@ -10,6 +10,8 @@ import RealPlant from '../decorations/RealPlant';
 import MedicineCabinet from '../furniture/MedicineCabinet';
 import LaundryBasket from '../decorations/LaundryBasket';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
+import DrawerCabinet from '../furniture/DrawerCabinet';
+import CleaningBottle from '../decorations/CleaningBottle';
 
 export default function NewbornCare3Room() {
   const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby } = useStore();
@@ -61,37 +63,41 @@ export default function NewbornCare3Room() {
       {/* Sanitary Pedal Disposal Bin right next to Changing Station */}
       <HospitalTrashBin position={[-2.2, 0, -3.2]} scale={0.9} />
 
-      {/* Real Diaper Changing Table with Raised Contour Edge Rails and Baby */}
-      <group position={[0, 0, -3.5]} onClick={handleNext}>
-        {/* Modern Changing Table Unit with Lower Storage Shelf */}
-        <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
-          <boxGeometry args={[2.0, 0.9, 1.2]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.25} />
-        </mesh>
-        {/* Safety Guard Raised Edges (Left, Right, Back) */}
-        <mesh position={[0, 0.98, -0.56]} castShadow>
-          <boxGeometry args={[2.0, 0.16, 0.08]} />
-          <meshStandardMaterial color="#e2e8f0" />
-        </mesh>
-        <mesh position={[-0.96, 0.98, 0]} castShadow>
-          <boxGeometry args={[0.08, 0.16, 1.12]} />
-          <meshStandardMaterial color="#e2e8f0" />
-        </mesh>
-        <mesh position={[0.96, 0.98, 0]} castShadow>
-          <boxGeometry args={[0.08, 0.16, 1.12]} />
-          <meshStandardMaterial color="#e2e8f0" />
-        </mesh>
-
-        {/* Waterproof Wipe-Clean Contoured Changing Pad */}
-        <mesh position={[0, 0.93, 0]} receiveShadow>
-          <boxGeometry args={[1.75, 0.06, 0.95]} />
+      {/* Real Diaper Changing Station with Real Drawer Cabinet, Changing Pad and Baby */}
+      <group position={[0, 0, -3.5]} onClick={handleNext} className="cursor-pointer">
+        <DrawerCabinet position={[0, 0, 0]} rotation={[0, 0, 0]} scale={0.9} />
+        {/* Waterproof Wipe-Clean Contoured Changing Pad resting on cabinet */}
+        <mesh position={[0, 1.72, 0.05]} receiveShadow castShadow>
+          <boxGeometry args={[1.1, 0.08, 0.55]} />
           <meshStandardMaterial color="#bae6fd" roughness={0.3} />
         </mesh>
-
+        {/* Antiseptic Spray Cleaner on Table */}
+        <CleaningBottle position={[-0.45, 1.76, 0.15]} scale={0.7} />
+        {/* Soft Glowing Station Beacon */}
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[1.0, 1.25, 32]} />
+          <meshBasicMaterial color="#d97706" transparent opacity={0.6} />
+        </mesh>
         {/* Baby lying on back on changing table */}
         {!isHoldingBaby && (
-          <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[1, 1, 1]} />
+          <BabyAvatar position={[0, 1.84, 0.05]} rotation={[-1.57, 0, 0]} scale={[0.55, 0.55, 0.55]} />
         )}
+        <Html position={[0, 2.5, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              useStore.getState().setHoldingBaby(!isHoldingBaby);
+            }}
+            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95"
+            style={{
+              background: isHoldingBaby ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #d97706, #b45309)',
+              border: '2px solid white'
+            }}
+          >
+            <span>👶</span>
+            <span>{isHoldingBaby ? 'วางลูกน้อยบนเบาะเปลี่ยนผ้าอ้อม' : 'ลูกน้อยบนเบาะ (คลิกอุ้มขึ้น)'}</span>
+          </div>
+        </Html>
       </group>
 
       {/* Real Porcelain Washbasin (for handwashing & baby bottom cleaning) */}
@@ -106,7 +112,7 @@ export default function NewbornCare3Room() {
 
       {/* Educational Interactive Panel */}
       {step < stepsData.length && (
-        <Html position={[0, 4.2, -4]} center>
+        <Html position={[0, 4.2, -4]} center distanceFactor={15}>
           <div style={{ background: 'white', padding: '22px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', width: '360px', textAlign: 'center', borderTop: '6px solid #d97706' }}>
             <h3 style={{ margin: '0 0 10px 0', color: '#92400e', fontSize: '18px' }}>{stepsData[step].title}</h3>
             <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#444', lineHeight: '1.5' }}>{stepsData[step].desc}</p>
@@ -119,16 +125,6 @@ export default function NewbornCare3Room() {
           </div>
         </Html>
       )}
-
-      {/* Back Button */}
-      <Html position={[-7, 6.8, -8.4]}>
-        <button
-          onClick={() => setRoom('lobby')}
-          style={{ padding: '10px 20px', background: '#ef5350', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold' }}
-        >
-          ⬅ กลับหน้าหลัก
-        </button>
-      </Html>
 
       {/* ── GTA Player Character ── */}
       <PlayerController initialPosition={[0, 0, 1.5]} />

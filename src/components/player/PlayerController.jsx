@@ -352,12 +352,17 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         />
         {/* Real 3D Infant nestled in Mother's loving arms (Only in Care Rooms) */}
         {isHoldingBaby && currentRoom !== 'lobby' && (
-          <group position={[0.02, 1.12, 0.28]} rotation={[-0.2, 0.35, 0.15]}>
+          <group position={[0.04, 1.06, 0.25]} rotation={[-0.18, 0.25, 0.22]}>
             <BabyAvatar
               position={[0, 0, 0]}
               rotation={[0, 0, 0]}
-              scale={[0.45, 0.45, 0.45]}
+              scale={[0.52, 0.52, 0.52]}
             />
+            {/* Soft Hospital Swaddle Blanket around Baby */}
+            <mesh position={[0.02, 0.95, -0.05]} rotation={[0.1, 0, 0]} castShadow>
+              <capsuleGeometry args={[0.14, 0.28, 8, 16]} />
+              <meshStandardMaterial color="#fef3c7" roughness={0.7} />
+            </mesh>
           </group>
         )}
       </group>
