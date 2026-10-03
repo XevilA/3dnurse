@@ -378,7 +378,7 @@ export default function QuizRoom() {
       <group position={[2.4, 0, -6.5]} rotation={[0, -0.3, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
-            <BabyAvatar pose="sleeping" scale={0.38} withBlanket={true} />
+            <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
         <Html position={[0, 1.6, 0]} center distanceFactor={14}>

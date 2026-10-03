@@ -88,10 +88,9 @@ export default function NewbornCare4Room() {
         {/* Baby lying on back for cord care */}
         {!isHoldingBaby && (
           <BabyAvatar
-            pose="sleeping"
+            pose="cordCare"
             position={[0, 0.94, 0]}
-            scale={0.36}
-            withBlanket={false}
+            scale={0.92}
           />
         )}
         <Html position={[0, 1.7, 0]} center distanceFactor={14}>

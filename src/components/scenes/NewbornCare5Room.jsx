@@ -91,7 +91,7 @@ export default function NewbornCare5Room() {
       >
         <BabyCrib position={[0, 0, 0]}>
           {!isHoldingBaby && (
-            <BabyAvatar pose="sleeping" scale={0.38} withBlanket={true} />
+            <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
         {/* Soft Glowing Station Beacon */}

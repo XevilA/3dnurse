@@ -80,11 +80,9 @@ export default function NewbornCare2Room() {
         </mesh>
         {!isHoldingBaby && (
           <BabyAvatar
-            pose="sleeping"
-            position={[0, 1.15, 0]}
-            rotation={[0.1, 0, 0]}
-            scale={0.36}
-            withBlanket={false}
+            pose="bathing"
+            position={[0, 1.08, 0]}
+            scale={0.92}
           />
         )}
         <Html position={[0, 1.9, 0]} center distanceFactor={14}>

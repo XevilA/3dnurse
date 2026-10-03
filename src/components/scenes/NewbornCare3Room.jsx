@@ -83,8 +83,8 @@ export default function NewbornCare3Room() {
           <BabyAvatar
             pose="sleeping"
             position={[0, 1.76, 0.05]}
-            scale={0.36}
-            withBlanket={false}
+            scale={0.92}
+            withBlanket={true}
           />
         )}
         <Html position={[0, 2.5, 0]} center distanceFactor={14}>
