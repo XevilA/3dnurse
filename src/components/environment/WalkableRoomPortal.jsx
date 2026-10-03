@@ -5,16 +5,19 @@ import * as THREE from 'three';
 import useStore from '../../store/useStore';
 
 /**
- * WalkableRoomPortal — 3D Physical Doorway & Walk-in Teleporter
+ * WalkableRoomPortal — Modern Architectural Hospital Doorway & Walk-in Entrance
  *
- * Allows players to physically walk through the doorway into any specific care room!
- * Features:
- * - Real hospital textures (brushed stainless frame, authentic door leaf, destination floor mat)
- * - 3D Hospital Door Frame with illuminated LED overhead lintel & room number
- * - Pulsing floor entrance trigger pad
- * - Physical walk-in proximity detector (triggers room transition on approach)
- * - Clickable interaction fallback for mobile/touch
- * - Completion status badge (✅ ผ่านแล้ว)
+ * Modeled after real premier hospital ward double-doors:
+ * - Slim brushed stainless steel architrave door frame (วงกบสแตนเลสโรงพยาบาลแบบสลิม)
+ * - Hospital partition wall wings with crash bumper rails on both sides
+ * - Symmetrical double-leaf hospital doors (ประตูโรงพยาบาลบานคู่สมมาตร):
+ *     - Observation vision panel with safety glass & stainless glazing beads
+ *     - Full-width heavy-duty stainless steel kick plates
+ *     - Long vertical ergonomic tubular stainless pull/push handles
+ *     - Top overhead hydraulic door closer units
+ * - Smooth automatic hydraulic opening animation on player approach (เปิดต้อนรับอัตโนมัติ)
+ * - Clean backlit LED directory header sign (ป้ายไฟชื่อห้องมาตรฐานโรงพยาบาล)
+ * - Authentic floor transition threshold with destination room texture
  */
 export default function WalkableRoomPortal({
   roomKey,
@@ -30,7 +33,8 @@ export default function WalkableRoomPortal({
   const learningProgress = useStore((state) => state.learningProgress);
   const isCompleted = !!learningProgress[roomKey];
 
-  const ringRef = useRef();
+  const leftDoorRef = useRef();
+  const rightDoorRef = useRef();
   const [isNear, setIsNear] = useState(false);
   const hasTriggeredRef = useRef(false);
 
@@ -41,7 +45,9 @@ export default function WalkableRoomPortal({
       secondary: '#fce4ec',
       accent: '#ff80ab',
       text: '#880e4f',
-      glow: '#ff4081',
+      glow: '#ff80ab',
+      doorColor: '#dfc3a4', // warm nordic hospital oak laminate
+      bumper: '#f472b6',
       badgeBg: 'linear-gradient(135deg, #e91e63 0%, #c2185b 100%)',
     },
     newborn: {
@@ -49,7 +55,9 @@ export default function WalkableRoomPortal({
       secondary: '#e1f5fe',
       accent: '#81d4fa',
       text: '#01579b',
-      glow: '#00b0ff',
+      glow: '#81d4fa',
+      doorColor: '#bae6fd', // clinical pastel cyan-blue
+      bumper: '#38bdf8',
       badgeBg: 'linear-gradient(135deg, #0288d1 0%, #01579b 100%)',
     },
     quiz: {
@@ -57,7 +65,9 @@ export default function WalkableRoomPortal({
       secondary: '#f3e8ff',
       accent: '#c084fc',
       text: '#4c1d95',
-      glow: '#a855f7',
+      glow: '#c084fc',
+      doorColor: '#475569', // architectural soundproof charcoal
+      bumper: '#a855f7',
       badgeBg: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
     },
   }[theme] || {
@@ -65,11 +75,13 @@ export default function WalkableRoomPortal({
     secondary: '#e1f5fe',
     accent: '#81d4fa',
     text: '#01579b',
-    glow: '#00b0ff',
+    glow: '#81d4fa',
+    doorColor: '#bae6fd',
+    bumper: '#38bdf8',
     badgeBg: 'linear-gradient(135deg, #0288d1 0%, #01579b 100%)',
   };
 
-  // Textures matching the destination room
+  // Destination floor texture
   const floorUrl =
     theme === 'mother'
       ? '/textures/floor_vinyl_mother.jpg'
@@ -122,16 +134,8 @@ export default function WalkableRoomPortal({
 
   const [px, py, pz] = position;
 
-  // Proximity & Walk-In Detection
+  // Proximity, Automatic Door Swing & Walk-in Trigger
   useFrame((_, delta) => {
-    // Pulse floor ring
-    if (ringRef.current) {
-      ringRef.current.rotation.z += delta * 0.8;
-      const s = 1.0 + Math.sin(Date.now() * 0.004) * 0.08;
-      ringRef.current.scale.set(s, s, s);
-    }
-
-    // Check player distance to portal
     const playerPos = useStore.getState().playerPosition;
     if (!playerPos) return;
 
@@ -139,12 +143,33 @@ export default function WalkableRoomPortal({
     const dz = playerPos[2] - pz;
     const dist = Math.sqrt(dx * dx + dz * dz);
 
-    const near = dist < 2.5;
+    const near = dist < 2.6;
     if (near !== isNear) {
       setIsNear(near);
     }
 
-    // Physical walk-in threshold (< 1.15m from door center)
+    // Smooth hydraulic swing open when player approaches
+    const targetAngleLeft = near ? -1.18 : 0;
+    const targetAngleRight = near ? 1.18 : 0;
+
+    if (leftDoorRef.current) {
+      leftDoorRef.current.rotation.y = THREE.MathUtils.damp(
+        leftDoorRef.current.rotation.y,
+        targetAngleLeft,
+        6,
+        delta
+      );
+    }
+    if (rightDoorRef.current) {
+      rightDoorRef.current.rotation.y = THREE.MathUtils.damp(
+        rightDoorRef.current.rotation.y,
+        targetAngleRight,
+        6,
+        delta
+      );
+    }
+
+    // Physical walk-in threshold (< 1.15m from doorway center)
     if (dist < 1.15 && !hasTriggeredRef.current) {
       hasTriggeredRef.current = true;
       setRoom(roomKey);
@@ -158,168 +183,333 @@ export default function WalkableRoomPortal({
 
   return (
     <group position={position} rotation={rotation} scale={scale}>
-      {/* ── 1. Door Frame 3D Geometry with Brushed Stainless Texture ── */}
-      {/* Left Pillar */}
-      <mesh position={[-0.95, 1.45, 0]} castShadow>
-        <boxGeometry args={[0.18, 2.9, 0.22]} />
-        <meshStandardMaterial map={configuredMetal} roughness={0.3} metalness={0.8} />
-      </mesh>
-      {/* Right Pillar */}
-      <mesh position={[0.95, 1.45, 0]} castShadow>
-        <boxGeometry args={[0.18, 2.9, 0.22]} />
-        <meshStandardMaterial map={configuredMetal} roughness={0.3} metalness={0.8} />
-      </mesh>
-      {/* Upper Lintel Frame */}
-      <mesh position={[0, 2.9, 0]} castShadow>
-        <boxGeometry args={[2.08, 0.2, 0.24]} />
-        <meshStandardMaterial map={configuredMetal} roughness={0.3} metalness={0.8} />
-      </mesh>
-
-      {/* Decorative Outer Arch Accent */}
-      <mesh position={[0, 3.25, 0.02]} castShadow>
-        <boxGeometry args={[2.2, 0.5, 0.16]} />
-        <meshStandardMaterial color={themeConfig.primary} roughness={0.3} />
-      </mesh>
-
-      {/* ── Open Hospital Door Leaf Swung Inward ── */}
-      <group position={[-0.85, 0, 0]} rotation={[0, -1.15, 0]}>
-        {/* Door Leaf with authentic texture */}
-        <mesh position={[0.42, 1.35, 0]} castShadow>
-          <boxGeometry args={[0.85, 2.7, 0.05]} />
-          <meshStandardMaterial map={configuredDoor} roughness={0.35} metalness={0.05} />
+      {/* ══════════════════════════════════════════════════════════════════════════
+          1. CORRIDOR PARTITION WALL WINGS (ผนังกั้นทางเข้าห้องสไตล์โรงพยาบาลจริง)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* Left Wall Wing */}
+      <group position={[-1.32, 1.25, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[0.90, 2.50, 0.08]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.5} />
         </mesh>
-        {/* Stainless Steel Kick Plate */}
-        <mesh position={[0.42, 0.2, 0.028]}>
-          <boxGeometry args={[0.83, 0.38, 0.008]} />
-          <meshStandardMaterial map={configuredMetal} roughness={0.25} metalness={0.85} />
+        {/* Hospital Bumper Crash Rail */}
+        <mesh position={[0, -0.28, 0.045]} castShadow>
+          <boxGeometry args={[0.90, 0.16, 0.02]} />
+          <meshStandardMaterial color={themeConfig.bumper} roughness={0.25} />
         </mesh>
-        {/* Stainless Steel Lever Handle */}
-        <group position={[0.78, 1.15, 0.035]}>
-          <mesh>
-            <cylinderGeometry args={[0.015, 0.015, 0.12, 12]} rotation={[0, 0, Math.PI / 2]} />
-            <meshStandardMaterial map={configuredMetal} roughness={0.2} metalness={0.9} />
-          </mesh>
-        </group>
+        {/* Sanitary Baseboard */}
+        <mesh position={[0, -1.18, 0.044]}>
+          <boxGeometry args={[0.90, 0.14, 0.015]} />
+          <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
+        </mesh>
       </group>
 
-      {/* Glowing Threshold Light */}
-      <pointLight
-        position={[0, 2.2, 0.4]}
-        color={themeConfig.glow}
-        intensity={isNear ? 2.5 : 1.2}
-        distance={4.5}
-      />
+      {/* Right Wall Wing */}
+      <group position={[1.32, 1.25, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[0.90, 2.50, 0.08]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.5} />
+        </mesh>
+        {/* Hospital Bumper Crash Rail */}
+        <mesh position={[0, -0.28, 0.045]} castShadow>
+          <boxGeometry args={[0.90, 0.16, 0.02]} />
+          <meshStandardMaterial color={themeConfig.bumper} roughness={0.25} />
+        </mesh>
+        {/* Sanitary Baseboard */}
+        <mesh position={[0, -1.18, 0.044]}>
+          <boxGeometry args={[0.90, 0.14, 0.015]} />
+          <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
+        </mesh>
+      </group>
 
-      {/* ── 2. Walkable Opening Silhouette (Depth Plane) ── */}
-      {/* Semi-transparent doorway portal opening giving depth to the next room */}
-      <mesh position={[0, 1.35, -0.06]}>
-        <planeGeometry args={[1.72, 2.7]} />
+      {/* ══════════════════════════════════════════════════════════════════════════
+          2. SLIM BRUSHED STAINLESS STEEL DOOR FRAME (วงกบสแตนเลสแบบสลิม)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* Left Jamb */}
+      <mesh position={[-0.84, 1.25, 0]} castShadow>
+        <boxGeometry args={[0.07, 2.50, 0.10]} />
+        <meshStandardMaterial
+          map={configuredMetal}
+          color="#cbd5e1"
+          metalness={0.85}
+          roughness={0.22}
+        />
+      </mesh>
+      {/* Right Jamb */}
+      <mesh position={[0.84, 1.25, 0]} castShadow>
+        <boxGeometry args={[0.07, 2.50, 0.10]} />
+        <meshStandardMaterial
+          map={configuredMetal}
+          color="#cbd5e1"
+          metalness={0.85}
+          roughness={0.22}
+        />
+      </mesh>
+      {/* Lintel Header */}
+      <mesh position={[0, 2.51, 0]} castShadow>
+        <boxGeometry args={[1.75, 0.06, 0.10]} />
+        <meshStandardMaterial
+          map={configuredMetal}
+          color="#cbd5e1"
+          metalness={0.85}
+          roughness={0.22}
+        />
+      </mesh>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          3. SYMMETRICAL DOUBLE HOSPITAL SWING DOORS (ประตูบานคู่โรงพยาบาลสมมาตร)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ── Left Door Leaf (Pivot at left jamb X = -0.79) ── */}
+      <group ref={leftDoorRef} position={[-0.79, 0, 0]}>
+        {/* Main Door Slab */}
+        <mesh position={[0.39, 1.22, 0]} castShadow>
+          <boxGeometry args={[0.78, 2.42, 0.04]} />
+          <meshStandardMaterial map={configuredDoor} roughness={0.35} metalness={0.05} />
+        </mesh>
+        {/* Stainless Steel Glazing Vision Window Frame */}
+        <mesh position={[0.48, 1.42, 0]}>
+          <boxGeometry args={[0.24, 0.88, 0.046]} />
+          <meshStandardMaterial map={configuredMetal} color="#cbd5e1" metalness={0.9} roughness={0.2} />
+        </mesh>
+        {/* Safety Glass Vision Panel */}
+        <mesh position={[0.48, 1.42, 0]}>
+          <boxGeometry args={[0.20, 0.84, 0.048]} />
+          <meshPhysicalMaterial
+            color="#e0f7fa"
+            transmission={0.82}
+            roughness={0.08}
+            transparent
+            opacity={0.9}
+            ior={1.5}
+          />
+        </mesh>
+        {/* Frosted Privacy Center Stripe on Vision Glass */}
+        <mesh position={[0.48, 1.42, 0.026]}>
+          <planeGeometry args={[0.19, 0.18]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.6} transparent opacity={0.65} />
+        </mesh>
+        {/* Heavy-Duty Stainless Steel Kick Plate (32 cm height) */}
+        <mesh position={[0.39, 0.18, 0.022]}>
+          <boxGeometry args={[0.76, 0.32, 0.008]} />
+          <meshStandardMaterial map={configuredMetal} color="#cbd5e1" metalness={0.88} roughness={0.2} />
+        </mesh>
+        {/* Long Vertical Tubular Stainless Steel Pull/Push Handle */}
+        <group position={[0.70, 1.10, 0.04]}>
+          {/* Main Handle Bar */}
+          <mesh castShadow>
+            <cylinderGeometry args={[0.014, 0.014, 0.65, 16]} />
+            <meshStandardMaterial map={configuredMetal} color="#e2e8f0" metalness={0.92} roughness={0.15} />
+          </mesh>
+          {/* Top & Bottom Stand-off Stems */}
+          <mesh position={[-0.01, 0.28, -0.02]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.01, 0.01, 0.04, 12]} />
+            <meshStandardMaterial map={configuredMetal} color="#e2e8f0" metalness={0.9} roughness={0.2} />
+          </mesh>
+          <mesh position={[-0.01, -0.28, -0.02]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.01, 0.01, 0.04, 12]} />
+            <meshStandardMaterial map={configuredMetal} color="#e2e8f0" metalness={0.9} roughness={0.2} />
+          </mesh>
+        </group>
+        {/* Overhead Hydraulic Door Closer Arm */}
+        <mesh position={[0.55, 2.41, 0.03]} castShadow>
+          <boxGeometry args={[0.22, 0.04, 0.05]} />
+          <meshStandardMaterial map={configuredMetal} color="#94a3b8" metalness={0.85} roughness={0.3} />
+        </mesh>
+      </group>
+
+      {/* ── Right Door Leaf (Pivot at right jamb X = +0.79) ── */}
+      <group ref={rightDoorRef} position={[0.79, 0, 0]}>
+        {/* Main Door Slab */}
+        <mesh position={[-0.39, 1.22, 0]} castShadow>
+          <boxGeometry args={[0.78, 2.42, 0.04]} />
+          <meshStandardMaterial map={configuredDoor} roughness={0.35} metalness={0.05} />
+        </mesh>
+        {/* Stainless Steel Glazing Vision Window Frame */}
+        <mesh position={[-0.48, 1.42, 0]}>
+          <boxGeometry args={[0.24, 0.88, 0.046]} />
+          <meshStandardMaterial map={configuredMetal} color="#cbd5e1" metalness={0.9} roughness={0.2} />
+        </mesh>
+        {/* Safety Glass Vision Panel */}
+        <mesh position={[-0.48, 1.42, 0]}>
+          <boxGeometry args={[0.20, 0.84, 0.048]} />
+          <meshPhysicalMaterial
+            color="#e0f7fa"
+            transmission={0.82}
+            roughness={0.08}
+            transparent
+            opacity={0.9}
+            ior={1.5}
+          />
+        </mesh>
+        {/* Frosted Privacy Center Stripe on Vision Glass */}
+        <mesh position={[-0.48, 1.42, 0.026]}>
+          <planeGeometry args={[0.19, 0.18]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.6} transparent opacity={0.65} />
+        </mesh>
+        {/* Heavy-Duty Stainless Steel Kick Plate (32 cm height) */}
+        <mesh position={[-0.39, 0.18, 0.022]}>
+          <boxGeometry args={[0.76, 0.32, 0.008]} />
+          <meshStandardMaterial map={configuredMetal} color="#cbd5e1" metalness={0.88} roughness={0.2} />
+        </mesh>
+        {/* Long Vertical Tubular Stainless Steel Pull/Push Handle */}
+        <group position={[-0.70, 1.10, 0.04]}>
+          {/* Main Handle Bar */}
+          <mesh castShadow>
+            <cylinderGeometry args={[0.014, 0.014, 0.65, 16]} />
+            <meshStandardMaterial map={configuredMetal} color="#e2e8f0" metalness={0.92} roughness={0.15} />
+          </mesh>
+          {/* Top & Bottom Stand-off Stems */}
+          <mesh position={[0.01, 0.28, -0.02]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.01, 0.01, 0.04, 12]} />
+            <meshStandardMaterial map={configuredMetal} color="#e2e8f0" metalness={0.9} roughness={0.2} />
+          </mesh>
+          <mesh position={[0.01, -0.28, -0.02]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.01, 0.01, 0.04, 12]} />
+            <meshStandardMaterial map={configuredMetal} color="#e2e8f0" metalness={0.9} roughness={0.2} />
+          </mesh>
+        </group>
+        {/* Overhead Hydraulic Door Closer Arm */}
+        <mesh position={[-0.55, 2.41, 0.03]} castShadow>
+          <boxGeometry args={[0.22, 0.04, 0.05]} />
+          <meshStandardMaterial map={configuredMetal} color="#94a3b8" metalness={0.85} roughness={0.3} />
+        </mesh>
+      </group>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          4. INTERIOR ROOM DEPTH & WARM HOSPITAL LIGHTING
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* Interior Doorway Depth Void */}
+      <mesh position={[0, 1.25, -0.08]}>
+        <planeGeometry args={[1.60, 2.45]} />
         <meshStandardMaterial
           color={themeConfig.secondary}
           emissive={themeConfig.accent}
-          emissiveIntensity={isNear ? 0.35 : 0.15}
-          roughness={0.2}
+          emissiveIntensity={isNear ? 0.45 : 0.20}
+          roughness={0.3}
           transparent
-          opacity={0.88}
+          opacity={0.95}
         />
       </mesh>
 
-      {/* ── 3. Floor Entrance Mat with Destination Floor Texture ── */}
-      <mesh position={[0, 0.015, 0.35]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[1.7, 0.9]} />
-        <meshStandardMaterial
-          map={configuredFloor}
-          roughness={0.4}
-        />
+      {/* Welcoming Warm Overhead Threshold Spot */}
+      <pointLight
+        position={[0, 2.4, 0.35]}
+        color={themeConfig.glow}
+        intensity={isNear ? 2.8 : 1.4}
+        distance={4.5}
+      />
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          5. ENTRANCE THRESHOLD & DESTINATION FLOOR MAT
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* Brushed Stainless Steel Saddle Threshold Strip */}
+      <mesh position={[0, 0.006, 0]} receiveShadow>
+        <boxGeometry args={[1.62, 0.012, 0.06]} />
+        <meshStandardMaterial map={configuredMetal} color="#e2e8f0" metalness={0.9} roughness={0.2} />
       </mesh>
 
-      {/* Pulsing Floor Ring with Entrance Chevron */}
-      <group position={[0, 0.02, 0.4]} rotation={[-Math.PI / 2, 0, 0]}>
-        <mesh ref={ringRef}>
-          <ringGeometry args={[0.55, 0.72, 32]} />
-          <meshBasicMaterial
-            color={themeConfig.primary}
-            transparent
-            opacity={isNear ? 0.9 : 0.5}
-          />
+      {/* Welcoming Floor Mat featuring Destination Room Floor Texture */}
+      <mesh position={[0, 0.008, 0.45]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[1.56, 0.82]} />
+        <meshStandardMaterial map={configuredFloor} roughness={0.4} />
+      </mesh>
+
+      {/* Subtle Welcoming Glow Rim around Mat */}
+      {isNear && (
+        <mesh position={[0, 0.010, 0.45]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.70, 0.78, 32]} />
+          <meshBasicMaterial color={themeConfig.primary} transparent opacity={0.6} />
         </mesh>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          6. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้องมาตรฐานโมเดิร์นคลีน)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* Acrylic Backlit Header Box */}
+      <group position={[0, 2.70, 0.03]}>
+        {/* Main Sign Box */}
+        <mesh castShadow>
+          <boxGeometry args={[1.64, 0.26, 0.05]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.1} />
+        </mesh>
+        {/* Top Department Theme Accent Stripe */}
+        <mesh position={[0, 0.12, 0.026]}>
+          <boxGeometry args={[1.62, 0.018, 0.006]} />
+          <meshStandardMaterial color={themeConfig.primary} roughness={0.2} />
+        </mesh>
+        {/* Stainless Steel Perimeter Trim */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[1.66, 0.28, 0.03]} />
+          <meshStandardMaterial map={configuredMetal} color="#94a3b8" metalness={0.8} roughness={0.3} />
+        </mesh>
+
+        {/* Crisp HTML Sign Content */}
+        <Html position={[0, -0.01, 0.035]} center transform scale={0.16}>
+          <div
+            onClick={handleEnter}
+            onPointerDown={handleEnter}
+            style={{
+              cursor: 'pointer',
+              userSelect: 'none',
+              textAlign: 'center',
+              width: '420px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              pointerEvents: 'auto',
+            }}
+          >
+            {/* Header Badge */}
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: themeConfig.badgeBg,
+                color: 'white',
+                padding: '4px 18px',
+                borderRadius: '16px',
+                fontSize: '15px',
+                fontWeight: '800',
+                letterSpacing: '0.5px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+              }}
+            >
+              <span>{icon}</span>
+              <span>{roomNumber}</span>
+              {isCompleted && <span>✅ ผ่านแล้ว</span>}
+            </div>
+
+            {/* Room Title */}
+            <div
+              style={{
+                color: '#1e293b',
+                fontSize: '16px',
+                fontWeight: '800',
+                marginTop: '6px',
+                lineHeight: '1.2',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {roomTitle}
+            </div>
+
+            {/* Walk-in Action Tip */}
+            <div
+              style={{
+                marginTop: '4px',
+                fontSize: '12px',
+                fontWeight: '700',
+                color: isNear ? themeConfig.primary : '#64748b',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+              }}
+            >
+              <span>{isNear ? '🚪 ประตูเปิดแล้ว — เดินเข้าไปเพื่อเข้าสู่ห้องนี้ ➜' : 'เดินเข้าใกล้เพื่อให้ประตูเปิด / คลิกเพื่อเข้า'}</span>
+            </div>
+          </div>
+        </Html>
       </group>
-
-      {/* ── 4. Interactive Hospital Overhead Door Sign (True 3D Perspective Plaque) ── */}
-      <Html position={[0, 3.35, 0.12]} center transform scale={0.24}>
-        <div
-          onClick={handleEnter}
-          onPointerDown={handleEnter}
-          style={{
-            cursor: 'pointer',
-            userSelect: 'none',
-            textAlign: 'center',
-            minWidth: '240px',
-            padding: '12px 18px',
-            borderRadius: '16px',
-            background: 'rgba(255, 255, 255, 0.96)',
-            border: `2.5px solid ${themeConfig.primary}`,
-            boxShadow: isNear
-              ? `0 0 24px ${themeConfig.primary}, 0 10px 25px rgba(0,0,0,0.3)`
-              : '0 4px 14px rgba(0,0,0,0.12)',
-            transform: isNear ? 'scale(1.06)' : 'scale(1.0)',
-            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            pointerEvents: 'auto',
-          }}
-        >
-          {/* Room Number Badge */}
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: themeConfig.badgeBg,
-              color: 'white',
-              padding: '4px 14px',
-              borderRadius: '20px',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              letterSpacing: '0.5px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            }}
-          >
-            <span style={{ fontSize: '16px' }}>{icon}</span>
-            <span>{roomNumber}</span>
-            {isCompleted && <span>✅</span>}
-          </div>
-
-          {/* Room Title */}
-          <div
-            style={{
-              color: themeConfig.text,
-              fontSize: '15px',
-              fontWeight: '800',
-              marginTop: '6px',
-              lineHeight: '1.25',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {roomTitle}
-          </div>
-
-          {/* Walk-in Action Indicator */}
-          <div
-            style={{
-              marginTop: '6px',
-              fontSize: '12px',
-              fontWeight: '700',
-              color: isNear ? themeConfig.primary : '#475569',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-            }}
-          >
-            <span>🚪</span>
-            <span>{isNear ? 'เดินเข้าไปเพื่อเข้าสู่ห้องนี้ ➜' : 'เดินเข้าห้อง / คลิกเพื่อเข้า'}</span>
-          </div>
-        </div>
-      </Html>
     </group>
   );
 }
