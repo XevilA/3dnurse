@@ -34,8 +34,7 @@ export default function HospitalRoomShell({
         return {
           wallUpper: '#f0f9ff',
           wallLower: '#e0f2fe',
-          bumperRail: '#38bdf8',
-          floorBorder: '#0284c7',
+          bumperRail: '#94a3b8',
           door: '#e0f2fe',
           lightTint: '#e0f7fa'
         };
@@ -43,8 +42,7 @@ export default function HospitalRoomShell({
         return {
           wallUpper: '#faf5ff',
           wallLower: '#f3e8ff',
-          bumperRail: '#a855f7',
-          floorBorder: '#7e22ce',
+          bumperRail: '#94a3b8',
           door: '#f3e8ff',
           lightTint: '#ede7f6'
         };
@@ -52,8 +50,7 @@ export default function HospitalRoomShell({
         return {
           wallUpper: '#ffffff',
           wallLower: '#f1f5f9',
-          bumperRail: '#0ea5e9',
-          floorBorder: '#d97706',
+          bumperRail: '#94a3b8',
           door: '#e2e8f0',
           lightTint: '#f0f9ff'
         };
@@ -62,8 +59,7 @@ export default function HospitalRoomShell({
         return {
           wallUpper: '#fff5f7',
           wallLower: '#fce7f3',
-          bumperRail: '#f472b6',
-          floorBorder: '#db2777',
+          bumperRail: '#94a3b8',
           door: '#fce7f3',
           lightTint: '#fff0f5'
         };
@@ -142,12 +138,6 @@ export default function HospitalRoomShell({
           roughness={theme === 'lobby' ? 0.2 : theme === 'quiz' ? 0.22 : 0.45}
           metalness={theme === 'lobby' ? 0.12 : 0.02}
         />
-      </mesh>
-
-      {/* Floor Perimeter Sanitary Border Trim */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-        <ringGeometry args={[Math.min(halfW, halfD) * 0.88, Math.min(halfW, halfD) * 0.94, 4]} />
-        <meshStandardMaterial color={colors.floorBorder} roughness={0.3} metalness={0.15} />
       </mesh>
 
       {/* ── 2. Back Wall Architecture ── */}

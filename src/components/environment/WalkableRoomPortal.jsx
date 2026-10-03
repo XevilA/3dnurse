@@ -184,46 +184,7 @@ export default function WalkableRoomPortal({
   return (
     <group position={position} rotation={rotation} scale={scale}>
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. CORRIDOR PARTITION WALL WINGS (ผนังกั้นทางเข้าห้องสไตล์โรงพยาบาลจริง)
-          ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Left Wall Wing */}
-      <group position={[-1.32, 1.25, 0]}>
-        <mesh receiveShadow>
-          <boxGeometry args={[0.90, 2.50, 0.08]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.5} />
-        </mesh>
-        {/* Hospital Bumper Crash Rail */}
-        <mesh position={[0, -0.28, 0.045]} castShadow>
-          <boxGeometry args={[0.90, 0.16, 0.02]} />
-          <meshStandardMaterial color={themeConfig.bumper} roughness={0.25} />
-        </mesh>
-        {/* Sanitary Baseboard */}
-        <mesh position={[0, -1.18, 0.044]}>
-          <boxGeometry args={[0.90, 0.14, 0.015]} />
-          <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
-        </mesh>
-      </group>
-
-      {/* Right Wall Wing */}
-      <group position={[1.32, 1.25, 0]}>
-        <mesh receiveShadow>
-          <boxGeometry args={[0.90, 2.50, 0.08]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.5} />
-        </mesh>
-        {/* Hospital Bumper Crash Rail */}
-        <mesh position={[0, -0.28, 0.045]} castShadow>
-          <boxGeometry args={[0.90, 0.16, 0.02]} />
-          <meshStandardMaterial color={themeConfig.bumper} roughness={0.25} />
-        </mesh>
-        {/* Sanitary Baseboard */}
-        <mesh position={[0, -1.18, 0.044]}>
-          <boxGeometry args={[0.90, 0.14, 0.015]} />
-          <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
-        </mesh>
-      </group>
-
-      {/* ══════════════════════════════════════════════════════════════════════════
-          2. SLIM BRUSHED STAINLESS STEEL DOOR FRAME (วงกบสแตนเลสแบบสลิม)
+          1. SLIM BRUSHED STAINLESS STEEL DOOR FRAME (วงกบสแตนเลสแบบสลิม)
           ══════════════════════════════════════════════════════════════════════════ */}
       {/* Left Jamb */}
       <mesh position={[-0.84, 1.25, 0]} castShadow>
@@ -414,16 +375,8 @@ export default function WalkableRoomPortal({
         <meshStandardMaterial map={configuredFloor} roughness={0.4} />
       </mesh>
 
-      {/* Subtle Welcoming Glow Rim around Mat */}
-      {isNear && (
-        <mesh position={[0, 0.010, 0.45]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.70, 0.78, 32]} />
-          <meshBasicMaterial color={themeConfig.primary} transparent opacity={0.6} />
-        </mesh>
-      )}
-
       {/* ══════════════════════════════════════════════════════════════════════════
-          6. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้องมาตรฐานโมเดิร์นคลีน)
+          5. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้องมาตรฐานโมเดิร์นคลีน)
           ══════════════════════════════════════════════════════════════════════════ */}
       {/* Acrylic Backlit Header Box */}
       <group position={[0, 2.70, 0.03]}>
@@ -431,11 +384,6 @@ export default function WalkableRoomPortal({
         <mesh castShadow>
           <boxGeometry args={[1.64, 0.26, 0.05]} />
           <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.1} />
-        </mesh>
-        {/* Top Department Theme Accent Stripe */}
-        <mesh position={[0, 0.12, 0.026]}>
-          <boxGeometry args={[1.62, 0.018, 0.006]} />
-          <meshStandardMaterial color={themeConfig.primary} roughness={0.2} />
         </mesh>
         {/* Stainless Steel Perimeter Trim */}
         <mesh position={[0, 0, 0]}>
