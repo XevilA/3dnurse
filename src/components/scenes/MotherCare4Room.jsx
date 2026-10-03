@@ -124,7 +124,7 @@ export default function MotherCare4Room() {
       <group position={[-1.7, 0, -4]} rotation={[0, -0.2, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
-            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[0.55, 0.55, 0.55]} />
+            <BabyAvatar pose="sleeping" scale={0.38} withBlanket={true} />
           )}
         </BabyCrib>
         <Html position={[0, 1.6, 0]} center distanceFactor={14}>

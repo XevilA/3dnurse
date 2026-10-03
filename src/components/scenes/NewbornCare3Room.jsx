@@ -80,7 +80,12 @@ export default function NewbornCare3Room() {
         </mesh>
         {/* Baby lying on back on changing table */}
         {!isHoldingBaby && (
-          <BabyAvatar position={[0, 1.84, 0.05]} rotation={[-1.57, 0, 0]} scale={[0.55, 0.55, 0.55]} />
+          <BabyAvatar
+            pose="sleeping"
+            position={[0, 1.76, 0.05]}
+            scale={0.36}
+            withBlanket={false}
+          />
         )}
         <Html position={[0, 2.5, 0]} center distanceFactor={14}>
           <div

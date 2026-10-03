@@ -27,12 +27,11 @@ export default function InteractiveSeat({
   const registerSeat = useStore((s) => s.registerSeat);
   const unregisterSeat = useStore((s) => s.unregisterSeat);
   const isSitting = useStore((s) => s.isSitting);
-  const seatedTarget = useStore((s) => s.seatedTarget);
   const sitDown = useStore((s) => s.sitDown);
-  const nearbySeat = useStore((s) => s.nearbySeat);
 
-  const isCurrentSeated = isSitting && seatedTarget?.id === id;
-  const isNearby = nearbySeat?.id === id && !isSitting;
+  // Selective subscriptions: only re-render THIS seat when its state changes
+  const isCurrentSeated = useStore((s) => s.isSitting && s.seatedTarget?.id === id);
+  const isNearby = useStore((s) => s.nearbySeat?.id === id && !s.isSitting);
 
   // Seat rotation Y in radians
   const rotY = Array.isArray(rotation) ? rotation[1] : 0;
@@ -41,19 +40,27 @@ export default function InteractiveSeat({
   const currentPos = useRef(new THREE.Vector3(...position));
   const currentRotY = useRef(rotY);
 
-  // Register in central seating registry
+  // Stable scalar coordinates to eliminate dependency churn
+  const px = position[0] ?? 0;
+  const py = position[1] ?? 0;
+  const pz = position[2] ?? 0;
+  const ox = seatOffset[0] ?? 0;
+  const oy = seatOffset[1] ?? 0;
+  const oz = seatOffset[2] ?? 0;
+
+  // Register in central seating registry (fires strictly on mount or real coordinate change)
   useEffect(() => {
     registerSeat({
       id,
       name,
       type,
-      position,
+      position: [px, py, pz],
       rotationY: rotY,
-      seatOffset,
+      seatOffset: [ox, oy, oz],
       isDrivable,
     });
     return () => unregisterSeat(id);
-  }, [id, name, type, position, rotY, seatOffset, isDrivable, registerSeat, unregisterSeat]);
+  }, [id, name, type, px, py, pz, rotY, ox, oy, oz, isDrivable, registerSeat, unregisterSeat]);
 
   // Synchronize wheelchair movement when player drives it
   useFrame(() => {

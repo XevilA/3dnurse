@@ -65,13 +65,16 @@ export default function BabyCrib({ position = [0, 0, 0], rotation = [0, 0, 0], s
         <boxGeometry args={[1.32, 0.08, 0.72]} />
         <meshStandardMaterial color="#ffffff" roughness={0.8} />
       </mesh>
-      <mesh position={[0, 1.02, -0.2]} castShadow>
-        <boxGeometry args={[0.5, 0.05, 0.3]} />
-        <meshStandardMaterial color="#e1bee7" roughness={0.9} />
+      {/* Soft Ergonomic Infant Pillow */}
+      <mesh position={[0, 1.05, -0.22]} castShadow receiveShadow>
+        <boxGeometry args={[0.45, 0.035, 0.26]} />
+        <meshStandardMaterial color="#fce7f3" roughness={0.85} />
       </mesh>
 
-      {/* Child elements (Baby avatar inside crib) */}
-      {children}
+      {/* Child elements (Baby avatar resting directly on mattress surface at Y=1.04) */}
+      <group position={[0, 1.04, 0]}>
+        {children}
+      </group>
     </group>
   );
 }

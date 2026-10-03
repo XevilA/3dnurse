@@ -87,7 +87,12 @@ export default function NewbornCare4Room() {
         </mesh>
         {/* Baby lying on back for cord care */}
         {!isHoldingBaby && (
-          <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[0.55, 0.55, 0.55]} />
+          <BabyAvatar
+            pose="sleeping"
+            position={[0, 0.94, 0]}
+            scale={0.36}
+            withBlanket={false}
+          />
         )}
         <Html position={[0, 1.7, 0]} center distanceFactor={14}>
           <div

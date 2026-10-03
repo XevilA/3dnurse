@@ -74,26 +74,60 @@ const useStore = create((set, get) => ({
     set((state) => ({
       cameraMode: state.cameraMode === '3rdPerson' ? '1stPerson' : '3rdPerson',
     })),
-  setPlayerPosition: (pos) => set({ playerPosition: pos }),
-  setPlayerRotationY: (rot) => set({ playerRotationY: rot }),
+  setPlayerPosition: (pos) =>
+    set((state) => {
+      const cur = state.playerPosition;
+      if (cur && Math.abs(cur[0] - pos[0]) < 0.001 && Math.abs(cur[1] - pos[1]) < 0.001 && Math.abs(cur[2] - pos[2]) < 0.001) {
+        return state;
+      }
+      return { playerPosition: pos };
+    }),
+  setPlayerRotationY: (rot) =>
+    set((state) => {
+      if (typeof state.playerRotationY === 'number' && Math.abs(state.playerRotationY - rot) < 0.001) {
+        return state;
+      }
+      return { playerRotationY: rot };
+    }),
   setPlayerAnimation: (anim) => set({ playerAnimation: anim }),
 
   // ── Gamified Seating Actions ──
   registerSeat: (seat) =>
     set((state) => {
-      const exists = state.seats.some((s) => s.id === seat.id);
-      if (exists) return { seats: state.seats.map((s) => (s.id === seat.id ? seat : s)) };
+      const existing = state.seats.find((s) => s.id === seat.id);
+      if (existing) {
+        const isSame =
+          existing.name === seat.name &&
+          existing.type === seat.type &&
+          existing.rotationY === seat.rotationY &&
+          existing.isDrivable === seat.isDrivable &&
+          existing.position?.[0] === seat.position?.[0] &&
+          existing.position?.[1] === seat.position?.[1] &&
+          existing.position?.[2] === seat.position?.[2] &&
+          existing.seatOffset?.[0] === seat.seatOffset?.[0] &&
+          existing.seatOffset?.[1] === seat.seatOffset?.[1] &&
+          existing.seatOffset?.[2] === seat.seatOffset?.[2];
+        if (isSame) return state; // Idempotent: return unmodified state
+        return { seats: state.seats.map((s) => (s.id === seat.id ? seat : s)) };
+      }
       return { seats: [...state.seats, seat] };
     }),
 
   unregisterSeat: (seatId) =>
-    set((state) => ({
-      seats: state.seats.filter((s) => s.id !== seatId),
-      nearbySeat: state.nearbySeat?.id === seatId ? null : state.nearbySeat,
-      seatedTarget: state.seatedTarget?.id === seatId ? null : state.seatedTarget,
-    })),
+    set((state) => {
+      if (!state.seats.some((s) => s.id === seatId)) return state;
+      return {
+        seats: state.seats.filter((s) => s.id !== seatId),
+        nearbySeat: state.nearbySeat?.id === seatId ? null : state.nearbySeat,
+        seatedTarget: state.seatedTarget?.id === seatId ? null : state.seatedTarget,
+      };
+    }),
 
-  setNearbySeat: (seat) => set({ nearbySeat: seat }),
+  setNearbySeat: (seat) =>
+    set((state) => {
+      if (state.nearbySeat?.id === seat?.id) return state;
+      return { nearbySeat: seat };
+    }),
 
   sitDown: (seat) => {
     if (!seat) return;
@@ -111,7 +145,12 @@ const useStore = create((set, get) => ({
       playerAnimation: 'idle',
     }),
 
-  setStamina: (val) => set({ stamina: Math.min(100, Math.max(0, val)) }),
+  setStamina: (val) =>
+    set((state) => {
+      const clamped = Math.min(100, Math.max(0, val));
+      if (Math.abs(state.stamina - clamped) < 0.1) return state;
+      return { stamina: clamped };
+    }),
 
   setVirtualInput: (input) =>
     set((state) => ({

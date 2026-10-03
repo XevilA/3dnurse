@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
+import { Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
 
@@ -9,6 +9,7 @@ import useStore from '../../store/useStore';
  *
  * Allows players to physically walk through the doorway into any specific care room!
  * Features:
+ * - Real hospital textures (brushed stainless frame, authentic door leaf, destination floor mat)
  * - 3D Hospital Door Frame with illuminated LED overhead lintel & room number
  * - Pulsing floor entrance trigger pad
  * - Physical walk-in proximity detector (triggers room transition on approach)
@@ -68,6 +69,57 @@ export default function WalkableRoomPortal({
     badgeBg: 'linear-gradient(135deg, #0288d1 0%, #01579b 100%)',
   };
 
+  // Textures matching the destination room
+  const floorUrl =
+    theme === 'mother'
+      ? '/textures/floor_vinyl_mother.jpg'
+      : theme === 'newborn'
+      ? '/textures/floor_vinyl_nursery.jpg'
+      : '/textures/floor_hall_quiz.jpg';
+
+  const doorUrl =
+    theme === 'mother'
+      ? '/textures/door_mother.jpg'
+      : theme === 'newborn'
+      ? '/textures/door_nursery.jpg'
+      : '/textures/door_quiz.jpg';
+
+  const textures = useTexture({
+    metal: '/textures/door_frame_metal.jpg',
+    floor: floorUrl,
+    door: doorUrl,
+  });
+
+  const configuredMetal = useMemo(() => {
+    if (!textures.metal) return null;
+    const cloned = textures.metal.clone();
+    cloned.wrapS = THREE.RepeatWrapping;
+    cloned.wrapT = THREE.RepeatWrapping;
+    cloned.repeat.set(1, 4);
+    cloned.colorSpace = THREE.SRGBColorSpace;
+    cloned.needsUpdate = true;
+    return cloned;
+  }, [textures.metal]);
+
+  const configuredFloor = useMemo(() => {
+    if (!textures.floor) return null;
+    const cloned = textures.floor.clone();
+    cloned.wrapS = THREE.RepeatWrapping;
+    cloned.wrapT = THREE.RepeatWrapping;
+    cloned.repeat.set(2, 2);
+    cloned.colorSpace = THREE.SRGBColorSpace;
+    cloned.needsUpdate = true;
+    return cloned;
+  }, [textures.floor]);
+
+  const configuredDoor = useMemo(() => {
+    if (!textures.door) return null;
+    const cloned = textures.door.clone();
+    cloned.colorSpace = THREE.SRGBColorSpace;
+    cloned.needsUpdate = true;
+    return cloned;
+  }, [textures.door]);
+
   const [px, py, pz] = position;
 
   // Proximity & Walk-In Detection
@@ -106,21 +158,21 @@ export default function WalkableRoomPortal({
 
   return (
     <group position={position} rotation={rotation} scale={scale}>
-      {/* ── 1. Door Frame 3D Geometry ── */}
+      {/* ── 1. Door Frame 3D Geometry with Brushed Stainless Texture ── */}
       {/* Left Pillar */}
       <mesh position={[-0.95, 1.45, 0]} castShadow>
         <boxGeometry args={[0.18, 2.9, 0.22]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.25} metalness={0.1} />
+        <meshStandardMaterial map={configuredMetal} roughness={0.3} metalness={0.8} />
       </mesh>
       {/* Right Pillar */}
       <mesh position={[0.95, 1.45, 0]} castShadow>
         <boxGeometry args={[0.18, 2.9, 0.22]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.25} metalness={0.1} />
+        <meshStandardMaterial map={configuredMetal} roughness={0.3} metalness={0.8} />
       </mesh>
       {/* Upper Lintel Frame */}
       <mesh position={[0, 2.9, 0]} castShadow>
         <boxGeometry args={[2.08, 0.2, 0.24]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.25} metalness={0.1} />
+        <meshStandardMaterial map={configuredMetal} roughness={0.3} metalness={0.8} />
       </mesh>
 
       {/* Decorative Outer Arch Accent */}
@@ -128,6 +180,27 @@ export default function WalkableRoomPortal({
         <boxGeometry args={[2.2, 0.5, 0.16]} />
         <meshStandardMaterial color={themeConfig.primary} roughness={0.3} />
       </mesh>
+
+      {/* ── Open Hospital Door Leaf Swung Inward ── */}
+      <group position={[-0.85, 0, 0]} rotation={[0, -1.15, 0]}>
+        {/* Door Leaf with authentic texture */}
+        <mesh position={[0.42, 1.35, 0]} castShadow>
+          <boxGeometry args={[0.85, 2.7, 0.05]} />
+          <meshStandardMaterial map={configuredDoor} roughness={0.35} metalness={0.05} />
+        </mesh>
+        {/* Stainless Steel Kick Plate */}
+        <mesh position={[0.42, 0.2, 0.028]}>
+          <boxGeometry args={[0.83, 0.38, 0.008]} />
+          <meshStandardMaterial map={configuredMetal} roughness={0.25} metalness={0.85} />
+        </mesh>
+        {/* Stainless Steel Lever Handle */}
+        <group position={[0.78, 1.15, 0.035]}>
+          <mesh>
+            <cylinderGeometry args={[0.015, 0.015, 0.12, 12]} rotation={[0, 0, Math.PI / 2]} />
+            <meshStandardMaterial map={configuredMetal} roughness={0.2} metalness={0.9} />
+          </mesh>
+        </group>
+      </group>
 
       {/* Glowing Threshold Light */}
       <pointLight
@@ -151,15 +224,12 @@ export default function WalkableRoomPortal({
         />
       </mesh>
 
-      {/* ── 3. Floor Entrance Mat & Pulsing Walk-in Trigger Pad ── */}
-      {/* Base doorway threshold strip */}
+      {/* ── 3. Floor Entrance Mat with Destination Floor Texture ── */}
       <mesh position={[0, 0.015, 0.35]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[1.7, 0.9]} />
         <meshStandardMaterial
-          color={themeConfig.primary}
+          map={configuredFloor}
           roughness={0.4}
-          transparent
-          opacity={0.25}
         />
       </mesh>
 

@@ -103,7 +103,7 @@ export default function MotherCare3Room() {
       <group position={[3.5, 0, -4]} onClick={step === 1 ? handleNextStep : () => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]}>
           {!isHoldingBaby && (
-            <BabyAvatar position={[0, 1.05, 0]} rotation={[-1.57, 0, 0]} scale={[0.55, 0.55, 0.55]} />
+            <BabyAvatar pose="sleeping" scale={0.38} withBlanket={true} />
           )}
         </BabyCrib>
         {step === 1 && (

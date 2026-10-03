@@ -37,12 +37,10 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   // Gamified Seating & Stamina
   const isSitting = useStore((s) => s.isSitting);
   const seatedTarget = useStore((s) => s.seatedTarget);
-  const nearbySeat = useStore((s) => s.nearbySeat);
   const setNearbySeat = useStore((s) => s.setNearbySeat);
   const sitDown = useStore((s) => s.sitDown);
   const standUp = useStore((s) => s.standUp);
   const seats = useStore((s) => s.seats);
-  const stamina = useStore((s) => s.stamina);
   const setStamina = useStore((s) => s.setStamina);
 
   // Animation state
@@ -62,6 +60,8 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   const characterRotationY = useRef(initialRotation);
   const targetRotationY = useRef(initialRotation);
   const stepTime = useRef(0);
+  const lastSyncTime = useRef(0);
+  const lastSyncedPos = useRef([initialPosition[0], initialPosition[1], initialPosition[2]]);
 
   // Camera Orbit Angles (GTA Style)
   const cameraYaw = useRef(0);
@@ -280,6 +280,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     if (!playerRef.current) return;
 
     // ── 1. Proximity Detection to Interactive Seats ──
+    const curNearby = useStore.getState().nearbySeat;
     if (!isSitting && seats.length > 0) {
       let closest = null;
       let minDist = 2.2;
@@ -292,10 +293,10 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
           closest = seat;
         }
       }
-      if (closest?.id !== nearbySeat?.id) {
+      if (closest?.id !== curNearby?.id) {
         setNearbySeat(closest);
       }
-    } else if (nearbySeat && isSitting) {
+    } else if (curNearby && isSitting) {
       setNearbySeat(null);
     }
 
@@ -370,8 +371,14 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
           }
         }
 
-        // Regenerate stamina / health while relaxing
-        setStamina(stamina + delta * 20);
+        // Regenerate stamina / health while relaxing (throttled to integer percentages)
+        const curStamina = useStore.getState().stamina;
+        if (curStamina < 100) {
+          const nextStamina = Math.min(100, curStamina + delta * 20);
+          if (Math.floor(nextStamina) !== Math.floor(curStamina)) {
+            setStamina(nextStamina);
+          }
+        }
       }
     } else {
       // ── 3. Standing Walk & Sprint Movement (Physics Collision with Wall Sliding) ──
@@ -435,9 +442,16 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     playerRef.current.position.copy(pos.current);
     playerRef.current.rotation.y = characterRotationY.current;
 
-    // Sync to store
-    setPlayerPosition([pos.current.x, pos.current.y, pos.current.z]);
-    setPlayerRotationY(characterRotationY.current);
+    // Sync to store (throttled to >4cm movement or every 100ms)
+    const now = performance.now();
+    const [lx, ly, lz] = lastSyncedPos.current;
+    const distSq = (pos.current.x - lx) ** 2 + (pos.current.z - lz) ** 2;
+    if (distSq > 0.002 || now - lastSyncTime.current > 100) {
+      lastSyncTime.current = now;
+      lastSyncedPos.current = [pos.current.x, pos.current.y, pos.current.z];
+      setPlayerPosition([pos.current.x, pos.current.y, pos.current.z]);
+      setPlayerRotationY(characterRotationY.current);
+    }
 
     // ── Camera Update (1st Person vs 3rd Person GTA) ──
     if (cameraMode === '1stPerson') {
@@ -493,17 +507,19 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         {/* Infant nestled in Mother's loving arms (Standing or Sitting on lap) */}
         {isHoldingBaby && currentRoom !== 'lobby' && (
           <group
-            position={isSitting ? [0.02, 0.60, 0.38] : [0.04, 1.06, 0.25]}
-            rotation={isSitting ? [-0.30, 0.20, 0.15] : [-0.18, 0.25, 0.22]}
+            position={isSitting ? [0.04, 0.62, 0.36] : [0.06, 1.08, 0.28]}
+            rotation={isSitting ? [-0.25, 0.15, 0.10] : [-0.15, 0.18, 0.12]}
           >
             <BabyAvatar
+              pose="carried"
               position={[0, 0, 0]}
               rotation={[0, 0, 0]}
-              scale={[0.52, 0.52, 0.52]}
+              scale={0.38}
+              withBlanket={false}
             />
-            {/* Soft Hospital Swaddle Blanket */}
-            <mesh position={[0.02, 0.95, -0.05]} rotation={[0.1, 0, 0]} castShadow>
-              <capsuleGeometry args={[0.14, 0.28, 8, 16]} />
+            {/* Soft Hospital Swaddle Blanket in Mother's arms */}
+            <mesh position={[0, -0.02, 0.02]} rotation={[0.1, 0, 0]} castShadow>
+              <capsuleGeometry args={[0.12, 0.26, 8, 16]} />
               <meshStandardMaterial color="#fef3c7" roughness={0.7} />
             </mesh>
           </group>
