@@ -294,7 +294,7 @@ export default function MotherCare1Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           🏥 INTERACTIVE LEARNING HUD (Based on Metaverse Zone 1 Activities 1-4)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 3.2, -7.8]} center transform scale={0.32}>
+      <Html position={[0, 2.1, -7.8]} center transform scale={0.27}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',

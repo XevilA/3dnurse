@@ -218,7 +218,7 @@ export default function NewbornCare2Room() {
     <group>
       {/* ── Realistic 3D Architecture (Matching img_000.jpg floorplan layout) ── */}
       <HospitalRoomShell
-        theme="nursery"
+        theme="mother"
         width={13}
         depth={13}
         height={5.2}
@@ -484,11 +484,11 @@ export default function NewbornCare2Room() {
         )}
 
         {/* Table Station Floating Badge */}
-        <Html position={[0, 1.75, 0]} center distanceFactor={12}>
-          <div className="flex flex-col items-center gap-1.5">
+        <Html position={[0, 1.75, 0]} center distanceFactor={18}>
+          <div className="flex flex-col items-center gap-1 whitespace-nowrap">
             <button
               onClick={() => setActiveModal('bathingProcedure')}
-              className="cursor-pointer select-none px-4 py-2 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105"
+              className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-[11px] font-bold text-white shadow-lg flex items-center gap-1.5 transition transform hover:scale-105"
               style={{
                 background: isAllEquipmentCollected
                   ? 'linear-gradient(135deg, #00897b, #004d40)'
@@ -501,7 +501,7 @@ export default function NewbornCare2Room() {
                 {isAllEquipmentCollected ? 'เริ่มขั้นตอนอาบน้ำและเปลี่ยนผ้าอ้อม' : 'เตรียมอุปกรณ์ให้ครบก่อนอาบน้ำ'}
               </span>
             </button>
-            <div className="bg-white/95 px-3 py-1 rounded-full text-[11px] font-semibold text-slate-700 shadow border border-teal-200">
+            <div className="bg-white/95 px-2.5 py-0.5 rounded-full text-[10px] font-semibold text-slate-700 shadow border border-teal-200">
               อุปกรณ์พร้อม: {Object.values(collectedItems).filter(Boolean).length}/6 ชิ้น {isAllEquipmentCollected && '✓'}
             </div>
           </div>
@@ -560,8 +560,8 @@ export default function NewbornCare2Room() {
           <boxGeometry args={[0.38, 0.62, 0.42]} />
           <meshStandardMaterial color="#ef4444" roughness={0.4} />
         </mesh>
-        <Html position={[0, 0.95, 0]} center distanceFactor={10}>
-          <div className="select-none bg-rose-100 text-rose-900 border border-rose-300 text-[10px] font-bold px-2 py-0.5 rounded shadow">
+        <Html position={[0, 0.95, 0]} center distanceFactor={18}>
+          <div className="select-none bg-rose-100 text-rose-900 border border-rose-300 text-[10px] font-bold px-2 py-0.5 rounded shadow whitespace-nowrap">
             🗑️ ถังขยะแยกประเภท (ทั่วไป/ติดเชื้อ)
           </div>
         </Html>
