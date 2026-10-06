@@ -408,6 +408,273 @@ const BabyAvatar = forwardRef(({
           </group>
         </group>
       )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          5. CRADLE HOLD (ท่าอุ้มลูกบนแขน) — Breastfeeding Position 1
+             Baby lies tummy-to-tummy across mother's lap, supported in crook of arm
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {pose === 'cradleHold' && (
+        <group position={[0, 0, 0]} rotation={[-0.2, 0.45, 0.6]} scale={0.92}>
+          {/* Baby Head angled towards breast with open latch */}
+          <group position={[0, 0.17, 0]}>
+            <mesh castShadow>
+              <sphereGeometry args={[0.09, 32, 32]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.65} />
+            </mesh>
+            {/* Rosy Cheeks */}
+            <mesh position={[-0.046, -0.012, 0.07]}>
+              <sphereGeometry args={[0.022, 16, 16]} />
+              <meshStandardMaterial color="#fca5a5" roughness={0.8} transparent opacity={0.7} />
+            </mesh>
+            <mesh position={[0.046, -0.012, 0.07]}>
+              <sphereGeometry args={[0.022, 16, 16]} />
+              <meshStandardMaterial color="#fca5a5" roughness={0.8} transparent opacity={0.7} />
+            </mesh>
+            {/* Latching Open Mouth (4 Key Signs: wide mouth, chin touching breast) */}
+            <group position={[0, -0.032, 0.082]}>
+              {/* Flanged Lips (คล้ายปากปลา) */}
+              <mesh scale={[1.4, 0.9, 0.7]}>
+                <torusGeometry args={[0.018, 0.005, 8, 16]} />
+                <meshStandardMaterial color="#fb7185" roughness={0.4} />
+              </mesh>
+              {/* Open Mouth Cavity */}
+              <mesh position={[0, 0, 0.003]} scale={[1.2, 0.7, 0.5]}>
+                <sphereGeometry args={[0.012, 12, 12]} />
+                <meshStandardMaterial color="#881337" />
+              </mesh>
+            </group>
+            {/* Beanie Cap */}
+            <mesh position={[0, 0.015, -0.01]} castShadow>
+              <sphereGeometry args={[0.093, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
+              <meshStandardMaterial color={beanieColor} roughness={0.85} />
+            </mesh>
+          </group>
+          {/* Swaddled Body tucked against mother */}
+          <group ref={chestRef} position={[0, -0.06, 0]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.098, 0.07, 0.34, 24]} />
+              <meshStandardMaterial color="#fef9c3" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, -0.17, 0]} castShadow>
+              <sphereGeometry args={[0.07, 24, 16]} />
+              <meshStandardMaterial color="#fef9c3" roughness={0.8} />
+            </mesh>
+            {/* Baby Tiny Hand touching breast */}
+            <mesh position={[-0.065, 0.08, 0.07]} castShadow>
+              <sphereGeometry args={[0.018, 16, 16]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.65} />
+            </mesh>
+          </group>
+        </group>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          6. FOOTBALL HOLD (ท่าอุ้มสอดข้างลำตัว) — Breastfeeding Position 2
+             Baby tucked along mother's side under arm, legs to mother's back
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {pose === 'footballHold' && (
+        <group position={[0, 0, 0]} rotation={[0.45, 0.15, -0.75]} scale={0.92}>
+          {/* Head cupped in palm facing upward towards breast */}
+          <group position={[0, 0.18, 0]}>
+            <mesh castShadow>
+              <sphereGeometry args={[0.09, 32, 32]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.65} />
+            </mesh>
+            <mesh position={[-0.046, -0.012, 0.07]}>
+              <sphereGeometry args={[0.022, 16, 16]} />
+              <meshStandardMaterial color="#fca5a5" roughness={0.8} transparent opacity={0.7} />
+            </mesh>
+            <mesh position={[0.046, -0.012, 0.07]}>
+              <sphereGeometry args={[0.022, 16, 16]} />
+              <meshStandardMaterial color="#fca5a5" roughness={0.8} transparent opacity={0.7} />
+            </mesh>
+            {/* Wide Open Latch */}
+            <group position={[0, -0.032, 0.082]}>
+              <mesh scale={[1.4, 0.9, 0.7]}>
+                <torusGeometry args={[0.018, 0.005, 8, 16]} />
+                <meshStandardMaterial color="#fb7185" roughness={0.4} />
+              </mesh>
+              <mesh position={[0, 0, 0.003]} scale={[1.2, 0.7, 0.5]}>
+                <sphereGeometry args={[0.012, 12, 12]} />
+                <meshStandardMaterial color="#881337" />
+              </mesh>
+            </group>
+            {/* Beanie Cap */}
+            <mesh position={[0, 0.015, -0.01]} castShadow>
+              <sphereGeometry args={[0.093, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
+              <meshStandardMaterial color={beanieColor} roughness={0.85} />
+            </mesh>
+          </group>
+          {/* Body tucked along side */}
+          <group ref={chestRef} position={[0, -0.06, 0]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.098, 0.07, 0.34, 24]} />
+              <meshStandardMaterial color="#fef9c3" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, -0.17, 0]} castShadow>
+              <sphereGeometry args={[0.07, 24, 16]} />
+              <meshStandardMaterial color="#fef9c3" roughness={0.8} />
+            </mesh>
+          </group>
+        </group>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          7. SIDE LYING (ท่านอนตะแคง) — Breastfeeding Position 3
+             Baby lying on side on bed facing mother, tummy-to-tummy
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {pose === 'sideLying' && (
+        <group position={[0, 0.06, 0]} rotation={[0, 0, -Math.PI / 2]} scale={0.92}>
+          {/* Head on mattress facing mother */}
+          <group position={[0, 0.16, 0]}>
+            <mesh castShadow>
+              <sphereGeometry args={[0.09, 32, 32]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.65} />
+            </mesh>
+            <mesh position={[-0.046, -0.012, 0.07]}>
+              <sphereGeometry args={[0.022, 16, 16]} />
+              <meshStandardMaterial color="#fca5a5" roughness={0.8} transparent opacity={0.7} />
+            </mesh>
+            <mesh position={[0.046, -0.012, 0.07]}>
+              <sphereGeometry args={[0.022, 16, 16]} />
+              <meshStandardMaterial color="#fca5a5" roughness={0.8} transparent opacity={0.7} />
+            </mesh>
+            {/* Latch */}
+            <group position={[0, -0.03, 0.082]}>
+              <mesh scale={[1.4, 0.9, 0.7]}>
+                <torusGeometry args={[0.018, 0.005, 8, 16]} />
+                <meshStandardMaterial color="#fb7185" roughness={0.4} />
+              </mesh>
+            </group>
+            <mesh position={[0, 0.015, -0.01]} castShadow>
+              <sphereGeometry args={[0.093, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
+              <meshStandardMaterial color={beanieColor} roughness={0.85} />
+            </mesh>
+          </group>
+          {/* Body on mattress */}
+          <group ref={chestRef} position={[0, -0.06, 0]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.098, 0.07, 0.34, 24]} />
+              <meshStandardMaterial color="#fef9c3" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, -0.17, 0]} castShadow>
+              <sphereGeometry args={[0.07, 24, 16]} />
+              <meshStandardMaterial color="#fef9c3" roughness={0.8} />
+            </mesh>
+          </group>
+        </group>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          8. CROSS CRADLE (ท่าอุ้มข้ามตัก) — Breastfeeding Position 4
+             Baby supported by opposite arm/hand at neck base, body across lap
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {pose === 'crossCradle' && (
+        <group position={[0, 0, 0]} rotation={[-0.25, -0.4, -0.55]} scale={0.92}>
+          {/* Head supported in opposite palm, tilted toward nipple */}
+          <group position={[0, 0.17, 0]}>
+            <mesh castShadow>
+              <sphereGeometry args={[0.09, 32, 32]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.65} />
+            </mesh>
+            <mesh position={[-0.046, -0.012, 0.07]}>
+              <sphereGeometry args={[0.022, 16, 16]} />
+              <meshStandardMaterial color="#fca5a5" roughness={0.8} transparent opacity={0.7} />
+            </mesh>
+            <mesh position={[0.046, -0.012, 0.07]}>
+              <sphereGeometry args={[0.022, 16, 16]} />
+              <meshStandardMaterial color="#fca5a5" roughness={0.8} transparent opacity={0.7} />
+            </mesh>
+            {/* Latching */}
+            <group position={[0, -0.032, 0.082]}>
+              <mesh scale={[1.4, 0.9, 0.7]}>
+                <torusGeometry args={[0.018, 0.005, 8, 16]} />
+                <meshStandardMaterial color="#fb7185" roughness={0.4} />
+              </mesh>
+              <mesh position={[0, 0, 0.003]} scale={[1.2, 0.7, 0.5]}>
+                <sphereGeometry args={[0.012, 12, 12]} />
+                <meshStandardMaterial color="#881337" />
+              </mesh>
+            </group>
+            <mesh position={[0, 0.015, -0.01]} castShadow>
+              <sphereGeometry args={[0.093, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
+              <meshStandardMaterial color={beanieColor} roughness={0.85} />
+            </mesh>
+          </group>
+          {/* Body across lap */}
+          <group ref={chestRef} position={[0, -0.06, 0]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.098, 0.07, 0.34, 24]} />
+              <meshStandardMaterial color="#fef9c3" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, -0.17, 0]} castShadow>
+              <sphereGeometry args={[0.07, 24, 16]} />
+              <meshStandardMaterial color="#fef9c3" roughness={0.8} />
+            </mesh>
+          </group>
+        </group>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          9. BATHING FOOTBALL HOLD (ท่าอุ้มสระผม พับหู 2 ข้าง) — Bathing Step 1.5
+             Baby swaddled, held under arm, ears gently tucked down by fingers
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {pose === 'bathingFootballHold' && (
+        <group position={[0, 0.05, 0]} rotation={[0.4, 0.2, -0.6]} scale={0.92}>
+          <group position={[0, 0.17, 0]}>
+            <mesh castShadow>
+              <sphereGeometry args={[0.09, 32, 32]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.6} />
+            </mesh>
+            {/* Tucked Ear Protect Folders */}
+            <mesh position={[-0.088, 0, 0.01]} rotation={[0, 0, 0.7]} scale={[0.3, 0.8, 0.6]}>
+              <sphereGeometry args={[0.02, 12, 12]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.7} />
+            </mesh>
+            <mesh position={[0.088, 0, 0.01]} rotation={[0, 0, -0.7]} scale={[0.3, 0.8, 0.6]}>
+              <sphereGeometry args={[0.02, 12, 12]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.7} />
+            </mesh>
+            {/* Mild Foamy Suds on Scalp */}
+            <mesh position={[0, 0.085, -0.01]}>
+              <sphereGeometry args={[0.045, 16, 16]} />
+              <meshStandardMaterial color="#ffffff" roughness={0.1} transparent opacity={0.85} />
+            </mesh>
+          </group>
+          {/* Swaddle Towel Wrap */}
+          <group ref={chestRef} position={[0, -0.06, 0]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.098, 0.07, 0.34, 24]} />
+              <meshStandardMaterial color="#bae6fd" roughness={0.85} />
+            </mesh>
+            <mesh position={[0, -0.17, 0]} castShadow>
+              <sphereGeometry args={[0.07, 24, 16]} />
+              <meshStandardMaterial color="#bae6fd" roughness={0.85} />
+            </mesh>
+          </group>
+        </group>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          10. BATHING TURNED POSE (ท่าพลิกตัวล้างแผ่นหลัง) — Bathing Step 1.10
+              Baby turned prone resting on forearm, hand supporting under armpit
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {pose === 'bathingTurned' && (
+        <group position={[0, 0.03, 0]} rotation={[0.2, 0, Math.PI]} scale={0.92}>
+          <group position={[0, 0.16, 0]}>
+            <mesh castShadow>
+              <sphereGeometry args={[0.09, 32, 32]} />
+              <meshStandardMaterial color="#fed7aa" roughness={0.6} />
+            </mesh>
+          </group>
+          <group ref={chestRef} position={[0, -0.06, 0]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.096, 0.07, 0.32, 24]} />
+              <meshStandardMaterial color="#bae6fd" roughness={0.85} />
+            </mesh>
+          </group>
+        </group>
+      )}
     </group>
   );
 });
