@@ -165,21 +165,21 @@ export default function NewbornCare1Room() {
     <group>
       {/* ── Realistic 3D Architecture (Matching img_000.jpg & img_001.jpg) ── */}
       <HospitalRoomShell
-        theme="nursery"
+        theme="mother"
         width={14}
         depth={14}
         height={5.2}
         roomTitle="ห้องที่ 1: การให้นมและการอุ้มจัดท่าทารก (Lactation & Positioning Room)"
-        roomNumber="Nursery 101"
+        roomNumber="Nursery 201"
       />
 
       {/* ══════════════════════════════════════════════════════════════════════════
           1. NORTH WALL (BACK):
-             - 3 Educational Wall Posters (matching img_000.jpg)
+             - 3 Educational Wall Posters (matching img_000.jpg exactly)
              - Baby Crib with sleeping baby and teddy bear
              - Stool with bottle
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Wall Poster 1: "4 Key Signs to Watch" */}
+      {/* Wall Poster 1: "4 Key Signs to Watch" (Matching img_006.png) */}
       <group position={[-3.6, 2.8, -6.85]} rotation={[0, 0, 0]}>
         <mesh
           castShadow
@@ -193,28 +193,27 @@ export default function NewbornCare1Room() {
         {/* Frame Border */}
         <mesh position={[0, 0, 0.025]}>
           <boxGeometry args={[2.08, 1.48, 0.02]} />
-          <meshStandardMaterial color="#d97706" roughness={0.3} metalness={0.1} />
+          <meshStandardMaterial color="#b45309" roughness={0.3} metalness={0.2} />
         </mesh>
         <Html position={[0, 0, 0.05]} center transform scale={0.22}>
           <div
             onClick={() => setActiveModal('poster1')}
-            className="cursor-pointer select-none bg-amber-50 p-3 rounded-lg border-2 border-amber-400 text-center shadow-md hover:scale-105 transition"
+            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-amber-500 shadow-xl hover:scale-105 transition overflow-hidden"
             style={{ width: '380px' }}
           >
-            <h3 className="font-bold text-amber-900 text-base m-0">🔍 4 Key Signs to Watch</h3>
-            <p className="text-xs text-amber-800 m-1 font-semibold">การอมหัวนมและการดูดนมแม่ที่ถูกต้อง</p>
-            <div className="text-[10px] text-gray-700 text-left bg-white p-2 rounded border border-amber-200 mt-1 space-y-0.5">
-              <div>1. เห็นลานนมด้านบนมากกว่าล่าง</div>
-              <div>2. อ้าปากกว้างแนบสนิทเต้านม</div>
-              <div>3. คางแนบชิดเต้านม</div>
-              <div>4. ริมฝีปากบนล่างบานคล้ายปากปลา</div>
+            <img
+              src="/references/room1/img_006.png"
+              alt="4 Key Signs"
+              style={{ width: '100%', height: '190px', objectFit: 'cover', borderRadius: '6px' }}
+            />
+            <div className="text-center py-1 bg-amber-50 rounded mt-1">
+              <span className="text-[11px] font-bold text-amber-900">🔍 4 Key Signs การอมหัวนม (คลิกอ่าน)</span>
             </div>
-            <span className="inline-block mt-1 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold">คลิกอ่านรายละเอียด</span>
           </div>
         </Html>
       </group>
 
-      {/* Wall Poster 2: "4 Key Points for Success" */}
+      {/* Wall Poster 2: "4 Key Points for Success" (Matching img_010.jpeg) */}
       <group position={[-1.2, 2.8, -6.85]} rotation={[0, 0, 0]}>
         <mesh
           castShadow
@@ -227,23 +226,22 @@ export default function NewbornCare1Room() {
         </mesh>
         <mesh position={[0, 0, 0.025]}>
           <boxGeometry args={[2.08, 1.48, 0.02]} />
-          <meshStandardMaterial color="#0284c7" roughness={0.3} metalness={0.1} />
+          <meshStandardMaterial color="#0284c7" roughness={0.3} metalness={0.2} />
         </mesh>
         <Html position={[0, 0, 0.05]} center transform scale={0.22}>
           <div
             onClick={() => setActiveModal('poster2')}
-            className="cursor-pointer select-none bg-sky-50 p-3 rounded-lg border-2 border-sky-400 text-center shadow-md hover:scale-105 transition"
+            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-sky-500 shadow-xl hover:scale-105 transition overflow-hidden"
             style={{ width: '380px' }}
           >
-            <h3 className="font-bold text-sky-900 text-base m-0">🤱 4 Key Points for Success</h3>
-            <p className="text-xs text-sky-800 m-1 font-semibold">หลักการจัดท่าอุ้มทารกให้นมที่ถูกต้อง</p>
-            <div className="text-[10px] text-gray-700 text-left bg-white p-2 rounded border border-sky-200 mt-1 space-y-0.5">
-              <div>1. ลำตัวชิดกับแม่ (Tummy to tummy)</div>
-              <div>2. ลูกหันหน้าเข้าหาเต้านมแม่</div>
-              <div>3. ศีรษะและลำตัวอยู่ในแนวเดียวกัน</div>
-              <div>4. ประคองตัวทารกอย่างมั่นคง</div>
+            <img
+              src="/references/room1/img_010.jpeg"
+              alt="4 Key Points"
+              style={{ width: '100%', height: '190px', objectFit: 'cover', borderRadius: '6px' }}
+            />
+            <div className="text-center py-1 bg-sky-50 rounded mt-1">
+              <span className="text-[11px] font-bold text-sky-900">🤱 4 Key Points ท่าอุ้มให้นม (คลิกอ่าน)</span>
             </div>
-            <span className="inline-block mt-1 text-[10px] bg-sky-600 text-white px-2 py-0.5 rounded-full font-bold">คลิกอ่านรายละเอียด</span>
           </div>
         </Html>
       </group>
@@ -261,23 +259,22 @@ export default function NewbornCare1Room() {
         </mesh>
         <mesh position={[0, 0, 0.025]}>
           <boxGeometry args={[2.48, 1.48, 0.02]} />
-          <meshStandardMaterial color="#db2777" roughness={0.3} metalness={0.1} />
+          <meshStandardMaterial color="#be185d" roughness={0.3} metalness={0.2} />
         </mesh>
         <Html position={[0, 0, 0.05]} center transform scale={0.22}>
           <div
             onClick={() => setActiveModal('poster3')}
-            className="cursor-pointer select-none bg-pink-50 p-3 rounded-lg border-2 border-pink-400 text-center shadow-md hover:scale-105 transition"
-            style={{ width: '420px' }}
+            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-pink-500 shadow-xl hover:scale-105 transition overflow-hidden"
+            style={{ width: '440px' }}
           >
-            <h3 className="font-bold text-pink-900 text-base m-0">🌸 ท่าให้นมทารก 4 ท่า</h3>
-            <p className="text-xs text-pink-800 m-1 font-semibold">Cradle • Football • Side Lying • Cross Cradle</p>
-            <div className="grid grid-cols-2 gap-1 text-[10px] text-gray-700 text-left bg-white p-2 rounded border border-pink-200 mt-1">
-              <div>1. Cradle Hold (อุ้มบนแขน)</div>
-              <div>2. Football Hold (สอดข้าง)</div>
-              <div>3. Side Lying (นอนตะแคง)</div>
-              <div>4. Cross Cradle (ข้ามตัก)</div>
+            <img
+              src="/references/room1/img_011.png"
+              alt="ท่าให้นมทารก 4 ท่า"
+              style={{ width: '100%', height: '190px', objectFit: 'cover', borderRadius: '6px' }}
+            />
+            <div className="text-center py-1 bg-pink-50 rounded mt-1">
+              <span className="text-[11px] font-bold text-pink-900">🌸 ท่าให้นมทารก 4 ท่าสากล (คลิกอ่าน)</span>
             </div>
-            <span className="inline-block mt-1 text-[10px] bg-pink-600 text-white px-2 py-0.5 rounded-full font-bold">คลิกดูภาพและเทคนิค</span>
           </div>
         </Html>
       </group>
@@ -593,21 +590,21 @@ export default function NewbornCare1Room() {
           ══════════════════════════════════════════════════════════════════════════ */}
       {/* Mother's Comfortable Nursing Armchair */}
       <group position={[1.8, 0, 0.4]} rotation={[0, -0.3, 0]}>
-        {/* Armchair Base & Cushions (Cream/Beige Fabric) */}
+        {/* Armchair Base & Cushions (Cream/Beige Fabric matching reference) */}
         <mesh position={[0, 0.32, 0]} castShadow receiveShadow>
           <boxGeometry args={[1.15, 0.5, 1.05]} />
-          <meshStandardMaterial color="#fef3c7" roughness={0.8} />
+          <meshStandardMaterial color="#faf6f0" roughness={0.7} />
         </mesh>
         {/* Reclining Backrest */}
         <mesh position={[0, 0.88, -0.38]} rotation={[-0.15, 0, 0]} castShadow>
           <boxGeometry args={[1.05, 0.95, 0.28]} />
-          <meshStandardMaterial color="#fef3c7" roughness={0.8} />
+          <meshStandardMaterial color="#faf6f0" roughness={0.7} />
         </mesh>
         {/* Plush Armrests */}
         {[-0.52, 0.52].map((x, i) => (
           <mesh key={`arm_${i}`} position={[x, 0.58, 0.05]} castShadow>
             <boxGeometry args={[0.22, 0.42, 0.98]} />
-            <meshStandardMaterial color="#fde68a" roughness={0.85} />
+            <meshStandardMaterial color="#f2ede4" roughness={0.75} />
           </mesh>
         ))}
         {/* Ergonomic Nursing Pillow on lap */}
@@ -724,9 +721,6 @@ export default function NewbornCare1Room() {
           </div>
         </Html>
       </group>
-
-      {/* Sanitary Trash Bin */}
-      <HospitalTrashBin position={[4.8, 0, -4.5]} scale={0.85} />
 
       {/* 3D Player Controller */}
       <PlayerController />

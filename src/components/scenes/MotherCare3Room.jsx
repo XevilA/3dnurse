@@ -301,7 +301,7 @@ export default function MotherCare3Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           🤱 INTERACTIVE LEARNING HUD (Based on Manual Zone 1: Breast Care)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 4.4, -7.8]} center transform scale={0.36}>
+      <Html position={[0, 3.2, -7.8]} center transform scale={0.32}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',

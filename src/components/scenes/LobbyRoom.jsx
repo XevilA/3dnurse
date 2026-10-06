@@ -82,16 +82,24 @@ export default function LobbyRoom() {
           <meshStandardMaterial color="#bae6fd" roughness={0.3} metalness={0.2} />
         </mesh>
 
-        {/* Rotating Holographic Earth Globe */}
-        <mesh ref={globeRef} position={[0, 2.6, 0]}>
-          <sphereGeometry args={[1.3, 24, 24]} />
-          <meshStandardMaterial
-            color="#00b0ff"
-            wireframe
-            emissive="#00b0ff"
-            emissiveIntensity={0.65}
-          />
-        </mesh>
+        {/* Rotating Holographic Medical Cross Emblem */}
+        <group ref={globeRef} position={[0, 1.8, 0]}>
+          {/* Vertical Bar */}
+          <mesh castShadow>
+            <boxGeometry args={[0.2, 0.7, 0.2]} />
+            <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.8} roughness={0.2} />
+          </mesh>
+          {/* Horizontal Bar */}
+          <mesh castShadow>
+            <boxGeometry args={[0.7, 0.2, 0.2]} />
+            <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.8} roughness={0.2} />
+          </mesh>
+          {/* Subtle Orbit Ring */}
+          <mesh rotation={[Math.PI / 3, 0, 0]}>
+            <torusGeometry args={[0.65, 0.015, 16, 48]} />
+            <meshStandardMaterial color="#bae6fd" emissive="#38bdf8" emissiveIntensity={0.6} />
+          </mesh>
+        </group>
       </group>
 
       {/* ═══════════════════════════════════════════════════════════════════════════════════
@@ -294,10 +302,6 @@ export default function LobbyRoom() {
 
       {/* Emergency First Aid & Hygiene Cabinet */}
       <MedicineCabinet position={[12.2, 0, -4.5]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} withMedicalBox={true} />
-
-      {/* Hospital Pedal Waste Bins */}
-      <HospitalTrashBin position={[1.8, 0, -4.5]} scale={0.85} />
-      <HospitalTrashBin position={[-1.8, 0, -4.5]} scale={0.85} />
 
       {/* ── GTA 3rd/1st-Person Player Character ── */}
       <PlayerController initialPosition={[0, 0, 3]} />

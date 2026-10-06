@@ -6,6 +6,7 @@ import BabyAvatar from '../avatars/BabyAvatar';
 import BabyBathtub from '../furniture/BabyBathtub';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
+import Pillows from '../decorations/Pillows';
 
 /**
  * NewbornCare2Room — ห้องที่ 2: การอาบน้ำและการดูแลความสะอาดทารก การเปลี่ยนผ้าอ้อม

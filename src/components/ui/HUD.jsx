@@ -9,24 +9,22 @@ const MOTHER_ROOMS = [
 ];
 
 const NEWBORN_ROOMS = [
-  { key: 'newbornCare1', label: '1. การให้นมทารก', icon: '🍼' },
-  { key: 'newbornCare2', label: '2. การอาบน้ำทารก', icon: '🛁' },
-  { key: 'newbornCare3', label: '3. เปลี่ยนผ้าอ้อม', icon: '👶' },
-  { key: 'newbornCare4', label: '4. ดูแลสายสะดือ', icon: '🔗' },
-  { key: 'newbornCare5', label: '5. จัดสภาพแวดล้อม', icon: '🏠' },
+  { key: 'newbornCare1', label: '1. การให้นมและการอุ้มจัดท่า (201)', icon: '🍼' },
+  { key: 'newbornCare2', label: '2. การอาบน้ำและเปลี่ยนผ้าอ้อม (202)', icon: '🛁' },
+  { key: 'newbornCare3', label: '3. การดูแลสายสะดือทารก (203)', icon: '🔗' },
+  { key: 'newbornCare4', label: '4. สภาพแวดล้อมที่ปลอดภัย (204)', icon: '🏠' },
 ];
 
 const ROOM_TITLES = {
-  lobby: 'Grand Hospital Lobby',
+  lobby: 'Grand Hospital Lobby (ห้องต้อนรับ)',
   motherCare1: '🏥 ดูแลร่างกายและฟื้นตัว (Ward 101)',
   motherCare2: '🩹 ดูแลแผลหลังคลอด (Ward 102)',
   motherCare3: '🤱 ดูแลเต้านมและการให้นม (Ward 103)',
   motherCare4: '🩺 สังเกตอาการผิดปกติ (Ward 104)',
-  newbornCare1: '🍼 การให้นมทารกแรกเกิด (Nursery 201)',
-  newbornCare2: '🛁 การอาบน้ำทารก (Nursery 202)',
-  newbornCare3: '👶 เปลี่ยนผ้าอ้อม/ขับถ่าย (Nursery 203)',
-  newbornCare4: '🔗 ดูแลสายสะดือ (Nursery 204)',
-  newbornCare5: '🏠 จัดสภาพแวดล้อมปลอดภัย (Nursery 205)',
+  newbornCare1: '🍼 การให้นมและการอุ้มจัดท่า (Nursery 201)',
+  newbornCare2: '🛁 การอาบน้ำและเปลี่ยนผ้าอ้อม (Nursery 202)',
+  newbornCare3: '🔗 การดูแลสายสะดือทารก (Nursery 203)',
+  newbornCare4: '🏠 สภาพแวดล้อมที่ปลอดภัย (Nursery 204)',
   quiz: '🎓 แบบทดสอบประเมินความรู้ (Hall 301)',
 };
 
@@ -37,7 +35,7 @@ export default function HUD() {
   const [showNav, setShowNav] = useState(false);
 
   const completedCount = Object.keys(learningProgress).length;
-  const totalModules = 9;
+  const totalModules = 8;
 
   return (
     <>
@@ -184,7 +182,7 @@ export default function HUD() {
                 <div className="flex items-center gap-1.5 mb-1.5 px-1">
                   <span className="text-sm">👶</span>
                   <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wide">
-                    โซนดูแลทารกแรกเกิด (5 ห้อง)
+                    โซนดูแลทารกแรกเกิด (4 ห้อง)
                   </span>
                 </div>
                 <div className="space-y-1.5">
