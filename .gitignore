@@ -4,3 +4,9 @@ dist
 *.local
 .vercel
 extracted_docs/
+.microcode/
+*.py
+._*
+รายละเอียด/
+แบบทดสอบ/
+*.docx

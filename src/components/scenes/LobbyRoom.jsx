@@ -151,7 +151,7 @@ export default function LobbyRoom() {
       <WalkableRoomPortal
         roomKey="newbornCare2"
         roomNumber="Nursery 202"
-        roomTitle="การอาบน้ำทารกแรกเกิด"
+        roomTitle="การอาบน้ำและการเปลี่ยนผ้าอ้อม"
         icon="🛁"
         theme="newborn"
         position={[10.5, 0, -2.2]}
@@ -160,8 +160,8 @@ export default function LobbyRoom() {
       <WalkableRoomPortal
         roomKey="newbornCare3"
         roomNumber="Nursery 203"
-        roomTitle="การเปลี่ยนผ้าอ้อมและขับถ่าย"
-        icon="👶"
+        roomTitle="การดูแลสายสะดือทารกแรกเกิด"
+        icon="🔗"
         theme="newborn"
         position={[10.5, 0, 2.2]}
         rotation={[0, -Math.PI / 2, 0]}
@@ -169,38 +169,27 @@ export default function LobbyRoom() {
       <WalkableRoomPortal
         roomKey="newbornCare4"
         roomNumber="Nursery 204"
-        roomTitle="การดูแลสายสะดือทารก"
-        icon="🔗"
+        roomTitle="สภาพแวดล้อมที่ปลอดภัยสำหรับทารก"
+        icon="🏠"
         theme="newborn"
         position={[10.5, 0, 6.6]}
         rotation={[0, -Math.PI / 2, 0]}
       />
 
       {/* ═══════════════════════════════════════════════════════════════════════════════════
-          🏛️ WING 3 (NORTH / BACK WALL): Nursery 205 + Quiz Hall 301 + Welcome Hub
+          🏛️ WING 3 (NORTH / BACK WALL): Grand Quiz Hall 301 + Welcome Hub
           Walkable Doorways along Z = -10.5 (Facing +Z into Lobby)
           ═══════════════════════════════════════════════════════════════════════════════════ */}
-      {/* 5th Newborn Room */}
-      <WalkableRoomPortal
-        roomKey="newbornCare5"
-        roomNumber="Nursery 205"
-        roomTitle="การจัดสภาพแวดล้อมที่ปลอดภัย"
-        icon="🏠"
-        theme="newborn"
-        position={[5.4, 0, -10.5]}
-        rotation={[0, 0, 0]}
-      />
-
       {/* Grand Quiz Hall Portal (Center Back) */}
       <WalkableRoomPortal
         roomKey="quiz"
         roomNumber="Hall 301"
-        roomTitle="ห้องแบบทดสอบประเมินความรู้ (Quiz)"
+        roomTitle="ห้องแบบทดสอบประเมินความรู้ (20 ข้อ)"
         icon="🎓"
         theme="quiz"
         position={[0, 0, -10.5]}
         rotation={[0, 0, 0]}
-        scale={1.12}
+        scale={1.15}
       />
 
       {/* Maternity Directory Board (Left Back Wall) */}
@@ -225,8 +214,8 @@ export default function LobbyRoom() {
             </div>
             <div style={{ fontSize: '11px', color: '#555', marginTop: '8px', textAlign: 'left', lineHeight: '1.4' }}>
               <p>⬅ <b>ฝั่งซ้าย:</b> แผนกบริบาลมารดา Ward 101 - 104</p>
-              <p>➡ <b>ฝั่งขวา:</b> แผนกทารกแรกเกิด Nursery 201 - 205</p>
-              <p>⬆ <b>ตรงกลาง:</b> หอประเมินความรู้ Hall 301</p>
+              <p>➡ <b>ฝั่งขวา:</b> แผนกทารกแรกเกิด Nursery 201 - 204</p>
+              <p>⬆ <b>ตรงกลาง:</b> หอประเมินความรู้ 20 ข้อ Hall 301</p>
             </div>
             <div style={{ marginTop: '8px', fontSize: '10px', color: '#888' }}>
               เดินเข้าซุ้มประตูแต่ละห้องเพื่อเข้าสู่บทเรียนได้ทันที
