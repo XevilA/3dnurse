@@ -154,7 +154,7 @@ export default function NewbornCare4Room() {
       <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
 
       {/* Safe Sleep Baby Crib (Beside Mother's Sofa - Room Sharing Demo) */}
-      <group position={[-2.9, 0, -3.2]} onClick={() => setActiveTab(1)}>
+      <group position={[-4.0, 0, -3.2]} onClick={() => setActiveTab(1)}>
         <BabyCrib position={[0, 0, 0]} scale={1.1}>
           {!isHoldingBaby && (
             <BabyAvatar
@@ -165,19 +165,19 @@ export default function NewbornCare4Room() {
             />
           )}
         </BabyCrib>
-        <Html position={[0, 1.25, 0]} center distanceFactor={22}>
+        <Html position={[0, 1.25, 0]} center distanceFactor={24}>
           <div
             onClick={(e) => {
               e.stopPropagation();
               setHoldingBaby(!isHoldingBaby);
             }}
-            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 whitespace-nowrap"
+            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 whitespace-nowrap"
             style={{
               background: isHoldingBaby ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #0284c7, #0369a1)',
               border: '2px solid white'
             }}
           >
-            <span>{isHoldingBaby ? '🧸 วางลูกน้อยลงเปลนอน' : '👶 ลูกน้อยนอนหลับปลอดภัย (คลิกอุ้ม)'}</span>
+            <span>{isHoldingBaby ? '🧸 วางลงเปล' : '👶 เปลนอน (คลิกอุ้ม)'}</span>
           </div>
         </Html>
       </group>
@@ -187,7 +187,7 @@ export default function NewbornCare4Room() {
         id="nursery204_sofa"
         name="เตียง/โซฟาคุณแม่ข้างเปล"
         type="sofa"
-        position={[-5.2, 0, -3.2]}
+        position={[-6.2, 0, -3.2]}
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.42, 0.15]}
       >

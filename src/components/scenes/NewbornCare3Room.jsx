@@ -152,7 +152,7 @@ export default function NewbornCare3Room() {
       <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
 
       {/* Cord Care Station Table with Baby (Shifted Left for unobstructed HUD view) */}
-      <group position={[-3.8, 0, -3.5]}>
+      <group position={[-5.2, 0, -3.2]}>
         <DrawerCabinet position={[0, 0, 0]} scale={0.9} />
         {/* Contoured Changing / Cord Care Pad */}
         <mesh position={[0, 1.72, 0.05]} receiveShadow castShadow>
@@ -170,25 +170,25 @@ export default function NewbornCare3Room() {
             withBlanket={true}
           />
         )}
-        <Html position={[0, 1.35, 0]} center distanceFactor={22}>
+        <Html position={[0, 1.25, 0]} center distanceFactor={24}>
           <div
             onClick={(e) => {
               e.stopPropagation();
               setHoldingBaby(!isHoldingBaby);
             }}
-            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 whitespace-nowrap"
+            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 whitespace-nowrap"
             style={{
               background: isHoldingBaby ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #d97706, #b45309)',
               border: '2px solid white'
             }}
           >
-            <span>{isHoldingBaby ? '🧸 วางลูกน้อยลงเบาะ' : '👶 ลูกน้อยนอนตรวจสะดือ (คลิกอุ้ม)'}</span>
+            <span>{isHoldingBaby ? '🧸 วางลงเบาะ' : '👶 ตรวจสะดือ (คลิกอุ้ม)'}</span>
           </div>
         </Html>
       </group>
 
       {/* Sterile Supplies Cart */}
-      <group position={[-5.8, 0, -3.5]}>
+      <group position={[-6.8, 0, -3.2]}>
         <MedicalCart position={[0, 0, 0]} scale={1.05} />
       </group>
 
