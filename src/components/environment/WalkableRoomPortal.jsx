@@ -31,7 +31,10 @@ export default function WalkableRoomPortal({
 }) {
   const setRoom = useStore((state) => state.setRoom);
   const learningProgress = useStore((state) => state.learningProgress);
+  const hasCompletedPretest = useStore((state) => state.hasCompletedPretest);
+  const triggerPretestWarning = useStore((state) => state.triggerPretestWarning);
   const isCompleted = !!learningProgress[roomKey];
+  const isLocked = roomKey !== 'quiz' && !hasCompletedPretest;
 
   const leftDoorRef = useRef();
   const rightDoorRef = useRef();
@@ -148,9 +151,9 @@ export default function WalkableRoomPortal({
       setIsNear(near);
     }
 
-    // Smooth hydraulic swing open when player approaches
-    const targetAngleLeft = near ? -1.18 : 0;
-    const targetAngleRight = near ? 1.18 : 0;
+    // Smooth hydraulic swing open ONLY when unlocked and player approaches
+    const targetAngleLeft = (near && !isLocked) ? -1.18 : 0;
+    const targetAngleRight = (near && !isLocked) ? 1.18 : 0;
 
     if (leftDoorRef.current) {
       leftDoorRef.current.rotation.y = THREE.MathUtils.damp(
@@ -169,16 +172,29 @@ export default function WalkableRoomPortal({
       );
     }
 
-    // Physical walk-in threshold (< 1.15m from doorway center)
-    if (dist < 1.15 && !hasTriggeredRef.current) {
-      hasTriggeredRef.current = true;
-      setRoom(roomKey);
+    // Physical walk-in threshold (< 1.35m from doorway center)
+    if (dist < 1.35) {
+      if (!hasTriggeredRef.current) {
+        hasTriggeredRef.current = true;
+        if (isLocked) {
+          triggerPretestWarning(roomKey);
+        } else {
+          setRoom(roomKey);
+        }
+      }
+    } else if (dist > 2.2) {
+      // Reset trigger flag when player walks away
+      hasTriggeredRef.current = false;
     }
   });
 
   const handleEnter = (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
-    setRoom(roomKey);
+    if (isLocked) {
+      triggerPretestWarning(roomKey);
+    } else {
+      setRoom(roomKey);
+    }
   };
 
   return (
@@ -355,8 +371,8 @@ export default function WalkableRoomPortal({
       {/* Welcoming Warm Overhead Threshold Spot */}
       <pointLight
         position={[0, 2.4, 0.35]}
-        color={themeConfig.glow}
-        intensity={isNear ? 2.8 : 1.4}
+        color={isLocked ? '#f59e0b' : themeConfig.glow}
+        intensity={isNear ? (isLocked ? 1.8 : 2.8) : 1.2}
         distance={4.5}
       />
 
@@ -374,6 +390,41 @@ export default function WalkableRoomPortal({
         <planeGeometry args={[1.56, 0.82]} />
         <meshStandardMaterial map={configuredFloor} roughness={0.4} />
       </mesh>
+
+      {/* ── Holographic 3D Security Lock Barrier for locked learning rooms ── */}
+      {isLocked && (
+        <group position={[0, 1.22, 0.08]}>
+          <mesh>
+            <boxGeometry args={[1.56, 0.16, 0.02]} />
+            <meshStandardMaterial
+              color="#ef4444"
+              emissive="#dc2626"
+              emissiveIntensity={0.6}
+              transparent
+              opacity={0.88}
+            />
+          </mesh>
+          <Html position={[0, 0, 0.02]} center transform scale={0.12}>
+            <div style={{
+              background: 'rgba(220, 38, 38, 0.95)',
+              color: 'white',
+              padding: '4px 14px',
+              borderRadius: '12px',
+              fontWeight: '900',
+              fontSize: '13px',
+              border: '1.5px solid white',
+              boxShadow: '0 0 12px rgba(220, 38, 38, 0.9)',
+              whiteSpace: 'nowrap',
+              userSelect: 'none',
+              cursor: 'pointer'
+            }}
+            onClick={handleEnter}
+            >
+              🔒 ห้องล็อค • ต้องทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน
+            </div>
+          </Html>
+        </group>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════════════
           5. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้องมาตรฐานโมเดิร์นคลีน)
@@ -400,61 +451,163 @@ export default function WalkableRoomPortal({
               cursor: 'pointer',
               userSelect: 'none',
               textAlign: 'center',
-              width: '420px',
+              width: '440px',
               fontFamily: 'system-ui, -apple-system, sans-serif',
               pointerEvents: 'auto',
             }}
           >
-            {/* Header Badge */}
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: themeConfig.badgeBg,
-                color: 'white',
-                padding: '4px 18px',
-                borderRadius: '16px',
-                fontSize: '15px',
-                fontWeight: '800',
-                letterSpacing: '0.5px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-              }}
-            >
-              <span>{icon}</span>
-              <span>{roomNumber}</span>
-              {isCompleted && <span>✅ ผ่านแล้ว</span>}
-            </div>
+            {isLocked ? (
+              /* Locked Header Sign */
+              <>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+                    color: 'white',
+                    padding: '4px 16px',
+                    borderRadius: '16px',
+                    fontSize: '14px',
+                    fontWeight: '800',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                  }}
+                >
+                  <span>🔒</span>
+                  <span>{roomNumber} (ล็อค)</span>
+                </div>
 
-            {/* Room Title */}
-            <div
-              style={{
-                color: '#1e293b',
-                fontSize: '16px',
-                fontWeight: '800',
-                marginTop: '6px',
-                lineHeight: '1.2',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {roomTitle}
-            </div>
+                <div
+                  style={{
+                    color: '#475569',
+                    fontSize: '15px',
+                    fontWeight: '800',
+                    marginTop: '5px',
+                    lineHeight: '1.2',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {roomTitle}
+                </div>
 
-            {/* Walk-in Action Tip */}
-            <div
-              style={{
-                marginTop: '4px',
-                fontSize: '12px',
-                fontWeight: '700',
-                color: isNear ? themeConfig.primary : '#64748b',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '4px',
-              }}
-            >
-              <span>{isNear ? '🚪 ประตูเปิดแล้ว — เดินเข้าไปเพื่อเข้าสู่ห้องนี้ ➜' : 'เดินเข้าใกล้เพื่อให้ประตูเปิด / คลิกเพื่อเข้า'}</span>
-            </div>
+                <div
+                  style={{
+                    marginTop: '4px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: '#dc2626',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <span>⚠️ กรุณาทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน</span>
+                </div>
+              </>
+            ) : roomKey === 'quiz' && !hasCompletedPretest ? (
+              /* Pre-test Starting Point Sign */
+              <>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white',
+                    padding: '5px 20px',
+                    borderRadius: '18px',
+                    fontSize: '15px',
+                    fontWeight: '900',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 0 16px rgba(245, 158, 11, 0.7)',
+                  }}
+                >
+                  <span>⭐</span>
+                  <span>จุดเริ่มต้น: ทำแบบทดสอบก่อนเรียน (20 ข้อ)</span>
+                </div>
+
+                <div
+                  style={{
+                    color: '#1e293b',
+                    fontSize: '16px',
+                    fontWeight: '900',
+                    marginTop: '5px',
+                    lineHeight: '1.2',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {roomTitle}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: '4px',
+                    fontSize: '12px',
+                    fontWeight: '800',
+                    color: '#d97706',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <span>{isNear ? '🚪 ประตูเปิดแล้ว — เดินเข้าไปเพื่อเริ่มทำแบบทดสอบ ➜' : '✨ ก้าวเข้าไปเพื่อทำ Pre-test 20 ข้อ (ปลดล็อคทุกห้อง)'}</span>
+                </div>
+              </>
+            ) : (
+              /* Regular Unlocked Sign */
+              <>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: themeConfig.badgeBg,
+                    color: 'white',
+                    padding: '4px 18px',
+                    borderRadius: '16px',
+                    fontSize: '15px',
+                    fontWeight: '800',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                  }}
+                >
+                  <span>{icon}</span>
+                  <span>{roomNumber}</span>
+                  {isCompleted && <span>✅ ผ่านแล้ว</span>}
+                </div>
+
+                <div
+                  style={{
+                    color: '#1e293b',
+                    fontSize: '16px',
+                    fontWeight: '800',
+                    marginTop: '6px',
+                    lineHeight: '1.2',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {roomTitle}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: '4px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    color: isNear ? themeConfig.primary : '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <span>{isNear ? '🚪 ประตูเปิดแล้ว — เดินเข้าไปเพื่อเข้าสู่ห้องนี้ ➜' : 'เดินเข้าใกล้เพื่อให้ประตูเปิด / คลิกเพื่อเข้า'}</span>
+                </div>
+              </>
+            )}
           </div>
         </Html>
       </group>

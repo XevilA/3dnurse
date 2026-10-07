@@ -258,24 +258,24 @@ export default function MotherCare3Room() {
       </InteractiveSeat>
 
       {/* Hospital Nightstand with Breast Milk Bottles & Hydration */}
-      <group position={[-2.4, 0, -4.5]}>
+      <group position={[-7.0, 0, -3.8]}>
         <HospitalNightstand position={[0, 0, 0]} scale={1.05} />
       </group>
 
-      {/* Baby Crib with Resting Newborn */}
-      <group position={[-1.2, 0, -4.5]} rotation={[0, -0.1, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
+      {/* Baby Crib with Resting Newborn (Shifted Left for unobstructed HUD) */}
+      <group position={[-5.2, 0, -3.8]} rotation={[0, -0.1, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
             <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
-        <Html position={[0, 1.6, 0]} center distanceFactor={14}>
+        <Html position={[0, 1.25, 0]} center distanceFactor={22}>
           <div
             onClick={(e) => {
               e.stopPropagation();
               setHoldingBaby(!isHoldingBaby);
             }}
-            className="cursor-pointer select-none px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg"
             style={{
               background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
               color: 'white',
@@ -283,7 +283,7 @@ export default function MotherCare3Room() {
               whiteSpace: 'nowrap',
             }}
           >
-            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อยหลับอยู่ (คลิกอุ้ม)'}
+            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อย (คลิกอุ้ม)'}
           </div>
         </Html>
       </group>

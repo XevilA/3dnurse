@@ -19,8 +19,8 @@ export const ROOM_COLLIDERS = {
   lobby: {
     bounds: { minX: -11.0, maxX: 11.0, minZ: -11.0, maxZ: 11.0 },
     boxes: [
-      // Central Information & Nurse Reception Desk
-      { minX: -2.3, maxX: 2.3, minZ: -5.2, maxZ: -3.2, name: 'เคาน์เตอร์ต้อนรับส่วนกลาง' },
+      // Information & Nurse Reception Desk (Side Bay X: 4.6)
+      { minX: 3.2, maxX: 6.0, minZ: -5.2, maxZ: -3.2, name: 'เคาน์เตอร์ต้อนรับส่วนกลาง' },
       // Left Hospital Lounge Velvet Sofa (facing center plaza)
       { minX: -7.6, maxX: -5.4, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนฝั่งซ้าย', seatId: 'lobby_sofa_left' },
       // Right Hospital Lounge Velvet Sofa (facing center plaza)

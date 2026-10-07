@@ -51,11 +51,23 @@ const useStore = create((set, get) => ({
   // ── Learning progress (tracks completed modules) ──
   learningProgress: {},
 
+  // ── Mandatory Pre-test (แบบทดสอบก่อนเรียน 20 ข้อ) ──
+  hasCompletedPretest: false,
+  pretestScore: 0,
+  posttestScore: 0,
+  showPretestWarning: false,
+  pretestWarningTargetRoom: null,
+
   // ── UI state ──
   showSuccessModal: false,
   successMessage: '',
 
   // ── Actions ──
+  setCompletedPretest: (score) => set({ hasCompletedPretest: true, pretestScore: score }),
+  setCompletedPosttest: (score) => set({ posttestScore: score }),
+  triggerPretestWarning: (roomKey) => set({ showPretestWarning: true, pretestWarningTargetRoom: roomKey }),
+  dismissPretestWarning: () => set({ showPretestWarning: false, pretestWarningTargetRoom: null }),
+
   setRoom: (room) => set({
     currentRoom: room,
     currentStep: 0,

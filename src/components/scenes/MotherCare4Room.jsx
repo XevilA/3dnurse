@@ -153,7 +153,7 @@ export default function MotherCare4Room() {
       <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
       <MedicineCabinet position={[7.8, 0, -1.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
       <HospitalTrashBin position={[6.0, 0, 2.8]} scale={0.85} />
-      <ExaminationLamp position={[-3.5, 0, -4.5]} />
+      <ExaminationLamp position={[-6.8, 0, -3.8]} />
 
       {/* Emergency Wheelchair */}
       <InteractiveSeat
@@ -168,12 +168,12 @@ export default function MotherCare4Room() {
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
       </InteractiveSeat>
 
-      {/* Patient Observation Bed */}
+      {/* Patient Observation Bed - Shifted Left */}
       <InteractiveSeat
         id="room104_bed"
         name="เตียงสังเกตอาการฉุกเฉิน"
         type="bed"
-        position={[-4, 0, -4]}
+        position={[-5.2, 0, -3.8]}
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.72, 0]}
       >

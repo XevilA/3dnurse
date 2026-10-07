@@ -18,6 +18,7 @@ import WalkableRoomPortal from '../environment/WalkableRoomPortal';
 
 export default function LobbyRoom() {
   const setRoom = useStore((state) => state.setRoom);
+  const hasCompletedPretest = useStore((state) => state.hasCompletedPretest);
   const globeRef = useRef();
 
   useFrame((_, delta) => {
@@ -99,7 +100,98 @@ export default function LobbyRoom() {
             <meshStandardMaterial color="#bae6fd" emissive="#38bdf8" emissiveIntensity={0.6} />
           </mesh>
         </group>
+
+        {/* ── Eye-Level Mandatory Pre-test Guidance Billboard (Facing Player Spawn) ── */}
+        {!hasCompletedPretest && (
+          <Html position={[0, 3.2, 0.4]} center transform scale={0.28}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(254, 243, 199, 0.98))',
+              border: '3px solid #f59e0b',
+              borderRadius: '24px',
+              padding: '16px 28px',
+              textAlign: 'center',
+              boxShadow: '0 12px 35px rgba(245, 158, 11, 0.45)',
+              width: '520px',
+              userSelect: 'none',
+              pointerEvents: 'auto',
+              fontFamily: 'system-ui, -apple-system, sans-serif'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                color: 'white',
+                padding: '5px 16px',
+                borderRadius: '20px',
+                fontWeight: '900',
+                fontSize: '13px',
+                boxShadow: '0 2px 8px rgba(217, 119, 6, 0.4)'
+              }}>
+                <span>⭐</span>
+                <span>ขั้นตอนแรก: บังคับทำแบบทดสอบก่อนเรียน</span>
+              </div>
+              <h2 style={{ color: '#1e293b', fontSize: '20px', fontWeight: '900', margin: '10px 0 6px 0' }}>
+                กรุณาเดินตรงไปยัง Hall 301 ด้านหน้า
+              </h2>
+              <p style={{ color: '#475569', fontSize: '13px', margin: '0 0 10px 0', lineHeight: '1.45' }}>
+                เพื่อทำแบบทดสอบวัดระดับความรู้ก่อนเรียน (Pre-test 20 ข้อ)<br />
+                เมื่อทำเสร็จสิ้น ระบบจะปลดล็อคห้องเรียนรู้ทั้ง 8 ห้องทันที!
+              </p>
+              <div
+                onClick={() => setRoom('quiz')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#7c3aed',
+                  color: 'white',
+                  padding: '8px 20px',
+                  borderRadius: '12px',
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                }}
+              >
+                <span>🎯 วาร์ปไปที่ Hall 301 ทันที ➜</span>
+              </div>
+            </div>
+          </Html>
+        )}
       </group>
+
+      {/* ── Illuminated Golden Runway leading from Player Spawn to Hall 301 ── */}
+      {!hasCompletedPretest && (
+        <group position={[0, 0.012, -4.5]}>
+          {/* Main Gold Runway Carpet */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <planeGeometry args={[2.0, 11.5]} />
+            <meshStandardMaterial
+              color="#fef08a"
+              emissive="#f59e0b"
+              emissiveIntensity={0.25}
+              roughness={0.6}
+            />
+          </mesh>
+          {/* Glowing Border Trim Lines */}
+          <mesh position={[-1.02, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.06, 11.5]} />
+            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.8} />
+          </mesh>
+          <mesh position={[1.02, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.06, 11.5]} />
+            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.8} />
+          </mesh>
+          {/* Directional Chevron Floor Indicators */}
+          {[-4.0, -1.5, 1.0, 3.5].map((z, idx) => (
+            <mesh key={`chevron_${idx}`} position={[0, 0.004, z]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[1.2, 0.25]} />
+              <meshStandardMaterial color="#d97706" emissive="#f59e0b" emissiveIntensity={0.6} />
+            </mesh>
+          ))}
+        </group>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════════════════════
           🌸 WING 1 (WEST / LEFT WALL): โซนการดูแลตนเองของมารดา (Mother Care Wards 101-104)
@@ -294,10 +386,10 @@ export default function LobbyRoom() {
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
       </InteractiveSeat>
 
-      {/* Nurse Information & Triage Desk with Fresh Flowers & Examination Lamp */}
-      <DoctorDesk position={[0, 0, -4.2]} rotation={[0, 0, 0]} scale={1.05} />
-      <FlowerVase position={[0.65, 0.85, -4.2]} scale={1.1} />
-      <ExaminationLamp position={[-0.65, 0.85, -4.0]} scale={0.7} />
+      {/* Nurse Information & Triage Desk with Fresh Flowers & Examination Lamp (Side Bay) */}
+      <DoctorDesk position={[4.6, 0, -4.2]} rotation={[0, -Math.PI / 6, 0]} scale={1.05} />
+      <FlowerVase position={[5.25, 0.85, -4.2]} scale={1.1} />
+      <ExaminationLamp position={[3.95, 0.85, -4.0]} scale={0.7} />
 
       {/* Emergency First Aid & Hygiene Cabinet */}
       <MedicineCabinet position={[12.2, 0, -4.5]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} withMedicalBox={true} />

@@ -18,6 +18,12 @@ import { ALL_QUIZ_QUESTIONS } from '../../data/quizData';
 
 export default function QuizRoom() {
   const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
+  const hasCompletedPretest = useStore((s) => s.hasCompletedPretest);
+  const pretestScore = useStore((s) => s.pretestScore);
+  const posttestScore = useStore((s) => s.posttestScore);
+  const setCompletedPretest = useStore((s) => s.setCompletedPretest);
+  const setCompletedPosttest = useStore((s) => s.setCompletedPosttest);
+  const [isPretestSubmission, setIsPretestSubmission] = useState(!hasCompletedPretest);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [userChoice, setUserChoice] = useState(null); // true | false | 'unsure'
@@ -64,9 +70,22 @@ export default function QuizRoom() {
       setCurrentQuestion((prev) => prev + 1);
     } else {
       setShowResult(true);
-      if (score >= 16) {
-        completeModule('quiz');
-        setShowSuccessModal(true, `ยอดเยี่ยมมาก! คุณผ่านแบบประเมินความรู้รวมแล้ว ได้ ${score}/20 คะแนน (ผ่านเกณฑ์มาตรฐานงานวิจัย)`);
+      if (!hasCompletedPretest) {
+        setCompletedPretest(score);
+        completeModule('pretest');
+        setShowSuccessModal(
+          true,
+          `ยินดีด้วย! คุณทำแบบทดสอบก่อนเรียน (Pre-test) สำเร็จแล้ว ได้ ${score}/20 คะแนน — ระบบได้ปลดล็อคห้องเรียนรู้ทั้ง 8 ห้องเรียบร้อยแล้ว!`
+        );
+      } else {
+        setCompletedPosttest(score);
+        if (score >= 16) {
+          completeModule('quiz');
+          setShowSuccessModal(
+            true,
+            `ยอดเยี่ยมมาก! คุณผ่านแบบประเมินความรู้หลังเรียน (Post-test) แล้ว ได้ ${score}/20 คะแนน (เกณฑ์ผ่าน 80%)`
+          );
+        }
       }
     }
   };
@@ -78,6 +97,7 @@ export default function QuizRoom() {
     setShowFeedback(false);
     setShowResult(false);
     setAnswersHistory([]);
+    setIsPretestSubmission(!useStore.getState().hasCompletedPretest);
   };
 
   return (
@@ -160,6 +180,41 @@ export default function QuizRoom() {
             <>
               {/* Header Info */}
               <div>
+                {/* Pre-test vs Post-test Mode Indicator Banner */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: isPretestSubmission ? '#fffbeb' : '#f5f3ff',
+                  border: `1.5px solid ${isPretestSubmission ? '#f59e0b' : '#c084fc'}`,
+                  borderRadius: '12px',
+                  padding: '8px 14px',
+                  marginBottom: '12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '18px' }}>{isPretestSubmission ? '⭐' : '🏆'}</span>
+                    <div>
+                      <div style={{ fontWeight: '900', fontSize: '14px', color: isPretestSubmission ? '#b45309' : '#5b21b6' }}>
+                        {isPretestSubmission ? 'แบบทดสอบวัดระดับความรู้ก่อนเรียน (Pre-test 20 ข้อ)' : 'แบบทดสอบประเมินผลสัมฤทธิ์หลังเรียน (Post-test 20 ข้อ)'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: isPretestSubmission ? '#92400e' : '#6d28d9' }}>
+                        {isPretestSubmission ? 'บังคับทำครบ 20 ข้อเพื่อปลดล็อคห้องเรียนรู้ทั้ง 8 ห้อง' : `คะแนนก่อนเรียน (Pre-test) ที่ทำได้: ${pretestScore}/20 คะแนน`}
+                      </div>
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: '12px',
+                    fontWeight: '900',
+                    background: isPretestSubmission ? '#d97706' : '#7c3aed',
+                    color: 'white',
+                    padding: '3px 12px',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                  }}>
+                    {isPretestSubmission ? 'Pre-test' : 'Post-test'}
+                  </span>
+                </div>
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <span style={{ background: '#ede9fe', color: '#6d28d9', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold' }}>
@@ -298,65 +353,189 @@ export default function QuizRoom() {
           ) : (
             /* Result Screen */
             <div style={{ textAlign: 'center', padding: '10px' }}>
-              <h1 style={{ color: score >= 16 ? '#16a34a' : '#dc2626', fontSize: '32px', margin: '0 0 10px 0' }}>
-                {score >= 16 ? '🎉 ผ่านการประเมินความรู้ตามเกณฑ์!' : '⚠️ ยังไม่ผ่านเกณฑ์มาตรฐาน'}
-              </h1>
-              <div style={{
-                background: score >= 16 ? '#f0fdf4' : '#fef2f2',
-                border: `2px solid ${score >= 16 ? '#86efac' : '#fca5a5'}`,
-                borderRadius: '16px',
-                padding: '18px',
-                maxWidth: '480px',
-                margin: '0 auto 20px auto'
-              }}>
-                <div style={{ fontSize: '16px', color: '#4b5563', marginBottom: '6px' }}>คะแนนรวมแบบประเมินความรู้</div>
-                <div style={{ fontSize: '42px', fontWeight: 'bold', color: score >= 16 ? '#15803d' : '#b91c1c' }}>
-                  {score} <span style={{ fontSize: '24px', color: '#6b7280' }}>/ 20</span>
-                </div>
-                <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
-                  คิดเป็น {Math.round((score / 20) * 100)}% (เกณฑ์ผ่าน 80% หรือ 16 คะแนนขึ้นไป)
-                </div>
-              </div>
+              {isPretestSubmission ? (
+                /* Pre-test Complete Screen */
+                <>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#fef3c7',
+                    color: '#b45309',
+                    padding: '6px 18px',
+                    borderRadius: '20px',
+                    fontWeight: '900',
+                    fontSize: '14px',
+                    marginBottom: '12px'
+                  }}>
+                    ⭐ บันทึกคะแนนก่อนเรียน (Pre-test) เรียบร้อยแล้ว
+                  </div>
 
-              <p style={{ color: '#4b5563', fontSize: '15px', marginBottom: '24px', maxWidth: '520px', margin: '0 auto 24px auto' }}>
-                {score >= 16
-                  ? 'คุณมีความรู้และความเข้าใจถูกต้องครบถ้วนในการดูแลตนเองและทารกแรกเกิดก่อนจำหน่ายตามมาตรฐานงานวิจัย'
-                  : 'ท่านสามารถทบทวนเนื้อหาในห้องการเรียนรู้ต่าง ๆ และกลับมาทำแบบทดสอบใหม่เพื่อเพิ่มพูนความรู้ได้ตลอดเวลา'}
-              </p>
+                  <h1 style={{ color: '#047857', fontSize: '28px', fontWeight: '900', margin: '0 0 12px 0' }}>
+                    🎉 ยินดีด้วย! ปลดล็อคห้องเรียนรู้ทั้ง 8 ห้องแล้ว
+                  </h1>
 
-              <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
-                <button
-                  onClick={restartQuiz}
-                  style={{
-                    padding: '12px 24px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    background: '#f3f4f6',
-                    color: '#374151',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '10px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  ลองทำแบบทดสอบอีกครั้ง ↻
-                </button>
-                <button
-                  onClick={() => setRoom('lobby')}
-                  style={{
-                    padding: '12px 28px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    background: '#7c3aed',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
-                  }}
-                >
-                  กลับสู่ล็อบบี้หลัก 🏥
-                </button>
-              </div>
+                  <div style={{
+                    background: '#f0fdf4',
+                    border: '2px solid #86efac',
+                    borderRadius: '16px',
+                    padding: '16px 20px',
+                    maxWidth: '480px',
+                    margin: '0 auto 16px auto'
+                  }}>
+                    <div style={{ fontSize: '15px', color: '#166534', fontWeight: 'bold' }}>
+                      คะแนนวัดระดับความรู้ก่อนเรียน (Baseline Score)
+                    </div>
+                    <div style={{ fontSize: '42px', fontWeight: '900', color: '#15803d', margin: '6px 0' }}>
+                      {score} <span style={{ fontSize: '22px', color: '#6b7280' }}>/ 20</span>
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#15803d' }}>
+                      คิดเป็น {Math.round((score / 20) * 100)}% ของคะแนนเต็ม 20 ข้อ
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: '#fffbeb',
+                    border: '1.5px solid #fde68a',
+                    borderRadius: '14px',
+                    padding: '12px 18px',
+                    maxWidth: '540px',
+                    margin: '0 auto 20px auto',
+                    textAlign: 'left',
+                    fontSize: '13px',
+                    color: '#92400e',
+                    lineHeight: '1.5'
+                  }}>
+                    <strong>✨ ขั้นตอนถัดไป:</strong> คุณแม่สามารถเดินเข้าศึกษาในห้องเรียนรู้ต่าง ๆ ทั้ง 8 ห้อง (Ward 101-104 และ Nursery 201-204) ได้อย่างอิสระ เมื่อศึกษาครบถ้วนแล้ว สามารถกลับมาทำแบบทดสอบหลังเรียน (Post-test) เพื่อวัดพัฒนาการความรู้ได้ครับ
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => setRoom('motherCare1')}
+                      style={{
+                        padding: '12px 24px',
+                        fontSize: '15px',
+                        fontWeight: '900',
+                        background: 'linear-gradient(135deg, #e91e63, #c2185b)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 14px rgba(233, 30, 99, 0.35)'
+                      }}
+                    >
+                      🚀 เข้าสู่ห้องแรก: Ward 101 ดูแลร่างกาย ➜
+                    </button>
+                    <button
+                      onClick={() => setRoom('lobby')}
+                      style={{
+                        padding: '12px 24px',
+                        fontSize: '15px',
+                        fontWeight: 'bold',
+                        background: '#0284c7',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
+                      }}
+                    >
+                      🏥 กลับสู่ล็อบบี้หลัก (เลือกห้องเอง) ➜
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* Post-test Complete Screen */
+                <>
+                  <h1 style={{ color: score >= 16 ? '#16a34a' : '#dc2626', fontSize: '30px', margin: '0 0 10px 0', fontWeight: '900' }}>
+                    {score >= 16 ? '🎉 ผ่านการประเมินความรู้หลังเรียนตามเกณฑ์!' : '⚠️ ผลการประเมินหลังเรียน (Post-test)'}
+                  </h1>
+
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr 1fr',
+                    gap: '10px',
+                    maxWidth: '560px',
+                    margin: '0 auto 16px auto'
+                  }}>
+                    <div style={{
+                      background: '#f8fafc',
+                      border: '1.5px solid #cbd5e1',
+                      borderRadius: '14px',
+                      padding: '14px'
+                    }}>
+                      <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>คะแนนก่อนเรียน</div>
+                      <div style={{ fontSize: '26px', fontWeight: '900', color: '#475569', marginTop: '4px' }}>
+                        {pretestScore} <span style={{ fontSize: '15px' }}>/ 20</span>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      background: score >= 16 ? '#f0fdf4' : '#fef2f2',
+                      border: `2px solid ${score >= 16 ? '#86efac' : '#fca5a5'}`,
+                      borderRadius: '14px',
+                      padding: '14px'
+                    }}>
+                      <div style={{ fontSize: '12px', color: score >= 16 ? '#166534' : '#991b1b', fontWeight: 'bold' }}>คะแนนหลังเรียน</div>
+                      <div style={{ fontSize: '28px', fontWeight: '900', color: score >= 16 ? '#15803d' : '#b91c1c', marginTop: '4px' }}>
+                        {score} <span style={{ fontSize: '15px' }}>/ 20</span>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      background: '#f5f3ff',
+                      border: '1.5px solid #c084fc',
+                      borderRadius: '14px',
+                      padding: '14px'
+                    }}>
+                      <div style={{ fontSize: '12px', color: '#6b21a8', fontWeight: 'bold' }}>พัฒนาการ (Gain)</div>
+                      <div style={{ fontSize: '26px', fontWeight: '900', color: '#7c3aed', marginTop: '4px' }}>
+                        +{Math.max(0, score - pretestScore)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <p style={{ color: '#4b5563', fontSize: '14px', marginBottom: '20px', maxWidth: '520px', margin: '0 auto 20px auto', lineHeight: '1.45' }}>
+                    {score >= 16
+                      ? 'ยอดเยี่ยมมาก! คุณมีความรู้และความเข้าใจถูกต้องครบถ้วนในการดูแลตนเองและทารกแรกเกิดก่อนจำหน่ายตามมาตรฐานงานวิจัย (ผ่านเกณฑ์ 80%)'
+                      : 'ท่านสามารถทบทวนเนื้อหาในห้องการเรียนรู้ต่าง ๆ และกลับมาทำแบบทดสอบใหม่เพื่อเพิ่มพูนคะแนนได้ตลอดเวลา'}
+                  </p>
+
+                  <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
+                    <button
+                      onClick={restartQuiz}
+                      style={{
+                        padding: '12px 24px',
+                        fontSize: '15px',
+                        fontWeight: 'bold',
+                        background: '#f3f4f6',
+                        color: '#374151',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '10px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ลองทำแบบทดสอบอีกครั้ง ↻
+                    </button>
+                    <button
+                      onClick={() => setRoom('lobby')}
+                      style={{
+                        padding: '12px 28px',
+                        fontSize: '15px',
+                        fontWeight: 'bold',
+                        background: '#7c3aed',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                      }}
+                    >
+                      กลับสู่ล็อบบี้หลัก 🏥
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

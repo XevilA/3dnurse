@@ -32,10 +32,25 @@ export default function HUD() {
   const currentRoom = useStore((s) => s.currentRoom);
   const setRoom = useStore((s) => s.setRoom);
   const learningProgress = useStore((s) => s.learningProgress);
+  const hasCompletedPretest = useStore((s) => s.hasCompletedPretest);
+  const pretestScore = useStore((s) => s.pretestScore);
+  const showPretestWarning = useStore((s) => s.showPretestWarning);
+  const triggerPretestWarning = useStore((s) => s.triggerPretestWarning);
+  const dismissPretestWarning = useStore((s) => s.dismissPretestWarning);
   const [showNav, setShowNav] = useState(false);
 
   const completedCount = Object.keys(learningProgress).length;
   const totalModules = 8;
+
+  const handleSelectRoom = (roomKey) => {
+    if (roomKey !== 'lobby' && roomKey !== 'quiz' && !hasCompletedPretest) {
+      triggerPretestWarning(roomKey);
+      setShowNav(false);
+      return;
+    }
+    setRoom(roomKey);
+    setShowNav(false);
+  };
 
   return (
     <>
@@ -75,6 +90,7 @@ export default function HUD() {
           >
             <span className="text-sm">🚪</span>
             <span>เลือกห้องเรียนรู้ (10 ห้อง)</span>
+            {!hasCompletedPretest && <span className="bg-amber-400 text-amber-950 text-[10px] px-2 py-0.5 rounded-full font-black">Pre-test ก่อน</span>}
           </button>
         </div>
 
@@ -92,12 +108,10 @@ export default function HUD() {
         </div>
       </div>
 
-
-
-      {/* ── Original Dropdown Room Selection Popup ── */}
+      {/* ── Dropdown Room Selection Popup ── */}
       {showNav && (
         <>
-          {/* Backdrop (click anywhere outside to close) */}
+          {/* Backdrop */}
           <div
             className="fixed inset-0 z-30 pointer-events-auto"
             onClick={() => setShowNav(false)}
@@ -113,7 +127,9 @@ export default function HUD() {
                 <span className="text-xl">🗺️</span>
                 <div>
                   <h2 className="text-xs sm:text-sm font-bold text-blue-950">เลือกห้องเรียนรู้ (10 ห้อง)</h2>
-                  <p className="text-[10px] text-blue-700">คลิกเพื่อเข้าสู่ห้องเรียนรู้ได้ทันที</p>
+                  <p className="text-[10px] text-blue-700">
+                    {!hasCompletedPretest ? '⚠️ ต้องทำแบบทดสอบก่อนเรียน (Pre-test) ก่อน' : 'คลิกเพื่อเข้าสู่ห้องเรียนรู้ได้ทันที'}
+                  </p>
                 </div>
               </div>
               <button
@@ -127,6 +143,32 @@ export default function HUD() {
 
             {/* Content List */}
             <div className="p-3 max-h-[75vh] overflow-y-auto space-y-3">
+              {/* Highlight Pre-test First if not completed */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => { setRoom('quiz'); setShowNav(false); }}
+                  className={`w-full text-left p-3 rounded-xl flex items-center gap-2.5 border transition cursor-pointer shadow-md ${
+                    !hasCompletedPretest
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black animate-pulse'
+                      : 'bg-purple-50 border-purple-300 text-purple-900 font-bold'
+                  }`}
+                >
+                  <span className="text-2xl flex-shrink-0">🎓</span>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold">
+                      {!hasCompletedPretest ? '⭐ 1. ทำแบบทดสอบก่อนเรียน (Pre-test)' : 'แบบทดสอบประเมินความรู้ (Hall 301)'}
+                    </div>
+                    <div className="text-[10px] opacity-90">
+                      {!hasCompletedPretest ? 'บังคับทำ 20 ข้อ เพื่อปลดล็อคห้องเรียนรู้' : `คะแนนก่อนเรียน: ${pretestScore}/20 (ทำ Post-test ได้)`}
+                    </div>
+                  </div>
+                  <span className="text-[10px] bg-white/25 px-2.5 py-1 rounded-full font-bold">
+                    {!hasCompletedPretest ? 'ต้องทำก่อน ➜' : 'เข้าทำ ➜'}
+                  </span>
+                </button>
+              </div>
+
               {/* Lobby Button */}
               <button
                 type="button"
@@ -140,7 +182,7 @@ export default function HUD() {
                 <span className="text-xl">🌐</span>
                 <div className="flex-1">
                   <div className="text-xs font-bold text-blue-900">ห้องต้อนรับ (Grand Lobby)</div>
-                  <div className="text-[10px] text-gray-500">เดินสำรวจซุ้มประตูเข้าห้องเรียนรู้ทั้ง 10 ห้อง</div>
+                  <div className="text-[10px] text-gray-500">เดินสำรวจซุ้มประตูเข้าห้องเรียนรู้</div>
                 </div>
                 {currentRoom === 'lobby' && <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-600 text-white font-bold">ปัจจุบัน</span>}
               </button>
@@ -158,7 +200,7 @@ export default function HUD() {
                     <button
                       key={room.key}
                       type="button"
-                      onClick={() => { setRoom(room.key); setShowNav(false); }}
+                      onClick={() => handleSelectRoom(room.key)}
                       className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
                         currentRoom === room.key
                           ? 'bg-pink-100 border-pink-400 font-bold text-pink-900 shadow-sm'
@@ -167,7 +209,9 @@ export default function HUD() {
                     >
                       <span className="text-base flex-shrink-0">{room.icon}</span>
                       <span className="text-xs font-medium flex-1">{room.label}</span>
-                      {learningProgress[room.key] ? (
+                      {!hasCompletedPretest ? (
+                        <span className="text-[10px] text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full font-bold">🔒 ล็อค</span>
+                      ) : learningProgress[room.key] ? (
                         <span className="text-emerald-600 text-xs font-bold">✅ ผ่านแล้ว</span>
                       ) : (
                         <span className="text-[10px] text-pink-400">เข้าห้อง ➜</span>
@@ -190,7 +234,7 @@ export default function HUD() {
                     <button
                       key={room.key}
                       type="button"
-                      onClick={() => { setRoom(room.key); setShowNav(false); }}
+                      onClick={() => handleSelectRoom(room.key)}
                       className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
                         currentRoom === room.key
                           ? 'bg-blue-100 border-blue-400 font-bold text-blue-900 shadow-sm'
@@ -199,7 +243,9 @@ export default function HUD() {
                     >
                       <span className="text-base flex-shrink-0">{room.icon}</span>
                       <span className="text-xs font-medium flex-1">{room.label}</span>
-                      {learningProgress[room.key] ? (
+                      {!hasCompletedPretest ? (
+                        <span className="text-[10px] text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full font-bold">🔒 ล็อค</span>
+                      ) : learningProgress[room.key] ? (
                         <span className="text-emerald-600 text-xs font-bold">✅ ผ่านแล้ว</span>
                       ) : (
                         <span className="text-[10px] text-blue-400">เข้าห้อง ➜</span>
@@ -208,29 +254,49 @@ export default function HUD() {
                   ))}
                 </div>
               </div>
-
-              {/* Quiz Room */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => { setRoom('quiz'); setShowNav(false); }}
-                  className={`w-full text-left p-2.5 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
-                    currentRoom === 'quiz'
-                      ? 'bg-purple-100 border-purple-400 text-purple-950 font-bold shadow-sm'
-                      : 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium shadow hover:from-purple-600 hover:to-indigo-700'
-                  }`}
-                >
-                  <span className="text-xl flex-shrink-0">🎓</span>
-                  <div className="flex-1">
-                    <div className="text-xs font-bold">ห้องแบบทดสอบหลังเรียน (Quiz)</div>
-                    <div className="text-[10px] opacity-90">ประเมินความรู้ 10 ข้อ (ผ่าน ≥ 80%)</div>
-                  </div>
-                  <span className="text-[10px] bg-white/20 px-2.5 py-0.5 rounded-full font-bold">เข้าทำ ➜</span>
-                </button>
-              </div>
             </div>
           </div>
         </>
+      )}
+
+      {/* ── Pre-test Mandatory Enforcement Modal ── */}
+      {showPretestWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border-4 border-amber-400 text-center animate-fade-in">
+            <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow">
+              🔒
+            </div>
+            <span className="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              ต้องทำแบบทดสอบก่อนเรียนก่อน
+            </span>
+            <h3 className="text-lg sm:text-xl font-black text-slate-800 mt-3">
+              กรุณาทำ Pre-test ก่อนเข้าห้องเรียนรู้
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+              ตามระเบียบการเรียนรู้ คุณแม่ต้องเดินไปยัง <b>Hall 301 (ตรงกลางด้านหน้า)</b> เพื่อทำแบบทดสอบวัดความรู้ก่อนเรียน (Pre-test 20 ข้อ) ก่อน จึงจะปลดล็อคห้องเรียนรู้ได้ครับ
+            </p>
+            <div className="mt-6 flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  dismissPretestWarning();
+                  setRoom('quiz');
+                }}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <span>🎯</span>
+                <span>ไปทำแบบทดสอบที่ Hall 301 ทันที ➜</span>
+              </button>
+              <button
+                type="button"
+                onClick={dismissPretestWarning}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+              >
+                เข้าใจแล้ว (เดินสำรวจล็อบบี้ต่อ)
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Bottom motto ── */}

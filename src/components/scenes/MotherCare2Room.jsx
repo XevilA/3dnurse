@@ -197,12 +197,12 @@ export default function MotherCare2Room() {
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
       </InteractiveSeat>
 
-      {/* Hospital Bed (กิจกรรม 2: ลดปวดบวม) */}
+      {/* Hospital Bed (กิจกรรม 2: ลดปวดบวม) - Shifted Left */}
       <InteractiveSeat
         id="room102_bed"
         name="เตียงพักฟื้นคุณแม่"
         type="bed"
-        position={[-4, 0, -4]}
+        position={[-5.4, 0, -3.8]}
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.72, 0]}
       >
@@ -213,7 +213,7 @@ export default function MotherCare2Room() {
       </InteractiveSeat>
 
       {/* Medical Cart with Peri-bottle & Sterile Gauze (กิจกรรม 1: ทำความสะอาดแผล) */}
-      <group position={[-1.6, 0, -4]} onClick={() => setActiveTab(0)}>
+      <group position={[-3.4, 0, -3.8]} onClick={() => setActiveTab(0)}>
         <MedicalCart position={[0, 0, 0]} scale={1.05} />
       </group>
 

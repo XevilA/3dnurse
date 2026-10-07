@@ -215,12 +215,12 @@ export default function MotherCare1Room() {
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
       </InteractiveSeat>
 
-      {/* Hospital Patient Bed with Soft Pillows (กิจกรรม 1: พักผ่อน) */}
+      {/* Hospital Patient Bed with Soft Pillows (กิจกรรม 1: พักผ่อน) - Shifted Left */}
       <InteractiveSeat
         id="room101_bed"
         name="เตียงพักฟื้นคุณแม่"
         type="bed"
-        position={[-4, 0, -4]}
+        position={[-5.5, 0, -3.8]}
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.72, 0]}
       >
@@ -231,19 +231,19 @@ export default function MotherCare1Room() {
       </InteractiveSeat>
 
       {/* Newborn Bassinet right beside Mother's bed (Safe Sleep & Rooming-in) */}
-      <group position={[-1.7, 0, -4]} rotation={[0, -0.2, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
+      <group position={[-3.6, 0, -3.8]} rotation={[0, -0.2, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
             <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
-        <Html position={[0, 1.6, 0]} center distanceFactor={14}>
+        <Html position={[0, 1.25, 0]} center distanceFactor={22}>
           <div
             onClick={(e) => {
               e.stopPropagation();
               setHoldingBaby(!isHoldingBaby);
             }}
-            className="cursor-pointer select-none px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg"
             style={{
               background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
               color: 'white',
@@ -251,13 +251,13 @@ export default function MotherCare1Room() {
               whiteSpace: 'nowrap',
             }}
           >
-            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อยหลับอยู่ (คลิกอุ้ม)'}
+            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อย (คลิกอุ้ม)'}
           </div>
         </Html>
       </group>
 
       {/* Hospital Nightstand with Hydration & Nutrition (กิจกรรม 2) */}
-      <group position={[1.5, 0, -4]} onClick={() => setActiveTab(1)}>
+      <group position={[-7.2, 0, -3.8]} onClick={() => setActiveTab(1)}>
         <HospitalNightstand position={[0, 0, 0]} scale={1.1}>
           <FlowerVase position={[0.15, 0.82, 0.1]} scale={0.7} />
           <mesh position={[-0.15, 0.72, -0.05]} castShadow>
