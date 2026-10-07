@@ -7,7 +7,6 @@ import BabyAvatar from '../avatars/BabyAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import MedicineCabinet from '../furniture/MedicineCabinet';
-import HospitalTrashBin from '../decorations/HospitalTrashBin';
 import DoctorDesk from '../furniture/DoctorDesk';
 import HospitalSofa from '../furniture/HospitalSofa';
 import InteractiveSeat from '../furniture/InteractiveSeat';
@@ -153,7 +152,6 @@ export default function NewbornCare4Room() {
       <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
       <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
-      <HospitalTrashBin position={[6.0, 0, 2.8]} scale={0.85} />
 
       {/* Central Safe Sleep Baby Crib */}
       <group position={[0, 0, -3.2]} onClick={() => setActiveTab(1)}>
@@ -207,7 +205,7 @@ export default function NewbornCare4Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           🏠 INTERACTIVE LEARNING HUD (Nursery 204: Safe Sleep Environment)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 4.4, -7.8]} center transform scale={0.36}>
+      <Html position={[0, 2.1, -7.8]} center transform scale={0.27}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',

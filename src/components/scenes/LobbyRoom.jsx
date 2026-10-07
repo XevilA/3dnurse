@@ -13,7 +13,6 @@ import DoctorDesk from '../furniture/DoctorDesk';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import Pillows from '../decorations/Pillows';
 import ExaminationLamp from '../decorations/ExaminationLamp';
-import HospitalTrashBin from '../decorations/HospitalTrashBin';
 import MedicineCabinet from '../furniture/MedicineCabinet';
 import WalkableRoomPortal from '../environment/WalkableRoomPortal';
 

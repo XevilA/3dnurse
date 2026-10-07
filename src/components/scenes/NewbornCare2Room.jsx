@@ -560,11 +560,6 @@ export default function NewbornCare2Room() {
           <boxGeometry args={[0.38, 0.62, 0.42]} />
           <meshStandardMaterial color="#ef4444" roughness={0.4} />
         </mesh>
-        <Html position={[0, 0.95, 0]} center distanceFactor={18}>
-          <div className="select-none bg-rose-100 text-rose-900 border border-rose-300 text-[10px] font-bold px-2 py-0.5 rounded shadow whitespace-nowrap">
-            🗑️ ถังขยะแยกประเภท (ทั่วไป/ติดเชื้อ)
-          </div>
-        </Html>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════

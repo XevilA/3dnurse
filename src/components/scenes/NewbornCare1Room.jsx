@@ -6,7 +6,6 @@ import BabyAvatar from '../avatars/BabyAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import Pillows from '../decorations/Pillows';
-import HospitalTrashBin from '../decorations/HospitalTrashBin';
 
 /**
  * NewbornCare1Room — ห้องที่ 1: การให้นมและการอุ้มจัดท่าทารก

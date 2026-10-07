@@ -8,7 +8,6 @@ import BabyAvatar from '../avatars/BabyAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import MedicineCabinet from '../furniture/MedicineCabinet';
-import HospitalTrashBin from '../decorations/HospitalTrashBin';
 import DrawerCabinet from '../furniture/DrawerCabinet';
 import CleaningBottle from '../decorations/CleaningBottle';
 import DoctorDesk from '../furniture/DoctorDesk';
@@ -151,7 +150,6 @@ export default function NewbornCare3Room() {
       <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
       <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
-      <HospitalTrashBin position={[-2.2, 0, -3.2]} scale={0.9} />
 
       {/* Cord Care Station Table with Baby */}
       <group position={[0, 0, -3.5]}>
@@ -172,13 +170,13 @@ export default function NewbornCare3Room() {
             withBlanket={true}
           />
         )}
-        <Html position={[0, 2.5, 0]} center distanceFactor={14}>
+        <Html position={[0, 2.5, 0]} center distanceFactor={18}>
           <div
             onClick={(e) => {
               e.stopPropagation();
               setHoldingBaby(!isHoldingBaby);
             }}
-            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95"
+            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 whitespace-nowrap"
             style={{
               background: isHoldingBaby ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #d97706, #b45309)',
               border: '2px solid white'
@@ -202,7 +200,7 @@ export default function NewbornCare3Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           🔗 INTERACTIVE LEARNING HUD (Nursery 203: Cord Care)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 4.4, -7.8]} center transform scale={0.36}>
+      <Html position={[0, 2.1, -7.8]} center transform scale={0.27}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',
