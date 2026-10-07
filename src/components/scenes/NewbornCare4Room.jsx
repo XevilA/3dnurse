@@ -154,7 +154,7 @@ export default function NewbornCare4Room() {
       <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
 
       {/* Safe Sleep Baby Crib (Beside Mother's Sofa - Room Sharing Demo) */}
-      <group position={[-2.2, 0, -3.2]} onClick={() => setActiveTab(1)}>
+      <group position={[-2.9, 0, -3.2]} onClick={() => setActiveTab(1)}>
         <BabyCrib position={[0, 0, 0]} scale={1.1}>
           {!isHoldingBaby && (
             <BabyAvatar
@@ -165,7 +165,7 @@ export default function NewbornCare4Room() {
             />
           )}
         </BabyCrib>
-        <Html position={[0, 1.8, 0]} center distanceFactor={20}>
+        <Html position={[0, 1.25, 0]} center distanceFactor={22}>
           <div
             onClick={(e) => {
               e.stopPropagation();
@@ -187,7 +187,7 @@ export default function NewbornCare4Room() {
         id="nursery204_sofa"
         name="เตียง/โซฟาคุณแม่ข้างเปล"
         type="sofa"
-        position={[-4.5, 0, -3.2]}
+        position={[-5.2, 0, -3.2]}
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.42, 0.15]}
       >
