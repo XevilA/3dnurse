@@ -143,7 +143,7 @@ export default function NewbornCare4Room() {
     <group>
       {/* ── Realistic 3D Hospital Room Architecture ── */}
       <HospitalRoomShell
-        theme="newborn"
+        theme="mother"
         roomTitle="ห้องบริบาลทารก 4: สภาพแวดล้อมที่ปลอดภัยสำหรับทารก (Safe Sleep)"
         roomNumber="Safe Nursery Ward 204"
       />
@@ -153,8 +153,8 @@ export default function NewbornCare4Room() {
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
       <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
 
-      {/* Central Safe Sleep Baby Crib */}
-      <group position={[0, 0, -3.2]} onClick={() => setActiveTab(1)}>
+      {/* Safe Sleep Baby Crib (Beside Mother's Sofa - Room Sharing Demo) */}
+      <group position={[-2.2, 0, -3.2]} onClick={() => setActiveTab(1)}>
         <BabyCrib position={[0, 0, 0]} scale={1.1}>
           {!isHoldingBaby && (
             <BabyAvatar
@@ -165,13 +165,13 @@ export default function NewbornCare4Room() {
             />
           )}
         </BabyCrib>
-        <Html position={[0, 1.8, 0]} center distanceFactor={14}>
+        <Html position={[0, 1.8, 0]} center distanceFactor={20}>
           <div
             onClick={(e) => {
               e.stopPropagation();
               setHoldingBaby(!isHoldingBaby);
             }}
-            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95"
+            className="cursor-pointer select-none px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 whitespace-nowrap"
             style={{
               background: isHoldingBaby ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #0284c7, #0369a1)',
               border: '2px solid white'

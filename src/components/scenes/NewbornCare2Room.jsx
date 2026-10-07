@@ -484,7 +484,7 @@ export default function NewbornCare2Room() {
         )}
 
         {/* Table Station Floating Badge */}
-        <Html position={[0, 1.75, 0]} center distanceFactor={18}>
+        <Html position={[0, 1.40, 0]} center distanceFactor={22}>
           <div className="flex flex-col items-center gap-1 whitespace-nowrap">
             <button
               onClick={() => setActiveModal('bathingProcedure')}

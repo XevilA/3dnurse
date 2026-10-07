@@ -141,7 +141,7 @@ export default function NewbornCare3Room() {
     <group>
       {/* ── Realistic 3D Hospital Room Architecture ── */}
       <HospitalRoomShell
-        theme="newborn"
+        theme="mother"
         roomTitle="ห้องบริบาลทารก 3: การดูแลสายสะดือทารกแรกเกิด"
         roomNumber="Cord Care Nursery 203"
       />
@@ -151,8 +151,8 @@ export default function NewbornCare3Room() {
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
       <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
 
-      {/* Cord Care Station Table with Baby */}
-      <group position={[0, 0, -3.5]}>
+      {/* Cord Care Station Table with Baby (Shifted Left for unobstructed HUD view) */}
+      <group position={[-2.8, 0, -3.5]}>
         <DrawerCabinet position={[0, 0, 0]} scale={0.9} />
         {/* Contoured Changing / Cord Care Pad */}
         <mesh position={[0, 1.72, 0.05]} receiveShadow castShadow>
@@ -170,7 +170,7 @@ export default function NewbornCare3Room() {
             withBlanket={true}
           />
         )}
-        <Html position={[0, 2.5, 0]} center distanceFactor={18}>
+        <Html position={[0, 2.3, 0]} center distanceFactor={20}>
           <div
             onClick={(e) => {
               e.stopPropagation();
@@ -188,7 +188,7 @@ export default function NewbornCare3Room() {
       </group>
 
       {/* Sterile Supplies Cart */}
-      <group position={[-2.5, 0, -3.5]}>
+      <group position={[-4.8, 0, -3.5]}>
         <MedicalCart position={[0, 0, 0]} scale={1.05} />
       </group>
 
