@@ -1,31 +1,19 @@
-import React, { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import RealPlant from '../decorations/RealPlant';
 import RealTree from '../decorations/RealTree';
-import FlowerVase from '../decorations/FlowerVase';
-import HospitalSofa from '../furniture/HospitalSofa';
+import HospitalNurseStation from '../furniture/HospitalNurseStation';
+import HospitalWaitingLounge from '../furniture/HospitalWaitingLounge';
 import HospitalWheelchair from '../furniture/HospitalWheelchair';
 import InteractiveSeat from '../furniture/InteractiveSeat';
-import DoctorDesk from '../furniture/DoctorDesk';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
-import Pillows from '../decorations/Pillows';
-import ExaminationLamp from '../decorations/ExaminationLamp';
-import MedicineCabinet from '../furniture/MedicineCabinet';
 import WalkableRoomPortal from '../environment/WalkableRoomPortal';
 
 export default function LobbyRoom() {
   const setRoom = useStore((state) => state.setRoom);
   const hasCompletedPretest = useStore((state) => state.hasCompletedPretest);
-  const globeRef = useRef();
-
-  useFrame((_, delta) => {
-    if (globeRef.current) {
-      globeRef.current.rotation.y += delta * 0.4;
-    }
-  });
 
   return (
     <group>
@@ -35,168 +23,276 @@ export default function LobbyRoom() {
         width={28}
         depth={28}
         height={10}
-        roomTitle="ศูนย์การเรียนรู้สุขภาพมารดาและทารกแรกเกิด (Metaverse Grand Lobby)"
-        roomNumber="Main Reception & Triage"
+        roomTitle="ศูนย์การเรียนรู้สุขภาพมารดาและทารกแรกเกิด (Metaverse Grand Hospital Lobby)"
+        roomNumber="Main Reception & Nurse Station"
       />
 
-      {/* Decorative Terrazzo Floor Pathways */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-        <ringGeometry args={[2.5, 4.5, 32]} />
-        <meshStandardMaterial color="#e0f2fe" roughness={0.3} />
+      {/* Decorative Terrazzo Floor Pathways & Warm Hospital Welcoming Inlays */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, -1.8]}>
+        <ringGeometry args={[3.2, 6.2, 40]} />
+        <meshStandardMaterial color="#fef3c7" roughness={0.3} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, -1.8]}>
+        <ringGeometry args={[6.25, 6.42, 40]} />
+        <meshStandardMaterial color="#d4a373" roughness={0.4} />
       </mesh>
 
-      {/* ── Welcome Banner (Top Center, High on Back Wall) ── */}
-      <Html position={[0, 7.8, -13.2]} center transform scale={0.55}>
-        <div style={{
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.98)',
-          padding: '16px 28px',
-          borderRadius: '20px',
-          boxShadow: '0 8px 24px rgba(0, 50, 100, 0.15)',
-          border: '2px solid #b3e5fc',
-          minWidth: '440px',
-          userSelect: 'none',
-          pointerEvents: 'auto'
-        }}>
-          <h1 style={{ color: '#d81b60', margin: 0, fontSize: '22px', fontWeight: 'bold' }}>
-            🌸 ยินดีต้อนรับสู่โลกแห่งการเรียนรู้ เพื่อแม่และลูก 👶
-          </h1>
-          <h2 style={{ color: '#0288d1', margin: '6px 0 0 0', fontSize: '16px', fontWeight: '600' }}>
-            สุขภาพดี เริ่มได้จากความรู้และการปฏิบัติจริง
-          </h2>
-          <p style={{ color: '#555', margin: '8px 0 0 0', fontSize: '13px', fontWeight: '500' }}>
-            ❤️ "แม่มั่นใจ...ลูกปลอดภัย...ครอบครัวอบอุ่น"
-          </p>
-        </div>
-      </Html>
+      {/* ══════════════════════════════════════════════════════════════════════════════
+          🏥 CENTRAL NURSE RECEPTION STATION (Faithfully matching client reference photo)
+          - Curved Oak Slats with Warm LED Kickplate Glow
+          - Center: Red Cross circular emblem & "ยินดีต้อนรับ เราพร้อมดูแลคุณ ❤️"
+          - Left: Sky Blue Queue Display Board (A015, A014, B007, B006)
+          - 3 Nurses: Pink, Sky Blue, Pink
+          - White & Pink Floral Vases, Desktop Monitors, Canopy Downlights
+          ══════════════════════════════════════════════════════════════════════════════ */}
+      <HospitalNurseStation position={[0, 0, -4.2]} scale={1.08} />
 
-      {/* ── Central Holographic Healthcare Hub ── */}
-      <group position={[0, 0, -0.8]}>
-        {/* Tiered Marble Plaza Pedestal */}
-        <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
-          <cylinderGeometry args={[2.4, 2.6, 0.5, 32]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.1} />
-        </mesh>
-        <mesh position={[0, 0.65, 0]} castShadow>
-          <cylinderGeometry args={[1.8, 2.2, 0.35, 32]} />
-          <meshStandardMaterial color="#bae6fd" roughness={0.3} metalness={0.2} />
+      {/* ══════════════════════════════════════════════════════════════════════════════
+          🖼️ AUTHENTIC HOSPITAL WALL POSTERS (Positioned to the left of the counter like in photo)
+          ══════════════════════════════════════════════════════════════════════════════ */}
+      <group position={[-5.2, 0, -4.8]}>
+        {/* Wall Panel Backing */}
+        <mesh position={[0, 2.5, 0]} castShadow receiveShadow>
+          <boxGeometry args={[3.2, 4.8, 0.1]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} />
         </mesh>
 
-        {/* Rotating Holographic Medical Cross Emblem */}
-        <group ref={globeRef} position={[0, 1.8, 0]}>
-          {/* Vertical Bar */}
+        {/* Poster 1: "สุขภาพดี เริ่มได้ที่นี่" */}
+        <group position={[-0.8, 2.7, 0.06]}>
           <mesh castShadow>
-            <boxGeometry args={[0.2, 0.7, 0.2]} />
-            <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.8} roughness={0.2} />
+            <boxGeometry args={[1.25, 1.85, 0.03]} />
+            <meshStandardMaterial color="#f1f5f9" roughness={0.3} />
           </mesh>
-          {/* Horizontal Bar */}
-          <mesh castShadow>
-            <boxGeometry args={[0.7, 0.2, 0.2]} />
-            <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.8} roughness={0.2} />
-          </mesh>
-          {/* Subtle Orbit Ring */}
-          <mesh rotation={[Math.PI / 3, 0, 0]}>
-            <torusGeometry args={[0.65, 0.015, 16, 48]} />
-            <meshStandardMaterial color="#bae6fd" emissive="#38bdf8" emissiveIntensity={0.6} />
-          </mesh>
-        </group>
-
-        {/* ── Eye-Level Mandatory Pre-test Guidance Billboard (Facing Player Spawn) ── */}
-        {!hasCompletedPretest && (
-          <Html position={[0, 2.3, -1.0]} center transform scale={0.23}>
+          <Html position={[0, 0, 0.02]} center transform scale={0.15}>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(254, 243, 199, 0.98))',
-              border: '3px solid #f59e0b',
-              borderRadius: '24px',
-              padding: '16px 28px',
+              width: '240px',
+              height: '360px',
+              background: 'linear-gradient(180deg, #ffffff 0%, #fff1f2 100%)',
+              border: '2px solid #fda4af',
+              borderRadius: '8px',
+              padding: '16px 12px',
+              boxSizing: 'border-box',
               textAlign: 'center',
-              boxShadow: '0 12px 35px rgba(245, 158, 11, 0.45)',
-              width: '520px',
-              userSelect: 'none',
-              pointerEvents: 'auto',
-              fontFamily: 'system-ui, -apple-system, sans-serif'
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
             }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                color: 'white',
-                padding: '5px 16px',
-                borderRadius: '20px',
-                fontWeight: '900',
-                fontSize: '13px',
-                boxShadow: '0 2px 8px rgba(217, 119, 6, 0.4)'
-              }}>
-                <span>⭐</span>
-                <span>ขั้นตอนแรก: บังคับทำแบบทดสอบก่อนเรียน</span>
-              </div>
-              <h2 style={{ color: '#1e293b', fontSize: '20px', fontWeight: '900', margin: '10px 0 6px 0' }}>
-                กรุณาเดินตรงไปยัง Hall 301 ด้านหน้า
-              </h2>
-              <p style={{ color: '#475569', fontSize: '13px', margin: '0 0 10px 0', lineHeight: '1.45' }}>
-                เพื่อทำแบบทดสอบวัดระดับความรู้ก่อนเรียน (Pre-test 20 ข้อ)<br />
-                เมื่อทำเสร็จสิ้น ระบบจะปลดล็อคห้องเรียนรู้ทั้ง 8 ห้องทันที!
+              <div style={{ fontSize: '36px', marginBottom: '8px' }}>👩‍🍼</div>
+              <h3 style={{ color: '#e11d48', fontSize: '18px', fontWeight: '900', margin: '4px 0' }}>
+                สุขภาพดี<br />เริ่มได้ที่นี่
+              </h3>
+              <div style={{ width: '40px', height: '3px', background: '#f43f5e', margin: '8px auto' }} />
+              <p style={{ color: '#475569', fontSize: '11px', lineHeight: '1.4', margin: '0 0 12px 0' }}>
+                การดูแลสุขภาพมารดาหลังคลอด<br />
+                เพื่อฟื้นฟูร่างกายอย่างถูกต้อง<br />
+                และปลอดภัยในทุกย่างก้าว
               </p>
-              <div
-                onClick={() => setRoom('quiz')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: '#7c3aed',
-                  color: 'white',
-                  padding: '8px 20px',
-                  borderRadius: '12px',
-                  fontSize: '13px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
-                }}
-              >
-                <span>🎯 วาร์ปไปที่ Hall 301 ทันที ➜</span>
+              <div style={{
+                background: '#e11d48',
+                color: 'white',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                display: 'inline-block'
+              }}>
+                Mother Care
               </div>
             </div>
           </Html>
-        )}
+        </group>
+
+        {/* Poster 2: "ดูแลด้วยหัวใจ ทุกช่วงของชีวิต" */}
+        <group position={[0.8, 2.7, 0.06]}>
+          <mesh castShadow>
+            <boxGeometry args={[1.25, 1.85, 0.03]} />
+            <meshStandardMaterial color="#f1f5f9" roughness={0.3} />
+          </mesh>
+          <Html position={[0, 0, 0.02]} center transform scale={0.15}>
+            <div style={{
+              width: '240px',
+              height: '360px',
+              background: 'linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)',
+              border: '2px solid #86efac',
+              borderRadius: '8px',
+              padding: '16px 12px',
+              boxSizing: 'border-box',
+              textAlign: 'center',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+            }}>
+              <div style={{ fontSize: '36px', marginBottom: '8px' }}>💖🤲</div>
+              <h3 style={{ color: '#16a34a', fontSize: '18px', fontWeight: '900', margin: '4px 0' }}>
+                ดูแลด้วยหัวใจ<br />ทุกช่วงของชีวิต
+              </h3>
+              <div style={{ width: '40px', height: '3px', background: '#22c55e', margin: '8px auto' }} />
+              <p style={{ color: '#475569', fontSize: '11px', lineHeight: '1.4', margin: '0 0 12px 0' }}>
+                ปกป้องทารกแรกเกิดด้วยความรัก<br />
+                สายใยผูกพันแม่สู่ลูก<br />
+                เติบโตสมวัยแข็งแรงสมบูรณ์
+              </p>
+              <div style={{
+                background: '#16a34a',
+                color: 'white',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                display: 'inline-block'
+              }}>
+                Newborn Care
+              </div>
+            </div>
+          </Html>
+        </group>
       </group>
 
-      {/* ── Illuminated Golden Runway leading from Player Spawn to Hall 301 ── */}
+      {/* ══════════════════════════════════════════════════════════════════════════════
+          🏥 HOSPITAL WAYFINDING DIRECTORY SIGN (Positioned on the right pillar like in photo)
+          ══════════════════════════════════════════════════════════════════════════════ */}
+      <group position={[5.2, 0, -4.8]}>
+        {/* Architectural Column Backing */}
+        <mesh position={[0, 2.5, 0]} castShadow receiveShadow>
+          <boxGeometry args={[2.0, 4.8, 0.4]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.2} />
+        </mesh>
+        {/* Wood Slat Trim on Side */}
+        {Array.from({ length: 4 }).map((_, si) => (
+          <mesh key={`p_slat_${si}`} position={[0.9 + (si * 0.1), 2.5, 0]} castShadow>
+            <boxGeometry args={[0.06, 4.78, 0.38]} />
+            <meshStandardMaterial color="#b07d4b" roughness={0.4} />
+          </mesh>
+        ))}
+
+        {/* Directory Signboard Plaque */}
+        <group position={[-0.2, 2.9, 0.22]}>
+          <mesh castShadow>
+            <boxGeometry args={[1.5, 1.8, 0.04]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.2} />
+          </mesh>
+          <Html position={[0, 0, 0.03]} center transform scale={0.16}>
+            <div style={{
+              width: '280px',
+              background: '#ffffff',
+              borderRadius: '10px',
+              padding: '12px 14px',
+              boxSizing: 'border-box',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{
+                background: '#0284c7',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '6px',
+                fontWeight: '900',
+                fontSize: '12px',
+                textAlign: 'center',
+                marginBottom: '8px'
+              }}>
+                ℹ️ แผนผังแผนกผู้ป่วย
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', color: '#1e293b' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '3px' }}>
+                  <span>⬅ แผนกมารดาหลังคลอด</span>
+                  <span style={{ fontWeight: 'bold', color: '#db2777' }}>Ward 101-104</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '3px' }}>
+                  <span>➡ แผนกทารกแรกเกิด</span>
+                  <span style={{ fontWeight: 'bold', color: '#0284c7' }}>Nursery 201-204</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '3px' }}>
+                  <span>⬆ ห้องสอบประเมินความรู้</span>
+                  <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>Hall 301</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>👗 ห้องแต่งตัวคุณแม่</span>
+                  <span style={{ fontWeight: 'bold', color: '#f59e0b' }}>Suite 001</span>
+                </div>
+              </div>
+            </div>
+          </Html>
+        </group>
+      </group>
+
+      {/* ══════════════════════════════════════════════════════════════════════════════
+          🛋️ MODERN HOSPITAL WAITING LOUNGES (Exact Pink & Cream Modular Sofas from Photo)
+          Foreground & Midground seating with round oak coffee table & green planter boxes
+          ══════════════════════════════════════════════════════════════════════════════ */}
+      {/* Right Waiting Lounge (Facing diagonal towards Nurse Station, like in photo foreground) */}
+      <InteractiveSeat
+        id="lobby_lounge_right"
+        name="โซฟารอรับบริการ ด้านหน้าขวา"
+        type="sofa"
+        position={[3.2, 0, 0.2]}
+        rotation={[0, -Math.PI * 0.45, 0]}
+        seatOffset={[0, 0.44, 0.05]}
+      >
+        <HospitalWaitingLounge position={[0, 0, 0]} scale={1.05} reverseLayout={true} />
+      </InteractiveSeat>
+
+      {/* Left Waiting Lounge (Midground left) */}
+      <InteractiveSeat
+        id="lobby_lounge_left"
+        name="โซฟารอรับบริการ ด้านซ้าย"
+        type="sofa"
+        position={[-4.5, 0, -0.6]}
+        rotation={[0, Math.PI * 0.45, 0]}
+        seatOffset={[0, 0.44, 0.05]}
+      >
+        <HospitalWaitingLounge position={[0, 0, 0]} scale={1.05} />
+      </InteractiveSeat>
+
+      {/* ── Patient Mobility: 2 Real Hospital Wheelchairs (Drivable!) ── */}
+      <InteractiveSeat
+        id="lobby_wheelchair_1"
+        name="รถเข็นโรงพยาบาล คันที่ 1"
+        type="wheelchair"
+        position={[-3.8, 0, 3.8]}
+        rotation={[0, 0.35, 0]}
+        seatOffset={[0, 0.46, 0.05]}
+        isDrivable={true}
+      >
+        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+      </InteractiveSeat>
+
+      <InteractiveSeat
+        id="lobby_wheelchair_2"
+        name="รถเข็นโรงพยาบาล คันที่ 2"
+        type="wheelchair"
+        position={[4.8, 0, 3.8]}
+        rotation={[0, -0.35, 0]}
+        seatOffset={[0, 0.46, 0.05]}
+        isDrivable={true}
+      >
+        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+      </InteractiveSeat>
+
+      {/* ── Floor Guidance Pathway to Hall 301 ── */}
       {!hasCompletedPretest && (
-        <group position={[0, 0.012, -4.5]}>
-          {/* Main Gold Runway Carpet */}
+        <group position={[0, 0.015, -7.8]}>
           <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-            <planeGeometry args={[2.0, 11.5]} />
+            <planeGeometry args={[1.6, 4.5]} />
             <meshStandardMaterial
               color="#fef08a"
               emissive="#f59e0b"
-              emissiveIntensity={0.25}
+              emissiveIntensity={0.2}
               roughness={0.6}
             />
           </mesh>
-          {/* Glowing Border Trim Lines */}
-          <mesh position={[-1.02, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[0.06, 11.5]} />
-            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.8} />
+          <mesh position={[-0.82, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.04, 4.5]} />
+            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.6} />
           </mesh>
-          <mesh position={[1.02, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[0.06, 11.5]} />
-            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.8} />
+          <mesh position={[0.82, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.04, 4.5]} />
+            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.6} />
           </mesh>
-          {/* Directional Chevron Floor Indicators */}
-          {[-4.0, -1.5, 1.0, 3.5].map((z, idx) => (
-            <mesh key={`chevron_${idx}`} position={[0, 0.004, z]} rotation={[-Math.PI / 2, 0, 0]}>
-              <planeGeometry args={[1.2, 0.25]} />
-              <meshStandardMaterial color="#d97706" emissive="#f59e0b" emissiveIntensity={0.6} />
-            </mesh>
-          ))}
         </group>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════════════════
+      {/* ═══════════════════════════════════════════════════════════════════════════════
           🌸 WING 1 (WEST / LEFT WALL): โซนการดูแลตนเองของมารดา (Mother Care Wards 101-104)
-          4 Distinct Walkable Doorways along X = -10.5 (Facing +X into Lobby)
-          ═══════════════════════════════════════════════════════════════════════════════════ */}
+          ═══════════════════════════════════════════════════════════════════════════════ */}
       <WalkableRoomPortal
         roomKey="motherCare1"
         roomNumber="Ward 101"
@@ -234,10 +330,9 @@ export default function LobbyRoom() {
         rotation={[0, Math.PI / 2, 0]}
       />
 
-      {/* ═══════════════════════════════════════════════════════════════════════════════════
+      {/* ═══════════════════════════════════════════════════════════════════════════════
           👶 WING 2 (EAST / RIGHT WALL): โซนการดูแลทารกแรกเกิด (Newborn Care Nurseries 201-204)
-          4 Distinct Walkable Doorways along X = +10.5 (Facing -X into Lobby)
-          ═══════════════════════════════════════════════════════════════════════════════════ */}
+          ═══════════════════════════════════════════════════════════════════════════════ */}
       <WalkableRoomPortal
         roomKey="newbornCare1"
         roomNumber="Nursery 201"
@@ -275,11 +370,9 @@ export default function LobbyRoom() {
         rotation={[0, -Math.PI / 2, 0]}
       />
 
-      {/* ═══════════════════════════════════════════════════════════════════════════════════
+      {/* ═══════════════════════════════════════════════════════════════════════════════
           🏛️ WING 3 (NORTH / BACK WALL): Grand Quiz Hall 301 + Welcome Hub
-          Walkable Doorways along Z = -10.5 (Facing +Z into Lobby)
-          ═══════════════════════════════════════════════════════════════════════════════════ */}
-      {/* Grand Quiz Hall Portal (Center Back) */}
+          ═══════════════════════════════════════════════════════════════════════════════ */}
       <WalkableRoomPortal
         roomKey="quiz"
         roomNumber="Hall 301"
@@ -290,39 +383,6 @@ export default function LobbyRoom() {
         rotation={[0, 0, 0]}
         scale={1.15}
       />
-
-      {/* Maternity Directory Board (Left Back Wall) */}
-      <group position={[-5.4, 0, -10.5]}>
-        <mesh position={[0, 1.8, 0]} castShadow>
-          <boxGeometry args={[2.2, 2.6, 0.12]} />
-          <meshStandardMaterial color="#fce4ec" roughness={0.3} />
-        </mesh>
-        <Html position={[0, 1.8, 0.08]} center transform scale={0.24}>
-          <div style={{
-            background: 'white',
-            padding: '14px',
-            borderRadius: '14px',
-            border: '2px solid #f48fb1',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
-            width: '260px',
-            textAlign: 'center',
-            userSelect: 'none'
-          }}>
-            <div style={{ background: '#e91e63', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: 'bold', fontSize: '13px' }}>
-              ℹ️ ป้ายแนะนำเส้นทางแผนก
-            </div>
-            <div style={{ fontSize: '11px', color: '#555', marginTop: '8px', textAlign: 'left', lineHeight: '1.4' }}>
-              <p>⬅ <b>ฝั่งซ้าย:</b> แผนกบริบาลมารดา Ward 101 - 104</p>
-              <p>➡ <b>ฝั่งขวา:</b> แผนกทารกแรกเกิด Nursery 201 - 204</p>
-              <p>⬆ <b>ตรงกลาง:</b> หอประเมินความรู้ 20 ข้อ Hall 301</p>
-              <p>👗 <b>หลังขวา:</b> ห้องแต่งตัว & สรีระคุณแม่ (อุ้มท้อง/เปลี่ยนชุด) Suite 001</p>
-            </div>
-            <div style={{ marginTop: '8px', fontSize: '10px', color: '#888' }}>
-              เดินเข้าซุ้มประตูแต่ละห้องเพื่อเข้าสู่บทเรียนได้ทันที
-            </div>
-          </div>
-        </Html>
-      </group>
 
       {/* Wardrobe & Dressing Suite Portal (Right Back Wall) */}
       <WalkableRoomPortal
@@ -336,76 +396,16 @@ export default function LobbyRoom() {
         scale={1.05}
       />
 
-      {/* ── Authentic 3D Hospital Ambience & Nature (Trees, Plants & Furniture) ── */}
-      {/* Real 3D Trees in 4 Corners */}
+      {/* ── Authentic Hospital Trees & Plants ── */}
       <RealTree position={[-11.5, 0, -11]} scale={0.9} />
       <RealTree position={[11.5, 0, -11]} scale={0.9} />
       <RealTree position={[-11.5, 0, 10]} scale={0.8} />
       <RealTree position={[11.5, 0, 10]} scale={0.8} />
 
-      {/* Real 3D Potted Plants Flanking Hallways */}
-      <RealPlant type="potted" position={[-5.0, 0, -6.2]} scale={1.15} />
-      <RealPlant type="house" position={[5.0, 0, -6.2]} scale={1.05} />
+      <RealPlant type="potted" position={[-4.8, 0, -6.2]} scale={1.15} />
+      <RealPlant type="house" position={[4.8, 0, -6.2]} scale={1.05} />
       <RealPlant type="succulent" position={[-10.8, 0, 0]} scale={1.2} />
       <RealPlant type="succulent" position={[10.8, 0, 0]} scale={1.2} />
-
-      {/* Real 3D Hospital Lounge Sofas (Spacious Waiting Lounge Facing Central Hub) */}
-      <InteractiveSeat
-        id="lobby_sofa_left"
-        name="โซฟาพักผ่อนฝั่งซ้าย"
-        type="sofa"
-        position={[-6.4, 0, 0]}
-        rotation={[0, Math.PI / 2, 0]}
-        seatOffset={[0, 0.42, 0.15]}
-      >
-        <HospitalSofa position={[0, 0, 0]} scale={1.15} />
-        <Pillows position={[0.2, 0.45, 0]} scale={0.85} />
-      </InteractiveSeat>
-
-      <InteractiveSeat
-        id="lobby_sofa_right"
-        name="โซฟาพักผ่อนฝั่งขวา"
-        type="sofa"
-        position={[6.4, 0, 0]}
-        rotation={[0, -Math.PI / 2, 0]}
-        seatOffset={[0, 0.42, 0.15]}
-      >
-        <HospitalSofa position={[0, 0, 0]} scale={1.15} />
-        <Pillows position={[-0.2, 0.45, 0]} scale={0.85} />
-      </InteractiveSeat>
-
-      {/* Patient Mobility Bay: 2 Real Hospital Wheelchairs (Drivable!) */}
-      <InteractiveSeat
-        id="lobby_wheelchair_1"
-        name="รถเข็นโรงพยาบาล คันที่ 1"
-        type="wheelchair"
-        position={[-4.5, 0, 4.5]}
-        rotation={[0, 0.4, 0]}
-        seatOffset={[0, 0.46, 0.05]}
-        isDrivable={true}
-      >
-        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
-      </InteractiveSeat>
-
-      <InteractiveSeat
-        id="lobby_wheelchair_2"
-        name="รถเข็นโรงพยาบาล คันที่ 2"
-        type="wheelchair"
-        position={[4.5, 0, 4.5]}
-        rotation={[0, -0.4, 0]}
-        seatOffset={[0, 0.46, 0.05]}
-        isDrivable={true}
-      >
-        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
-      </InteractiveSeat>
-
-      {/* Nurse Information & Triage Desk with Fresh Flowers & Examination Lamp (Side Bay) */}
-      <DoctorDesk position={[4.6, 0, -4.2]} rotation={[0, -Math.PI / 6, 0]} scale={1.05} />
-      <FlowerVase position={[5.25, 0.85, -4.2]} scale={1.1} />
-      <ExaminationLamp position={[3.95, 0.85, -4.0]} scale={0.7} />
-
-      {/* Emergency First Aid & Hygiene Cabinet */}
-      <MedicineCabinet position={[12.2, 0, -4.5]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} withMedicalBox={true} />
 
       {/* ── GTA 3rd/1st-Person Player Character ── */}
       <PlayerController initialPosition={[0, 0, 3]} />
