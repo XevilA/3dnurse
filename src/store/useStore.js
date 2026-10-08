@@ -23,20 +23,24 @@ const useStore = create((set, get) => ({
   // ── Simulation state ──
   currentStep: 0,
 
-  // ── Avatar & Player state (Realistic Adult Female Postpartum Mother in Recovery Robe) ──
+  // ── Avatar & Player state (Realistic Adult Female Suite: Pregnant Mother, Postpartum Mother, Nurse) ──
   selectedCharacter: (() => {
     if (typeof localStorage === 'undefined') return 'postpartum_mother';
     const s = localStorage.getItem('3dnurse_character');
-    if (!s || s === 'father' || s === 'robot' || s === 'pregnant_mother' || s === 'mother') return 'postpartum_mother';
-    return s; // 'postpartum_mother' | 'nurse'
+    if (s === 'pregnant_mother' || s === 'postpartum_mother' || s === 'nurse') return s;
+    return 'postpartum_mother';
   })(),
   selectedOutfit: (typeof localStorage !== 'undefined' && localStorage.getItem('3dnurse_outfit')) || 'pink', // 'pink' | 'blue' | 'lavender' | 'mint' | 'white' | 'peach'
   motherClothing: (typeof localStorage !== 'undefined' && localStorage.getItem('3dnurse_outfit')) || 'pink',  // legacy alias
   bellyBump: (typeof localStorage !== 'undefined' && localStorage.getItem('3dnurse_belly_bump')) || 'none', // 'none' (สรีระปกติหลังคลอด)
   isHoldingBaby: false,
   cameraMode: '3rdPerson', // '3rdPerson' | '1stPerson'
-  playerPosition: [0, 0, 2],
+  playerPosition: [0, 0, 3],
+  playerRotationY: 0,
   playerAnimation: 'idle', // 'idle' | 'walk' | 'run' | 'sit'
+  lobbySpawnPos: [0, 0, 3],
+  lobbySpawnRotY: 0,
+  setLobbySpawn: (pos, rotY = 0) => set({ lobbySpawnPos: pos, lobbySpawnRotY: rotY }),
 
   // ── Gamified Interactive Seating System ──
   isSitting: false,
@@ -78,18 +82,38 @@ const useStore = create((set, get) => ({
   triggerPretestWarning: (roomKey) => set({ showPretestWarning: true, pretestWarningTargetRoom: roomKey }),
   dismissPretestWarning: () => set({ showPretestWarning: false, pretestWarningTargetRoom: null }),
 
-  setRoom: (room) => set({
-    currentRoom: room,
-    currentStep: 0,
-    isHoldingBaby: false,
-    isSitting: false,
-    seatedTarget: null,
-    nearbySeat: null,
-    seats: [],
-    playerPosition: [0, 0, 3],
-    showSuccessModal: false,
-    successMessage: '',
-  }),
+  setRoom: (room, customSpawn = null, customRotY = null) =>
+    set((state) => {
+      // Determine realistic doorway entrance spawn coordinates
+      let spawnPos = [0, 0, 3];
+      let spawnRotY = 0;
+
+      if (room === 'lobby') {
+        spawnPos = customSpawn || state.lobbySpawnPos || [0, 0, 3];
+        spawnRotY = typeof customRotY === 'number' ? customRotY : (state.lobbySpawnRotY || 0);
+      } else if (room === 'dressingRoom') {
+        spawnPos = customSpawn || [0, 0, 2];
+        spawnRotY = typeof customRotY === 'number' ? customRotY : 0;
+      } else {
+        // All clinical interior rooms have entrance doorway at X: -7.4, Z: 5.8 facing East (Math.PI / 2)
+        spawnPos = customSpawn || [-7.4, 0, 5.8];
+        spawnRotY = typeof customRotY === 'number' ? customRotY : Math.PI / 2;
+      }
+
+      return {
+        currentRoom: room,
+        currentStep: 0,
+        isHoldingBaby: false,
+        isSitting: false,
+        seatedTarget: null,
+        nearbySeat: null,
+        seats: [],
+        playerPosition: spawnPos,
+        playerRotationY: spawnRotY,
+        showSuccessModal: false,
+        successMessage: '',
+      };
+    }),
   setStep: (step) => set({ currentStep: step }),
   setClothing: (clothing) => {
     if (typeof localStorage !== 'undefined') localStorage.setItem('3dnurse_outfit', clothing);

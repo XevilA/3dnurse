@@ -15,35 +15,51 @@ export const WHEELCHAIR_RADIUS = 0.58;   // Wheelchair driving collision radius 
 
 // Comprehensive Collider Registry for all rooms
 export const ROOM_COLLIDERS = {
-  // ── 1. Grand Hospital Lobby (28x28m, Walkable [-11, 11]) ──
+  // ── 1. Grand Hospital Lobby (22x22m, Walkable [-10.55, 10.55]) ──
   lobby: {
-    bounds: { minX: -11.0, maxX: 11.0, minZ: -11.0, maxZ: 11.0 },
+    bounds: { minX: -10.55, maxX: 10.55, minZ: -10.55, maxZ: 10.55 },
+    doorways: [
+      // West Wall Portals (Mother Care Wards 101 - 104)
+      { wall: 'minX', minSpan: -7.8, maxSpan: -5.4, thresholdLimit: -10.88, name: 'Ward 101' },
+      { wall: 'minX', minSpan: -3.4, maxSpan: -1.0, thresholdLimit: -10.88, name: 'Ward 102' },
+      { wall: 'minX', minSpan: 1.0, maxSpan: 3.4, thresholdLimit: -10.88, name: 'Ward 103' },
+      { wall: 'minX', minSpan: 5.4, maxSpan: 7.8, thresholdLimit: -10.88, name: 'Ward 104' },
+      // East Wall Portals (Newborn Care Nurseries 201 - 204)
+      { wall: 'maxX', minSpan: -7.8, maxSpan: -5.4, thresholdLimit: 10.88, name: 'Nursery 201' },
+      { wall: 'maxX', minSpan: -3.4, maxSpan: -1.0, thresholdLimit: 10.88, name: 'Nursery 202' },
+      { wall: 'maxX', minSpan: 1.0, maxSpan: 3.4, thresholdLimit: 10.88, name: 'Nursery 203' },
+      { wall: 'maxX', minSpan: 5.4, maxSpan: 7.8, thresholdLimit: 10.88, name: 'Nursery 204' },
+      // North Wall Portals (Hall 301 & Suite 001)
+      { wall: 'minZ', minSpan: -1.6, maxSpan: 1.6, thresholdLimit: -10.88, name: 'Hall 301 Quiz' },
+      { wall: 'minZ', minSpan: 4.2, maxSpan: 6.6, thresholdLimit: -10.88, name: 'Suite 001 Dressing Room' },
+    ],
     boxes: [
-      // Information & Nurse Reception Desk (Side Bay X: 4.6)
-      { minX: 3.2, maxX: 6.0, minZ: -5.2, maxZ: -3.2, name: 'เคาน์เตอร์ต้อนรับส่วนกลาง' },
-      // Left Hospital Lounge Velvet Sofa (facing center plaza)
-      { minX: -7.6, maxX: -5.4, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนฝั่งซ้าย', seatId: 'lobby_sofa_left' },
-      // Right Hospital Lounge Velvet Sofa (facing center plaza)
-      { minX: 5.4, maxX: 7.6, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนฝั่งขวา', seatId: 'lobby_sofa_right' },
+      // Information & Nurse Reception Desk (Centered at Z: -4.2)
+      { minX: -3.0, maxX: 3.0, minZ: -5.4, maxZ: -2.8, name: 'เคาน์เตอร์พยาบาลส่วนกลาง' },
+      // Left Hospital Lounge Velvet Sofa
+      { minX: -7.2, maxX: -4.4, minZ: -1.4, maxZ: 1.4, name: 'โซฟาพักผ่อนฝั่งซ้าย', seatId: 'lobby_sofa_left' },
+      // Right Hospital Lounge Velvet Sofa
+      { minX: 4.4, maxX: 7.2, minZ: -1.4, maxZ: 1.4, name: 'โซฟาพักผ่อนฝั่งขวา', seatId: 'lobby_sofa_right' },
     ],
     circles: [
       // 4 Real Hospital Corner Trees
-      { x: -11.2, z: -10.8, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 1' },
-      { x: 11.2, z: -10.8, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 2' },
-      { x: -11.2, z: 9.8, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 3' },
-      { x: 11.2, z: 9.8, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 4' },
+      { x: -9.6, z: -9.6, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 1' },
+      { x: 9.6, z: -9.6, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 2' },
+      { x: -9.6, z: 9.6, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 3' },
+      { x: 9.6, z: 9.6, radius: 0.8, name: 'ต้นไม้ล็อบบี้ 4' },
       // Potted Plants
-      { x: -5.0, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ซ้าย' },
-      { x: 5.0, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ขวา' },
+      { x: -4.8, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ซ้าย' },
+      { x: 4.8, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ขวา' },
       // Hospital Wheelchairs (unoccupied)
-      { x: -4.5, z: 4.5, radius: 0.65, name: 'รถเข็น 1', seatId: 'lobby_wheelchair_1' },
-      { x: 4.5, z: 4.5, radius: 0.65, name: 'รถเข็น 2', seatId: 'lobby_wheelchair_2' },
+      { x: -3.8, z: 3.8, radius: 0.65, name: 'รถเข็น 1', seatId: 'lobby_wheelchair_1' },
+      { x: 4.8, z: 3.8, radius: 0.65, name: 'รถเข็น 2', seatId: 'lobby_wheelchair_2' },
     ]
   },
 
   // ── 2. Ward 101: Postpartum Recovery & Body Care (18x18m) ──
   motherCare1: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Hospital Patient Bed (backed against wall)
       { minX: -5.2, maxX: -2.8, minZ: -7.8, maxZ: -5.2, name: 'เตียงพักฟื้นคุณแม่', seatId: 'room101_bed' },
@@ -68,7 +84,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 3. Ward 102: Wound Care & Perineal Hygiene (18x18m) ──
   motherCare2: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Examination Bed
       { minX: -5.2, maxX: -2.8, minZ: -7.8, maxZ: -5.2, name: 'เตียงตรวจแผลคุณแม่', seatId: 'room102_bed' },
@@ -90,7 +107,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 4. Ward 103: Breastfeeding & Lactation Support (18x18m) ──
   motherCare3: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Ergonomic Nursing Armchair
       { minX: -4.8, maxX: -3.2, minZ: -7.3, maxZ: -5.7, name: 'เก้าอี้ให้นมบุตร', seatId: 'room103_nursing_chair' },
@@ -114,7 +132,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 5. Ward 104: Emergency Care & Postpartum Complications (18x18m) ──
   motherCare4: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Emergency Patient Bed with IV Stand
       { minX: -6.6, maxX: -4.2, minZ: -7.2, maxZ: -4.8, name: 'เตียงฉุกเฉินผู้ป่วย', seatId: 'room104_bed' },
@@ -134,7 +153,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 6. Newborn Room 1: Infant Feeding Technique (18x18m) ──
   newbornCare1: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       { minX: 6.5, maxX: 8.3, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนคุณแม่', seatId: 'newborn1_sofa' },
       { minX: -4.3, maxX: -2.7, minZ: -4.3, maxZ: -2.7, name: 'เก้าอี้ให้นมบุตร', seatId: 'newborn1_nursing_chair' },
@@ -151,7 +171,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 7. Newborn Room 2: Infant Bathing & Skin Care (18x18m) ──
   newbornCare2: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Central Ergonomic Baby Bathtub
       { minX: -1.8, maxX: 1.8, minZ: -4.5, maxZ: -2.5, name: 'อ่างอาบน้ำทารก' },
@@ -173,7 +194,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 8. Newborn Room 3: Diaper Changing & Hygiene (18x18m) ──
   newbornCare3: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Diaper Changing Dresser Counter
       { minX: -1.6, maxX: 1.6, minZ: -4.4, maxZ: -2.6, name: 'เบาะเปลี่ยนผ้าอ้อม' },
@@ -194,7 +216,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 9. Newborn Room 4: Umbilical Cord Care (18x18m) ──
   newbornCare4: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Clinical Examination & Cord Care Table
       { minX: -1.8, maxX: 1.8, minZ: -4.6, maxZ: -2.4, name: 'เตียงตรวจสายสะดือ' },
@@ -214,7 +237,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 10. Newborn Room 5: Safe Sleep & Nursery Environment (18x18m) ──
   newbornCare5: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Safe Nursery Crib (Firm mattress, no loose pillows)
       { minX: -1.6, maxX: 1.6, minZ: -4.5, maxZ: -2.5, name: 'เตียงนอนปลอดภัยทารก' },
@@ -235,7 +259,8 @@ export const ROOM_COLLIDERS = {
 
   // ── 11. Final Examination & Certification Room (Quiz Room) ──
   quiz: {
-    bounds: { minX: -8.3, maxX: 8.3, minZ: -8.3, maxZ: 8.3 },
+    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Examiner / Doctor Desk (Left Wing)
       { minX: -8.8, maxX: -6.2, minZ: -7.5, maxZ: -5.5, name: 'โต๊ะกรรมการสอบ' },
@@ -261,6 +286,7 @@ export const ROOM_COLLIDERS = {
   // ── 12. Wardrobe & Dressing Suite (18x18m) ──
   dressingRoom: {
     bounds: { minX: -8.0, maxX: 8.0, minZ: -8.0, maxZ: 8.0 },
+    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       { minX: -2.0, maxX: 2.0, minZ: -8.0, maxZ: -7.0, name: 'กระจกแต่งตัวเต็มตัว' },
       { minX: -7.8, maxX: -6.0, minZ: -4.0, maxZ: 0.0, name: 'ตู้เสื้อผ้าและลิ้นชัก' },
@@ -313,6 +339,7 @@ export function resolveMovement(
   );
 
   const bounds = roomData.bounds || { minX: -11, maxX: 11, minZ: -11, maxZ: 11 };
+  const doorways = roomData.doorways || [];
 
   // Calculate full intended displacement
   const totalDx = moveX * speed * delta;
@@ -337,13 +364,28 @@ export function resolveMovement(
     // ── Substep 1: Move X axis alone, resolve collisions (Slide along Z) ──
     let candX = px + subDx;
 
-    // 1a. Room boundary clamp along X
-    if (candX - radius < bounds.minX) {
-      candX = bounds.minX + radius;
+    // 1a. Room boundary clamp along X with doorway openings
+    const minXDoor = doorways.find((d) => d.wall === 'minX' && pz >= d.minSpan && pz <= d.maxSpan);
+    const effectiveMinX = minXDoor ? minXDoor.thresholdLimit : bounds.minX;
+    if (candX - radius < effectiveMinX) {
+      candX = effectiveMinX + radius;
       anyCollision = true;
-    } else if (candX + radius > bounds.maxX) {
-      candX = bounds.maxX - radius;
+    }
+
+    const maxXDoor = doorways.find((d) => d.wall === 'maxX' && pz >= d.minSpan && pz <= d.maxSpan);
+    const effectiveMaxX = maxXDoor ? maxXDoor.thresholdLimit : bounds.maxX;
+    if (candX + radius > effectiveMaxX) {
+      candX = effectiveMaxX - radius;
       anyCollision = true;
+    }
+
+    // Doorway channel containment along X
+    const minZDoor = doorways.find((d) => d.wall === 'minZ' && px >= d.minSpan && px <= d.maxSpan);
+    const maxZDoor = doorways.find((d) => d.wall === 'maxZ' && px >= d.minSpan && px <= d.maxSpan);
+    if (pz < bounds.minZ && minZDoor) {
+      candX = Math.max(minZDoor.minSpan + radius, Math.min(minZDoor.maxSpan - radius, candX));
+    } else if (pz > bounds.maxZ && maxZDoor) {
+      candX = Math.max(maxZDoor.minSpan + radius, Math.min(maxZDoor.maxSpan - radius, candX));
     }
 
     // 1b. Check Box Colliders along X
@@ -392,13 +434,28 @@ export function resolveMovement(
     // ── Substep 2: Move Z axis alone, resolve collisions (Slide along X) ──
     let candZ = pz + subDz;
 
-    // 2a. Room boundary clamp along Z
-    if (candZ - radius < bounds.minZ) {
-      candZ = bounds.minZ + radius;
+    // 2a. Room boundary clamp along Z with doorway openings
+    const activeMinZDoor = doorways.find((d) => d.wall === 'minZ' && px >= d.minSpan && px <= d.maxSpan);
+    const effectiveMinZ = activeMinZDoor ? activeMinZDoor.thresholdLimit : bounds.minZ;
+    if (candZ - radius < effectiveMinZ) {
+      candZ = effectiveMinZ + radius;
       anyCollision = true;
-    } else if (candZ + radius > bounds.maxZ) {
-      candZ = bounds.maxZ - radius;
+    }
+
+    const activeMaxZDoor = doorways.find((d) => d.wall === 'maxZ' && px >= d.minSpan && px <= d.maxSpan);
+    const effectiveMaxZ = activeMaxZDoor ? activeMaxZDoor.thresholdLimit : bounds.maxZ;
+    if (candZ + radius > effectiveMaxZ) {
+      candZ = effectiveMaxZ - radius;
       anyCollision = true;
+    }
+
+    // Doorway channel containment along Z
+    const activeMinXDoor = doorways.find((d) => d.wall === 'minX' && pz >= d.minSpan && pz <= d.maxSpan);
+    const activeMaxXDoor = doorways.find((d) => d.wall === 'maxX' && pz >= d.minSpan && pz <= d.maxSpan);
+    if (px < bounds.minX && activeMinXDoor) {
+      candZ = Math.max(activeMinXDoor.minSpan + radius, Math.min(activeMinXDoor.maxSpan - radius, candZ));
+    } else if (px > bounds.maxX && activeMaxXDoor) {
+      candZ = Math.max(activeMaxXDoor.minSpan + radius, Math.min(activeMaxXDoor.maxSpan - radius, candZ));
     }
 
     // 2b. Check Box Colliders along Z

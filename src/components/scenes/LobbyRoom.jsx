@@ -17,12 +17,12 @@ export default function LobbyRoom() {
 
   return (
     <group>
-      {/* ── Realistic 3D Grand Hospital Lobby Architecture (28x28m) ── */}
+      {/* ── Realistic 3D Grand Hospital Lobby Architecture (22x22m) ── */}
       <HospitalRoomShell
         theme="lobby"
-        width={28}
-        depth={28}
-        height={10}
+        width={22}
+        depth={22}
+        height={8}
         roomTitle="ศูนย์การเรียนรู้สุขภาพมารดาและทารกแรกเกิด (Metaverse Grand Hospital Lobby)"
         roomNumber="Main Reception & Nurse Station"
       />
@@ -400,15 +400,15 @@ export default function LobbyRoom() {
       />
 
       {/* ── Authentic Hospital Trees & Plants ── */}
-      <RealTree position={[-11.5, 0, -11]} scale={0.9} />
-      <RealTree position={[11.5, 0, -11]} scale={0.9} />
-      <RealTree position={[-11.5, 0, 10]} scale={0.8} />
-      <RealTree position={[11.5, 0, 10]} scale={0.8} />
+      <RealTree position={[-9.6, 0, -9.6]} scale={0.85} />
+      <RealTree position={[9.6, 0, -9.6]} scale={0.85} />
+      <RealTree position={[-9.6, 0, 9.6]} scale={0.8} />
+      <RealTree position={[9.6, 0, 9.6]} scale={0.8} />
 
       <RealPlant type="potted" position={[-4.8, 0, -6.2]} scale={1.15} />
       <RealPlant type="house" position={[4.8, 0, -6.2]} scale={1.05} />
-      <RealPlant type="succulent" position={[-10.8, 0, 0]} scale={1.2} />
-      <RealPlant type="succulent" position={[10.8, 0, 0]} scale={1.2} />
+      <RealPlant type="succulent" position={[-10.1, 0, 0]} scale={1.2} />
+      <RealPlant type="succulent" position={[10.1, 0, 0]} scale={1.2} />
 
       {/* ── GTA 3rd/1st-Person Player Character ── */}
       <PlayerController initialPosition={[0, 0, 3]} />

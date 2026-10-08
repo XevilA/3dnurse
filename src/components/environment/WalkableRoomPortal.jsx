@@ -34,7 +34,7 @@ export default function WalkableRoomPortal({
   const hasCompletedPretest = useStore((state) => state.hasCompletedPretest);
   const triggerPretestWarning = useStore((state) => state.triggerPretestWarning);
   const isCompleted = !!learningProgress[roomKey];
-  const isLocked = roomKey !== 'quiz' && !hasCompletedPretest;
+  const isLocked = roomKey !== 'quiz' && roomKey !== 'lobby' && roomKey !== 'dressingRoom' && !hasCompletedPretest;
 
   const leftDoorRef = useRef();
   const rightDoorRef = useRef();
@@ -43,6 +43,16 @@ export default function WalkableRoomPortal({
 
   // Theme palettes
   const themeConfig = {
+    lobby: {
+      primary: '#0ea5e9',
+      secondary: '#f0f9ff',
+      accent: '#38bdf8',
+      text: '#0369a1',
+      glow: '#38bdf8',
+      doorColor: '#cbd5e1',
+      bumper: '#94a3b8',
+      badgeBg: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+    },
     mother: {
       primary: '#e91e63',
       secondary: '#fce4ec',
@@ -86,14 +96,18 @@ export default function WalkableRoomPortal({
 
   // Destination floor texture
   const floorUrl =
-    theme === 'mother'
+    roomKey === 'lobby'
+      ? '/textures/floor_marble_lobby.jpg'
+      : theme === 'mother'
       ? '/textures/floor_vinyl_mother.jpg'
       : theme === 'newborn'
       ? '/textures/floor_vinyl_nursery.jpg'
       : '/textures/floor_hall_quiz.jpg';
 
   const doorUrl =
-    theme === 'mother'
+    roomKey === 'lobby'
+      ? '/textures/door_quiz.jpg'
+      : theme === 'mother'
       ? '/textures/door_mother.jpg'
       : theme === 'newborn'
       ? '/textures/door_nursery.jpg'
@@ -179,6 +193,12 @@ export default function WalkableRoomPortal({
         if (isLocked) {
           triggerPretestWarning(roomKey);
         } else {
+          if (roomKey !== 'lobby') {
+            const rotY = px < -5 ? Math.PI / 2 : px > 5 ? -Math.PI / 2 : 0;
+            const spawnX = px < -5 ? px + 1.4 : px > 5 ? px - 1.4 : px;
+            const spawnZ = pz < -5 ? pz + 1.4 : pz > 5 ? pz - 1.4 : pz;
+            useStore.getState().setLobbySpawn([spawnX, 0, spawnZ], rotY);
+          }
           setRoom(roomKey);
         }
       }
@@ -193,6 +213,12 @@ export default function WalkableRoomPortal({
     if (isLocked) {
       triggerPretestWarning(roomKey);
     } else {
+      if (roomKey !== 'lobby') {
+        const rotY = px < -5 ? Math.PI / 2 : px > 5 ? -Math.PI / 2 : 0;
+        const spawnX = px < -5 ? px + 1.4 : px > 5 ? px - 1.4 : px;
+        const spawnZ = pz < -5 ? pz + 1.4 : pz > 5 ? pz - 1.4 : pz;
+        useStore.getState().setLobbySpawn([spawnX, 0, spawnZ], rotY);
+      }
       setRoom(roomKey);
     }
   };

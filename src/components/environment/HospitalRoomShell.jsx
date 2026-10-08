@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTexture, Html } from '@react-three/drei';
 import * as THREE from 'three';
+import WalkableRoomPortal from './WalkableRoomPortal';
 
 /**
  * HospitalRoomShell — Authentic 3D Medical / Nursery Room Architecture with Real PBR Textures
@@ -204,6 +205,57 @@ export default function HospitalRoomShell({
         </mesh>
       </group>
 
+      {/* ── 4b. Front / South Wall Architecture (Fully Enclosing Room) ── */}
+      {theme === 'lobby' ? (
+        // Grand Hospital Entrance Facade (Floor-to-Ceiling Medical Glass & Stainless Mullions)
+        <group position={[0, height / 2, halfD]}>
+          <mesh position={[0, (height / 2) - 0.6, 0]} receiveShadow>
+            <boxGeometry args={[width, 1.2, 0.4]} />
+            <meshStandardMaterial color={colors.wallUpper} roughness={0.5} />
+          </mesh>
+          <mesh position={[0, -0.6, 0]}>
+            <boxGeometry args={[width, height - 1.2, 0.08]} />
+            <meshStandardMaterial
+              color="#e0f2fe"
+              roughness={0.1}
+              metalness={0.2}
+              transparent
+              opacity={0.35}
+            />
+          </mesh>
+          {[-8, -5, -2, 2, 5, 8].map((mx) => (
+            <mesh key={`mullion_${mx}`} position={[mx, -0.6, 0.05]} castShadow>
+              <boxGeometry args={[0.12, height - 1.2, 0.16]} />
+              <meshStandardMaterial color="#94a3b8" metalness={0.8} roughness={0.2} />
+            </mesh>
+          ))}
+          <mesh position={[0, -(height / 2) + 0.15, 0.05]}>
+            <boxGeometry args={[width, 0.3, 0.2]} />
+            <meshStandardMaterial color="#64748b" metalness={0.5} roughness={0.3} />
+          </mesh>
+        </group>
+      ) : (
+        // Enclosed clinical interior front wall
+        <group position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]}>
+          <mesh position={[0, 1.2, 0]} receiveShadow>
+            <boxGeometry args={[width, height - 2.4, 0.4]} />
+            <meshStandardMaterial color={colors.wallUpper} roughness={0.6} />
+          </mesh>
+          <mesh position={[0, -(height / 2) + 1.2, 0]} receiveShadow>
+            <boxGeometry args={[width, 2.4, 0.44]} />
+            <meshStandardMaterial color={colors.wallLower} roughness={0.3} />
+          </mesh>
+          <mesh position={[0, -(height / 2) + 2.4, 0.05]} castShadow>
+            <boxGeometry args={[width, 0.22, 0.08]} />
+            <meshStandardMaterial color={colors.bumperRail} roughness={0.2} metalness={0.1} />
+          </mesh>
+          <mesh position={[0, -(height / 2) + 0.1, 0.05]}>
+            <boxGeometry args={[width, 0.2, 0.06]} />
+            <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
+          </mesh>
+        </group>
+      )}
+
       {/* ── 5. Panoramic Hospital Window (Daylight & Outdoor View) ── */}
       {windowWall === 'back' && (
         <group position={[0, 4.4, -halfD + 0.2]}>
@@ -252,77 +304,18 @@ export default function HospitalRoomShell({
         </group>
       )}
 
-      {/* ── 6. Authentic Hospital Door with Real Textures & Materials ── */}
-      {doorWall === 'left' && (
-        <group position={[-halfW + 0.22, 1.8, halfD - 3.2]} rotation={[0, Math.PI / 2, 0]}>
-          {/* Heavy-Duty Stainless Steel Door Frame */}
-          <mesh castShadow>
-            <boxGeometry args={[2.2, 3.6, 0.15]} />
-            <meshStandardMaterial
-              map={configuredMetal}
-              metalness={0.8}
-              roughness={0.25}
-            />
-          </mesh>
-          {/* Authentic Hospital Door Leaf with Photorealistic Laminate / Vision Window Texture */}
-          <mesh position={[0, 0, 0.02]} castShadow>
-            <boxGeometry args={[2.0, 3.4, 0.08]} />
-            <meshStandardMaterial
-              map={configuredDoor}
-              roughness={0.38}
-              metalness={0.1}
-            />
-          </mesh>
-          {/* 3D Stainless Steel Kick Plate */}
-          <mesh position={[0, -1.3, 0.065]}>
-            <boxGeometry args={[1.92, 0.6, 0.02]} />
-            <meshStandardMaterial
-              map={configuredMetal}
-              metalness={0.85}
-              roughness={0.2}
-            />
-          </mesh>
-          {/* 3D Stainless Steel Lever Handle */}
-          <mesh position={[0.78, -0.1, 0.1]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.025, 0.025, 0.4, 16]} />
-            <meshStandardMaterial
-              map={configuredMetal}
-              metalness={0.9}
-              roughness={0.15}
-            />
-          </mesh>
-          {/* Official Hospital Room Number & Ward Sign Plate */}
-          <group position={[0, 1.95, 0.08]}>
-            <mesh>
-              <boxGeometry args={[1.4, 0.42, 0.04]} />
-              <meshStandardMaterial color="#ffffff" metalness={0.2} roughness={0.3} />
-            </mesh>
-            <mesh position={[0, 0.16, 0.025]}>
-              <boxGeometry args={[1.38, 0.06, 0.01]} />
-              <meshStandardMaterial color={theme === 'mother' ? '#e91e63' : theme === 'newborn' ? '#0288d1' : '#7c3aed'} />
-            </mesh>
-            <Html position={[0, -0.02, 0.03]} center transform scale={0.12}>
-              <div style={{
-                textAlign: 'center',
-                userSelect: 'none',
-                fontFamily: 'system-ui, sans-serif',
-                whiteSpace: 'nowrap',
-              }}>
-                <div style={{
-                  fontSize: '15px',
-                  fontWeight: '900',
-                  color: theme === 'mother' ? '#be185d' : theme === 'newborn' ? '#0369a1' : '#6d28d9',
-                  letterSpacing: '0.5px'
-                }}>
-                  {roomNumber}
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>
-                  {roomTitle}
-                </div>
-              </div>
-            </Html>
-          </group>
-        </group>
+      {/* ── 6. Authentic Walk-in Hospital Exit Doorway (Returns to Lobby) ── */}
+      {doorWall === 'left' && theme !== 'lobby' && (
+        <WalkableRoomPortal
+          roomKey="lobby"
+          roomNumber="EXIT"
+          roomTitle="ประตูทางออก — โถงกลาง (Main Lobby)"
+          icon="🚪"
+          theme={theme}
+          position={[-halfW + 0.22, 0, halfD - 3.2]}
+          rotation={[0, Math.PI / 2, 0]}
+          scale={1.0}
+        />
       )}
 
       {/* ── 7. Hospital Ceiling with Recessed LED Light Fixtures ── */}
