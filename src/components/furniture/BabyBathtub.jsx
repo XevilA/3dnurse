@@ -26,18 +26,6 @@ export default function BabyBathtub({
     clothes: true
   }
 }) {
-  const { scene: bathScene } = useGLTF('/models/bath_day.glb');
-
-  const bottles = useMemo(() => {
-    if (bathScene) {
-      const clone = bathScene.clone(true);
-      clone.traverse((child) => {
-        if (child.isMesh) child.castShadow = true;
-      });
-      return clone;
-    }
-    return null;
-  }, [bathScene]);
 
   return (
     <group position={position} rotation={rotation} scale={scale}>
@@ -175,9 +163,26 @@ export default function BabyBathtub({
       )}
 
       {/* 2. Baby Liquid Soap & Gentle Tear-free Baby Shampoo Bottles */}
-      {preparedItems.soap && bottles && (
-        <group position={[1.25, 0.86, 0.18]} scale={[0.18, 0.18, 0.18]}>
-          <primitive object={bottles} />
+      {preparedItems.soap && (
+        <group position={[1.25, 0.86, 0.18]}>
+          {/* Baby Shampoo Pump Bottle (Pastel Blue) */}
+          <mesh position={[-0.07, 0.09, 0]} castShadow>
+            <cylinderGeometry args={[0.04, 0.045, 0.18, 20]} />
+            <meshStandardMaterial color="#bae6fd" roughness={0.3} />
+          </mesh>
+          <mesh position={[-0.07, 0.19, 0]} castShadow>
+            <cylinderGeometry args={[0.015, 0.015, 0.03, 12]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.2} />
+          </mesh>
+          {/* Baby Body Wash Bottle (Pastel Pink) */}
+          <mesh position={[0.07, 0.09, 0]} castShadow>
+            <cylinderGeometry args={[0.04, 0.045, 0.18, 20]} />
+            <meshStandardMaterial color="#fbcfe8" roughness={0.3} />
+          </mesh>
+          <mesh position={[0.07, 0.19, 0]} castShadow>
+            <cylinderGeometry args={[0.015, 0.015, 0.03, 12]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.2} />
+          </mesh>
         </group>
       )}
 
@@ -240,5 +245,3 @@ export default function BabyBathtub({
     </group>
   );
 }
-
-useGLTF.preload('/models/bath_day.glb');

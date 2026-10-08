@@ -23,8 +23,16 @@ const useStore = create((set, get) => ({
   // ── Simulation state ──
   currentStep: 0,
 
-  // ── Avatar & Player state (GTA Style Controls) ──
-  motherClothing: 'hospitalGown',  // 'hospitalGown' | 'casual' | 'sleepwear'
+  // ── Avatar & Player state (Realistic Adult Female Postpartum Mother in Recovery Robe) ──
+  selectedCharacter: (() => {
+    if (typeof localStorage === 'undefined') return 'postpartum_mother';
+    const s = localStorage.getItem('3dnurse_character');
+    if (!s || s === 'father' || s === 'robot' || s === 'pregnant_mother' || s === 'mother') return 'postpartum_mother';
+    return s; // 'postpartum_mother' | 'nurse'
+  })(),
+  selectedOutfit: (typeof localStorage !== 'undefined' && localStorage.getItem('3dnurse_outfit')) || 'pink', // 'pink' | 'blue' | 'lavender' | 'mint' | 'white' | 'peach'
+  motherClothing: (typeof localStorage !== 'undefined' && localStorage.getItem('3dnurse_outfit')) || 'pink',  // legacy alias
+  bellyBump: (typeof localStorage !== 'undefined' && localStorage.getItem('3dnurse_belly_bump')) || 'none', // 'none' (สรีระปกติหลังคลอด)
   isHoldingBaby: false,
   cameraMode: '3rdPerson', // '3rdPerson' | '1stPerson'
   playerPosition: [0, 0, 2],
@@ -46,6 +54,8 @@ const useStore = create((set, get) => ({
     sprint: false,
     interact: false,
     sit: false,
+    vectorX: 0,
+    vectorZ: 0,
   },
 
   // ── Learning progress (tracks completed modules) ──
@@ -77,9 +87,26 @@ const useStore = create((set, get) => ({
     nearbySeat: null,
     seats: [],
     playerPosition: [0, 0, 3],
+    showSuccessModal: false,
+    successMessage: '',
   }),
   setStep: (step) => set({ currentStep: step }),
-  setClothing: (clothing) => set({ motherClothing: clothing }),
+  setClothing: (clothing) => {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('3dnurse_outfit', clothing);
+    set({ motherClothing: clothing, selectedOutfit: clothing });
+  },
+  setOutfit: (outfit) => {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('3dnurse_outfit', outfit);
+    set({ selectedOutfit: outfit, motherClothing: outfit });
+  },
+  setCharacter: (char) => {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('3dnurse_character', char);
+    set({ selectedCharacter: char });
+  },
+  setBellyBump: (bump) => {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('3dnurse_belly_bump', bump);
+    set({ bellyBump: bump });
+  },
   setHoldingBaby: (val) => set({ isHoldingBaby: val }),
   setCameraMode: (mode) => set({ cameraMode: mode }),
   toggleCameraMode: () =>
@@ -196,4 +223,5 @@ export default useStore;
 
 if (typeof window !== 'undefined') {
   window.useStore = useStore;
+  window.__store = useStore;
 }

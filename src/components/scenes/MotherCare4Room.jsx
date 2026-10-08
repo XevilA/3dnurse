@@ -11,12 +11,13 @@ import Pillows from '../decorations/Pillows';
 import HospitalWheelchair from '../furniture/HospitalWheelchair';
 import InteractiveSeat from '../furniture/InteractiveSeat';
 import DoctorDesk from '../furniture/DoctorDesk';
+import HospitalNightstand from '../furniture/HospitalNightstand';
 import MedicineCabinet from '../furniture/MedicineCabinet';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
 export default function MotherCare4Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
-  const [activeTab, setActiveTab] = useState(0); // 0: 5 สัญญาณอันตราย, 1: ฝึกจำแนกอาการ, 2: สายด่วนฉุกเฉิน, 3: แบบประเมิน
+  const [activeTab, setActiveTab] = useState(0); // 0: 5 สัญญาณอันตราย, 1: ฝึกจำแนกอาการ, 2: การป้องกันภาวะแทรกซ้อน, 3: แบบประเมิน
 
   // ── กิจกรรม 1: 5 สัญญาณอันตรายสำคัญ (Critical Danger Signs) ──
   const [selectedDangerIndex, setSelectedDangerIndex] = useState(0);
@@ -65,7 +66,7 @@ export default function MotherCare4Room() {
       img: '/references/mother_zone2/danger_pe.png',
       normalText: 'หายใจสะดวก โล่งสบาย ไม่เหนื่อยหอบขณะทำกิจวัตรประจำวันตามปกติ',
       dangerText: 'เจ็บแน่นหน้าอกรุนแรง, หายใจไม่อิ่ม หอบเหนื่อยฉับพลัน, หายใจเข้าแล้วเจ็บแปลบ, ไอมีเสมหะปนเลือด, หน้ามืด เหงื่อแตก',
-      action: 'โทร 1669 เรียกรถพยาบาลฉุกเฉินทันที! เสี่ยงภาวะลิ่มเลือดหลุดไปอุดตันในปอด (Pulmonary Embolism: PE)'
+      action: 'รีบไปโรงพยาบาลหรือขอความช่วยเหลือทางการแพทย์ทันที! เสี่ยงภาวะลิ่มเลือดอุดตันในปอด (Pulmonary Embolism: PE)'
     },
   ];
 
@@ -149,49 +150,62 @@ export default function MotherCare4Room() {
         roomNumber="Emergency Observation Ward 104"
       />
 
-      {/* ── REAL 3D ASSETS ── */}
-      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
-      <MedicineCabinet position={[7.8, 0, -1.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
-      <HospitalTrashBin position={[6.0, 0, 2.8]} scale={0.85} />
-      <ExaminationLamp position={[-6.8, 0, -3.8]} />
+      {/* ── REAL 3D CLINICAL ASSETS & ARCHITECTURE ── */}
+      <RealPlant type="potted" position={[7.5, 0, -7.5]} scale={1.1} />
+      <MedicineCabinet position={[8.4, 0, -2.2]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
+      <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
 
-      {/* Emergency Wheelchair */}
+      {/* Emergency Wheelchair parked neatly along entrance wall */}
       <InteractiveSeat
         id="ward104_wheelchair"
         name="รถเข็นฉุกเฉิน Ward 104"
         type="wheelchair"
-        position={[-7.2, 0, 1.5]}
-        rotation={[0, Math.PI / 3, 0]}
+        position={[-7.5, 0, 3.2]}
+        rotation={[0, Math.PI / 2, 0]}
         seatOffset={[0, 0.46, 0.05]}
         isDrivable={true}
       >
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
       </InteractiveSeat>
 
-      {/* Patient Observation Bed - Shifted Left */}
+      {/* ── 1. Patient Observation Bed with Soft Pillows (กิจกรรม 1: สัญญาณอันตราย 5 ข้อ) ── */}
       <InteractiveSeat
         id="room104_bed"
         name="เตียงสังเกตอาการฉุกเฉิน"
         type="bed"
-        position={[-5.2, 0, -3.8]}
+        position={[-5.4, 0, -6.0]}
         rotation={[0, 0, 0]}
-        seatOffset={[0, 0.72, 0]}
+        seatOffset={[0, 0.68, 0]}
       >
         <group onClick={() => setActiveTab(0)}>
           <HospitalBed position={[0, 0, 0]} />
-          <Pillows position={[0.2, 0.95, -0.6]} scale={0.8} />
+          {/* Pillows resting securely on top of mattress headboard */}
+          <Pillows position={[0.05, 0.72, -0.75]} rotation={[0, 0, 0]} scale={0.75} />
         </group>
       </InteractiveSeat>
 
-      {/* Doctor Consultation Desk & Emergency Red Hotline (กิจกรรม 2 & 3) */}
-      <group position={[4.5, 0, -4.5]} rotation={[0, -Math.PI / 4, 0]}>
-        <DoctorDesk position={[0, 0, 0]} scale={0.9} />
+      {/* ── Bedside Nightstand with Hydration Water & Emergency Call Button ── */}
+      <group position={[-7.2, 0, -6.8]}>
+        <HospitalNightstand position={[0, 0, 0]} scale={1.05}>
+          {/* Hydration carafe */}
+          <mesh position={[0, 0.74, 0]} castShadow>
+            <cylinderGeometry args={[0.07, 0.08, 0.24, 20]} />
+            <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
+          </mesh>
+        </HospitalNightstand>
+      </group>
+
+      {/* ── 2. Doctor Consultation Desk & Emergency Red Hotline (กิจกรรม 2 & 3) ── */}
+      <group position={[7.8, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => setActiveTab(1)}>
+        <DoctorDesk position={[0, 0, 0]} scale={0.85} />
+        {/* Examination desk lamp positioned properly on consultation desk */}
+        <ExaminationLamp position={[-0.3, 0.78, 0]} scale={0.65} />
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           🚨 INTERACTIVE LEARNING HUD (Based on Manual Zone 2: Danger Signs)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 2.1, -7.8]} center transform scale={0.27}>
+      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',
@@ -211,7 +225,7 @@ export default function MotherCare4Room() {
               <h2 style={{ margin: '6px 0 0 0', color: '#b91c1c', fontSize: '22px' }}>
                 {activeTab === 0 && '5 สัญญาณอันตรายสำคัญที่ต้องรีบไปโรงพยาบาล'}
                 {activeTab === 1 && 'กิจกรรมจำแนกอาการ: เฝ้าสังเกต vs ต้องไปโรงพยาบาลทันที'}
-                {activeTab === 2 && 'สายด่วนฉุกเฉินและคำแนะนำด้านความปลอดภัย'}
+                {activeTab === 2 && 'การป้องกันภาวะแทรกซ้อนและการดูแลตนเองที่บ้าน'}
                 {activeTab === 3 && 'แบบประเมินความรู้ประจำห้องที่ 4 (ข้อ 1, 4 & 7)'}
               </h2>
             </div>
@@ -225,7 +239,7 @@ export default function MotherCare4Room() {
 
           {/* Navigation Tabs */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
-            {['1. 5 สัญญาณอันตราย', '2. ฝึกจำแนกอาการ', '3. สายด่วนฉุกเฉิน 1669', '4. แบบประเมิน (Quiz)'].map((label, idx) => (
+            {['1. 5 สัญญาณอันตราย', '2. ฝึกจำแนกอาการ', '3. การป้องกันและดูแลตนเอง', '4. แบบประเมิน (Quiz)'].map((label, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveTab(idx)}
@@ -406,43 +420,75 @@ export default function MotherCare4Room() {
                     onClick={() => setActiveTab(2)}
                     style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
                   >
-                    ไปดูสายด่วนฉุกเฉิน ➜
+                    ไปดูการป้องกันและดูแลตนเอง ➜
                   </button>
                 )}
               </div>
             </div>
           )}
 
-          {/* ── TAB 2: สายด่วนฉุกเฉินและคำแนะนำความปลอดภัย ── */}
+          {/* ── TAB 2: การป้องกันภาวะแทรกซ้อนและการดูแลตนเองที่บ้าน (อิงตามคู่มือหลักสูตรวิจัย) ── */}
           {activeTab === 2 && (
             <div>
-              <div style={{ background: '#fef2f2', padding: '14px', borderRadius: '14px', border: '1px solid #fecaca', marginBottom: '16px', textAlign: 'center' }}>
-                <h3 style={{ color: '#b91c1c', margin: '0 0 6px 0', fontSize: '20px' }}>
-                  📞 สายด่วนการแพทย์ฉุกเฉินแห่งชาติ: โทร 1669 (ฟรี 24 ชม.)
+              <div style={{ background: '#f0fdf4', padding: '14px 18px', borderRadius: '14px', border: '1px solid #bbf7d0', marginBottom: '16px' }}>
+                <h3 style={{ color: '#166534', margin: '0 0 6px 0', fontSize: '18px' }}>
+                  🛡️ การป้องกันภาวะแทรกซ้อนและการดูแลตนเองที่บ้าน
                 </h3>
-                <p style={{ margin: 0, fontSize: '13px', color: '#7f1d1d' }}>
-                  หากมีอาการรุนแรง เช่น เลือดออกไม่หยุด ชัก หมดสติ เจ็บหน้าอก หายใจลำบาก ให้โทรเรียกรถพยาบาลทันที
+                <p style={{ margin: 0, fontSize: '13px', color: '#14532d' }}>
+                  แนวทางการดูแลและฟื้นฟูร่างกายตามหลักวิชาการสำหรับมารดาหลังคลอด เพื่อป้องกันการติดเชื้อและลดความเสี่ยงภาวะแทรกซ้อน
                 </p>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                {/* 1. การป้องกันการติดเชื้อ */}
                 <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>📝 ข้อมูลที่ต้องแจ้งเมื่อโทร 1669:</h4>
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.5' }}>
-                    <li>แจ้งว่า "เป็นมารดาหลังคลอด" และระบุว่าคลอดมากี่วัน</li>
-                    <li>บอกอาการสำคัญ เช่น เลือดออกมาก หมดสติ หรือหายใจหอบ</li>
-                    <li>บอกสถานที่เกิดเหตุและจุดสังเกตให้ชัดเจน</li>
-                    <li>แจ้งชื่อและเบอร์โทรศัพท์ติดต่อกลับ</li>
+                  <h4 style={{ margin: '0 0 8px 0', color: '#0369a1', fontSize: '14px' }}>
+                    🧼 1. การป้องกันการติดเชื้อหลังคลอด:
+                  </h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
+                    <li><strong>สุขอนามัย:</strong> พักผ่อนให้เพียงพอ รักษาความสะอาดร่างกายและแผลฝีเย็บ</li>
+                    <li><strong>ผ้าอนามัย:</strong> เปลี่ยนผ้าอนามัยบ่อยๆ อย่างน้อยทุก 3–4 ชั่วโมง หรือเมื่อชุ่ม</li>
+                    <li><strong>โภชนาการ:</strong> ดื่มน้ำให้เพียงพอ และรับประทานอาหารครบ 5 หมู่</li>
+                    <li><strong>ข้อควรระวัง:</strong> หลีกเลี่ยงการสวนล้างช่องคลอด หรือใช้ยาสมุนไพรโดยไม่ปรึกษาแพทย์</li>
                   </ul>
                 </div>
 
+                {/* 2. การป้องกันความดันโลหิตสูง */}
                 <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>🏥 การตรวจหลังคลอดตามนัด (Postpartum Visit):</h4>
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.5' }}>
-                    <li>ไปตรวจหลังคลอดตามนัด (ปกติ 6 สัปดาห์ หรือเร็วกว่านั้นหากมีอาการ)</li>
-                    <li>การตรวจช่วยค้นหาภาวะแทรกซ้อนที่ยังไม่แสดงอาการชัดเจน</li>
-                    <li>ปรึกษาการคุมกำเนิดที่เหมาะสมสำหรับแม่ให้นมบุตร</li>
-                    <li>ประเมินสุขภาพจิตและภาวะซึมเศร้าหลังคลอด</li>
+                  <h4 style={{ margin: '0 0 8px 0', color: '#b45309', fontSize: '14px' }}>
+                    ⚡ 2. การป้องกันภาวะความดันโลหิตสูงหลังคลอด:
+                  </h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
+                    <li><strong>พักผ่อน:</strong> นอนหลับพักผ่อนให้เพียงพอ ผ่อนคลายและลดความเครียด</li>
+                    <li><strong>การตรวจวัด:</strong> หากมีเครื่องวัดความดัน ควรตรวจวัดตามคำแนะนำ (ปกติ &lt; 140/90 mmHg)</li>
+                    <li><strong>อาหาร:</strong> รับประทานอาหารมีประโยชน์ ลดอาหารเค็มจัด</li>
+                    <li><strong>หลีกเลี่ยง:</strong> งดเครื่องดื่มคาเฟอีนหรือสารกระตุ้น เช่น ชา กาแฟ น้ำอัดลม</li>
+                  </ul>
+                </div>
+
+                {/* 3. การป้องกันลิ่มเลือดอุดตัน */}
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                  <h4 style={{ margin: '0 0 8px 0', color: '#7c3aed', fontSize: '14px' }}>
+                    🦵 3. การป้องกันภาวะลิ่มเลือดอุดตันหลังคลอด:
+                  </h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
+                    <li><strong>การเคลื่อนไหว:</strong> ขยับร่างกายและเดินบ่อยๆ ไม่อยู่ในท่าเดิมนานๆ</li>
+                    <li><strong>การพักผ่อน:</strong> ยกขาสูงเมื่อนอนหรือพักผ่อน ดื่มน้ำสะอาดให้เพียงพอ</li>
+                    <li><strong>บริหารขา:</strong> กระดกข้อเท้าและขยับขาเพื่อกระตุ้นการไหลเวียนเลือด</li>
+                    <li><strong>ข้อห้าม:</strong> หากมีอาการปวดบวมน่องข้างเดียว ห้ามนวดขาเด็ดขาดและรีบพบแพทย์</li>
+                  </ul>
+                </div>
+
+                {/* 4. การตรวจหลังคลอดตามนัด */}
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                  <h4 style={{ margin: '0 0 8px 0', color: '#15803d', fontSize: '14px' }}>
+                    🏥 4. การตรวจหลังคลอดและการสังเกตตนเอง:
+                  </h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
+                    <li><strong>สังเกตตนเอง:</strong> สังเกตสี ปริมาณ กลิ่นของน้ำคาวปลา และร่างกายทุกวัน</li>
+                    <li><strong>มาตามนัด:</strong> ไปตรวจหลังคลอดตามนัดหมายของแพทย์เพื่อตรวจค้นหาภาวะแทรกซ้อน</li>
+                    <li><strong>ปรึกษาแพทย์:</strong> รับคำแนะนำการคุมกำเนิดและการดูแลสุขภาพจิตหลังคลอด</li>
+                    <li><strong>Safety Note:</strong> หากมีสัญญาณอันตราย ให้รีบไปโรงพยาบาลทันที ไม่ต้องรอวันนัด</li>
                   </ul>
                 </div>
               </div>

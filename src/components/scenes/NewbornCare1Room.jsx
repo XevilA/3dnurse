@@ -6,6 +6,7 @@ import BabyAvatar from '../avatars/BabyAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import Pillows from '../decorations/Pillows';
+import HospitalNightstand from '../furniture/HospitalNightstand';
 
 /**
  * NewbornCare1Room — ห้องที่ 1: การให้นมและการอุ้มจัดท่าทารก
@@ -364,21 +365,19 @@ export default function NewbornCare1Room() {
         </Html>
       </group>
 
-      {/* Bedside Stool with Milk Bottle (Left of Crib) */}
-      <group position={[-1.3, 0, -5.2]}>
-        <mesh position={[0, 0.25, 0]} castShadow>
-          <cylinderGeometry args={[0.22, 0.22, 0.5, 24]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.3} />
-        </mesh>
-        {/* Baby Bottle */}
-        <mesh position={[0, 0.56, 0]} castShadow>
-          <cylinderGeometry args={[0.04, 0.045, 0.14, 16]} />
-          <meshStandardMaterial color="#ffffff" transparent opacity={0.7} roughness={0.2} />
-        </mesh>
-        <mesh position={[0, 0.64, 0]}>
-          <coneGeometry args={[0.025, 0.04, 16]} />
-          <meshStandardMaterial color="#fbbf24" roughness={0.4} />
-        </mesh>
+      {/* Authentic Bedside Nightstand with Milk Bottle (Left of Crib) */}
+      <group position={[-1.4, 0, -5.2]}>
+        <HospitalNightstand position={[0, 0, 0]} scale={0.88}>
+          {/* Baby Bottle */}
+          <mesh position={[0, 0.74, 0]} castShadow>
+            <cylinderGeometry args={[0.04, 0.045, 0.14, 16]} />
+            <meshStandardMaterial color="#ffffff" transparent opacity={0.7} roughness={0.2} />
+          </mesh>
+          <mesh position={[0, 0.82, 0]}>
+            <coneGeometry args={[0.025, 0.04, 16]} />
+            <meshStandardMaterial color="#fbbf24" roughness={0.4} />
+          </mesh>
+        </HospitalNightstand>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════

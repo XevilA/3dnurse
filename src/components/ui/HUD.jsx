@@ -17,6 +17,7 @@ const NEWBORN_ROOMS = [
 
 const ROOM_TITLES = {
   lobby: 'Grand Hospital Lobby (ห้องต้อนรับ)',
+  dressingRoom: '👗 ห้องแต่งตัว & ปรับแต่งตัวละคร (Suite 001)',
   motherCare1: '🏥 ดูแลร่างกายและฟื้นตัว (Ward 101)',
   motherCare2: '🩹 ดูแลแผลหลังคลอด (Ward 102)',
   motherCare3: '🤱 ดูแลเต้านมและการให้นม (Ward 103)',
@@ -43,7 +44,7 @@ export default function HUD() {
   const totalModules = 8;
 
   const handleSelectRoom = (roomKey) => {
-    if (roomKey !== 'lobby' && roomKey !== 'quiz' && !hasCompletedPretest) {
+    if (roomKey !== 'lobby' && roomKey !== 'dressingRoom' && roomKey !== 'quiz' && !hasCompletedPretest) {
       triggerPretestWarning(roomKey);
       setShowNav(false);
       return;
@@ -55,34 +56,34 @@ export default function HUD() {
   return (
     <>
       {/* ── Top bar ── */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 sm:px-4 py-2 pointer-events-auto"
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-2.5 sm:px-4 py-1.5 sm:py-2 pointer-events-auto"
         style={{ background: 'linear-gradient(180deg, rgba(173,216,255,0.95) 0%, rgba(173,216,255,0) 100%)' }}>
 
         {/* Left: Back button if inside a room, or App branding if in lobby */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           {currentRoom !== 'lobby' ? (
             <button
               type="button"
               onClick={() => setRoom('lobby')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-md transition transform hover:scale-105 active:scale-95 cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white font-bold text-[11px] sm:text-xs shadow-md transition transform hover:scale-105 active:scale-95 cursor-pointer shrink-0"
             >
               <span>⬅</span>
               <span className="hidden sm:inline">กลับล็อบบี้</span>
               <span className="sm:hidden">ล็อบบี้</span>
             </button>
           ) : (
-            <span className="text-2xl">🏥</span>
+            <span className="text-xl sm:text-2xl shrink-0">🏥</span>
           )}
-          <div>
-            <h1 className="text-xs sm:text-sm font-bold text-blue-900 leading-tight">
+          <div className="min-w-0">
+            <h1 className="text-xs sm:text-sm font-bold text-blue-900 leading-tight truncate max-w-[130px] xs:max-w-[190px] sm:max-w-none">
               {ROOM_TITLES[currentRoom] || 'Postpartum & Newborn Care'}
             </h1>
-            <p className="text-[10px] sm:text-xs text-blue-700">Learning Metaverse</p>
+            <p className="text-[9px] sm:text-xs text-blue-700 hidden xs:block">Learning Metaverse</p>
           </div>
         </div>
 
-        {/* Center: Quick Room Trigger Button */}
-        <div className="flex items-center gap-2">
+        {/* Center: Desktop Quick Room Trigger Button */}
+        <div className="hidden md:flex items-center gap-2">
           <button
             type="button"
             onClick={() => setShowNav(true)}
@@ -94,16 +95,36 @@ export default function HUD() {
           </button>
         </div>
 
-        {/* Progress & Menu */}
-        <div className="flex items-center gap-2">
-          <div className="bg-white/90 rounded-full px-3 py-1 text-xs font-medium text-blue-800 shadow">
-            📚 {completedCount}/{totalModules} บทเรียน
-          </div>
+        {/* Right: Wardrobe Button + Progress & Menu */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
-            onClick={() => setShowNav(!showNav)}
-            className="bg-white/90 hover:bg-white rounded-full px-3 py-1 text-xs font-bold text-blue-800 shadow cursor-pointer transition"
+            type="button"
+            onClick={() => setRoom('dressingRoom')}
+            className={`flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full font-bold text-[11px] sm:text-xs shadow-md transition transform hover:scale-105 active:scale-95 cursor-pointer ${
+              currentRoom === 'dressingRoom'
+                ? 'bg-pink-600 text-white ring-2 ring-pink-300'
+                : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white'
+            }`}
           >
-            {showNav ? '✕ ปิด' : '☰ เมนู'}
+            <span>👗</span>
+            <span className="hidden xs:inline">แต่งตัว/เปลี่ยนชุด</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowNav(true)}
+            className="flex items-center gap-1 bg-white/90 hover:bg-white rounded-full px-2.5 py-1 text-[11px] sm:text-xs font-bold text-blue-800 shadow cursor-pointer transition"
+          >
+            <span>🚪</span>
+            <span className="hidden sm:inline">บทเรียน</span>
+            <span>{completedCount}/{totalModules}</span>
+            {!hasCompletedPretest && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse ml-0.5"></span>}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowNav(!showNav)}
+            className="bg-white/90 hover:bg-white rounded-full px-2.5 py-1 text-xs font-bold text-blue-800 shadow cursor-pointer transition"
+          >
+            {showNav ? '✕' : '☰'}
           </button>
         </div>
       </div>
@@ -113,12 +134,12 @@ export default function HUD() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-30 pointer-events-auto"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm pointer-events-auto"
             onClick={() => setShowNav(false)}
           />
 
           <div
-            className="absolute top-12 right-2 sm:right-4 z-40 w-80 sm:w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 overflow-hidden pointer-events-auto transition-all"
+            className="fixed sm:absolute top-12 left-3 right-3 sm:left-auto sm:right-4 z-50 sm:w-96 max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-blue-200 overflow-hidden pointer-events-auto transition-all flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -185,6 +206,28 @@ export default function HUD() {
                   <div className="text-[10px] text-gray-500">เดินสำรวจซุ้มประตูเข้าห้องเรียนรู้</div>
                 </div>
                 {currentRoom === 'lobby' && <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-600 text-white font-bold">ปัจจุบัน</span>}
+              </button>
+
+              {/* Dressing Room & Wardrobe Button */}
+              <button
+                type="button"
+                onClick={() => { setRoom('dressingRoom'); setShowNav(false); }}
+                className={`w-full text-left p-2.5 rounded-xl flex items-center gap-2.5 transition border ${
+                  currentRoom === 'dressingRoom'
+                    ? 'bg-pink-100 border-pink-400 font-bold text-pink-900 shadow-sm'
+                    : 'bg-pink-50/70 hover:bg-pink-100/80 border-pink-200 text-pink-900'
+                }`}
+              >
+                <span className="text-xl">👗</span>
+                <div className="flex-1">
+                  <div className="text-xs font-bold text-pink-900">ห้องแต่งตัว & เปลี่ยนชุดตัวละคร (Suite 001)</div>
+                  <div className="text-[10px] text-pink-600">เลือกชุดผู้ป่วย/ชุดคลอด 6 สไตล์ และสลับตัวละคร</div>
+                </div>
+                {currentRoom === 'dressingRoom' ? (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-600 text-white font-bold">ปัจจุบัน</span>
+                ) : (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white text-pink-700 font-bold border border-pink-300">เข้าแต่งตัว ➜</span>
+                )}
               </button>
 
               {/* Mother Care Zone */}
@@ -299,14 +342,6 @@ export default function HUD() {
         </div>
       )}
 
-      {/* ── Bottom motto ── */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
-        <div className="bg-white/80 backdrop-blur-sm rounded-full px-6 py-1.5 shadow text-center">
-          <p className="text-xs text-pink-600 font-medium">
-            ❤️ "แม่มั่นใจ...ลูกปลอดภัย...ครอบครัวอบอุ่น" ❤️
-          </p>
-        </div>
-      </div>
     </>
   );
 }

@@ -103,7 +103,7 @@ export default function LobbyRoom() {
 
         {/* ── Eye-Level Mandatory Pre-test Guidance Billboard (Facing Player Spawn) ── */}
         {!hasCompletedPretest && (
-          <Html position={[0, 3.2, 0.4]} center transform scale={0.28}>
+          <Html position={[0, 2.3, -1.0]} center transform scale={0.23}>
             <div style={{
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(254, 243, 199, 0.98))',
               border: '3px solid #f59e0b',
@@ -315,6 +315,7 @@ export default function LobbyRoom() {
               <p>⬅ <b>ฝั่งซ้าย:</b> แผนกบริบาลมารดา Ward 101 - 104</p>
               <p>➡ <b>ฝั่งขวา:</b> แผนกทารกแรกเกิด Nursery 201 - 204</p>
               <p>⬆ <b>ตรงกลาง:</b> หอประเมินความรู้ 20 ข้อ Hall 301</p>
+              <p>👗 <b>หลังขวา:</b> ห้องแต่งตัว & สรีระคุณแม่ (อุ้มท้อง/เปลี่ยนชุด) Suite 001</p>
             </div>
             <div style={{ marginTop: '8px', fontSize: '10px', color: '#888' }}>
               เดินเข้าซุ้มประตูแต่ละห้องเพื่อเข้าสู่บทเรียนได้ทันที
@@ -322,6 +323,18 @@ export default function LobbyRoom() {
           </div>
         </Html>
       </group>
+
+      {/* Wardrobe & Dressing Suite Portal (Right Back Wall) */}
+      <WalkableRoomPortal
+        roomKey="dressingRoom"
+        roomNumber="Suite 001"
+        roomTitle="ห้องแต่งตัว & สรีระคุณแม่ (Maternity Studio)"
+        icon="👗"
+        theme="mother"
+        position={[5.4, 0, -10.5]}
+        rotation={[0, 0, 0]}
+        scale={1.05}
+      />
 
       {/* ── Authentic 3D Hospital Ambience & Nature (Trees, Plants & Furniture) ── */}
       {/* Real 3D Trees in 4 Corners */}

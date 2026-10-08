@@ -1,14 +1,166 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import useStore from '../../store/useStore';
+
+/**
+ * Modern Touch Virtual Joystick Component
+ * - Analog 360° locomotion + Directional (WASD) fallback
+ * - Touch identifier tracking prevents multi-touch conflicts with camera drag
+ * - Mouse fallback for responsive testing
+ */
+function VirtualJoystick() {
+  const setVirtualInput = useStore((s) => s.setVirtualInput);
+  const [knobPos, setKnobPos] = useState({ x: 0, y: 0 });
+  const [isActive, setIsActive] = useState(false);
+  const touchIdRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const maxRadius = 38; // Maximum px knob can travel from center
+
+  const updatePosition = (clientX, clientY) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const dx = clientX - centerX;
+    const dy = clientY - centerY;
+    const dist = Math.hypot(dx, dy);
+    const clampedDist = Math.min(dist, maxRadius);
+    const angle = Math.atan2(dy, dx);
+
+    const knobX = Math.cos(angle) * clampedDist;
+    const knobY = Math.sin(angle) * clampedDist;
+    setKnobPos({ x: knobX, y: knobY });
+
+    const normX = knobX / maxRadius;
+    const normZ = knobY / maxRadius;
+
+    setVirtualInput({
+      vectorX: normX,
+      vectorZ: normZ,
+      forward: normZ < -0.25,
+      backward: normZ > 0.25,
+      left: normX < -0.25,
+      right: normX > 0.25,
+    });
+  };
+
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    if (touchIdRef.current !== null) return;
+    const touch = e.changedTouches[0];
+    touchIdRef.current = touch.identifier;
+    setIsActive(true);
+    updatePosition(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchMove = (e) => {
+    e.preventDefault();
+    if (touchIdRef.current === null) return;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === touchIdRef.current) {
+        updatePosition(e.touches[i].clientX, e.touches[i].clientY);
+        break;
+      }
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    e.preventDefault();
+    if (touchIdRef.current === null) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === touchIdRef.current) {
+        touchIdRef.current = null;
+        setIsActive(false);
+        setKnobPos({ x: 0, y: 0 });
+        setVirtualInput({
+          vectorX: 0,
+          vectorZ: 0,
+          forward: false,
+          backward: false,
+          left: false,
+          right: false,
+        });
+        break;
+      }
+    }
+  };
+
+  // Mouse emulation for desktop responsive testing
+  const handleMouseDown = (e) => {
+    setIsActive(true);
+    updatePosition(e.clientX, e.clientY);
+
+    const onMouseMove = (moveE) => {
+      updatePosition(moveE.clientX, moveE.clientY);
+    };
+
+    const onMouseUp = () => {
+      setIsActive(false);
+      setKnobPos({ x: 0, y: 0 });
+      setVirtualInput({
+        vectorX: 0,
+        vectorZ: 0,
+        forward: false,
+        backward: false,
+        left: false,
+        right: false,
+      });
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 transition-colors select-none touch-none cursor-pointer flex items-center justify-center shadow-2xl ${
+        isActive
+          ? 'bg-sky-950/70 border-cyan-400 shadow-cyan-500/30'
+          : 'bg-black/55 backdrop-blur-md border-white/25 shadow-black/50'
+      }`}
+      style={{ touchAction: 'none' }}
+    >
+      {/* Direction indicators */}
+      <span className="absolute top-1 text-[11px] font-bold text-white/50 pointer-events-none">▲</span>
+      <span className="absolute bottom-1 text-[11px] font-bold text-white/50 pointer-events-none">▼</span>
+      <span className="absolute left-1.5 text-[11px] font-bold text-white/50 pointer-events-none">◀</span>
+      <span className="absolute right-1.5 text-[11px] font-bold text-white/50 pointer-events-none">▶</span>
+
+      {/* Center stick knob */}
+      <div
+        className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xs font-black shadow-lg pointer-events-none transition-transform duration-75 ${
+          isActive
+            ? 'bg-gradient-to-br from-cyan-400 to-blue-600 border-white text-white scale-110 shadow-cyan-400/50'
+            : 'bg-gradient-to-br from-slate-200 to-slate-400 border-white/80 text-slate-800'
+        }`}
+        style={{
+          transform: `translate3d(${knobPos.x}px, ${knobPos.y}px, 0)`,
+        }}
+      >
+        <span>🕹️</span>
+      </div>
+    </div>
+  );
+}
 
 /**
  * GTAControlsHUD — Gamified On-screen Controller & RPG Status Indicators
  *
- * Provides:
- *   1. Health & Stamina recovery bars (Gamified RPG status)
- *   2. Interactive Sit / Stand button & Wheelchair Driving indicator
- *   3. Desktop keyboard guide (WASD + Shift + F + V + E)
- *   4. Mobile touch buttons (D-Pad, Sprint, Sit/Stand, Hold Baby)
+ * Fully Responsive for Mobile, Tablet, and Desktop:
+ *   1. Left Thumb: Modern Analog Virtual Joystick + Sprint Toggle
+ *   2. Right Thumb: Action Cluster (Sit/Stand, Baby Hold/Release, Camera Toggle)
+ *   3. Multi-touch decoupled from 360° camera orbit
+ *   4. Responsive RPG Status Bar (Compact mobile pill vs full desktop card)
+ *   5. Clean, unobstructed layout without awkward collisions
  */
 export default function GTAControlsHUD() {
   const setVirtualInput = useStore((s) => s.setVirtualInput);
@@ -27,12 +179,15 @@ export default function GTAControlsHUD() {
   const standUp = useStore((s) => s.standUp);
   const stamina = useStore((s) => s.stamina);
 
-  const handleTouchStart = (key) => {
-    setVirtualInput({ [key]: true });
-  };
+  // Controls UI state
+  const [isSprintLocked, setIsSprintLocked] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [isStatusExpanded, setIsStatusExpanded] = useState(false);
 
-  const handleTouchEnd = (key) => {
-    setVirtualInput({ [key]: false });
+  const handleSprintToggle = () => {
+    const next = !isSprintLocked;
+    setIsSprintLocked(next);
+    setVirtualInput({ sprint: next });
   };
 
   const handleSitToggle = () => {
@@ -43,10 +198,15 @@ export default function GTAControlsHUD() {
     }
   };
 
+  if (currentRoom === 'dressingRoom' || currentRoom === 'quiz') {
+    return null;
+  }
+
   return (
     <div className="pointer-events-none select-none">
       {/* ── RPG Status Bar: Maternal Wellness & Energy (Top Left) ── */}
-      <div className="absolute top-20 left-4 z-30 pointer-events-auto bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl p-3 shadow-2xl text-white min-w-[210px]">
+      {/* Desktop view (>= 640px): Full Detailed Card */}
+      <div className="hidden sm:block absolute top-16 left-4 z-20 pointer-events-auto bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl p-3 shadow-2xl text-white min-w-[210px]">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs font-bold text-pink-300 flex items-center gap-1.5">
             <span>❤️</span>
@@ -86,77 +246,148 @@ export default function GTAControlsHUD() {
         )}
       </div>
 
-      {/* ── Camera Perspective Switcher (1st / 3rd Person Toggle) ── */}
-      <div className="absolute top-20 right-4 z-30 pointer-events-auto">
+      {/* Mobile view (< 640px): Compact, Sleek Non-overlapping Pill */}
+      <div className="sm:hidden absolute top-12 left-2 z-20 pointer-events-auto">
+        <button
+          type="button"
+          onClick={() => setIsStatusExpanded(!isStatusExpanded)}
+          className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white shadow-xl"
+        >
+          <div className="flex items-center gap-1 text-[10px] font-bold text-pink-300">
+            <span>❤️</span>
+            <span>100%</span>
+          </div>
+          <div className="h-2.5 w-px bg-white/30" />
+          <div className="flex items-center gap-1 text-[10px] font-bold text-yellow-300">
+            <span>⚡</span>
+            <span>{Math.round(stamina)}%</span>
+          </div>
+        </button>
+
+        {isStatusExpanded && (
+          <div className="mt-1.5 p-2 bg-black/90 backdrop-blur-md rounded-xl border border-white/20 text-white text-[10px] shadow-2xl max-w-[170px] animate-fadeIn">
+            <div className="text-pink-300 font-bold mb-1">❤️ สุขภาพคุณแม่: 100%</div>
+            <div className="text-yellow-300 font-bold mb-1">⚡ พลังงาน: {Math.round(stamina)}%</div>
+            {isSitting && <div className="text-emerald-300 font-bold">✨ ฟื้นฟูร่างกายขณะนั่งพัก</div>}
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop Camera Switcher (Top Right, Desktop only to avoid mobile overlap) ── */}
+      <div className="hidden sm:block absolute top-16 right-4 z-20 pointer-events-auto">
         <button
           type="button"
           onClick={toggleCameraMode}
-          className="flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs bg-black/80 hover:bg-black text-white border border-white/30 shadow-2xl backdrop-blur-md transition transform hover:scale-105 active:scale-95"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-2xl font-bold text-xs bg-black/80 hover:bg-black text-white border border-white/30 shadow-2xl backdrop-blur-md transition transform hover:scale-105 active:scale-95"
         >
           <span className="text-base">{cameraMode === '3rdPerson' ? '🎥' : '👁️'}</span>
           <span>{cameraMode === '3rdPerson' ? 'มุมมอง 3rd Person (กด V)' : 'มุมมอง 1st Person (กด V)'}</span>
         </button>
       </div>
 
-      {/* ── Gamified Seating Action Banner & Quick Button (Bottom Center) ── */}
-      {(nearbySeat || isSitting) && (
-        <div className="absolute bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex flex-col items-center gap-2">
-          {isSitting ? (
-            <div className="flex flex-col items-center gap-2">
-              {/* Wheelchair Driving / Sofa Rest Info */}
-              <div className="px-4 py-1.5 rounded-full bg-black/85 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-2xl flex items-center gap-2 animate-pulse">
-                <span>{seatedTarget?.type === 'wheelchair' ? '♿' : '🛋️'}</span>
-                <span>
-                  {seatedTarget?.isDrivable
-                    ? 'โหมดขับรถเข็น: ใช้ [W][A][S][D] ขับเคลื่อนรอบห้อง'
-                    : `กำลังนั่งพักบน ${seatedTarget?.name || 'เก้าอี้'}`}
-                </span>
-              </div>
+      {/* ── Seated Wheelchair Driving / Rest Guidance (Center Screen) ── */}
+      {isSitting && (
+        <div className="absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 z-20 pointer-events-auto px-4 py-1.5 rounded-full bg-black/85 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-2xl flex items-center gap-2 animate-pulse max-w-[90vw] text-center">
+          <span>{seatedTarget?.type === 'wheelchair' ? '♿' : '🛋️'}</span>
+          <span>
+            {seatedTarget?.isDrivable
+              ? 'โหมดขับรถเข็น: ใช้จอยสติ๊กซ้ายเพื่อขับเคลื่อนรอบห้อง'
+              : `กำลังนั่งพักบน ${seatedTarget?.name || 'เก้าอี้'}`}
+          </span>
+        </div>
+      )}
 
-              {/* Stand Up Button */}
-              <button
-                type="button"
-                onClick={standUp}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white border-2 border-white shadow-2xl shadow-orange-500/40 ring-4 ring-orange-300/30 transition transform hover:scale-105 active:scale-95"
-              >
-                <span className="text-lg">🚶‍♀️</span>
-                <span>ลุกขึ้นยืน (กด [F] หรือ [Space])</span>
-              </button>
-            </div>
-          ) : (
-            /* Sit Down Quick Button */
+      {/* ── Toggle Controls Visibility Button (Bottom Edge Hint) ── */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+        <button
+          type="button"
+          onClick={() => setControlsVisible(!controlsVisible)}
+          className="px-2.5 py-0.5 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-sm border border-white/20 text-white/70 hover:text-white text-[10px] font-medium transition cursor-pointer"
+        >
+          {controlsVisible ? '🎮 ซ่อนปุ่มควบคุม' : '🎮 แสดงปุ่มควบคุม'}
+        </button>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          📱 MOBILE & TOUCH CONTROLS (Ergonomically Separated Left & Right Zones)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {controlsVisible && (
+        <>
+          {/* ── Left Thumb Zone: Virtual Analog Joystick + Sprint Toggle ── */}
+          <div className="absolute bottom-5 left-3 sm:left-6 z-30 pointer-events-auto flex flex-col items-center gap-2">
+            {/* Quick Sprint Toggle */}
             <button
               type="button"
-              onClick={handleSitToggle}
-              className="flex items-center gap-2.5 px-6 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-sky-600 to-blue-600 text-white border-2 border-white shadow-2xl shadow-blue-500/40 ring-4 ring-sky-300/30 transition transform hover:scale-105 active:scale-95 animate-bounce"
+              onClick={handleSprintToggle}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition shadow-lg border flex items-center gap-1 cursor-pointer active:scale-95 ${
+                isSprintLocked
+                  ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-black border-yellow-200 ring-2 ring-yellow-400/60 font-black'
+                  : 'bg-black/70 backdrop-blur-md text-yellow-300 border-yellow-400/40'
+              }`}
             >
-              <span className="text-xl">{nearbySeat?.type === 'wheelchair' ? '♿' : '🪑'}</span>
-              <span>นั่ง{nearbySeat?.name || 'ที่นั่ง'} (กด [F] หรือคลิก)</span>
+              <span>⚡</span>
+              <span>{isSprintLocked ? 'วิ่งเร็ว (ล็อค)' : 'วิ่งเร็ว'}</span>
             </button>
-          )}
-        </div>
+
+            {/* Virtual Thumbstick */}
+            <VirtualJoystick />
+          </div>
+
+          {/* ── Right Thumb Zone: Action Button Cluster ── */}
+          <div className="absolute bottom-5 right-3 sm:right-6 z-30 pointer-events-auto flex flex-col items-end gap-2.5">
+            {/* Camera Perspective Toggle Button (Mobile & Tablet) */}
+            <button
+              type="button"
+              onClick={toggleCameraMode}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border border-cyan-400/50 bg-black/75 backdrop-blur-md text-cyan-200 hover:text-white active:scale-95 transition"
+            >
+              <span className="text-sm">{cameraMode === '3rdPerson' ? '👁️' : '🎥'}</span>
+              <span>{cameraMode === '3rdPerson' ? '1st Person' : '3rd Person'}</span>
+            </button>
+
+            {/* Mother & Baby Action (Clinical Care Rooms) */}
+            {currentRoom !== 'lobby' && currentRoom !== 'quiz' && !isSitting && (
+              <button
+                type="button"
+                onClick={() => setHoldingBaby(!isHoldingBaby)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs shadow-2xl border-2 transition active:scale-95 ${
+                  isHoldingBaby
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-white shadow-emerald-500/40 ring-2 ring-emerald-300/40'
+                    : 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-white shadow-pink-500/40 ring-2 ring-pink-300/40'
+                }`}
+              >
+                <span className="text-base">{isHoldingBaby ? '🧸' : '🤱'}</span>
+                <span>{isHoldingBaby ? 'วางลูกน้อยในเปล' : 'อุ้มลูกน้อยแนบอก'}</span>
+              </button>
+            )}
+
+            {/* Interactive Sit / Stand Action Button */}
+            {(nearbySeat || isSitting) && (
+              <button
+                type="button"
+                onClick={handleSitToggle}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs shadow-2xl border-2 transition active:scale-95 ${
+                  isSitting
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-white ring-4 ring-orange-300/40 shadow-orange-500/40 animate-pulse'
+                    : 'bg-gradient-to-r from-sky-600 to-blue-600 text-white border-white ring-4 ring-sky-300/40 shadow-blue-500/40 animate-bounce'
+                }`}
+              >
+                <span className="text-base">
+                  {isSitting ? '🚶‍♀️' : nearbySeat?.type === 'wheelchair' ? '♿' : '🪑'}
+                </span>
+                <span>
+                  {isSitting
+                    ? 'ลุกขึ้นยืน (Stand)'
+                    : `นั่ง${nearbySeat?.name || 'ที่นั่ง'}`}
+                </span>
+              </button>
+            )}
+          </div>
+        </>
       )}
 
-      {/* ── Mother & Baby Bonding Floating Action Button (Clinical Care Rooms) ── */}
-      {currentRoom !== 'lobby' && !isSitting && (
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-          <button
-            type="button"
-            onClick={() => setHoldingBaby(!isHoldingBaby)}
-            className={`flex items-center gap-2.5 px-6 py-2.5 rounded-full font-bold text-sm shadow-2xl border-2 transition transform hover:scale-105 active:scale-95 ${
-              isHoldingBaby
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-white/90 shadow-emerald-500/40 ring-4 ring-emerald-300/30'
-                : 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-white/90 shadow-pink-500/40 ring-4 ring-pink-300/30'
-            }`}
-          >
-            <span className="text-xl">{isHoldingBaby ? '🧸' : '🤱'}</span>
-            <span>{isHoldingBaby ? 'วางลูกน้อยในเปล / เตียง' : 'อุ้มลูกน้อยแนบอก / ดูดนม'}</span>
-          </button>
-        </div>
-      )}
-
-      {/* ── Desktop Controls Guide (Bottom Left) ── */}
-      <div className="absolute bottom-12 left-4 z-20 pointer-events-auto bg-black/75 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 shadow-2xl text-white max-w-xs hidden sm:block">
+      {/* ── Desktop Controls Guide (Desktop Only >= 1024px) ── */}
+      <div className="hidden lg:block absolute bottom-10 left-4 z-20 pointer-events-auto bg-black/75 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 shadow-2xl text-white max-w-xs">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="text-lg">🎮</span>
@@ -211,125 +442,6 @@ export default function GTAControlsHUD() {
         <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-300">
           <span>คลิกลากเพื่อหมุนมุมกล้อง 360°</span>
           <span className="text-pink-300 font-medium">แม่ & ลูก</span>
-        </div>
-      </div>
-
-      {/* ── Mobile / Touch Virtual Controller (Bottom Right) ── */}
-      <div className="absolute bottom-10 right-4 z-20 pointer-events-auto flex flex-col items-center gap-1.5 md:hidden">
-        {/* Mobile Action Buttons: Sit/Stand, Sprint, Perspective */}
-        <div className="flex items-center gap-2">
-          {/* Mobile Sit / Stand Button */}
-          <button
-            type="button"
-            onClick={handleSitToggle}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border transition ${
-              isSitting
-                ? 'bg-amber-600 text-white border-white animate-pulse'
-                : nearbySeat
-                ? 'bg-sky-600 text-white border-white animate-bounce'
-                : 'bg-black/60 text-gray-300 border-white/20'
-            }`}
-          >
-            {isSitting ? '🚶‍♀️ ลุก' : '🪑 นั่ง'}
-          </button>
-
-          <button
-            type="button"
-            onClick={toggleCameraMode}
-            className="px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border border-cyan-400 bg-cyan-600/90 text-white"
-          >
-            {cameraMode === '3rdPerson' ? '👁️ 1st' : '🎥 3rd'}
-          </button>
-
-          {currentRoom !== 'lobby' && (
-            <button
-              type="button"
-              onClick={() => setHoldingBaby(!isHoldingBaby)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border transition ${
-                isHoldingBaby
-                  ? 'bg-emerald-600 text-white border-white'
-                  : 'bg-pink-600 text-white border-white'
-              }`}
-            >
-              {isHoldingBaby ? '🧸' : '🤱'}
-            </button>
-          )}
-
-          <button
-            type="button"
-            onMouseDown={() => handleTouchStart('sprint')}
-            onMouseUp={() => handleTouchEnd('sprint')}
-            onTouchStart={() => handleTouchStart('sprint')}
-            onTouchEnd={() => handleTouchEnd('sprint')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase shadow-lg border transition ${
-              virtualInput.sprint
-                ? 'bg-yellow-500 text-black border-yellow-300 scale-95'
-                : 'bg-black/70 text-yellow-300 border-yellow-400/40 backdrop-blur-sm'
-            }`}
-          >
-            ⚡ วิ่ง
-          </button>
-        </div>
-
-        {/* D-Pad for Walking & Wheelchair Driving */}
-        <div className="grid grid-cols-3 gap-1.5 p-2 bg-black/60 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl">
-          <div />
-          {/* UP / Forward */}
-          <button
-            type="button"
-            onMouseDown={() => handleTouchStart('forward')}
-            onMouseUp={() => handleTouchEnd('forward')}
-            onTouchStart={() => handleTouchStart('forward')}
-            onTouchEnd={() => handleTouchEnd('forward')}
-            className={`w-12 h-12 flex items-center justify-center rounded-xl text-lg font-bold text-white shadow transition ${
-              virtualInput.forward ? 'bg-cyan-500 scale-95' : 'bg-white/20 active:bg-cyan-500'
-            }`}
-          >
-            ▲
-          </button>
-          <div />
-
-          {/* LEFT */}
-          <button
-            type="button"
-            onMouseDown={() => handleTouchStart('left')}
-            onMouseUp={() => handleTouchEnd('left')}
-            onTouchStart={() => handleTouchStart('left')}
-            onTouchEnd={() => handleTouchEnd('left')}
-            className={`w-12 h-12 flex items-center justify-center rounded-xl text-lg font-bold text-white shadow transition ${
-              virtualInput.left ? 'bg-cyan-500 scale-95' : 'bg-white/20 active:bg-cyan-500'
-            }`}
-          >
-            ◀
-          </button>
-
-          {/* DOWN / Backward */}
-          <button
-            type="button"
-            onMouseDown={() => handleTouchStart('backward')}
-            onMouseUp={() => handleTouchEnd('backward')}
-            onTouchStart={() => handleTouchStart('backward')}
-            onTouchEnd={() => handleTouchEnd('backward')}
-            className={`w-12 h-12 flex items-center justify-center rounded-xl text-lg font-bold text-white shadow transition ${
-              virtualInput.backward ? 'bg-cyan-500 scale-95' : 'bg-white/20 active:bg-cyan-500'
-            }`}
-          >
-            ▼
-          </button>
-
-          {/* RIGHT */}
-          <button
-            type="button"
-            onMouseDown={() => handleTouchStart('right')}
-            onMouseUp={() => handleTouchEnd('right')}
-            onTouchStart={() => handleTouchStart('right')}
-            onTouchEnd={() => handleTouchEnd('right')}
-            className={`w-12 h-12 flex items-center justify-center rounded-xl text-lg font-bold text-white shadow transition ${
-              virtualInput.right ? 'bg-cyan-500 scale-95' : 'bg-white/20 active:bg-cyan-500'
-            }`}
-          >
-            ▶
-          </button>
         </div>
       </div>
     </div>

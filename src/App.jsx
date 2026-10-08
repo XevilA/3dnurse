@@ -18,10 +18,13 @@ import NewbornCare3Room from './components/scenes/NewbornCare3Room';
 import NewbornCare4Room from './components/scenes/NewbornCare4Room';
 import NewbornCare5Room from './components/scenes/NewbornCare5Room';
 import QuizRoom from './components/scenes/QuizRoom';
+import DressingRoom from './components/scenes/DressingRoom';
 
 /** Maps room key → scene component */
 const ROOM_MAP = {
   lobby: LobbyRoom,
+  dressingRoom: DressingRoom,
+  wardrobe: DressingRoom,
   motherCare1: MotherCare1Room,
   motherCare2: MotherCare2Room,
   motherCare3: MotherCare3Room,
@@ -36,10 +39,9 @@ const ROOM_MAP = {
 
 // ── Preload all 28 authentic 3D hospital models to prevent freeze/lag on room entrance ──
 const ALL_MODELS = [
-  '/models/michelle.glb',
+  '/models/megan_opt.glb',
   '/models/soldier.glb',
   '/models/baby_real.glb',
-  '/models/bath_day.glb',
   '/models/ceiling_fan.glb',
   '/models/desk_lamp_arm_01.glb',
   '/models/drawer_cabinet.glb',
@@ -64,6 +66,7 @@ const ALL_MODELS = [
   '/models/water_bottle.glb',
   '/models/wheelchair_01.glb',
   '/models/wicker_basket_01.glb',
+  '/models/robot.glb',
 ];
 
 ALL_MODELS.forEach((path) => {
@@ -80,6 +83,12 @@ const ALL_TEXTURES = [
   '/textures/door_nursery.jpg',
   '/textures/door_quiz.jpg',
   '/textures/door_frame_metal.jpg',
+  '/textures/mother_diffuse_pink.jpg',
+  '/textures/mother_diffuse_blue.jpg',
+  '/textures/mother_diffuse_lavender.jpg',
+  '/textures/mother_diffuse_mint.jpg',
+  '/textures/mother_diffuse_white.jpg',
+  '/textures/mother_diffuse_peach.jpg',
 ];
 
 ALL_TEXTURES.forEach((path) => {
@@ -155,48 +164,51 @@ function RoomLoadingFallback() {
 }
 
 export default function App() {
+  if (typeof window !== 'undefined') window.__useStore = useStore;
   const currentRoom = useStore((s) => s.currentRoom);
   const showSuccessModal = useStore((s) => s.showSuccessModal);
   const RoomComponent = ROOM_MAP[currentRoom] || LobbyRoom;
 
   return (
-    <div className="w-screen h-screen relative bg-slate-900">
-      {/* ── 3D Canvas ── */}
-      <Canvas
-        shadows
-        gl={{ preserveDrawingBuffer: true, antialias: true, powerPreference: 'high-performance' }}
-        camera={{ position: [0, 3, 8], fov: 55 }}
-        style={{ background: 'linear-gradient(180deg, #dbeafe 0%, #f0fdf4 100%)' }}
-      >
-        {/* Authentic Hospital Interior Lighting (Persistent so lights never unmount during room change) */}
-        <ambientLight intensity={0.75} color="#ffffff" />
-        <directionalLight
-          position={[8, 12, 6]}
-          intensity={1.1}
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-          shadow-bias={-0.0001}
-        />
-        <hemisphereLight
-          skyColor="#f0f9ff"
-          groundColor="#e2e8f0"
-          intensity={0.45}
-        />
-        <pointLight position={[-6, 6, -4]} intensity={0.35} color="#bae6fd" />
-        <pointLight position={[6, 6, 4]} intensity={0.25} color="#fbcfe8" />
+    <div className="w-screen h-screen relative bg-slate-900 overflow-hidden select-none">
+      {/* ── 3D Canvas (Isolated stacking context prevents Drei Html from escaping above UI) ── */}
+      <div className="w-full h-full absolute inset-0 z-0 isolate" style={{ touchAction: 'none' }}>
+        <Canvas
+          shadows
+          gl={{ preserveDrawingBuffer: true, antialias: true, powerPreference: 'high-performance' }}
+          camera={{ position: [0, 3, 8], fov: 55 }}
+          style={{ background: 'linear-gradient(180deg, #dbeafe 0%, #f0fdf4 100%)', touchAction: 'none' }}
+        >
+          {/* Authentic Hospital Interior Lighting (Persistent so lights never unmount during room change) */}
+          <ambientLight intensity={0.75} color="#ffffff" />
+          <directionalLight
+            position={[8, 12, 6]}
+            intensity={1.1}
+            castShadow
+            shadow-mapSize={[1024, 1024]}
+            shadow-bias={-0.0001}
+          />
+          <hemisphereLight
+            skyColor="#f0f9ff"
+            groundColor="#e2e8f0"
+            intensity={0.45}
+          />
+          <pointLight position={[-6, 6, -4]} intensity={0.35} color="#bae6fd" />
+          <pointLight position={[6, 6, 4]} intensity={0.25} color="#fbcfe8" />
 
-        {/* Subtle Metaverse Stars in Lobby */}
-        {currentRoom === 'lobby' && <Stars radius={60} depth={25} count={400} factor={2} />}
+          {/* Subtle Metaverse Stars in Lobby */}
+          {currentRoom === 'lobby' && <Stars radius={60} depth={25} count={400} factor={2} />}
 
-        {/* Current Room Scene with Error Boundary & Smooth Hospital Transition Fallback */}
-        <RoomErrorBoundary room={currentRoom} onReset={() => useStore.getState().setRoom('lobby')}>
-          <Suspense fallback={<RoomLoadingFallback />}>
-            <RoomComponent />
-          </Suspense>
-        </RoomErrorBoundary>
-      </Canvas>
+          {/* Current Room Scene with Error Boundary & Smooth Hospital Transition Fallback */}
+          <RoomErrorBoundary room={currentRoom} onReset={() => useStore.getState().setRoom('lobby')}>
+            <Suspense fallback={<RoomLoadingFallback />}>
+              <RoomComponent />
+            </Suspense>
+          </RoomErrorBoundary>
+        </Canvas>
+      </div>
 
-      {/* ── UI Overlays ── */}
+      {/* ── UI Overlays (z-20 to z-50) ── */}
       <HUD />
       <GTAControlsHUD />
       {showSuccessModal && <SuccessModal />}

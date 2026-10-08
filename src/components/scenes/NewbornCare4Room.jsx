@@ -205,7 +205,7 @@ export default function NewbornCare4Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           🏠 INTERACTIVE LEARNING HUD (Nursery 204: Safe Sleep Environment)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 2.1, -7.8]} center transform scale={0.27}>
+      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',

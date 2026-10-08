@@ -223,33 +223,18 @@ export default function MotherCare3Room() {
         roomNumber="Lactation Ward 103"
       />
 
-      {/* ── REAL 3D ASSETS ── */}
-      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
+      {/* ── REAL 3D CLINICAL ASSETS & ARCHITECTURE ── */}
+      <RealPlant type="potted" position={[7.5, 0, -7.5]} scale={1.1} />
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
-      <HospitalTrashBin position={[6.0, 0, 2.8]} scale={0.85} />
+      <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
 
-      {/* Velvet Nursing Recliner / Lounge Sofa (กิจกรรม 2: การนวดเต้านม) */}
-      <InteractiveSeat
-        id="room103_sofa"
-        name="โซฟาพักผ่อนให้นม"
-        type="sofa"
-        position={[7.2, 0, 0]}
-        rotation={[0, -Math.PI / 2, 0]}
-        seatOffset={[0, 0.42, 0.15]}
-      >
-        <group onClick={() => setActiveTab(1)}>
-          <HospitalSofa position={[0, 0, 0]} scale={1.1} />
-          <Pillows position={[-0.2, 0.45, 0]} scale={0.85} />
-        </group>
-      </InteractiveSeat>
-
-      {/* Ergonomic Nursing Chair (กิจกรรม 1: สังเกตเต้านม) */}
+      {/* ── 1. Ergonomic Nursing Chair (กิจกรรม 1: สังเกตเต้านมและการดูแล) ── */}
       <InteractiveSeat
         id="room103_nursing_chair"
         name="เก้าอี้ให้นมบุตรสรีรศาสตร์"
         type="chair"
-        position={[-4.5, 0, -3.5]}
-        rotation={[0, Math.PI / 4, 0]}
+        position={[-5.2, 0, -6.0]}
+        rotation={[0, Math.PI / 6, 0]}
         seatOffset={[0, 0.48, 0]}
       >
         <group onClick={() => setActiveTab(0)}>
@@ -257,19 +242,25 @@ export default function MotherCare3Room() {
         </group>
       </InteractiveSeat>
 
-      {/* Hospital Nightstand with Breast Milk Bottles & Hydration */}
-      <group position={[-7.0, 0, -3.8]}>
-        <HospitalNightstand position={[0, 0, 0]} scale={1.05} />
+      {/* ── 2. Bedside Nightstand with Hydration & Breast Pump Accessories ── */}
+      <group position={[-7.0, 0, -6.8]} onClick={() => setActiveTab(0)}>
+        <HospitalNightstand position={[0, 0, 0]} scale={1.05}>
+          <FlowerVase position={[0.12, 0.82, 0.08]} scale={0.65} />
+          <mesh position={[-0.15, 0.72, -0.05]} castShadow>
+            <cylinderGeometry args={[0.07, 0.08, 0.26, 24]} />
+            <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
+          </mesh>
+        </HospitalNightstand>
       </group>
 
-      {/* Baby Crib with Resting Newborn (Shifted Left for unobstructed HUD) */}
-      <group position={[-5.2, 0, -3.8]} rotation={[0, -0.1, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
+      {/* ── 3. Baby Crib with Resting Newborn (Rooming-in beside nursing chair) ── */}
+      <group position={[-3.2, 0, -6.0]} rotation={[0, -0.15, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
             <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
-        <Html position={[0, 1.25, 0]} center distanceFactor={22}>
+        <Html position={[0, 1.25, 0]} center distanceFactor={12}>
           <div
             onClick={(e) => {
               e.stopPropagation();
@@ -288,20 +279,35 @@ export default function MotherCare3Room() {
         </Html>
       </group>
 
-      {/* Medical Cart with Breast Pumps & Hot/Cold Compresses (กิจกรรม 3) */}
-      <group position={[4.5, 0, 2]} onClick={() => setActiveTab(2)}>
+      {/* ── 4. Velvet Nursing Recliner / Lounge Sofa (กิจกรรม 2: การนวดเต้านม) ── */}
+      <InteractiveSeat
+        id="room103_sofa"
+        name="โซฟาพักผ่อนให้นม"
+        type="sofa"
+        position={[5.4, 0, -6.5]}
+        rotation={[0, -Math.PI / 6, 0]}
+        seatOffset={[0, 0.42, 0.15]}
+      >
+        <group onClick={() => setActiveTab(1)}>
+          <HospitalSofa position={[0, 0, 0]} scale={1.1} />
+          <Pillows position={[-0.2, 0.45, 0]} scale={0.85} />
+        </group>
+      </InteractiveSeat>
+
+      {/* ── 5. Medical Cart with Breast Pumps & Hot/Cold Compresses (กิจกรรม 3: ปัญหาเต้านม) ── */}
+      <group position={[7.8, 0, -2.0]} rotation={[0, -Math.PI / 2, 0]} onClick={() => setActiveTab(2)}>
         <MedicalCart position={[0, 0, 0]} scale={1.05} />
       </group>
 
-      {/* Doctor Consultation Desk & Quiz Kiosk (กิจกรรม 4) */}
-      <group position={[4.5, 0, -4.5]} rotation={[0, -Math.PI / 4, 0]}>
-        <DoctorDesk position={[0, 0, 0]} scale={0.9} />
+      {/* ── 6. Clinical Consultation Desk & Quiz Kiosk (กิจกรรม 4: แบบประเมิน) ── */}
+      <group position={[7.8, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => setActiveTab(3)}>
+        <DoctorDesk position={[0, 0, 0]} scale={0.85} />
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           🤱 INTERACTIVE LEARNING HUD (Based on Manual Zone 1: Breast Care)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 2.1, -7.8]} center transform scale={0.27}>
+      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',

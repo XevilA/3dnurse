@@ -25,8 +25,9 @@ export default function HospitalBed({
     return cloned;
   }, [scene]);
 
-  // Model geometry is in mm, scale by 0.001 to convert to meters
-  const s = typeof scale === 'number' ? scale * 0.00105 : scale;
+  // Model geometry is already scaled inside the GLB (Node 239 contains 0.001 matrix).
+  // Scale = 1 gives authentic clinical dimensions: length 2.49m, width 1.10m, height 1.15m.
+  const s = typeof scale === 'number' ? scale : scale;
   const finalScale = Array.isArray(s) ? s : [s, s, s];
 
   if (!bedScene) return null;

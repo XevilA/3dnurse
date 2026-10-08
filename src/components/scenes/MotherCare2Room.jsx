@@ -179,58 +179,62 @@ export default function MotherCare2Room() {
         roomNumber="Wound Care Ward 102"
       />
 
-      {/* ── REAL 3D ASSETS ── */}
-      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
-      <MedicineCabinet position={[7.8, 0, -1.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
-      <HospitalTrashBin position={[6.0, 0, 2.8]} scale={0.85} />
-      <ExaminationLamp position={[-3.5, 0, -4.5]} />
+      {/* ── REAL 3D CLINICAL ASSETS & ARCHITECTURE ── */}
+      <RealPlant type="potted" position={[7.5, 0, -7.5]} scale={1.1} />
+      <MedicineCabinet position={[8.4, 0, -2.2]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
 
+      {/* Drivable Hospital Wheelchair parked neatly along entrance wall */}
       <InteractiveSeat
         id="ward102_wheelchair"
         name="รถเข็นผู้ป่วย Ward 102"
         type="wheelchair"
-        position={[-7.2, 0, 1.5]}
-        rotation={[0, Math.PI / 3, 0]}
+        position={[-7.5, 0, 3.2]}
+        rotation={[0, Math.PI / 2, 0]}
         seatOffset={[0, 0.46, 0.05]}
         isDrivable={true}
       >
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
       </InteractiveSeat>
 
-      {/* Hospital Bed (กิจกรรม 2: ลดปวดบวม) - Shifted Left */}
+      {/* ── 1. Hospital Patient Bed with Soft Pillows (กิจกรรม 2: การประคบและลดปวดบวม) ── */}
       <InteractiveSeat
         id="room102_bed"
         name="เตียงพักฟื้นคุณแม่"
         type="bed"
-        position={[-5.4, 0, -3.8]}
+        position={[-5.4, 0, -6.0]}
         rotation={[0, 0, 0]}
-        seatOffset={[0, 0.72, 0]}
+        seatOffset={[0, 0.68, 0]}
       >
         <group onClick={() => setActiveTab(1)}>
           <HospitalBed position={[0, 0, 0]} />
-          <Pillows position={[0.2, 0.95, -0.6]} scale={0.8} />
+          {/* Pillows resting securely on top of mattress headboard */}
+          <Pillows position={[0.05, 0.72, -0.75]} rotation={[0, 0, 0]} scale={0.75} />
         </group>
       </InteractiveSeat>
 
-      {/* Medical Cart with Peri-bottle & Sterile Gauze (กิจกรรม 1: ทำความสะอาดแผล) */}
-      <group position={[-3.4, 0, -3.8]} onClick={() => setActiveTab(0)}>
+      {/* ── 2. Sterile Wound Care Cart (กิจกรรม 1: ทำความสะอาดแผลฝีเย็บ/ผ่าตัด) ── */}
+      <group position={[-7.2, 0, -6.5]} onClick={() => setActiveTab(0)}>
         <MedicalCart position={[0, 0, 0]} scale={1.05} />
       </group>
 
-      {/* Porcelain Washbasin & Restroom Hydration (กิจกรรม 3: ขับถ่าย) */}
-      <group position={[4.5, 0, 2]} onClick={() => setActiveTab(2)}>
-        <Washbasin position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+      {/* ── 3. Porcelain Sanitary Wash Station (กิจกรรม 3: การขับถ่ายและสุขอนามัย) ── */}
+      {/* Mounted flush against the right perimeter wall */}
+      <group position={[8.3, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => setActiveTab(2)}>
+        <Washbasin position={[0, 0, 0]} />
       </group>
+      <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
 
-      {/* Doctor Consultation Desk & Quiz Kiosk (กิจกรรม 4 REEDA & แบบประเมิน) */}
-      <group position={[4.5, 0, -4.5]} rotation={[0, -Math.PI / 4, 0]}>
-        <DoctorDesk position={[0, 0, 0]} scale={0.9} />
+      {/* ── 4. Clinical Consultation & REEDA Evaluation Station (กิจกรรม 4: REEDA Score) ── */}
+      <group position={[5.4, 0, -6.5]} rotation={[0, -Math.PI / 6, 0]} onClick={() => setActiveTab(3)}>
+        <DoctorDesk position={[0, 0, 0]} scale={0.85} />
+        {/* Examination desk lamp positioned properly on the consultation desk */}
+        <ExaminationLamp position={[-0.3, 0.78, 0]} scale={0.65} />
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           🩹 INTERACTIVE LEARNING HUD (Based on Metaverse Zone 2 Activities 1-4)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 2.1, -7.8]} center transform scale={0.27}>
+      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',

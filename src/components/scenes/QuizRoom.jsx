@@ -151,18 +151,20 @@ export default function QuizRoom() {
       {/* Real Exam & Records Archive Cabinet */}
       <MedicineCabinet position={[10.2, 0, -5]} rotation={[0, -Math.PI / 2, 0]} scale={1.05} withMedicalBox={false} />
 
-      {/* Real Doctor / Examiner Desk */}
-      <DoctorDesk position={[0, 0, -9.5]} scale={1.25} />
-      <FlowerVase position={[1.4, 0.98, -9.5]} scale={0.9} />
+      {/* Real Examiner Station Desk on Left Wing */}
+      <group position={[-7.5, 0, -6.5]} rotation={[0, Math.PI / 6, 0]}>
+        <DoctorDesk position={[0, 0, 0]} scale={1.15} />
+        <FlowerVase position={[0.5, 0.85, 0]} scale={0.8} />
+      </group>
 
-      {/* Computer Screen / Big Interactive Board for Quiz */}
-      <mesh position={[0, 5.2, -10.5]} castShadow>
-        <boxGeometry args={[7.8, 5.0, 0.2]} />
+      {/* Grand Digital Interactive Examination Board */}
+      <mesh position={[0, 2.0, -9.8]} castShadow>
+        <boxGeometry args={[5.6, 3.8, 0.15]} />
         <meshStandardMaterial color="#1e1b4b" roughness={0.2} metalness={0.5} />
       </mesh>
 
-      {/* Quiz UI on Digital Board */}
-      <Html position={[0, 5.2, -10.35]} transform scale={0.44}>
+      {/* Quiz UI on Digital Board (Responsive scale on mobile) */}
+      <Html position={[0, 2.0, -9.65]} transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.31}>
         <div style={{
           background: 'white',
           padding: '28px',
@@ -411,7 +413,10 @@ export default function QuizRoom() {
 
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
-                      onClick={() => setRoom('motherCare1')}
+                      onClick={() => {
+                        setShowSuccessModal(false);
+                        setRoom('motherCare1');
+                      }}
                       style={{
                         padding: '12px 24px',
                         fontSize: '15px',
@@ -427,7 +432,10 @@ export default function QuizRoom() {
                       🚀 เข้าสู่ห้องแรก: Ward 101 ดูแลร่างกาย ➜
                     </button>
                     <button
-                      onClick={() => setRoom('lobby')}
+                      onClick={() => {
+                        setShowSuccessModal(false);
+                        setRoom('lobby');
+                      }}
                       style={{
                         padding: '12px 24px',
                         fontSize: '15px',
@@ -518,7 +526,10 @@ export default function QuizRoom() {
                       ลองทำแบบทดสอบอีกครั้ง ↻
                     </button>
                     <button
-                      onClick={() => setRoom('lobby')}
+                      onClick={() => {
+                        setShowSuccessModal(false);
+                        setRoom('lobby');
+                      }}
                       style={{
                         padding: '12px 28px',
                         fontSize: '15px',
@@ -541,32 +552,32 @@ export default function QuizRoom() {
         </div>
       </Html>
 
-      {/* ── Real 3D Quiz Seating Chair ── */}
+      {/* ── Real 3D Quiz Seating Chair (Angled comfortably facing digital board) ── */}
       <InteractiveSeat
         id="quiz_exam_chair"
         name="เก้าอี้สอบความรู้"
         type="chair"
-        position={[0, 0, -6.5]}
-        rotation={[0, 0, 0]}
+        position={[-4.5, 0, -5.5]}
+        rotation={[0, 0.35, 0]}
         seatOffset={[0, 0.45, 0.05]}
       >
         <NursingChair position={[0, 0, 0]} rotation={[0, 0, 0]} />
       </InteractiveSeat>
 
-      {/* ── Real Baby Bassinet beside Mother during Quiz (แม่และลูกร่วมเรียนรู้) ── */}
-      <group position={[2.4, 0, -6.5]} rotation={[0, -0.3, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
+      {/* ── Real Baby Bassinet beside Mother during Quiz (Shifted to side bay X: 6.8) ── */}
+      <group position={[6.8, 0, -4.5]} rotation={[0, -0.4, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
             <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
-        <Html position={[0, 1.6, 0]} center distanceFactor={14}>
+        <Html position={[0, 1.35, 0]} center distanceFactor={12}>
           <div
             onClick={(e) => {
               e.stopPropagation();
               setHoldingBaby(!isHoldingBaby);
             }}
-            className="cursor-pointer select-none px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg"
             style={{
               background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
               color: 'white',

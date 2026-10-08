@@ -4,6 +4,8 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
+import FatherAvatar from '../avatars/FatherAvatar';
+import RobotAvatar from '../avatars/RobotAvatar';
 import BabyAvatar from '../avatars/BabyAvatar';
 import { resolveMovement, ROOM_COLLIDERS } from '../../physics/collisionSystem';
 
@@ -31,6 +33,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   const isHoldingBaby = useStore((s) => s.isHoldingBaby);
   const setHoldingBaby = useStore((s) => s.setHoldingBaby);
   const currentRoom = useStore((s) => s.currentRoom);
+  const selectedCharacter = useStore((s) => s.selectedCharacter) || 'mother';
   const cameraMode = useStore((s) => s.cameraMode);
   const toggleCameraMode = useStore((s) => s.toggleCameraMode);
 
@@ -69,6 +72,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   const cameraDistance = useRef(4.8);
   const isDragging = useRef(false);
   const previousMousePos = useRef({ x: 0, y: 0 });
+  const cameraTouchId = useRef(null);
 
   // ── Sync Position when Switching Rooms or Teleporting ──
   const [initX, initY, initZ] = initialPosition;
@@ -91,6 +95,20 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     });
     return unsub;
   }, []);
+
+  // Seamless snap to seat cushion when sitting down (Wheelchair, Sofa, Bed, Chair)
+  useEffect(() => {
+    if (isSitting && seatedTarget) {
+      const targetX = seatedTarget.position[0] + (seatedTarget.seatOffset?.[0] || 0);
+      const targetZ = seatedTarget.position[2] + (seatedTarget.seatOffset?.[2] || 0);
+      pos.current.x = targetX;
+      pos.current.z = targetZ;
+      if (typeof seatedTarget.rotationY === 'number') {
+        targetRotationY.current = seatedTarget.rotationY;
+        characterRotationY.current = seatedTarget.rotationY;
+      }
+    }
+  }, [isSitting, seatedTarget]);
 
   // ── Mouse & Touch Camera Orbit Listeners ──
   useEffect(() => {
@@ -125,26 +143,59 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     };
 
     const onTouchStart = (e) => {
-      if (isInteractive(e.target)) return;
-      if (e.touches.length === 1) {
+      // If already tracking a camera touch, don't rebind
+      if (cameraTouchId.current !== null) return;
+
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (isInteractive(touch.target)) continue;
+
+        // Bottom-left area is reserved for the virtual joystick / movement controls
+        const isLeftControlZone =
+          touch.clientX < window.innerWidth * 0.42 && touch.clientY > window.innerHeight * 0.5;
+        if (isLeftControlZone) continue;
+
+        cameraTouchId.current = touch.identifier;
         isDragging.current = true;
-        previousMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        previousMousePos.current = { x: touch.clientX, y: touch.clientY };
+        break;
       }
     };
 
     const onTouchMove = (e) => {
-      if (!isDragging.current || e.touches.length === 0) return;
-      const deltaX = e.touches[0].clientX - previousMousePos.current.x;
-      const deltaY = e.touches[0].clientY - previousMousePos.current.y;
-      previousMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      if (cameraTouchId.current === null || !isDragging.current) return;
+
+      let touch = null;
+      for (let i = 0; i < e.touches.length; i++) {
+        if (e.touches[i].identifier === cameraTouchId.current) {
+          touch = e.touches[i];
+          break;
+        }
+      }
+      if (!touch) return;
+
+      const deltaX = touch.clientX - previousMousePos.current.x;
+      const deltaY = touch.clientY - previousMousePos.current.y;
+      previousMousePos.current = { x: touch.clientX, y: touch.clientY };
 
       cameraYaw.current -= deltaX * 0.007;
       cameraPitch.current += deltaY * 0.005;
       cameraPitch.current = THREE.MathUtils.clamp(cameraPitch.current, 0.05, 1.1);
     };
 
-    const onTouchEnd = () => {
-      isDragging.current = false;
+    const onTouchEnd = (e) => {
+      if (cameraTouchId.current === null) return;
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === cameraTouchId.current) {
+          cameraTouchId.current = null;
+          isDragging.current = false;
+          break;
+        }
+      }
+    };
+
+    const onTouchCancel = (e) => {
+      onTouchEnd(e);
     };
 
     const onWheel = (e) => {
@@ -159,6 +210,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     domElement.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
     window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('touchcancel', onTouchCancel);
     domElement.addEventListener('wheel', onWheel, { passive: true });
 
     return () => {
@@ -169,6 +221,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
       domElement.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchCancel);
       domElement.removeEventListener('wheel', onWheel);
     };
   }, [gl.domElement]);
@@ -314,7 +367,16 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     if (isLeft) inputX -= 1;
     if (isRight) inputX += 1;
 
-    const isMoving = inputX !== 0 || inputZ !== 0;
+    // Analog Joystick input from mobile virtual thumbstick
+    if (typeof virtualInput.vectorX === 'number' && typeof virtualInput.vectorZ === 'number') {
+      const vLen = Math.hypot(virtualInput.vectorX, virtualInput.vectorZ);
+      if (vLen > 0.05) {
+        inputX = virtualInput.vectorX;
+        inputZ = virtualInput.vectorZ;
+      }
+    }
+
+    const isMoving = Math.abs(inputX) > 0.01 || Math.abs(inputZ) > 0.01;
 
     // ── 2. Seated Behavior (Wheelchair driving vs Sofa/Chair relaxing) ──
     if (isSitting) {
@@ -498,6 +560,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     <group ref={playerRef} name="PlayerCharacter" position={initialPosition}>
       {/* Avatar Group */}
       <group ref={avatarGroupRef} visible={cameraMode === '3rdPerson'}>
+        {/* 100% Authentic Female Character Suite (Pregnant Mother / Postpartum Mother / Nurse) */}
         <MotherAvatar
           position={[0, 0, 0]}
           rotation={[0, 0, 0]}

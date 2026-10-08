@@ -8,21 +8,6 @@ import { useGLTF } from '@react-three/drei';
  * and real 3D soap/lotion bottles from bath_day.glb.
  */
 export default function Washbasin({ position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 1] }) {
-  const { scene: bathScene } = useGLTF('/models/bath_day.glb');
-
-  // Extract real bottle props from bath_day
-  const bottles = useMemo(() => {
-    if (bathScene) {
-      const clone = bathScene.clone(true);
-      clone.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-        }
-      });
-      return clone;
-    }
-    return null;
-  }, [bathScene]);
 
   return (
     <group position={position} rotation={rotation} scale={scale}>
@@ -79,14 +64,24 @@ export default function Washbasin({ position = [0, 0, 0], rotation = [0, 0, 0], 
         <meshStandardMaterial color="#eceff1" metalness={0.9} roughness={0.05} />
       </mesh>
 
-      {/* ── Real 3D Soap / Shampoo Bottles from bath_day.glb ── */}
-      {bottles && (
-        <group position={[0.55, 0.92, -0.15]} scale={[0.18, 0.18, 0.18]}>
-          <primitive object={bottles} />
-        </group>
-      )}
+      {/* ── Clinical Liquid Soap & Hand Sanitizer Pump Dispensers ── */}
+      <group position={[0.55, 0.92, -0.15]}>
+        {/* Antiseptic Hand Wash Bottle Body */}
+        <mesh position={[0, 0.12, 0]} castShadow>
+          <cylinderGeometry args={[0.055, 0.06, 0.22, 24]} />
+          <meshStandardMaterial color="#0284c7" roughness={0.2} metalness={0.1} />
+        </mesh>
+        {/* Pump Neck */}
+        <mesh position={[0, 0.24, 0]}>
+          <cylinderGeometry args={[0.02, 0.02, 0.04, 16]} />
+          <meshStandardMaterial color="#ffffff" metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Pump Head / Spout */}
+        <mesh position={[0.02, 0.27, 0]} castShadow>
+          <boxGeometry args={[0.08, 0.025, 0.03]} />
+          <meshStandardMaterial color="#ffffff" metalness={0.8} roughness={0.2} />
+        </mesh>
+      </group>
     </group>
   );
 }
-
-useGLTF.preload('/models/bath_day.glb');

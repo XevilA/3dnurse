@@ -16,6 +16,7 @@ import HospitalTrashBin from '../decorations/HospitalTrashBin';
 import BabyAvatar from '../avatars/BabyAvatar';
 import BabyCrib from '../furniture/BabyCrib';
 import DoctorDesk from '../furniture/DoctorDesk';
+import NursingChair from '../furniture/NursingChair';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
 export default function MotherCare1Room() {
@@ -196,48 +197,60 @@ export default function MotherCare1Room() {
         roomNumber="Ward 101"
       />
 
-      {/* ── REAL 3D ASSETS & NATURE ── */}
-      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
+      {/* ── REAL 3D CLINICAL ASSETS & ARCHITECTURE ── */}
+      <RealPlant type="potted" position={[7.5, 0, -7.5]} scale={1.1} />
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
-      <MedicineCabinet position={[7.8, 0, -1.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
-      <HospitalTrashBin position={[6.0, 0, 2.8]} scale={0.85} />
+      <MedicineCabinet position={[8.4, 0, -2.2]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
 
-      {/* Drivable Hospital Wheelchair */}
+      {/* Drivable Hospital Wheelchair parked neatly along entrance wall */}
       <InteractiveSeat
         id="ward101_wheelchair"
         name="รถเข็นผู้ป่วย Ward 101"
         type="wheelchair"
-        position={[-7.2, 0, 1.5]}
-        rotation={[0, Math.PI / 3, 0]}
+        position={[-7.5, 0, 3.2]}
+        rotation={[0, Math.PI / 2, 0]}
         seatOffset={[0, 0.46, 0.05]}
         isDrivable={true}
       >
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
       </InteractiveSeat>
 
-      {/* Hospital Patient Bed with Soft Pillows (กิจกรรม 1: พักผ่อน) - Shifted Left */}
+      {/* ── 1. Hospital Patient Bed with Soft Pillows (กิจกรรม 1: พักผ่อนและขอความช่วยเหลือ) ── */}
       <InteractiveSeat
         id="room101_bed"
         name="เตียงพักฟื้นคุณแม่"
         type="bed"
-        position={[-5.5, 0, -3.8]}
+        position={[-5.4, 0, -6.0]}
         rotation={[0, 0, 0]}
-        seatOffset={[0, 0.72, 0]}
+        seatOffset={[0, 0.68, 0]}
       >
         <group onClick={() => setActiveTab(0)}>
           <HospitalBed position={[0, 0, 0]} />
-          <Pillows position={[0.2, 0.95, -0.6]} rotation={[0, 0, 0]} scale={0.8} />
+          {/* Pillows resting securely on top of mattress headboard */}
+          <Pillows position={[0.05, 0.72, -0.75]} rotation={[0, 0, 0]} scale={0.75} />
         </group>
       </InteractiveSeat>
 
-      {/* Newborn Bassinet right beside Mother's bed (Safe Sleep & Rooming-in) */}
-      <group position={[-3.6, 0, -3.8]} rotation={[0, -0.2, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
+      {/* ── 2. Bedside Nightstand with Hydration & Nutrition (กิจกรรม 2: โภชนาการและน้ำดื่ม) ── */}
+      <group position={[-7.2, 0, -6.8]} onClick={() => setActiveTab(1)}>
+        <HospitalNightstand position={[0, 0, 0]} scale={1.05}>
+          <FlowerVase position={[0.12, 0.82, 0.08]} scale={0.65} />
+          {/* Clean Glass Water Pitcher */}
+          <mesh position={[-0.15, 0.72, -0.05]} castShadow>
+            <cylinderGeometry args={[0.07, 0.08, 0.26, 24]} />
+            <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
+          </mesh>
+        </HospitalNightstand>
+      </group>
+
+      {/* ── 3. Newborn Bassinet at Bedside (Rooming-in next to mother's bed) ── */}
+      <group position={[-3.4, 0, -6.0]} rotation={[0, -0.15, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
             <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
-        <Html position={[0, 1.25, 0]} center distanceFactor={22}>
+        <Html position={[0, 1.25, 0]} center distanceFactor={12}>
           <div
             onClick={(e) => {
               e.stopPropagation();
@@ -256,45 +269,33 @@ export default function MotherCare1Room() {
         </Html>
       </group>
 
-      {/* Hospital Nightstand with Hydration & Nutrition (กิจกรรม 2) */}
-      <group position={[-7.2, 0, -3.8]} onClick={() => setActiveTab(1)}>
-        <HospitalNightstand position={[0, 0, 0]} scale={1.1}>
-          <FlowerVase position={[0.15, 0.82, 0.1]} scale={0.7} />
-          <mesh position={[-0.15, 0.72, -0.05]} castShadow>
-            <cylinderGeometry args={[0.08, 0.08, 0.28, 24]} />
-            <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
+      {/* ── 4. Porcelain Sanitary Wash Station (กิจกรรม 3: การล้างมือ 4 ขั้นตอน) ── */}
+      {/* Mounted flush against the right perimeter wall */}
+      <group position={[8.3, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => setActiveTab(2)}>
+        <Washbasin position={[0, 0, 0]} />
+      </group>
+      <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
+
+      {/* ── 5. Maternal Recovery & Gentle Mobilization Lounge (กิจกรรม 4: การเคลื่อนไหวอย่างเหมาะสม) ── */}
+      <group position={[5.4, 0, -6.5]} rotation={[0, -Math.PI / 6, 0]} onClick={() => setActiveTab(3)}>
+        <NursingChair position={[0, 0, 0]} scale={1.1} />
+        {/* Soft supportive cushion on the chair */}
+        <Pillows position={[0, 0.42, 0.05]} scale={0.65} />
+      </group>
+      {/* Side table with warm nutrition/water carafe beside the chair */}
+      <group position={[4.0, 0, -6.8]}>
+        <HospitalNightstand position={[0, 0, 0]} scale={0.85}>
+          <mesh position={[0, 0.62, 0]} castShadow>
+            <cylinderGeometry args={[0.06, 0.07, 0.20, 20]} />
+            <meshPhysicalMaterial color="#f0fdf4" transmission={0.85} roughness={0.1} />
           </mesh>
         </HospitalNightstand>
-      </group>
-
-      {/* Porcelain Washbasin (กิจกรรม 3: ล้างมือ) */}
-      <group position={[4.5, 0, 2]} onClick={() => setActiveTab(2)}>
-        <Washbasin position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
-      </group>
-
-      {/* Exercise Mat & Gym Ball (กิจกรรม 4: การเคลื่อนไหว) */}
-      <group position={[-4, 0, 2]} onClick={() => setActiveTab(3)}>
-        <mesh position={[0, 0.04, 0]} receiveShadow castShadow>
-          <boxGeometry args={[2.4, 0.07, 1.5]} />
-          <meshStandardMaterial color="#ba68c8" roughness={0.6} />
-        </mesh>
-        <Pillows position={[0, 0.12, -0.45]} scale={0.95} />
-        <mesh position={[-1.2, 0.38, 0.2]} castShadow>
-          <sphereGeometry args={[0.38, 32, 32]} />
-          <meshStandardMaterial color="#ce93d8" roughness={0.3} metalness={0.1} />
-        </mesh>
-      </group>
-
-      {/* Doctor Consultation Desk & Quiz Kiosk (กิจกรรม 5: แบบประเมิน) */}
-      <group position={[4.5, 0, -4.5]} rotation={[0, -Math.PI / 4, 0]}>
-        <DoctorDesk position={[0, 0, 0]} scale={0.9} />
-        <FlowerVase position={[0.8, 0.72, 0.2]} scale={0.65} />
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           🏥 INTERACTIVE LEARNING HUD (Based on Metaverse Zone 1 Activities 1-4)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 2.1, -7.8]} center transform scale={0.27}>
+      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.98)',
           padding: '24px',
