@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
+import RealisticNurse from '../characters/RealisticNurse';
 
 /**
  * HospitalNurseStation Component
@@ -189,99 +190,46 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════════
-          2. 3 NURSES BEHIND COUNTER (Exact Colors from Photo: Pink, Blue, Pink)
+          2. 3 REALISTIC HUMAN NURSES BEHIND COUNTER (Rigged 3D Female Models in Pink & Blue)
           ══════════════════════════════════════════════════════════════════════════════ */}
+      {/* Ergonomic Anti-Fatigue Platform Mat Behind Counter */}
+      <mesh position={[0, 0.06, 0.5]} castShadow receiveShadow>
+        <boxGeometry args={[4.4, 0.12, 1.4]} />
+        <meshStandardMaterial color="#334155" roughness={0.7} />
+      </mesh>
+
       {/* Nurse 1: Left (Pastel Pink Hospital Scrub) */}
-      <group position={[-1.1, 0.55, 0.35]} rotation={[0, 0.2, 0]}>
-        <mesh position={[0, 0.65, 0]} castShadow>
-          <cylinderGeometry args={[0.2, 0.24, 0.7, 16]} />
-          <meshStandardMaterial color="#f472b6" roughness={0.6} />
-        </mesh>
-        <mesh position={[0, 1.04, 0]}>
-          <cylinderGeometry args={[0.065, 0.075, 0.14, 12]} />
-          <meshStandardMaterial color="#fed7aa" roughness={0.5} />
-        </mesh>
-        <mesh position={[0, 1.23, 0]} castShadow>
-          <sphereGeometry args={[0.17, 16, 16]} />
-          <meshStandardMaterial color="#fde2d0" roughness={0.4} />
-        </mesh>
-        <mesh position={[0, 1.31, -0.03]}>
-          <sphereGeometry args={[0.18, 16, 16]} />
-          <meshStandardMaterial color="#292524" roughness={0.7} />
-        </mesh>
-        {/* Nurse Cap */}
-        <mesh position={[0, 1.41, 0.02]} rotation={[-0.2, 0, 0]}>
-          <boxGeometry args={[0.2, 0.06, 0.13]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.2} />
-        </mesh>
-        <mesh position={[0, 1.42, 0.08]} rotation={[-0.2, 0, 0]}>
-          <boxGeometry args={[0.11, 0.015, 0.01]} />
-          <meshStandardMaterial color="#ef4444" />
-        </mesh>
-      </group>
+      <RealisticNurse
+        position={[-1.15, 0.12, 0.45]}
+        rotation={[0, 0.22, 0]}
+        scale={0.98}
+        uniformColor="pink"
+        armPose="desk"
+        timeOffset={1.2}
+      />
 
-      {/* Nurse 2: Center (Soft Sky Blue Hospital Scrub - Head Nurse) */}
-      <group position={[0, 0.55, 0.45]}>
-        <mesh position={[0, 0.65, 0]} castShadow>
-          <cylinderGeometry args={[0.21, 0.25, 0.7, 16]} />
-          <meshStandardMaterial color="#60a5fa" roughness={0.6} />
-        </mesh>
-        {/* Stethoscope */}
-        <mesh position={[0, 0.94, 0.13]}>
-          <torusGeometry args={[0.11, 0.014, 8, 24, Math.PI]} />
-          <meshStandardMaterial color="#334155" metalness={0.5} />
-        </mesh>
-        <mesh position={[0, 1.04, 0]}>
-          <cylinderGeometry args={[0.065, 0.075, 0.14, 12]} />
-          <meshStandardMaterial color="#fed7aa" roughness={0.5} />
-        </mesh>
-        <mesh position={[0, 1.23, 0]} castShadow>
-          <sphereGeometry args={[0.17, 16, 16]} />
-          <meshStandardMaterial color="#fde2d0" roughness={0.4} />
-        </mesh>
-        <mesh position={[0, 1.31, -0.03]}>
-          <sphereGeometry args={[0.18, 16, 16]} />
-          <meshStandardMaterial color="#1c1917" roughness={0.7} />
-        </mesh>
-        {/* Nurse Cap */}
-        <mesh position={[0, 1.41, 0.02]} rotation={[-0.2, 0, 0]}>
-          <boxGeometry args={[0.2, 0.06, 0.13]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.2} />
-        </mesh>
-        <mesh position={[0, 1.42, 0.08]} rotation={[-0.2, 0, 0]}>
-          <boxGeometry args={[0.11, 0.015, 0.01]} />
-          <meshStandardMaterial color="#0284c7" />
-        </mesh>
-      </group>
+      {/* Nurse 2: Center (Soft Sky Blue Hospital Scrub - Head Nurse with Stethoscope) */}
+      <RealisticNurse
+        position={[0, 0.12, 0.55]}
+        rotation={[0, 0, 0]}
+        scale={0.98}
+        uniformColor="blue"
+        hasStethoscope={true}
+        armPose="welcoming"
+        timeOffset={0}
+      />
 
-      {/* Nurse 3: Right (Pastel Pink Hospital Scrub) */}
-      <group position={[1.1, 0.55, 0.35]} rotation={[0, -0.2, 0]}>
-        <mesh position={[0, 0.65, 0]} castShadow>
-          <cylinderGeometry args={[0.2, 0.24, 0.7, 16]} />
-          <meshStandardMaterial color="#f472b6" roughness={0.6} />
-        </mesh>
-        <mesh position={[0, 1.04, 0]}>
-          <cylinderGeometry args={[0.065, 0.075, 0.14, 12]} />
-          <meshStandardMaterial color="#fed7aa" roughness={0.5} />
-        </mesh>
-        <mesh position={[0, 1.23, 0]} castShadow>
-          <sphereGeometry args={[0.17, 16, 16]} />
-          <meshStandardMaterial color="#fde2d0" roughness={0.4} />
-        </mesh>
-        <mesh position={[0, 1.31, -0.03]}>
-          <sphereGeometry args={[0.18, 16, 16]} />
-          <meshStandardMaterial color="#451a03" roughness={0.7} />
-        </mesh>
-        {/* Nurse Cap */}
-        <mesh position={[0, 1.41, 0.02]} rotation={[-0.2, 0, 0]}>
-          <boxGeometry args={[0.2, 0.06, 0.13]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.2} />
-        </mesh>
-        <mesh position={[0, 1.42, 0.08]} rotation={[-0.2, 0, 0]}>
-          <boxGeometry args={[0.11, 0.015, 0.01]} />
-          <meshStandardMaterial color="#ef4444" />
-        </mesh>
-      </group>
+      {/* Nurse 3: Right (Pastel Pink Hospital Scrub, Typing on Computer) */}
+      <RealisticNurse
+        position={[1.15, 0.12, 0.45]}
+        rotation={[0, -0.22, 0]}
+        scale={0.98}
+        uniformColor="pink"
+        armPose="typing"
+        timeOffset={2.4}
+      />
+
+
 
       {/* ══════════════════════════════════════════════════════════════════════════════
           3. GRAND BACKDROP ARCHITECTURE (Matching Reference Layout Perfectly)

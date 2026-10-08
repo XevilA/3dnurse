@@ -5,7 +5,7 @@ import PlayerController from '../player/PlayerController';
 import RealPlant from '../decorations/RealPlant';
 import RealTree from '../decorations/RealTree';
 import HospitalNurseStation from '../furniture/HospitalNurseStation';
-import HospitalWaitingLounge from '../furniture/HospitalWaitingLounge';
+import RealisticHospitalSofa from '../furniture/RealisticHospitalSofa';
 import HospitalWheelchair from '../furniture/HospitalWheelchair';
 import InteractiveSeat from '../furniture/InteractiveSeat';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
@@ -223,11 +223,11 @@ export default function LobbyRoom() {
         id="lobby_lounge_right"
         name="โซฟารอรับบริการ ด้านหน้าขวา"
         type="sofa"
-        position={[3.2, 0, 0.2]}
+        position={[3.4, 0, 0.2]}
         rotation={[0, -Math.PI * 0.45, 0]}
         seatOffset={[0, 0.44, 0.05]}
       >
-        <HospitalWaitingLounge position={[0, 0, 0]} scale={1.05} reverseLayout={true} />
+        <RealisticHospitalSofa position={[0, 0, 0]} scale={1.05} reverseLayout={true} />
       </InteractiveSeat>
 
       {/* Left Waiting Lounge (Midground left) */}
@@ -235,12 +235,15 @@ export default function LobbyRoom() {
         id="lobby_lounge_left"
         name="โซฟารอรับบริการ ด้านซ้าย"
         type="sofa"
-        position={[-4.5, 0, -0.6]}
+        position={[-3.8, 0, 0.4]}
         rotation={[0, Math.PI * 0.45, 0]}
         seatOffset={[0, 0.44, 0.05]}
       >
-        <HospitalWaitingLounge position={[0, 0, 0]} scale={1.05} />
+        <RealisticHospitalSofa position={[0, 0, 0]} scale={1.05} />
       </InteractiveSeat>
+
+
+
 
       {/* ── Patient Mobility: 2 Real Hospital Wheelchairs (Drivable!) ── */}
       <InteractiveSeat
