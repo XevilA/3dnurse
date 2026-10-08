@@ -227,7 +227,7 @@ export default function LobbyRoom() {
         rotation={[0, -Math.PI * 0.45, 0]}
         seatOffset={[0, 0.44, 0.05]}
       >
-        <RealisticHospitalSofa position={[0, 0, 0]} scale={1.05} reverseLayout={true} />
+        <RealisticHospitalSofa position={[0, 0, 0]} scale={1.05} layout="right" />
       </InteractiveSeat>
 
       {/* Left Waiting Lounge (Midground left) */}
@@ -239,7 +239,7 @@ export default function LobbyRoom() {
         rotation={[0, Math.PI * 0.45, 0]}
         seatOffset={[0, 0.44, 0.05]}
       >
-        <RealisticHospitalSofa position={[0, 0, 0]} scale={1.05} />
+        <RealisticHospitalSofa position={[0, 0, 0]} scale={1.05} layout="left" />
       </InteractiveSeat>
 
 

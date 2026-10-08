@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import RealisticNurse from '../characters/RealisticNurse';
+import RealisticComputerWorkstation from './RealisticComputerWorkstation';
 
 /**
  * HospitalNurseStation Component
@@ -16,6 +17,7 @@ import RealisticNurse from '../characters/RealisticNurse';
  */
 export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation = [0, 0, 0], scale = 1 }) {
   const queueBlinkRef = useRef();
+  const [showHisChart, setShowHisChart] = useState(false);
 
   useFrame(({ clock }) => {
     if (queueBlinkRef.current) {
@@ -102,45 +104,146 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
         </group>
 
         {/* ── Desktop Equipment on Counter Top ── */}
-        {/* Computer Monitor 1 (Left Nurse) */}
-        <group position={[-1.15, 1.09, 1.45]} rotation={[0, 0.32, 0]}>
-          <mesh position={[0, 0.015, 0]}>
-            <boxGeometry args={[0.2, 0.02, 0.16]} />
-            <meshStandardMaterial color="#334155" metalness={0.5} />
-          </mesh>
-          <mesh position={[0, 0.14, 0]}>
-            <cylinderGeometry args={[0.018, 0.018, 0.25, 12]} />
-            <meshStandardMaterial color="#64748b" metalness={0.6} />
-          </mesh>
-          <mesh position={[0, 0.28, 0]} castShadow>
-            <boxGeometry args={[0.56, 0.34, 0.03]} />
-            <meshStandardMaterial color="#1e293b" />
-          </mesh>
-          <mesh position={[0, 0.28, 0.016]}>
-            <planeGeometry args={[0.52, 0.3]} />
-            <meshBasicMaterial color="#38bdf8" />
-          </mesh>
+        {/* Realistic Computer Workstation 1 (Left Nurse - Triage HIS) */}
+        <group
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowHisChart(true);
+          }}
+          style={{ cursor: 'pointer' }}
+        >
+          <RealisticComputerWorkstation
+            position={[-1.15, 1.09, 1.48]}
+            rotation={[0, Math.PI + 0.52, 0]}
+            scale={0.92}
+            screenTheme="triage"
+            nurseName="พว. อารียา จิตต์ปราณี (พยาบาลคัดกรอง)"
+          />
         </group>
 
-        {/* Computer Monitor 2 (Right Nurse) */}
-        <group position={[1.15, 1.09, 1.45]} rotation={[0, -0.32, 0]}>
-          <mesh position={[0, 0.015, 0]}>
-            <boxGeometry args={[0.2, 0.02, 0.16]} />
-            <meshStandardMaterial color="#334155" metalness={0.5} />
-          </mesh>
-          <mesh position={[0, 0.14, 0]}>
-            <cylinderGeometry args={[0.018, 0.018, 0.25, 12]} />
-            <meshStandardMaterial color="#64748b" metalness={0.6} />
-          </mesh>
-          <mesh position={[0, 0.28, 0]} castShadow>
-            <boxGeometry args={[0.56, 0.34, 0.03]} />
-            <meshStandardMaterial color="#1e293b" />
-          </mesh>
-          <mesh position={[0, 0.28, 0.016]}>
-            <planeGeometry args={[0.52, 0.3]} />
-            <meshBasicMaterial color="#a7f3d0" />
-          </mesh>
+        {/* Realistic Computer Workstation 2 (Right Nurse - Newborn HIS) */}
+        <group
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowHisChart(true);
+          }}
+          style={{ cursor: 'pointer' }}
+        >
+          <RealisticComputerWorkstation
+            position={[1.15, 1.09, 1.48]}
+            rotation={[0, Math.PI - 0.52, 0]}
+            scale={0.92}
+            screenTheme="newborn"
+            nurseName="พว. นันทนา สุขสมบูรณ์ (พยาบาลเด็กอ่อน)"
+          />
         </group>
+
+        {/* Interactive HIS Medical Chart Modal */}
+        {showHisChart && (
+          <Html position={[0, 1.6, 1.8]} center distanceFactor={8} zIndexRange={[100, 0]}>
+            <div style={{
+              width: '420px',
+              background: '#ffffff',
+              borderRadius: '16px',
+              padding: '20px 24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              color: '#0f172a'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '24px' }}>🏥</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0369a1' }}>
+                      ระบบเวชระเบียนผู้ป่วยนอก (OPD HIS)
+                    </h3>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>โรงพยาบาลศูนย์แม่และเด็ก • ตรวจคัดกรอง</span>
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowHisChart(false);
+                  }}
+                  style={{
+                    background: '#f1f5f9',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    color: '#64748b'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ background: '#f0f9ff', padding: '10px 14px', borderRadius: '10px', marginBottom: '14px', border: '1px solid #bae6fd' }}>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#0369a1' }}>
+                  HN: 67-089421 • คุณสมใจ รักลูก
+                </div>
+                <div style={{ fontSize: '12px', color: '#475569', marginTop: '2px' }}>
+                  การวินิจฉัย: มารดาพักฟื้นหลังคลอดธรรมชาติ Day 3 • สิทธิ: ประกันสุขภาพถ้วนหน้า
+                </div>
+              </div>
+
+              {/* Vitals Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>ความดันโลหิต (BP)</div>
+                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7' }}>118/76 <span style={{ fontSize: '11px', fontWeight: 'normal' }}>mmHg</span></div>
+                </div>
+                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>ชีพจร (HR)</div>
+                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7' }}>78 <span style={{ fontSize: '11px', fontWeight: 'normal' }}>bpm</span></div>
+                </div>
+                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>อุณหภูมิกาย (Temp)</div>
+                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7' }}>36.6 <span style={{ fontSize: '11px', fontWeight: 'normal' }}>°C</span></div>
+                </div>
+                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>ออกซิเจนในเลือด (SpO2)</div>
+                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#16a34a' }}>99 <span style={{ fontSize: '11px', fontWeight: 'normal' }}>%</span></div>
+                </div>
+              </div>
+
+              {/* Assessment Notes */}
+              <div style={{ fontSize: '12px', lineHeight: '1.5', color: '#334155', background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
+                <div style={{ fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>บันทึกทางการพยาบาล:</div>
+                <div>• แผลฝีเย็บแห้งดี ไม่บวมแดง ไม่มีเลือดออกผิดปกติ</div>
+                <div>• น้ำนมเริ่มไหล เต้านมนุ่ม ไม่คัดตึง หัวนมปกติ</div>
+                <div>• มารดาสดชื่น ทรงตัวได้ดี พร้อมรับคำแนะนำ 10 ฐานการเรียนรู้</div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowHisChart(false);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    background: '#0284c7',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✓ รับใบคิว & เริ่มบทเรียน
+                </button>
+              </div>
+            </div>
+          </Html>
+        )}
+
+
 
         {/* White Hydrangea / Rose Floral Vase (Left Counter) */}
         <group position={[-1.9, 1.09, 1.15]}>
