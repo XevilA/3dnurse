@@ -7,6 +7,8 @@ import BabyBathtub from '../furniture/BabyBathtub';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import Pillows from '../decorations/Pillows';
+import DoctorDesk from '../furniture/DoctorDesk';
+import NursingChair from '../furniture/NursingChair';
 
 /**
  * NewbornCare2Room — ห้องที่ 2: การอาบน้ำและการดูแลความสะอาดทารก การเปลี่ยนผ้าอ้อม
@@ -14,8 +16,8 @@ import Pillows from '../decorations/Pillows';
  * Implements 100% of "ห้องที่ 2 การอาบน้ำและการดูแลความสะอาดทารก การเปลี่ยนผ้าอ้อม.docx"
  * and matches reference images img_000.jpg (top-down layout) and img_001.png (bathtub reference):
  * - Top-down Layout per img_000.jpg:
- *     - Top-Left: เก้าอี้โซฟา (Cream armchair/sofa)
- *     - Top-Right: เตียงทารก (Baby crib with swaddled sleeping baby)
+ *     - Top-Left: เก้าอี้โซฟา (Cream armchair/sofa facing TV)
+ *     - Top-Right: โต๊ะภารกิจการอาบน้ำและเปลี่ยนผ้าอ้อม (Mission Station) + Baby crib
  *     - Left Wall: TV + ชั้นวางของ/ของใช้ทารก (Multi-tier cubby shelving)
  *     - Center: โต๊ะเปล่า (Wooden table with 2 bathtubs: Blue & Pink, plus accessories)
  *     - Bottom Wall: อ่างล้างจาน (Double sink) + ถังขยะ 2 ใบ + ประตู (Doorway)
@@ -26,7 +28,7 @@ import Pillows from '../decorations/Pillows';
  *     - 4.3 ปฏิบัติการอาบน้ำตามขั้นตอน 1.1–1.14 -> ✓
  */
 export default function NewbornCare2Room() {
-  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby, openLightbox } = useStore();
 
   // ── TV Slides state ──
   const [tvSlide, setTvSlide] = useState(0);
@@ -227,12 +229,126 @@ export default function NewbornCare2Room() {
       />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. TOP WALL (NORTH per img_000.jpg):
-             - Left: เก้าอี้โซฟา (Armchair / Sofa)
-             - Right: เตียงทารก (Baby crib with swaddled sleeping baby)
+          1. TOP WALL (NORTH per img_000.jpg & Client Note):
+             - Left: เก้าอี้โซฟา (Armchair rotated facing TV on West wall)
+             - Center: เตียงทารก (Baby crib with swaddled sleeping baby)
+             - Right: โต๊ะภารกิจการอาบน้ำและเปลี่ยนผ้าอ้อม (Top-Right Mission Station)
+             - Wall Posters: Click-to-enlarge clinical infographics
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* เก้าอี้โซฟา (Top-Left, X: -2.8, Z: -4.8) */}
-      <group position={[-2.8, 0, -4.8]} rotation={[0, 0, 0]}>
+      {/* Wall Poster 1: การเตรียมอุปกรณ์อาบน้ำ 6 ชนิด */}
+      <group position={[-0.8, 2.8, -6.35]}>
+        <mesh
+          castShadow
+          className="cursor-pointer"
+          onClick={() => openLightbox({
+            src: '/references/room2/img_004.jpeg',
+            title: 'การเตรียมอุปกรณ์อาบน้ำและทำความสะอาดทารก 6 ชนิด',
+            caption: 'อ่าง 2 ใบ, ผ้าขนหนู, สบู่สูตรอ่อนโยน, ฟองน้ำ, สำลีก้อนต้มสุก, เสื้อผ้าและผ้าอ้อม',
+            category: 'การดูแลทารกแรกเกิด (Nursery 202)',
+            clinicalDetails: [
+              '1. อ่างอาบน้ำสะอาด 2 อ่าง ใส่น้ำอุ่น 36–37°C สูง 2–3 นิ้ว',
+              '2. ผ้าขนหนูเช็ดตัว 1 ผืน และผ้าห่อตัว 1 ผืน',
+              '3. สบู่เหลว-ยาสระผมสูตรอ่อนโยนสำหรับทารก (pH-neutral, Tear-free)',
+              '4. ผ้าผืนเล็กหรือฟองน้ำนุ่มสำหรับอาบน้ำ',
+              '5. สำลีก้อนชุบน้ำต้มสุก/0.9% NSS บิดหมาด 2 ก้อน เช็ดตาข้างละ 1 ก้อน',
+              '6. เสื้อผ้าชุดใหม่ ผ้าอ้อมสำเร็จรูป และอุปกรณ์ทำความสะอาดสายสะดือ'
+            ]
+          })}
+        >
+          <boxGeometry args={[1.8, 1.3, 0.04]} />
+          <meshStandardMaterial color="#f0fdfa" roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 0, 0.025]}>
+          <boxGeometry args={[1.88, 1.38, 0.02]} />
+          <meshStandardMaterial color="#0f766e" roughness={0.3} />
+        </mesh>
+        <Html position={[0, 0, 0.05]} center transform scale={0.22}>
+          <div
+            onClick={() => openLightbox({
+              src: '/references/room2/img_004.jpeg',
+              title: 'การเตรียมอุปกรณ์อาบน้ำและทำความสะอาดทารก 6 ชนิด',
+              caption: 'อ่าง 2 ใบ, ผ้าขนหนู, สบู่สูตรอ่อนโยน, ฟองน้ำ, สำลีก้อนต้มสุก, เสื้อผ้าและผ้าอ้อม',
+              category: 'การดูแลทารกแรกเกิด (Nursery 202)',
+              clinicalDetails: [
+                '1. อ่างอาบน้ำสะอาด 2 อ่าง ใส่น้ำอุ่น 36–37°C สูง 2–3 นิ้ว',
+                '2. ผ้าขนหนูเช็ดตัว 1 ผืน และผ้าห่อตัว 1 ผืน',
+                '3. สบู่เหลว-ยาสระผมสูตรอ่อนโยนสำหรับทารก (pH-neutral, Tear-free)',
+                '4. ผ้าผืนเล็กหรือฟองน้ำนุ่มสำหรับอาบน้ำ',
+                '5. สำลีก้อนชุบน้ำต้มสุก/0.9% NSS บิดหมาด 2 ก้อน เช็ดตาข้างละ 1 ก้อน',
+                '6. เสื้อผ้าชุดใหม่ ผ้าอ้อมสำเร็จรูป และอุปกรณ์ทำความสะอาดสายสะดือ'
+              ]
+            })}
+            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-teal-500 shadow-xl hover:scale-105 transition overflow-hidden"
+            style={{ width: '340px' }}
+          >
+            <img
+              src="/references/room2/img_004.jpeg"
+              alt="อุปกรณ์อาบน้ำ"
+              style={{ width: '100%', height: '170px', objectFit: 'cover', borderRadius: '6px' }}
+            />
+            <div className="text-center py-1 bg-teal-50 rounded mt-1">
+              <span className="text-[11px] font-bold text-teal-900">📦 การเตรียมอุปกรณ์ 6 ชนิด (คลิกดูภาพขยาย)</span>
+            </div>
+          </div>
+        </Html>
+      </group>
+
+      {/* Wall Poster 2: ขั้นตอนการอาบน้ำและทำความสะอาดทารก */}
+      <group position={[2.2, 2.8, -6.35]}>
+        <mesh
+          castShadow
+          className="cursor-pointer"
+          onClick={() => openLightbox({
+            src: '/references/room2/img_007.png',
+            title: 'ขั้นตอนการอาบน้ำและการทำความสะอาดร่างกายทารก',
+            caption: 'การประคองศีรษะ ฟอกสบู่อ่าง 1 ล้างน้ำสะอาดอ่าง 2',
+            category: 'การดูแลทารกแรกเกิด (Nursery 202)',
+            clinicalDetails: [
+              '1. อุ้มทารกประคองศีรษะและคอด้วยอุ้งฝ่ามืออย่างมั่นคง',
+              '2. ใช้ผ้าหรือฟองน้ำทำความสะอาดด้วยสบู่อ่อนโยนจากลำตัว แขน และขาในอ่างที่ 1',
+              '3. พลิกตัวทารกพาดแขน ใช้นิ้ว 4 นิ้วล็อคใต้รักแร้ ล้างแผ่นหลังในอ่างที่ 2 ด้วยน้ำสะอาด',
+              '4. วางทารกลงบนผ้าขนหนู ซับตัวให้แห้งสนิททันทีเพื่อป้องกันอุณหภูมิกายต่ำ'
+            ]
+          })}
+        >
+          <boxGeometry args={[1.8, 1.3, 0.04]} />
+          <meshStandardMaterial color="#f0fdfa" roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 0, 0.025]}>
+          <boxGeometry args={[1.88, 1.38, 0.02]} />
+          <meshStandardMaterial color="#0d9488" roughness={0.3} />
+        </mesh>
+        <Html position={[0, 0, 0.05]} center transform scale={0.22}>
+          <div
+            onClick={() => openLightbox({
+              src: '/references/room2/img_007.png',
+              title: 'ขั้นตอนการอาบน้ำและการทำความสะอาดร่างกายทารก',
+              caption: 'การประคองศีรษะ ฟอกสบู่อ่าง 1 ล้างน้ำสะอาดอ่าง 2',
+              category: 'การดูแลทารกแรกเกิด (Nursery 202)',
+              clinicalDetails: [
+                '1. อุ้มทารกประคองศีรษะและคอด้วยอุ้งฝ่ามืออย่างมั่นคง',
+                '2. ใช้ผ้าหรือฟองน้ำทำความสะอาดด้วยสบู่อ่อนโยนจากลำตัว แขน และขาในอ่างที่ 1',
+                '3. พลิกตัวทารกพาดแขน ใช้นิ้ว 4 นิ้วล็อคใต้รักแร้ ล้างแผ่นหลังในอ่างที่ 2 ด้วยน้ำสะอาด',
+                '4. วางทารกลงบนผ้าขนหนู ซับตัวให้แห้งสนิททันทีเพื่อป้องกันอุณหภูมิกายต่ำ'
+              ]
+            })}
+            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-teal-600 shadow-xl hover:scale-105 transition overflow-hidden"
+            style={{ width: '340px' }}
+          >
+            <img
+              src="/references/room2/img_007.png"
+              alt="ขั้นตอนการอาบน้ำ"
+              style={{ width: '100%', height: '170px', objectFit: 'cover', borderRadius: '6px' }}
+            />
+            <div className="text-center py-1 bg-teal-50 rounded mt-1">
+              <span className="text-[11px] font-bold text-teal-900">🛁 ขั้นตอนการอาบน้ำทารก (คลิกดูภาพขยาย)</span>
+            </div>
+          </div>
+        </Html>
+      </group>
+
+      {/* เก้าอี้โซฟาคุณแม่ (หันหน้าเข้าหาทีวีตาม Requirement: rotation=[0, -Math.PI / 2, 0]) */}
+      <group position={[-3.2, 0, -2.8]} rotation={[0, -Math.PI / 2, 0]}>
         <mesh position={[0, 0.35, 0]} castShadow receiveShadow>
           <boxGeometry args={[1.2, 0.5, 1.1]} />
           <meshStandardMaterial color="#fef3c7" roughness={0.8} />
@@ -249,14 +365,14 @@ export default function NewbornCare2Room() {
         ))}
         <Pillows position={[0, 0.65, 0.1]} scale={0.9} />
         <Html position={[0, 1.5, 0]} center distanceFactor={10}>
-          <div className="select-none bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded shadow">
-            🛋️ เก้าอี้โซฟาคุณแม่
+          <div className="select-none bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2.5 py-0.5 rounded shadow">
+            🛋️ โซฟาคุณแม่ (หันหน้าดูทีวี)
           </div>
         </Html>
       </group>
 
-      {/* เตียงทารก (Top-Right, X: 2.2, Z: -4.8) */}
-      <group position={[2.2, 0, -4.8]}>
+      {/* เตียงทารก (Baby crib with swaddled sleeping baby at X: 1.2, Z: -4.8) */}
+      <group position={[1.2, 0, -4.8]}>
         {/* Crib Base Frame */}
         <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
           <boxGeometry args={[1.5, 0.06, 0.95]} />
@@ -320,6 +436,33 @@ export default function NewbornCare2Room() {
         </Html>
       </group>
 
+      {/* ── Top-Right Mission Station (Requirement: มุมขวาบน มีโต๊ะ และมีภารกิจการอาบน้ำและเปลี่ยนผ้าอ้อม) ── */}
+      <group position={[4.6, 0, -4.6]} rotation={[0, -Math.PI * 0.75, 0]}>
+        <DoctorDesk position={[0, 0, 0]} scale={0.88} />
+        <NursingChair position={[0, 0, 0.7]} rotation={[0, Math.PI, 0]} scale={0.85} />
+        {/* Mission Card Envelope on Desk */}
+        <group position={[0, 0.88, 0]} onClick={() => setActiveModal('missionDesk')}>
+          <mesh castShadow receiveShadow className="cursor-pointer">
+            <boxGeometry args={[0.36, 0.02, 0.28]} />
+            <meshStandardMaterial color="#0f766e" roughness={0.3} />
+          </mesh>
+          <mesh position={[0, 0.015, 0]}>
+            <boxGeometry args={[0.32, 0.01, 0.24]} />
+            <meshStandardMaterial color="#f0fdfa" roughness={0.4} />
+          </mesh>
+        </group>
+        <Html position={[0, 1.45, 0]} center distanceFactor={11}>
+          <button
+            onClick={() => setActiveModal('missionDesk')}
+            className="cursor-pointer select-none px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 border-2 border-white animate-bounce"
+            style={{ background: 'linear-gradient(135deg, #0f766e, #042f2e)' }}
+          >
+            <span>📋</span>
+            <span>ภารกิจอาบน้ำ & ผ้าอ้อม</span>
+          </button>
+        </Html>
+      </group>
+
       {/* ══════════════════════════════════════════════════════════════════════════
           2. LEFT WALL (WEST per img_000.jpg):
              - TV on Wall
@@ -344,15 +487,38 @@ export default function NewbornCare2Room() {
               <span className="font-bold text-teal-300 text-xs flex items-center gap-1">
                 📺 สื่อให้ความรู้การอาบน้ำทารก (สไลด์ {tvSlide + 1}/8)
               </span>
-              <button
-                onClick={() => setShowTvModal(true)}
-                className="bg-teal-600 hover:bg-teal-500 text-white px-2 py-0.5 rounded text-[11px] font-bold"
-              >
-                🔍 ขยายเต็มจอ
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => openLightbox({
+                    src: tvSlidesData[tvSlide].img,
+                    title: tvSlidesData[tvSlide].title,
+                    caption: 'ภาพสื่อการเรียนรู้การอาบน้ำและดูแลสุขอนามัยทารก',
+                    category: 'การดูแลทารกแรกเกิด (Nursery 202)',
+                    clinicalDetails: tvSlidesData[tvSlide].bullets
+                  })}
+                  className="bg-sky-600 hover:bg-sky-500 text-white px-2 py-0.5 rounded text-[11px] font-bold shadow"
+                >
+                  🔍 ขยายภาพ
+                </button>
+                <button
+                  onClick={() => setShowTvModal(true)}
+                  className="bg-teal-600 hover:bg-teal-500 text-white px-2 py-0.5 rounded text-[11px] font-bold shadow"
+                >
+                  📖 ดูเต็มจอ
+                </button>
+              </div>
             </div>
 
-            <div className="my-1.5 bg-slate-800 p-2 rounded border border-slate-700 flex gap-2.5 items-center">
+            <div
+              className="my-1.5 bg-slate-800 p-2 rounded border border-slate-700 flex gap-2.5 items-center cursor-pointer hover:bg-slate-750 transition"
+              onClick={() => openLightbox({
+                src: tvSlidesData[tvSlide].img,
+                title: tvSlidesData[tvSlide].title,
+                caption: 'คลิกดูภาพขยายความละเอียดสูง',
+                category: 'การดูแลทารกแรกเกิด (Nursery 202)',
+                clinicalDetails: tvSlidesData[tvSlide].bullets
+              })}
+            >
               <img
                 src={tvSlidesData[tvSlide].img}
                 alt={tvSlidesData[tvSlide].title}
@@ -363,6 +529,9 @@ export default function NewbornCare2Room() {
                 <p className="text-[10px] text-slate-300 mt-1 line-clamp-3 leading-relaxed">
                   {tvSlidesData[tvSlide].bullets[0]}
                 </p>
+                <span className="text-[9px] text-sky-400 font-semibold underline mt-1 inline-block">
+                  🔍 คลิกเพื่อขยายภาพ
+                </span>
               </div>
             </div>
 
@@ -586,6 +755,60 @@ export default function NewbornCare2Room() {
         ))}
       </group>
 
+      {/* Wall Poster 3 on East Wall: การเช็ดตัวและการทำความสะอาดดวงตา */}
+      <group position={[6.35, 2.8, -2.6]} rotation={[0, -Math.PI / 2, 0]}>
+        <mesh
+          castShadow
+          className="cursor-pointer"
+          onClick={() => openLightbox({
+            src: '/references/room2/img_008.jpeg',
+            title: 'การเช็ดตัวและการทำความสะอาดดวงตาทารก',
+            caption: 'การซับแห้งซอกคอข้อพับ และการเช็ดตาด้วยสำลี 2 ก้อนจากหัวตาไปหางตา',
+            category: 'การดูแลทารกแรกเกิด (Nursery 202)',
+            clinicalDetails: [
+              '1. ซับตัวทารกให้แห้งสนิทอย่างเบามือ เน้นซอกคอ รักแร้ ขาหนีบ ข้อพับ',
+              '2. ใช้สำลีชุบน้ำต้มสุก/0.9% NSS บิดหมาด 2 ก้อน เช็ดตาทีละข้าง',
+              '3. ก้อนที่ 1: เช็ดตาข้างหนึ่งจากหัวตาไปหาหางตา (ห้ามเช็ดย้อนกลับ)',
+              '4. ก้อนที่ 2: เช็ดตาอีกข้างจากหัวตาไปหาหางตา (แยกสำลีเพื่อป้องกันการติดเชื้อข้ามตา)'
+            ]
+          })}
+        >
+          <boxGeometry args={[1.8, 1.3, 0.04]} />
+          <meshStandardMaterial color="#f0fdfa" roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 0, 0.025]}>
+          <boxGeometry args={[1.88, 1.38, 0.02]} />
+          <meshStandardMaterial color="#0f766e" roughness={0.3} />
+        </mesh>
+        <Html position={[0, 0, 0.05]} center transform scale={0.22}>
+          <div
+            onClick={() => openLightbox({
+              src: '/references/room2/img_008.jpeg',
+              title: 'การเช็ดตัวและการทำความสะอาดดวงตาทารก',
+              caption: 'การซับแห้งซอกคอข้อพับ และการเช็ดตาด้วยสำลี 2 ก้อนจากหัวตาไปหางตา',
+              category: 'การดูแลทารกแรกเกิด (Nursery 202)',
+              clinicalDetails: [
+                '1. ซับตัวทารกให้แห้งสนิทอย่างเบามือ เน้นซอกคอ รักแร้ ขาหนีบ ข้อพับ',
+                '2. ใช้สำลีชุบน้ำต้มสุก/0.9% NSS บิดหมาด 2 ก้อน เช็ดตาทีละข้าง',
+                '3. ก้อนที่ 1: เช็ดตาข้างหนึ่งจากหัวตาไปหาหางตา (ห้ามเช็ดย้อนกลับ)',
+                '4. ก้อนที่ 2: เช็ดตาอีกข้างจากหัวตาไปหาหางตา (แยกสำลีเพื่อป้องกันการติดเชื้อข้ามตา)'
+              ]
+            })}
+            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-teal-500 shadow-xl hover:scale-105 transition overflow-hidden"
+            style={{ width: '340px' }}
+          >
+            <img
+              src="/references/room2/img_008.jpeg"
+              alt="การเช็ดตา"
+              style={{ width: '100%', height: '170px', objectFit: 'cover', borderRadius: '6px' }}
+            />
+            <div className="text-center py-1 bg-teal-50 rounded mt-1">
+              <span className="text-[11px] font-bold text-teal-900">👁️ การเช็ดตา & ซับตัว (คลิกดูภาพขยาย)</span>
+            </div>
+          </div>
+        </Html>
+      </group>
+
       {/* Decorative Potted Plant */}
       <RealPlant type="potted" position={[5.2, 0, -5.0]} scale={1.0} />
 
@@ -595,6 +818,114 @@ export default function NewbornCare2Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           2D HTML INTERACTIVE OVERLAYS & MODALS
           ══════════════════════════════════════════════════════════════════════════ */}
+
+      {/* 0. Top-Right Corner Mission Station Modal */}
+      {activeModal === 'missionDesk' && (
+        <Html center>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-4 border-teal-600 max-h-[92vh] overflow-y-auto text-slate-800">
+              <div className="flex items-center justify-between border-b pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">📋</span>
+                  <div>
+                    <h2 className="text-lg font-bold text-teal-950">
+                      ภารกิจการอาบน้ำและเปลี่ยนผ้าอ้อมทารก
+                    </h2>
+                    <p className="text-xs text-slate-500">โต๊ะภารกิจปฏิบัติการประจำห้อง Nursery 202</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Mission Objectives List */}
+              <div className="mt-4 space-y-3">
+                <div className="p-3.5 rounded-xl border-2 bg-slate-50 border-slate-200 flex items-start gap-3">
+                  <span className="text-xl">📺</span>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-slate-900">ภารกิจที่ 1: เรียนรู้สื่อทีวี</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${tvViewedCount >= 8 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                        {tvViewedCount}/8 สไลด์ {tvViewedCount >= 8 ? '✓' : ''}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1">ศึกษาความรู้ 8 สไลด์เกี่ยวกับการจัดสภาพแวดล้อม อุณหภูมิน้ำ และขั้นตอนตามมาตรฐาน</p>
+                    <button
+                      onClick={() => {
+                        setActiveModal(null);
+                        setShowTvModal(true);
+                      }}
+                      className="mt-2 text-xs font-bold text-teal-700 hover:underline"
+                    >
+                      ➔ เปิดดูสไลด์การเรียนรู้
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl border-2 bg-slate-50 border-slate-200 flex items-start gap-3">
+                  <span className="text-xl">📦</span>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-slate-900">ภารกิจที่ 2: เตรียมอุปกรณ์ 6 ชนิด</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isAllEquipmentCollected ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                        {Object.values(collectedItems).filter(Boolean).length}/6 ชิ้น {isAllEquipmentCollected ? '✓' : ''}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1">หยิบอุปกรณ์จากชั้นวางของใช้ทารกมาวางบนโต๊ะอาบน้ำให้ครบ</p>
+                    <button
+                      onClick={() => setActiveModal('shelf')}
+                      className="mt-2 text-xs font-bold text-amber-700 hover:underline"
+                    >
+                      ➔ ไปที่ชั้นวางของใช้ทารก
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl border-2 bg-slate-50 border-slate-200 flex items-start gap-3">
+                  <span className="text-xl">🛁</span>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-slate-900">ภารกิจที่ 3: ฝึกอาบน้ำจริง 8 ขั้นตอน</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                        {bathingStep + 1}/8 ขั้นตอน
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1">ปฏิบัติการสระผมท่า Football hold, ฟอกสบู่อ่าง 1, ล้างน้ำสะอาดอ่าง 2 และเช็ดตา</p>
+                    <button
+                      disabled={!isAllEquipmentCollected}
+                      onClick={() => setActiveModal('bathingProcedure')}
+                      className="mt-2 text-xs font-bold text-teal-700 hover:underline disabled:opacity-40"
+                    >
+                      ➔ {isAllEquipmentCollected ? 'เริ่มขั้นตอนปฏิบัติจริง' : '(ต้องเตรียมอุปกรณ์ครบก่อน)'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 flex gap-2">
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm"
+                >
+                  ปิดหน้าต่าง
+                </button>
+                {isAllEquipmentCollected && (
+                  <button
+                    onClick={() => setActiveModal('bathingProcedure')}
+                    className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-sm shadow"
+                  >
+                    เริ่มอาบน้ำทารก ▶
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </Html>
+      )}
 
       {/* 1. Nursery Supplies Shelf Modal */}
       {activeModal === 'shelf' && (

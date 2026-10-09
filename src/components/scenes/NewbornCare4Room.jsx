@@ -14,7 +14,7 @@ import Pillows from '../decorations/Pillows';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
 export default function NewbornCare4Room() {
-  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby, openLightbox } = useStore();
   const [activeTab, setActiveTab] = useState(0); // 0: Safe Sleep Practice, 1: ตรวจความปลอดภัยในเปล, 2: สภาพแวดล้อมห้อง, 3: แบบประเมิน
 
   // ── กิจกรรม 1: ท่านอนที่ปลอดภัย (Safe Sleep Practice: Back to Sleep) ──
@@ -153,31 +153,183 @@ export default function NewbornCare4Room() {
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
       <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
 
-      {/* Safe Sleep Baby Crib (Beside Mother's Sofa - Room Sharing Demo) */}
-      <group position={[-4.0, 0, -3.2]} onClick={() => setActiveTab(1)}>
-        <BabyCrib position={[0, 0, 0]} scale={1.1}>
-          {!isHoldingBaby && (
-            <BabyAvatar
-              pose={sleepPose === 'supine' ? 'sleeping' : 'held'}
-              position={[0, 0, 0]}
-              scale={1.0}
-              withBlanket={true}
+      {/* ══════════════════════════════════════════════════════════════════════════
+          1. 3D SIDS CRIB SIMULATION (จำลอง 3 มิติ: พลิกตัวทารก & หยิบของออกจากเปล)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <group position={[-3.8, 0, -3.2]}>
+        <BabyCrib position={[0, 0, 0]} scale={1.12}>
+          {/* SIDS Risk Aura Indicator on Mattress */}
+          <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[1.2, 0.65]} />
+            <meshBasicMaterial
+              color={sleepPose === 'prone' || cribItems.some(i => !i.keep && i.status === 'in_crib') ? '#ef4444' : '#10b981'}
+              transparent
+              opacity={0.25}
             />
+          </mesh>
+
+          {/* Baby Avatar inside Crib with Supine/Prone Flip */}
+          {!isHoldingBaby && (
+            <group
+              position={[0, sleepPose === 'prone' ? 0.06 : 0, 0]}
+              rotation={sleepPose === 'prone' ? [Math.PI, 0, 0] : [0, 0, 0]}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelectSleepPose(sleepPose === 'prone' ? 'supine' : 'prone');
+              }}
+              className="cursor-pointer"
+            >
+              <BabyAvatar
+                pose="sleeping"
+                position={[0, 0, 0]}
+                scale={1.0}
+                withBlanket={cribItems.find(i => i.id === 'baby_clothing')?.status === 'kept'}
+                blanketColor={sleepPose === 'prone' ? '#fecaca' : '#bae6fd'}
+              />
+            </group>
+          )}
+
+          {/* ── 3D Interactive Crib Hazards (คลิกหยิบออกจากเปลได้) ── */}
+          {/* 1. หมอนหนุนศีรษะ (Soft Pillow Hazard) */}
+          {cribItems.find(i => i.id === 'pillow')?.status === 'in_crib' && (
+            <group
+              position={[0, 0.05, -0.22]}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleCribItem('pillow');
+              }}
+              className="cursor-pointer"
+            >
+              <mesh castShadow receiveShadow>
+                <boxGeometry args={[0.42, 0.06, 0.24]} />
+                <meshStandardMaterial color="#fbcfe8" roughness={0.9} />
+              </mesh>
+              <Html position={[0, 0.12, 0]} center distanceFactor={14}>
+                <span className="select-none bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap animate-pulse">
+                  ⚠️ หมอน (คลิกหยิบออก)
+                </span>
+              </Html>
+            </group>
+          )}
+
+          {/* 2. ตุ๊กตาผ้า / ของเล่นนุ่มนิ่ม (Plush Teddy Bear Hazard) */}
+          {cribItems.find(i => i.id === 'doll')?.status === 'in_crib' && (
+            <group
+              position={[0.34, 0.06, 0.08]}
+              rotation={[0, -0.4, 0.1]}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleCribItem('doll');
+              }}
+              className="cursor-pointer"
+            >
+              {/* Teddy Body */}
+              <mesh castShadow>
+                <sphereGeometry args={[0.075, 16, 16]} />
+                <meshStandardMaterial color="#d97706" roughness={0.95} />
+              </mesh>
+              {/* Teddy Head */}
+              <mesh position={[0, 0.085, 0]} castShadow>
+                <sphereGeometry args={[0.055, 16, 16]} />
+                <meshStandardMaterial color="#d97706" roughness={0.95} />
+              </mesh>
+              {/* Ears */}
+              <mesh position={[-0.04, 0.13, 0]}>
+                <sphereGeometry args={[0.02, 12, 12]} />
+                <meshStandardMaterial color="#b45309" />
+              </mesh>
+              <mesh position={[0.04, 0.13, 0]}>
+                <sphereGeometry args={[0.02, 12, 12]} />
+                <meshStandardMaterial color="#b45309" />
+              </mesh>
+              <Html position={[0, 0.18, 0]} center distanceFactor={14}>
+                <span className="select-none bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap animate-pulse">
+                  ⚠️ ตุ๊กตา (คลิกหยิบออก)
+                </span>
+              </Html>
+            </group>
+          )}
+
+          {/* 3. หมอนข้างนิ่มๆ (Bolster Hazard) */}
+          {cribItems.find(i => i.id === 'bolster')?.status === 'in_crib' && (
+            <group
+              position={[-0.32, 0.05, 0]}
+              rotation={[0, 0, Math.PI / 2]}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleCribItem('bolster');
+              }}
+              className="cursor-pointer"
+            >
+              <mesh castShadow receiveShadow>
+                <capsuleGeometry args={[0.045, 0.45, 8, 16]} />
+                <meshStandardMaterial color="#fed7aa" roughness={0.9} />
+              </mesh>
+              <Html position={[0, 0.15, 0]} center distanceFactor={14}>
+                <span className="select-none bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap animate-pulse">
+                  ⚠️ หมอนข้าง (คลิกหยิบออก)
+                </span>
+              </Html>
+            </group>
+          )}
+
+          {/* 4. ผ้านวมหนา / ผ้าห่มฟู (Thick Blanket Hazard) */}
+          {cribItems.find(i => i.id === 'thick_blanket')?.status === 'in_crib' && (
+            <group
+              position={[0, 0.04, 0.22]}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleCribItem('thick_blanket');
+              }}
+              className="cursor-pointer"
+            >
+              <mesh castShadow receiveShadow>
+                <boxGeometry args={[0.5, 0.05, 0.24]} />
+                <meshStandardMaterial color="#cbd5e1" roughness={0.95} />
+              </mesh>
+              <Html position={[0, 0.12, 0]} center distanceFactor={14}>
+                <span className="select-none bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap animate-pulse">
+                  ⚠️ ผ้านวมหนา (คลิกหยิบออก)
+                </span>
+              </Html>
+            </group>
           )}
         </BabyCrib>
-        <Html position={[0, 1.25, 0]} center distanceFactor={24}>
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setHoldingBaby(!isHoldingBaby);
-            }}
-            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 whitespace-nowrap"
-            style={{
-              background: isHoldingBaby ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #0284c7, #0369a1)',
-              border: '2px solid white'
-            }}
-          >
-            <span>{isHoldingBaby ? '🧸 วางลงเปล' : '👶 เปลนอน (คลิกอุ้ม)'}</span>
+
+        {/* 3D Crib Control Floating Action Bar */}
+        <Html position={[0, 1.45, 0]} center distanceFactor={16}>
+          <div className="flex flex-col items-center gap-1.5 select-none whitespace-nowrap">
+            {/* Flip Baby Button */}
+            <button
+              onClick={() => handleSelectSleepPose(sleepPose === 'prone' ? 'supine' : 'prone')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 border-2 border-white ${
+                sleepPose === 'prone'
+                  ? 'bg-rose-600 hover:bg-rose-500 animate-bounce'
+                  : 'bg-emerald-600 hover:bg-emerald-500'
+              }`}
+            >
+              <span>{sleepPose === 'prone' ? '⚠️ นอนคว่ำอยู่ (คลิกพลิกนอนหงาย ป้องกัน SIDS)' : '✓ นอนหงาย (Back to Sleep)'}</span>
+            </button>
+
+            {/* Quick Remove All Hazards Button */}
+            {cribItems.some(i => !i.keep && i.status === 'in_crib') ? (
+              <button
+                onClick={() => {
+                  setCribItems(prev => prev.map(i => i.keep ? i : { ...i, status: 'removed' }));
+                  setAct2Feedback({
+                    pass: true,
+                    msg: '✓ ยอดเยี่ยมมาก! เปลนอนปลอดภัย 100% ตามหลัก "Bare is Best" ไม่มีหมอน หมอนข้าง ตุ๊กตา หรือผ้านวมหนา'
+                  });
+                }}
+                className="px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-lg bg-amber-600 hover:bg-amber-500 border border-white transition transform hover:scale-105"
+              >
+                🧸 หยิบของอันตรายออกจากเปล ({cribItems.filter(i => !i.keep && i.status === 'in_crib').length} ชิ้น)
+              </button>
+            ) : (
+              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 shadow">
+                ✓ เปลโล่งปลอดภัย 100% (Bare is Best)
+              </span>
+            )}
           </div>
         </Html>
       </group>
@@ -201,6 +353,142 @@ export default function NewbornCare4Room() {
       <group position={[4.5, 0, -4.5]} rotation={[0, -Math.PI / 4, 0]}>
         <DoctorDesk position={[0, 0, 0]} scale={0.9} />
       </group>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          2. 4 MODERN DISPLAY SCREENS (4 หน้าจอแสดงผลทันสมัย กดซูมดูภาพได้)
+             Mounted along East Wall (X: 7.8, rotation: [0, -Math.PI / 2, 0])
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {[
+        {
+          id: 'screen1',
+          pos: [7.8, 2.7, -4.5],
+          title: '1. Back to Sleep (ท่านอนหงาย)',
+          sub: 'ลดความเสี่ยง SIDS มากกว่า 50%',
+          img: '/references/zone1_2/img_007.png',
+          details: [
+            '1. ท่านอนหงาย (Supine) เป็นท่านอนที่ปลอดภัยที่สุดสำหรับทารกแรกเกิด',
+            '2. หลอดลมอยู่เหนือหลอดอาหาร ป้องกันการสำลักและเปิดทางเดินหายใจให้โล่ง',
+            '3. ห้ามทารกนอนคว่ำหรือนอนตะแคงโดยไม่มีผู้ดูแลเด็ดขาด'
+          ]
+        },
+        {
+          id: 'screen2',
+          pos: [7.8, 2.7, -1.5],
+          title: '2. Bare is Best (เตียงนอนโล่ง)',
+          sub: 'ปราศจากหมอน หมอนข้าง และตุ๊กตา',
+          img: '/references/room1/img_001.jpg',
+          details: [
+            '1. ที่นอนต้องแน่น เรียบ และมีขนาดพอดีกับเปล ไม่มียุบตัว',
+            '2. นำหมอน หมอนข้าง ตุ๊กตาผ้า และผ้านวมหนาออกจากเปลทั้งหมด',
+            '3. ป้องกันสิ่งของตกลงมาปิดทับปากและจมูกทารกขณะหลับ'
+          ]
+        },
+        {
+          id: 'screen3',
+          pos: [7.8, 2.7, 1.5],
+          title: '3. Room-Sharing (นอนร่วมห้อง)',
+          sub: 'แยกเตียงเด็กลดความเสี่ยงนอนทับ',
+          img: '/references/zone1_2/img_000.png',
+          details: [
+            '1. วางเปลนอนของทารกไว้ข้างเตียงคุณแม่ในระยะเอื้อมถึง อย่างน้อย 6 เดือนแรก',
+            '2. ไม่ควรให้ทารกนอนบนเตียงเดียวกันกับผู้ใหญ่ (หลีกเลี่ยง Bed-sharing)',
+            '3. ช่วยลดความเสี่ยงจากการนอนทับ และช่วยให้ให้นมแม่สะดวก'
+          ]
+        },
+        {
+          id: 'screen4',
+          pos: [7.8, 2.7, 4.5],
+          title: '4. Safe Climate & Smoke-Free',
+          sub: 'อุณหภูมิ 25°C ปลอดควันบุหรี่ 100%',
+          img: '/references/room2/img_003.png',
+          details: [
+            '1. ปรับอุณหภูมิห้องให้อยู่ที่ประมาณ 25–26°C อากาศถ่ายเทสะดวก',
+            '2. ไม่สวมเสื้อผ้าหนาเกินไปจนร่างกายร้อนจัด (Overheating)',
+            '3. ห้องนอนและสภาพแวดล้อมต้องปลอดควันบุหรี่ทั้งมือสองและมือสาม 100%'
+          ]
+        }
+      ].map((scr, idx) => (
+        <group key={scr.id} position={scr.pos} rotation={[0, -Math.PI / 2, 0]}>
+          {/* Futuristic Backlit Frame */}
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[2.4, 1.6, 0.08]} />
+            <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
+          </mesh>
+          {/* LED Glowing Border */}
+          <mesh position={[0, 0, 0.035]}>
+            <boxGeometry args={[2.46, 1.66, 0.02]} />
+            <meshStandardMaterial color="#06b6d4" emissive="#0891b2" emissiveIntensity={0.6} roughness={0.2} />
+          </mesh>
+          {/* Glass Screen Face */}
+          <mesh position={[0, 0, 0.045]}>
+            <planeGeometry args={[2.32, 1.52]} />
+            <meshStandardMaterial color="#020617" roughness={0.1} />
+          </mesh>
+
+          {/* Interactive Screen Overlay */}
+          <Html position={[0, 0, 0.06]} center transform scale={0.21}>
+            <div
+              className="select-none bg-slate-950/95 text-white rounded-xl p-3 shadow-2xl flex flex-col justify-between border-2 border-cyan-400"
+              style={{ width: '420px', height: '280px' }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-cyan-800/60 pb-1.5">
+                <span className="text-cyan-400 font-bold text-xs flex items-center gap-1.5">
+                  🖥️ หน้าจออัจฉริยะ {idx + 1}/4
+                </span>
+                <button
+                  onClick={() => openLightbox({
+                    src: scr.img,
+                    title: scr.title,
+                    caption: scr.sub,
+                    category: 'สภาพแวดล้อมที่ปลอดภัย (Nursery 204)',
+                    clinicalDetails: scr.details
+                  })}
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow flex items-center gap-1"
+                >
+                  🔍 ขยายภาพ
+                </button>
+              </div>
+
+              {/* Screen Graphic & Info */}
+              <div
+                className="my-1.5 flex-1 relative bg-slate-900 rounded-lg overflow-hidden border border-slate-800 cursor-pointer flex items-center justify-center group"
+                onClick={() => openLightbox({
+                  src: scr.img,
+                  title: scr.title,
+                  caption: scr.sub,
+                  category: 'สภาพแวดล้อมที่ปลอดภัย (Nursery 204)',
+                  clinicalDetails: scr.details
+                })}
+              >
+                <img
+                  src={scr.img}
+                  alt={scr.title}
+                  className="w-full h-full object-cover p-1 group-hover:scale-105 transition"
+                />
+                <div className="absolute bottom-1 inset-x-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded text-center">
+                  <div className="font-bold text-cyan-200 text-xs truncate">{scr.title}</div>
+                  <div className="text-[10px] text-slate-300 truncate">{scr.sub}</div>
+                </div>
+              </div>
+
+              {/* Bottom Clinical Note */}
+              <div className="pt-1 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 px-1">
+                <span>มาตรฐานความปลอดภัย AAP & WHO</span>
+                <span className="text-cyan-400 font-semibold underline cursor-pointer" onClick={() => openLightbox({
+                  src: scr.img,
+                  title: scr.title,
+                  caption: scr.sub,
+                  category: 'สภาพแวดล้อมที่ปลอดภัย (Nursery 204)',
+                  clinicalDetails: scr.details
+                })}>
+                  คลิกดูรายละเอียด ➔
+                </span>
+              </div>
+            </div>
+          </Html>
+        </group>
+      ))}
 
       {/* ══════════════════════════════════════════════════════════════════════════
           🏠 INTERACTIVE LEARNING HUD (Nursery 204: Safe Sleep Environment)

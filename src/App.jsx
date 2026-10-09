@@ -5,6 +5,8 @@ import useStore from './store/useStore';
 import HUD from './components/ui/HUD';
 import SuccessModal from './components/ui/SuccessModal';
 import GTAControlsHUD from './components/ui/GTAControlsHUD';
+import ImageViewerModal from './components/ui/ImageViewerModal';
+import RoomConfirmationModal from './components/ui/RoomConfirmationModal';
 
 // ── Room scenes ──
 import LobbyRoom from './components/scenes/LobbyRoom';
@@ -167,7 +169,18 @@ export default function App() {
   if (typeof window !== 'undefined') window.__useStore = useStore;
   const currentRoom = useStore((s) => s.currentRoom);
   const showSuccessModal = useStore((s) => s.showSuccessModal);
+  const hasCompletedPretest = useStore((s) => s.hasCompletedPretest);
+  const incrementPlayTime = useStore((s) => s.incrementPlayTime);
   const RoomComponent = ROOM_MAP[currentRoom] || LobbyRoom;
+
+  // Active playtime timer starts only after Pre-test is completed
+  React.useEffect(() => {
+    if (!hasCompletedPretest) return;
+    const interval = setInterval(() => {
+      incrementPlayTime();
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [hasCompletedPretest, incrementPlayTime]);
 
   return (
     <div className="w-screen h-screen relative bg-slate-900 overflow-hidden select-none">
@@ -212,6 +225,8 @@ export default function App() {
       <HUD />
       <GTAControlsHUD />
       {showSuccessModal && <SuccessModal />}
+      <RoomConfirmationModal />
+      <ImageViewerModal />
 
       {/* ── Visual Asset Loader ── */}
       <Loader

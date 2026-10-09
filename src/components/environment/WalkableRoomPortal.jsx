@@ -33,6 +33,7 @@ export default function WalkableRoomPortal({
   const learningProgress = useStore((state) => state.learningProgress);
   const hasCompletedPretest = useStore((state) => state.hasCompletedPretest);
   const triggerPretestWarning = useStore((state) => state.triggerPretestWarning);
+  const requestRoomEntry = useStore((state) => state.requestRoomEntry);
   const isCompleted = !!learningProgress[roomKey];
   const isLocked = roomKey !== 'quiz' && roomKey !== 'lobby' && roomKey !== 'dressingRoom' && !hasCompletedPretest;
 
@@ -199,7 +200,11 @@ export default function WalkableRoomPortal({
             const spawnZ = pz < -5 ? pz + 1.4 : pz > 5 ? pz - 1.4 : pz;
             useStore.getState().setLobbySpawn([spawnX, 0, spawnZ], rotY);
           }
-          setRoom(roomKey);
+          if (roomKey === 'lobby') {
+            setRoom('lobby');
+          } else {
+            requestRoomEntry({ roomKey, roomTitle, roomNumber, icon });
+          }
         }
       }
     } else if (dist > 2.2) {
@@ -219,7 +224,11 @@ export default function WalkableRoomPortal({
         const spawnZ = pz < -5 ? pz + 1.4 : pz > 5 ? pz - 1.4 : pz;
         useStore.getState().setLobbySpawn([spawnX, 0, spawnZ], rotY);
       }
-      setRoom(roomKey);
+      if (roomKey === 'lobby') {
+        setRoom('lobby');
+      } else {
+        requestRoomEntry({ roomKey, roomTitle, roomNumber, icon });
+      }
     }
   };
 
@@ -455,21 +464,21 @@ export default function WalkableRoomPortal({
       {/* ══════════════════════════════════════════════════════════════════════════
           5. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้องมาตรฐานโมเดิร์นคลีน)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Acrylic Backlit Header Box */}
-      <group position={[0, 2.70, 0.03]}>
+      {/* Acrylic Backlit Header Box (Enlarged for high visibility from afar) */}
+      <group position={[0, 2.78, 0.03]}>
         {/* Main Sign Box */}
         <mesh castShadow>
-          <boxGeometry args={[1.64, 0.26, 0.05]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.1} />
+          <boxGeometry args={[2.10, 0.42, 0.05]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.15} metalness={0.08} />
         </mesh>
         {/* Stainless Steel Perimeter Trim */}
         <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[1.66, 0.28, 0.03]} />
+          <boxGeometry args={[2.14, 0.44, 0.03]} />
           <meshStandardMaterial map={configuredMetal} color="#94a3b8" metalness={0.8} roughness={0.3} />
         </mesh>
 
-        {/* Crisp HTML Sign Content */}
-        <Html position={[0, -0.01, 0.035]} center transform scale={0.16}>
+        {/* Crisp HTML Sign Content (Larger scale for clear visibility) */}
+        <Html position={[0, 0, 0.035]} center transform scale={0.21}>
           <div
             onClick={handleEnter}
             onPointerDown={handleEnter}
@@ -477,7 +486,7 @@ export default function WalkableRoomPortal({
               cursor: 'pointer',
               userSelect: 'none',
               textAlign: 'center',
-              width: '440px',
+              width: '460px',
               fontFamily: 'system-ui, -apple-system, sans-serif',
               pointerEvents: 'auto',
             }}
@@ -489,15 +498,15 @@ export default function WalkableRoomPortal({
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '8px',
                     background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
                     color: 'white',
-                    padding: '4px 16px',
-                    borderRadius: '16px',
-                    fontSize: '14px',
-                    fontWeight: '800',
+                    padding: '5px 20px',
+                    borderRadius: '18px',
+                    fontSize: '17px',
+                    fontWeight: '900',
                     letterSpacing: '0.5px',
-                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                    boxShadow: '0 3px 10px rgba(239, 68, 68, 0.4)',
                   }}
                 >
                   <span>🔒</span>
@@ -506,12 +515,13 @@ export default function WalkableRoomPortal({
 
                 <div
                   style={{
-                    color: '#475569',
-                    fontSize: '15px',
-                    fontWeight: '800',
-                    marginTop: '5px',
-                    lineHeight: '1.2',
+                    color: '#1e293b',
+                    fontSize: '20px',
+                    fontWeight: '900',
+                    marginTop: '6px',
+                    lineHeight: '1.25',
                     whiteSpace: 'nowrap',
+                    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
                   }}
                 >
                   {roomTitle}
@@ -520,8 +530,8 @@ export default function WalkableRoomPortal({
                 <div
                   style={{
                     marginTop: '4px',
-                    fontSize: '11px',
-                    fontWeight: '700',
+                    fontSize: '13px',
+                    fontWeight: '800',
                     color: '#dc2626',
                     display: 'flex',
                     alignItems: 'center',
@@ -542,12 +552,12 @@ export default function WalkableRoomPortal({
                     gap: '8px',
                     background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                     color: 'white',
-                    padding: '5px 20px',
-                    borderRadius: '18px',
-                    fontSize: '15px',
+                    padding: '6px 24px',
+                    borderRadius: '20px',
+                    fontSize: '18px',
                     fontWeight: '900',
                     letterSpacing: '0.5px',
-                    boxShadow: '0 0 16px rgba(245, 158, 11, 0.7)',
+                    boxShadow: '0 0 20px rgba(245, 158, 11, 0.8)',
                   }}
                 >
                   <span>⭐</span>
@@ -556,10 +566,10 @@ export default function WalkableRoomPortal({
 
                 <div
                   style={{
-                    color: '#1e293b',
-                    fontSize: '16px',
+                    color: '#0f172a',
+                    fontSize: '22px',
                     fontWeight: '900',
-                    marginTop: '5px',
+                    marginTop: '6px',
                     lineHeight: '1.2',
                     whiteSpace: 'nowrap',
                   }}
@@ -570,7 +580,7 @@ export default function WalkableRoomPortal({
                 <div
                   style={{
                     marginTop: '4px',
-                    fontSize: '12px',
+                    fontSize: '13px',
                     fontWeight: '800',
                     color: '#d97706',
                     display: 'flex',
@@ -579,7 +589,7 @@ export default function WalkableRoomPortal({
                     gap: '4px',
                   }}
                 >
-                  <span>{isNear ? '🚪 ประตูเปิดแล้ว — เดินเข้าไปเพื่อเริ่มทำแบบทดสอบ ➜' : '✨ ก้าวเข้าไปเพื่อทำ Pre-test 20 ข้อ (ปลดล็อคทุกห้อง)'}</span>
+                  <span>{isNear ? '🚪 ประตูเปิดแล้ว — แตะเพื่อยืนยันเข้าห้อง ➜' : '✨ ก้าวเข้าไปเพื่อทำ Pre-test 20 ข้อ (ปลดล็อคทุกห้อง)'}</span>
                 </div>
               </>
             ) : (
@@ -592,27 +602,28 @@ export default function WalkableRoomPortal({
                     gap: '8px',
                     background: themeConfig.badgeBg,
                     color: 'white',
-                    padding: '4px 18px',
-                    borderRadius: '16px',
-                    fontSize: '15px',
-                    fontWeight: '800',
+                    padding: '5px 22px',
+                    borderRadius: '18px',
+                    fontSize: '17px',
+                    fontWeight: '900',
                     letterSpacing: '0.5px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                    boxShadow: '0 3px 10px rgba(0,0,0,0.22)',
                   }}
                 >
-                  <span>{icon}</span>
+                  <span style={{ fontSize: '18px' }}>{icon}</span>
                   <span>{roomNumber}</span>
                   {isCompleted && <span>✅ ผ่านแล้ว</span>}
                 </div>
 
                 <div
                   style={{
-                    color: '#1e293b',
-                    fontSize: '16px',
-                    fontWeight: '800',
+                    color: '#0f172a',
+                    fontSize: '21px',
+                    fontWeight: '900',
                     marginTop: '6px',
-                    lineHeight: '1.2',
+                    lineHeight: '1.25',
                     whiteSpace: 'nowrap',
+                    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
                   }}
                 >
                   {roomTitle}
@@ -621,16 +632,16 @@ export default function WalkableRoomPortal({
                 <div
                   style={{
                     marginTop: '4px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    color: isNear ? themeConfig.primary : '#64748b',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    color: isNear ? themeConfig.primary : '#475569',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '4px',
                   }}
                 >
-                  <span>{isNear ? '🚪 ประตูเปิดแล้ว — เดินเข้าไปเพื่อเข้าสู่ห้องนี้ ➜' : 'เดินเข้าใกล้เพื่อให้ประตูเปิด / คลิกเพื่อเข้า'}</span>
+                  <span>{isNear ? '🚪 ประตูเปิดแล้ว — แตะเพื่อยืนยันเข้าห้อง ➜' : 'เดินเข้าใกล้เพื่อให้ประตูเปิด / แตะเพื่อเข้าห้อง'}</span>
                 </div>
               </>
             )}

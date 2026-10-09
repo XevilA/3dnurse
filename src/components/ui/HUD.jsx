@@ -38,19 +38,27 @@ export default function HUD() {
   const showPretestWarning = useStore((s) => s.showPretestWarning);
   const triggerPretestWarning = useStore((s) => s.triggerPretestWarning);
   const dismissPretestWarning = useStore((s) => s.dismissPretestWarning);
+  const requestRoomEntry = useStore((s) => s.requestRoomEntry);
+  const userId = useStore((s) => s.userId);
+  const unlockAllRooms = useStore((s) => s.unlockAllRooms);
   const [showNav, setShowNav] = useState(false);
 
   const completedCount = Object.keys(learningProgress).length;
   const totalModules = 8;
 
-  const handleSelectRoom = (roomKey) => {
+  const handleSelectRoom = (roomKey, roomTitle, roomNumber, icon) => {
     if (roomKey !== 'lobby' && roomKey !== 'dressingRoom' && roomKey !== 'quiz' && !hasCompletedPretest) {
       triggerPretestWarning(roomKey);
       setShowNav(false);
       return;
     }
-    setRoom(roomKey);
     setShowNav(false);
+    requestRoomEntry({
+      roomKey,
+      roomTitle: roomTitle || ROOM_TITLES[roomKey] || roomKey,
+      roomNumber: roomNumber || 'Ward / Nursery',
+      icon: icon || '🚪',
+    });
   };
 
   return (
@@ -243,7 +251,7 @@ export default function HUD() {
                     <button
                       key={room.key}
                       type="button"
-                      onClick={() => handleSelectRoom(room.key)}
+                      onClick={() => handleSelectRoom(room.key, room.label, `Ward 10${room.key.slice(-1)}`, room.icon)}
                       className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
                         currentRoom === room.key
                           ? 'bg-pink-100 border-pink-400 font-bold text-pink-900 shadow-sm'
@@ -277,7 +285,7 @@ export default function HUD() {
                     <button
                       key={room.key}
                       type="button"
-                      onClick={() => handleSelectRoom(room.key)}
+                      onClick={() => handleSelectRoom(room.key, room.label, `Nursery 20${room.key.slice(-1)}`, room.icon)}
                       className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
                         currentRoom === room.key
                           ? 'bg-blue-100 border-blue-400 font-bold text-blue-900 shadow-sm'
@@ -296,6 +304,32 @@ export default function HUD() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* User Session Info & Developer Unlock Button (จดจำข้อมูลผู้ใช้ / ปลดล็อคข้อสอบ) */}
+              <div className="mt-2 pt-2.5 border-t border-slate-200 flex flex-col gap-2">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  <div className="flex items-center gap-1.5">
+                    <span>🆔</span>
+                    <span className="font-mono font-bold text-slate-700">{userId}</span>
+                  </div>
+                  <span className="text-[10px] bg-slate-200 px-2 py-0.5 rounded-full font-bold text-slate-600">
+                    บันทึกประวัติอัตโนมัติ
+                  </span>
+                </div>
+                {!hasCompletedPretest && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      unlockAllRooms();
+                      setShowNav(false);
+                    }}
+                    className="w-full py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-[11px] font-bold transition active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <span>🔓</span>
+                    <span>ปลดล็อคทุกห้องทันที (โหมดทดสอบ / ผู้ประเมิน)</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>

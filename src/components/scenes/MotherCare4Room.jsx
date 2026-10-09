@@ -17,7 +17,9 @@ import { getQuestionsByRoomKey } from '../../data/quizData';
 
 export default function MotherCare4Room() {
   const { setRoom, completeModule, setShowSuccessModal } = useStore();
+  const openLightbox = useStore((s) => s.openLightbox);
   const [activeTab, setActiveTab] = useState(0); // 0: 5 สัญญาณอันตราย, 1: ฝึกจำแนกอาการ, 2: การป้องกันภาวะแทรกซ้อน, 3: แบบประเมิน
+  const [showLearningModal, setShowLearningModal] = useState(false);
 
   // ── กิจกรรม 1: 5 สัญญาณอันตรายสำคัญ (Critical Danger Signs) ──
   const [selectedDangerIndex, setSelectedDangerIndex] = useState(0);
@@ -68,6 +70,80 @@ export default function MotherCare4Room() {
       dangerText: 'เจ็บแน่นหน้าอกรุนแรง, หายใจไม่อิ่ม หอบเหนื่อยฉับพลัน, หายใจเข้าแล้วเจ็บแปลบ, ไอมีเสมหะปนเลือด, หน้ามืด เหงื่อแตก',
       action: 'รีบไปโรงพยาบาลหรือขอความช่วยเหลือทางการแพทย์ทันที! เสี่ยงภาวะลิ่มเลือดอุดตันในปอด (Pulmonary Embolism: PE)'
     },
+  ];
+
+  // ── 5 Wall Posters Information (2 on Left, 1 in Center, 2 on Right) ──
+  const wallPosters = [
+    {
+      id: 'poster_left_1',
+      title: '1. ตกเลือดหลังคลอด (PPH)',
+      subtitle: 'เลือดออกชุ่มผ้าอนามัยเต็มแผ่นภายใน 1 ชม.',
+      imageSrc: '/references/mother_zone2/danger_bleeding.png',
+      position: [-8.85, 2.7, -3.2],
+      rotation: [0, Math.PI / 2, 0],
+      clinicalDetails: [
+        'ภาวะตกเลือดหลังคลอด (Postpartum Hemorrhage)',
+        'อาการเตือน: ผ้าอนามัยชุ่มเต็มแผ่น > 1 แผ่น/ชม. หรือมีลิ่มเลือดใหญ่กว่าไข่ไก่',
+        'การปฏิบัติ: รีบไปโรงพยาบาลทันที ห้ามนอนรอดูอาการ',
+      ],
+      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
+    },
+    {
+      id: 'poster_left_2',
+      title: '2. ไข้สูง & น้ำคาวปลามีกลิ่นเหม็น',
+      subtitle: 'เสี่ยงติดเชื้อในโพรงมดลูก (Endometritis)',
+      imageSrc: '/references/mother_zone2/danger_fever.png',
+      position: [-8.85, 2.7, 3.2],
+      rotation: [0, Math.PI / 2, 0],
+      clinicalDetails: [
+        'ภาวะติดเชื้อในโพรงมดลูกหลังคลอด',
+        'อาการเตือน: มีไข้ ≥ 38.0°C หนาวสั่น ปวดเกร็งท้องน้อย น้ำคาวปลาสีคล้ำเหม็นเน่า',
+        'การปฏิบัติ: พบแพทย์ทันทีเพื่อรับยาปฏิชีวนะ',
+      ],
+      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
+    },
+    {
+      id: 'poster_center',
+      title: '3. ปวดศีรษะรุนแรง / ตาพร่ามัว',
+      subtitle: 'ครรภ์เป็นพิษหลังคลอด & ความดันโลหิตสูง',
+      imageSrc: '/references/mother_zone2/danger_headache.png',
+      position: [0, 2.8, -8.85],
+      rotation: [0, 0, 0],
+      clinicalDetails: [
+        'ภาวะความดันโลหิตสูงรุนแรงหลังคลอด (Postpartum Preeclampsia)',
+        'อาการเตือน: ปวดศีรษะรุนแรง ตาพร่ามัวเห็นแสงวาบ จุกแน่นใต้ลิ้นปี่ ความดัน ≥ 140/90',
+        'การปฏิบัติ: ฉุกเฉิน! รีบไปพบแพทย์ทันที เสี่ยงต่อภาวะชัก',
+      ],
+      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
+    },
+    {
+      id: 'poster_right_1',
+      title: '4. ปวดหรือบวมน่องข้างเดียว',
+      subtitle: 'เสี่ยงลิ่มเลือดอุดตันหลอดเลือดดำลึก (DVT)',
+      imageSrc: '/references/mother_zone2/danger_dvt.png',
+      position: [8.85, 2.7, -3.2],
+      rotation: [0, -Math.PI / 2, 0],
+      clinicalDetails: [
+        'ภาวะลิ่มเลือดอุดตันในหลอดเลือดดำลึก (Deep Vein Thrombosis: DVT)',
+        'อาการเตือน: ปวดน่องรุนแรง น่องบวมโตข้างเดียว แดง ร้อน และกดเจ็บ',
+        'ข้อห้ามเด็ดขาด: ห้ามนวดขาเด็ดขาด! และรีบไปโรงพยาบาลทันที',
+      ],
+      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
+    },
+    {
+      id: 'poster_right_2',
+      title: '5. เจ็บแน่นหน้าอก / หายใจลำบาก',
+      subtitle: 'เสี่ยงลิ่มเลือดอุดตันในปอด (PE)',
+      imageSrc: '/references/mother_zone2/danger_pe.png',
+      position: [8.85, 2.7, 3.2],
+      rotation: [0, -Math.PI / 2, 0],
+      clinicalDetails: [
+        'ภาวะลิ่มเลือดอุดตันในปอด (Pulmonary Embolism: PE)',
+        'อาการเตือน: เจ็บแน่นหน้าอก หายใจไม่อิ่ม หอบเหนื่อยฉับพลัน ไอเป็นเลือด หน้ามืด',
+        'การปฏิบัติ: ภาวะฉุกเฉินวิกฤต รีบเรียกรถพยาบาล 1669 ทันที',
+      ],
+      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
+    }
   ];
 
   // ── กิจกรรม 2: ฝึกจำแนกอาการ (เฝ้าสังเกต vs ไปโรงพยาบาลทันที) ──
@@ -168,6 +244,81 @@ export default function MotherCare4Room() {
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
       </InteractiveSeat>
 
+      {/* ── 5 Clinical Complication Posters Across 3 Walls (2 Left, 1 Center, 2 Right) ── */}
+      {wallPosters.map((poster) => (
+        <group key={poster.id} position={poster.position} rotation={poster.rotation}>
+          {/* Outer Timber Bezel Frame */}
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[2.0, 1.45, 0.06]} />
+            <meshStandardMaterial color="#881337" roughness={0.3} metalness={0.2} />
+          </mesh>
+          {/* Inner Matte */}
+          <mesh position={[0, 0, 0.032]}>
+            <boxGeometry args={[1.92, 1.37, 0.01]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.7} />
+          </mesh>
+          {/* Poster Surface with HTML Preview & Lightbox Trigger */}
+          <Html position={[0, 0, 0.045]} center transform scale={0.19} distanceFactor={14}>
+            <div
+              onClick={() => openLightbox({
+                src: poster.imageSrc,
+                title: poster.title,
+                caption: poster.subtitle,
+                category: poster.category,
+                clinicalDetails: poster.clinicalDetails
+              })}
+              className="cursor-pointer select-none rounded-xl overflow-hidden shadow-2xl transition-all duration-300 hover:scale-105"
+              style={{
+                width: '420px',
+                height: '290px',
+                background: '#0f172a',
+                border: '3px solid #f43f5e',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                <img
+                  src={poster.imageSrc}
+                  alt={poster.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{
+                background: 'rgba(15, 23, 42, 0.95)',
+                padding: '8px 12px',
+                borderTop: '1.5px solid #f43f5e',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <div>
+                  <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: 'bold' }}>
+                    {poster.title}
+                  </div>
+                  <div style={{ color: '#fda4af', fontSize: '10.5px' }}>
+                    {poster.subtitle}
+                  </div>
+                </div>
+                <span style={{
+                  background: '#e11d48',
+                  color: 'white',
+                  fontSize: '10.5px',
+                  fontWeight: 'bold',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  whiteSpace: 'nowrap'
+                }}>
+                  🔍 ขยายภาพ
+                </span>
+              </div>
+            </div>
+          </Html>
+        </group>
+      ))}
+
       {/* ── 1. Patient Observation Bed with Soft Pillows (กิจกรรม 1: สัญญาณอันตราย 5 ข้อ) ── */}
       <InteractiveSeat
         id="room104_bed"
@@ -177,11 +328,20 @@ export default function MotherCare4Room() {
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.68, 0]}
       >
-        <group onClick={() => setActiveTab(0)}>
+        <group onClick={() => { setActiveTab(0); setShowLearningModal(true); }}>
           <HospitalBed position={[0, 0, 0]} />
           {/* Pillows resting securely on top of mattress headboard */}
           <Pillows position={[0.05, 0.72, -0.75]} rotation={[0, 0, 0]} scale={0.75} />
         </group>
+        <Html position={[0, 1.4, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => { e.stopPropagation(); setActiveTab(0); setShowLearningModal(true); }}
+            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
+            style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', border: '2px solid white' }}
+          >
+            <span>🛏️ เตียงสังเกตอาการ (คลิกเปิดคู่มือ)</span>
+          </div>
+        </Html>
       </InteractiveSeat>
 
       {/* ── Bedside Nightstand with Hydration Water & Emergency Call Button ── */}
@@ -196,46 +356,64 @@ export default function MotherCare4Room() {
       </group>
 
       {/* ── 2. Doctor Consultation Desk & Emergency Red Hotline (กิจกรรม 2 & 3) ── */}
-      <group position={[7.8, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => setActiveTab(1)}>
+      <group position={[7.8, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => { setActiveTab(1); setShowLearningModal(true); }}>
         <DoctorDesk position={[0, 0, 0]} scale={0.85} />
         {/* Examination desk lamp positioned properly on consultation desk */}
         <ExaminationLamp position={[-0.3, 0.78, 0]} scale={0.65} />
+        <Html position={[0, 1.35, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => { e.stopPropagation(); setActiveTab(1); setShowLearningModal(true); }}
+            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: '2px solid white' }}
+          >
+            <span>🩺 โต๊ะตรวจ & จำแนกอาการ (คลิก)</span>
+          </div>
+        </Html>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          🚨 INTERACTIVE LEARNING HUD (Based on Manual Zone 2: Danger Signs)
+          🚨 INTERACTIVE LEARNING MODAL (Toggled on click for minimal/compact view)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.98)',
-          padding: '24px',
-          borderRadius: '24px',
-          width: '880px',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
-          border: '3px solid #ef4444',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          color: '#333'
-        }}>
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fee2e2', paddingBottom: '12px', marginBottom: '16px' }}>
-            <div>
-              <span style={{ background: '#dc2626', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
-                ZONE 2: การสังเกตอาการผิดปกติและสัญญาณอันตรายหลังคลอด (Ward 104)
-              </span>
-              <h2 style={{ margin: '6px 0 0 0', color: '#b91c1c', fontSize: '22px' }}>
-                {activeTab === 0 && '5 สัญญาณอันตรายสำคัญที่ต้องรีบไปโรงพยาบาล'}
-                {activeTab === 1 && 'กิจกรรมจำแนกอาการ: เฝ้าสังเกต vs ต้องไปโรงพยาบาลทันที'}
-                {activeTab === 2 && 'การป้องกันภาวะแทรกซ้อนและการดูแลตนเองที่บ้าน'}
-                {activeTab === 3 && 'แบบประเมินความรู้ประจำห้องที่ 4 (ข้อ 1, 4 & 7)'}
-              </h2>
+      {showLearningModal && (
+        <Html position={[0, 1.85, -5.5]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.98)',
+            padding: '24px',
+            borderRadius: '24px',
+            width: '880px',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.35)',
+            border: '3px solid #ef4444',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            color: '#333'
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fee2e2', paddingBottom: '12px', marginBottom: '16px' }}>
+              <div>
+                <span style={{ background: '#dc2626', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
+                  ZONE 2: การสังเกตอาการผิดปกติและสัญญาณอันตรายหลังคลอด (Ward 104)
+                </span>
+                <h2 style={{ margin: '6px 0 0 0', color: '#b91c1c', fontSize: '22px' }}>
+                  {activeTab === 0 && '5 สัญญาณอันตรายสำคัญที่ต้องรีบไปโรงพยาบาล'}
+                  {activeTab === 1 && 'กิจกรรมจำแนกอาการ: เฝ้าสังเกต vs ต้องไปโรงพยาบาลทันที'}
+                  {activeTab === 2 && 'การป้องกันภาวะแทรกซ้อนและการดูแลตนเองที่บ้าน'}
+                  {activeTab === 3 && 'แบบประเมินความรู้ประจำห้องที่ 4 (ข้อ 1, 4 & 7)'}
+                </h2>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setShowLearningModal(false)}
+                  style={{ background: '#ef4444', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                >
+                  ✕ ปิดหน้าต่าง
+                </button>
+                <button
+                  onClick={() => setRoom('lobby')}
+                  style={{ background: '#f3f4f6', border: '1px solid #ccc', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                >
+                  ⬅ ล็อบบี้
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setRoom('lobby')}
-              style={{ background: '#f3f4f6', border: '1px solid #ccc', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
-            >
-              ⬅ กลับสู่ล็อบบี้
-            </button>
-          </div>
 
           {/* Navigation Tabs */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
@@ -622,6 +800,7 @@ export default function MotherCare4Room() {
           )}
         </div>
       </Html>
+      )}
 
       {/* ── GTA Player Controller ── */}
       <PlayerController initialPosition={[0, 0, 3]} />

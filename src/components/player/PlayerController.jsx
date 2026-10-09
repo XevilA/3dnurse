@@ -457,7 +457,21 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         const moveX = forwardX * (-inputZ) + rightX * inputX;
         const moveZ = forwardZ * (-inputZ) + rightZ * inputX;
 
-        const speed = isSprint ? 6.5 : 3.4;
+        const hasCompletedPretest = useStore.getState().hasCompletedPretest;
+        const curStamina = useStore.getState().stamina;
+
+        // Can only sprint if stamina > 5%
+        const canSprint = isSprint && (!hasCompletedPretest || curStamina > 5);
+        const speed = canSprint ? 6.5 : 3.4;
+
+        // Deplete stamina while sprinting (only after pre-test)
+        if (canSprint && isSprint && hasCompletedPretest) {
+          const nextStamina = Math.max(0, curStamina - delta * 15);
+          if (Math.floor(nextStamina) !== Math.floor(curStamina)) {
+            setStamina(nextStamina);
+          }
+        }
+
         const resolved = resolveMovement(
           pos.current.x,
           pos.current.z,
@@ -473,7 +487,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
 
         targetRotationY.current = Math.atan2(moveX, moveZ);
 
-        if (isSprint) {
+        if (canSprint) {
           if (currentAnim !== 'run') setCurrentAnim('run');
         } else {
           if (currentAnim !== 'walk') setCurrentAnim('walk');

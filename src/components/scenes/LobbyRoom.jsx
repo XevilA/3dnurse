@@ -14,6 +14,7 @@ import WalkableRoomPortal from '../environment/WalkableRoomPortal';
 export default function LobbyRoom() {
   const setRoom = useStore((state) => state.setRoom);
   const hasCompletedPretest = useStore((state) => state.hasCompletedPretest);
+  const openLightbox = useStore((state) => state.openLightbox);
 
   return (
     <group>
@@ -57,31 +58,52 @@ export default function LobbyRoom() {
           <meshStandardMaterial color="#ffffff" roughness={0.25} />
         </mesh>
 
-        {/* Poster 1: "สุขภาพดี เริ่มได้ที่นี่" */}
-        <group position={[-0.8, 2.7, 0.06]}>
+        {/* Poster 1: "สุขภาพดี เริ่มได้ที่นี่ (Mother Care)" — คลิกเพื่อขยายใหญ่ */}
+        <group
+          position={[-0.8, 2.7, 0.06]}
+          onClick={() =>
+            openLightbox({
+              src: '/references/room1/img_002.jpeg',
+              title: 'สุขภาพดี เริ่มได้ที่นี่: การบริบาลสุขภาพมารดาหลังคลอด (Mother Care)',
+              badge: 'โปสเตอร์แผนกสูติ-นรีเวช',
+              description: 'การดูแลสุขภาพมารดาหลังคลอดเพื่อฟื้นฟูร่างกายอย่างถูกต้อง ปลอดภัยในทุกย่างก้าว และส่งเสริมสุขภาวะทั้งร่างกายและจิตใจ',
+              details: [
+                '1. การฟื้นตัวของระบบสืบพันธุ์ มดลูกหดรัดตัวเข้าสู่อุ้งเชิงกราน',
+                '2. การดูแลความสะอาดแผลฝีเย็บและแผลผ่าตัดคลอด',
+                '3. โภชนาการที่อุดมด้วยโปรตีน ธาตุเหล็ก และน้ำสะอาดสำหรับแม่ให้นมบุตร',
+                '4. การออกกำลังกายเบาๆ เพื่อฟื้นฟูกล้ามเนื้ออุ้งเชิงกราน (Kegel exercises)'
+              ],
+              tips: 'หากมีเลือดออกชุ่มผ้าอนามัยเกิน 1 แผ่น/ชม. หรือมีไข้สูง ปวดท้องรุนแรง ให้รีบแจ้งแพทย์พยาบาลทันที'
+            })
+          }
+        >
           <mesh castShadow>
             <boxGeometry args={[1.25, 1.85, 0.03]} />
             <meshStandardMaterial color="#f1f5f9" roughness={0.3} />
           </mesh>
           <Html position={[0, 0, 0.02]} center transform scale={0.15}>
-            <div style={{
-              width: '240px',
-              height: '360px',
-              background: 'linear-gradient(180deg, #ffffff 0%, #fff1f2 100%)',
-              border: '2px solid #fda4af',
-              borderRadius: '8px',
-              padding: '16px 12px',
-              boxSizing: 'border-box',
-              textAlign: 'center',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-            }}>
-              <div style={{ fontSize: '36px', marginBottom: '8px' }}>👩‍🍼</div>
+            <div
+              style={{
+                width: '240px',
+                height: '360px',
+                background: 'linear-gradient(180deg, #ffffff 0%, #fff1f2 100%)',
+                border: '2px solid #fda4af',
+                borderRadius: '12px',
+                padding: '16px 12px',
+                boxSizing: 'border-box',
+                textAlign: 'center',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}
+            >
+              <div style={{ fontSize: '36px', marginBottom: '6px' }}>👩‍🍼</div>
               <h3 style={{ color: '#e11d48', fontSize: '18px', fontWeight: '900', margin: '4px 0' }}>
                 สุขภาพดี<br />เริ่มได้ที่นี่
               </h3>
-              <div style={{ width: '40px', height: '3px', background: '#f43f5e', margin: '8px auto' }} />
-              <p style={{ color: '#475569', fontSize: '11px', lineHeight: '1.4', margin: '0 0 12px 0' }}>
+              <div style={{ width: '40px', height: '3px', background: '#f43f5e', margin: '6px auto' }} />
+              <p style={{ color: '#475569', fontSize: '11px', lineHeight: '1.4', margin: '0 0 10px 0' }}>
                 การดูแลสุขภาพมารดาหลังคลอด<br />
                 เพื่อฟื้นฟูร่างกายอย่างถูกต้อง<br />
                 และปลอดภัยในทุกย่างก้าว
@@ -89,43 +111,67 @@ export default function LobbyRoom() {
               <div style={{
                 background: '#e11d48',
                 color: 'white',
-                padding: '4px 10px',
-                borderRadius: '12px',
-                fontSize: '10px',
+                padding: '4px 12px',
+                borderRadius: '14px',
+                fontSize: '11px',
                 fontWeight: 'bold',
-                display: 'inline-block'
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 2px 6px rgba(225,29,72,0.3)'
               }}>
-                Mother Care
+                <span>🔍 แตะเพื่อขยายใหญ่</span>
               </div>
             </div>
           </Html>
         </group>
 
-        {/* Poster 2: "ดูแลด้วยหัวใจ ทุกช่วงของชีวิต" */}
-        <group position={[0.8, 2.7, 0.06]}>
+        {/* Poster 2: "ดูแลด้วยหัวใจ ทุกช่วงของชีวิต (Newborn Care)" — คลิกเพื่อขยายใหญ่ */}
+        <group
+          position={[0.8, 2.7, 0.06]}
+          onClick={() =>
+            openLightbox({
+              src: '/references/room1/img_006.png',
+              title: 'ดูแลด้วยหัวใจ ทุกช่วงของชีวิต: การบริบาลทารกแรกเกิด (Newborn Care)',
+              badge: 'โปสเตอร์แผนกทารกแรกเกิด',
+              description: 'ปกป้องทารกแรกเกิดด้วยความรักและสัมผัสอันอบอุ่น สร้างสายใยผูกพันแม่สู่ลูกเพื่อพัฒนาการที่สมบูรณ์แข็งแรง',
+              details: [
+                '1. การให้นมแม่ตั้งแต่ชั่วโมงแรกหลังคลอด และให้ต่อเนื่องอย่างน้อย 6 เดือน',
+                '2. การรักษาความอบอุ่นของร่างกายทารก (Thermoregulation)',
+                '3. การทำความสะอาดสายสะดืออย่างถูกวิธีเพื่อป้องกันการติดเชื้อ',
+                '4. การจัดท่านอนหงาย (Back to Sleep) ป้องกันภาวะ SIDS'
+              ],
+              tips: 'ทารกแรกเกิดต้องได้รับการสังเกตอาการตัวเหลือง การดูดนม และการหายใจอย่างใกล้ชิด'
+            })
+          }
+        >
           <mesh castShadow>
             <boxGeometry args={[1.25, 1.85, 0.03]} />
             <meshStandardMaterial color="#f1f5f9" roughness={0.3} />
           </mesh>
           <Html position={[0, 0, 0.02]} center transform scale={0.15}>
-            <div style={{
-              width: '240px',
-              height: '360px',
-              background: 'linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)',
-              border: '2px solid #86efac',
-              borderRadius: '8px',
-              padding: '16px 12px',
-              boxSizing: 'border-box',
-              textAlign: 'center',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-            }}>
-              <div style={{ fontSize: '36px', marginBottom: '8px' }}>💖🤲</div>
+            <div
+              style={{
+                width: '240px',
+                height: '360px',
+                background: 'linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)',
+                border: '2px solid #86efac',
+                borderRadius: '12px',
+                padding: '16px 12px',
+                boxSizing: 'border-box',
+                textAlign: 'center',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}
+            >
+              <div style={{ fontSize: '36px', marginBottom: '6px' }}>💖🤲</div>
               <h3 style={{ color: '#16a34a', fontSize: '18px', fontWeight: '900', margin: '4px 0' }}>
                 ดูแลด้วยหัวใจ<br />ทุกช่วงของชีวิต
               </h3>
-              <div style={{ width: '40px', height: '3px', background: '#22c55e', margin: '8px auto' }} />
-              <p style={{ color: '#475569', fontSize: '11px', lineHeight: '1.4', margin: '0 0 12px 0' }}>
+              <div style={{ width: '40px', height: '3px', background: '#22c55e', margin: '6px auto' }} />
+              <p style={{ color: '#475569', fontSize: '11px', lineHeight: '1.4', margin: '0 0 10px 0' }}>
                 ปกป้องทารกแรกเกิดด้วยความรัก<br />
                 สายใยผูกพันแม่สู่ลูก<br />
                 เติบโตสมวัยแข็งแรงสมบูรณ์
@@ -133,13 +179,16 @@ export default function LobbyRoom() {
               <div style={{
                 background: '#16a34a',
                 color: 'white',
-                padding: '4px 10px',
-                borderRadius: '12px',
-                fontSize: '10px',
+                padding: '4px 12px',
+                borderRadius: '14px',
+                fontSize: '11px',
                 fontWeight: 'bold',
-                display: 'inline-block'
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 2px 6px rgba(22,163,74,0.3)'
               }}>
-                Newborn Care
+                <span>🔍 แตะเพื่อขยายใหญ่</span>
               </div>
             </div>
           </Html>
@@ -245,13 +294,13 @@ export default function LobbyRoom() {
 
 
 
-      {/* ── Patient Mobility: 2 Real Hospital Wheelchairs (Drivable!) ── */}
+      {/* ── Patient Mobility: 2 Real Hospital Wheelchairs Parked Side-by-Side (รถเข็นจอดชิดติดกัน 2 คัน) ── */}
       <InteractiveSeat
         id="lobby_wheelchair_1"
         name="รถเข็นโรงพยาบาล คันที่ 1"
         type="wheelchair"
-        position={[-3.8, 0, 3.8]}
-        rotation={[0, 0.35, 0]}
+        position={[-3.6, 0, 4.2]}
+        rotation={[0, 0.2, 0]}
         seatOffset={[0, 0.46, 0.05]}
         isDrivable={true}
       >
@@ -262,8 +311,8 @@ export default function LobbyRoom() {
         id="lobby_wheelchair_2"
         name="รถเข็นโรงพยาบาล คันที่ 2"
         type="wheelchair"
-        position={[4.8, 0, 3.8]}
-        rotation={[0, -0.35, 0]}
+        position={[-4.8, 0, 4.2]}
+        rotation={[0, 0.2, 0]}
         seatOffset={[0, 0.46, 0.05]}
         isDrivable={true}
       >
@@ -295,6 +344,7 @@ export default function LobbyRoom() {
 
       {/* ═══════════════════════════════════════════════════════════════════════════════
           🌸 WING 1 (WEST / LEFT WALL): โซนการดูแลตนเองของมารดา (Mother Care Wards 101-104)
+          Portals attached flush against the wall at X = -10.90 (ไม่ลอย)
           ═══════════════════════════════════════════════════════════════════════════════ */}
       <WalkableRoomPortal
         roomKey="motherCare1"
@@ -302,7 +352,7 @@ export default function LobbyRoom() {
         roomTitle="การดูแลร่างกายและการฟื้นตัว"
         icon="🏥"
         theme="mother"
-        position={[-10.5, 0, -6.6]}
+        position={[-10.90, 0, -6.6]}
         rotation={[0, Math.PI / 2, 0]}
       />
       <WalkableRoomPortal
@@ -311,7 +361,7 @@ export default function LobbyRoom() {
         roomTitle="การดูแลแผลหลังคลอด"
         icon="🩹"
         theme="mother"
-        position={[-10.5, 0, -2.2]}
+        position={[-10.90, 0, -2.2]}
         rotation={[0, Math.PI / 2, 0]}
       />
       <WalkableRoomPortal
@@ -320,7 +370,7 @@ export default function LobbyRoom() {
         roomTitle="การดูแลเต้านมและท่าให้นม"
         icon="🤱"
         theme="mother"
-        position={[-10.5, 0, 2.2]}
+        position={[-10.90, 0, 2.2]}
         rotation={[0, Math.PI / 2, 0]}
       />
       <WalkableRoomPortal
@@ -329,12 +379,13 @@ export default function LobbyRoom() {
         roomTitle="สังเกตอาการผิดปกติและแทรกซ้อน"
         icon="🩺"
         theme="mother"
-        position={[-10.5, 0, 6.6]}
+        position={[-10.90, 0, 6.6]}
         rotation={[0, Math.PI / 2, 0]}
       />
 
       {/* ═══════════════════════════════════════════════════════════════════════════════
           👶 WING 2 (EAST / RIGHT WALL): โซนการดูแลทารกแรกเกิด (Newborn Care Nurseries 201-204)
+          Portals attached flush against the wall at X = +10.90 (ไม่ลอย)
           ═══════════════════════════════════════════════════════════════════════════════ */}
       <WalkableRoomPortal
         roomKey="newbornCare1"
@@ -342,7 +393,7 @@ export default function LobbyRoom() {
         roomTitle="การให้นมทารกแรกเกิด"
         icon="🍼"
         theme="newborn"
-        position={[10.5, 0, -6.6]}
+        position={[10.90, 0, -6.6]}
         rotation={[0, -Math.PI / 2, 0]}
       />
       <WalkableRoomPortal
@@ -351,7 +402,7 @@ export default function LobbyRoom() {
         roomTitle="การอาบน้ำและการเปลี่ยนผ้าอ้อม"
         icon="🛁"
         theme="newborn"
-        position={[10.5, 0, -2.2]}
+        position={[10.90, 0, -2.2]}
         rotation={[0, -Math.PI / 2, 0]}
       />
       <WalkableRoomPortal
@@ -360,7 +411,7 @@ export default function LobbyRoom() {
         roomTitle="การดูแลสายสะดือทารกแรกเกิด"
         icon="🔗"
         theme="newborn"
-        position={[10.5, 0, 2.2]}
+        position={[10.90, 0, 2.2]}
         rotation={[0, -Math.PI / 2, 0]}
       />
       <WalkableRoomPortal
@@ -369,12 +420,13 @@ export default function LobbyRoom() {
         roomTitle="สภาพแวดล้อมที่ปลอดภัยสำหรับทารก"
         icon="🏠"
         theme="newborn"
-        position={[10.5, 0, 6.6]}
+        position={[10.90, 0, 6.6]}
         rotation={[0, -Math.PI / 2, 0]}
       />
 
       {/* ═══════════════════════════════════════════════════════════════════════════════
           🏛️ WING 3 (NORTH / BACK WALL): Grand Quiz Hall 301 + Welcome Hub
+          Portals attached flush against back wall at Z = -10.90 (ไม่ลอย)
           ═══════════════════════════════════════════════════════════════════════════════ */}
       <WalkableRoomPortal
         roomKey="quiz"
@@ -382,7 +434,7 @@ export default function LobbyRoom() {
         roomTitle="ห้องแบบทดสอบประเมินความรู้ (20 ข้อ)"
         icon="🎓"
         theme="quiz"
-        position={[0, 0, -10.5]}
+        position={[0, 0, -10.90]}
         rotation={[0, 0, 0]}
         scale={1.15}
       />
@@ -394,7 +446,7 @@ export default function LobbyRoom() {
         roomTitle="ห้องแต่งตัว & สรีระคุณแม่ (Maternity Studio)"
         icon="👗"
         theme="mother"
-        position={[5.4, 0, -10.5]}
+        position={[5.4, 0, -10.90]}
         rotation={[0, 0, 0]}
         scale={1.05}
       />

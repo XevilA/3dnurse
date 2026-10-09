@@ -7,6 +7,8 @@ import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
 import Pillows from '../decorations/Pillows';
 import HospitalNightstand from '../furniture/HospitalNightstand';
+import DoctorDesk from '../furniture/DoctorDesk';
+import NursingChair from '../furniture/NursingChair';
 
 /**
  * NewbornCare1Room — ห้องที่ 1: การให้นมและการอุ้มจัดท่าทารก
@@ -48,6 +50,7 @@ import HospitalNightstand from '../furniture/HospitalNightstand';
  */
 export default function NewbornCare1Room() {
   const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
+  const openLightbox = useStore((s) => s.openLightbox);
 
   // ── TV Slides state ──
   const [tvSlide, setTvSlide] = useState(0);
@@ -185,7 +188,18 @@ export default function NewbornCare1Room() {
           castShadow
           receiveShadow
           className="cursor-pointer"
-          onClick={() => setActiveModal('poster1')}
+          onClick={() => openLightbox({
+            src: '/references/room1/img_006.png',
+            title: '4 Key Signs การอมหัวนมและการดูดนมแม่ที่ถูกต้อง (Latching)',
+            caption: 'ลานนมบนเห็นมากกว่าล่าง, อ้าปากกว้าง >140°, คางแนบชิดเต้า, ริมฝีปากบานออกคล้ายปากปลา',
+            category: 'การให้นมบุตร (Nursery 201)',
+            clinicalDetails: [
+              '1. เห็นลานนมด้านบนมากกว่าด้านล่าง (ลานนมล่างถูกอมมิด)',
+              '2. อ้าปากกว้างแนบชิดสนิทกับเต้านม ทำมุมกว้างกว่า 140 องศา',
+              '3. คางแนบชิดเต้านมแม่ จมูกเปิดโล่งหายใจสะดวก',
+              '4. ริมฝีปากบนและล่างบานม้วนออกด้านนอกคล้ายปากปลา ไม่เม้ม'
+            ]
+          })}
         >
           <boxGeometry args={[2.0, 1.4, 0.04]} />
           <meshStandardMaterial color="#fef3c7" roughness={0.4} />
@@ -197,7 +211,18 @@ export default function NewbornCare1Room() {
         </mesh>
         <Html position={[0, 0, 0.05]} center transform scale={0.22}>
           <div
-            onClick={() => setActiveModal('poster1')}
+            onClick={() => openLightbox({
+              src: '/references/room1/img_006.png',
+              title: '4 Key Signs การอมหัวนมและการดูดนมแม่ที่ถูกต้อง (Latching)',
+              caption: 'ลานนมบนเห็นมากกว่าล่าง, อ้าปากกว้าง >140°, คางแนบชิดเต้า, ริมฝีปากบานออกคล้ายปากปลา',
+              category: 'การให้นมบุตร (Nursery 201)',
+              clinicalDetails: [
+                '1. เห็นลานนมด้านบนมากกว่าด้านล่าง (ลานนมล่างถูกอมมิด)',
+                '2. อ้าปากกว้างแนบชิดสนิทกับเต้านม ทำมุมกว้างกว่า 140 องศา',
+                '3. คางแนบชิดเต้านมแม่ จมูกเปิดโล่งหายใจสะดวก',
+                '4. ริมฝีปากบนและล่างบานม้วนออกด้านนอกคล้ายปากปลา ไม่เม้ม'
+              ]
+            })}
             className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-amber-500 shadow-xl hover:scale-105 transition overflow-hidden"
             style={{ width: '380px' }}
           >
@@ -207,7 +232,7 @@ export default function NewbornCare1Room() {
               style={{ width: '100%', height: '190px', objectFit: 'cover', borderRadius: '6px' }}
             />
             <div className="text-center py-1 bg-amber-50 rounded mt-1">
-              <span className="text-[11px] font-bold text-amber-900">🔍 4 Key Signs การอมหัวนม (คลิกอ่าน)</span>
+              <span className="text-[11px] font-bold text-amber-900">🔍 4 Key Signs การอมหัวนม (คลิกดูภาพขยาย)</span>
             </div>
           </div>
         </Html>
@@ -219,7 +244,18 @@ export default function NewbornCare1Room() {
           castShadow
           receiveShadow
           className="cursor-pointer"
-          onClick={() => setActiveModal('poster2')}
+          onClick={() => openLightbox({
+            src: '/references/room1/img_010.jpeg',
+            title: '4 Key Points for Breastfeeding Positioning (มาตรฐานสากล)',
+            caption: 'ท้องแนบท้อง หันหน้าหาเต้า ลำตัวและคอตรงแนว ประคองศีรษะและสะโพกมั่นคง',
+            category: 'การให้นมบุตร (Nursery 201)',
+            clinicalDetails: [
+              '1. ลำตัวชิดกับแม่ (Tummy to Tummy ท้องแนบท้อง อกแนบอก)',
+              '2. ลูกหันหน้าเข้าหาเต้านมแม่ (จมูกตรงระดับหัวนมก่อนเข้าเต้า)',
+              '3. ศีรษะ ลำตัว และสะโพกทารกอยู่ในแนวเส้นตรงเดียวกัน',
+              '4. ทารกได้รับการประคองอย่างมั่นคงทั้งศีรษะ หลัง และก้น'
+            ]
+          })}
         >
           <boxGeometry args={[2.0, 1.4, 0.04]} />
           <meshStandardMaterial color="#e0f2fe" roughness={0.4} />
@@ -230,7 +266,18 @@ export default function NewbornCare1Room() {
         </mesh>
         <Html position={[0, 0, 0.05]} center transform scale={0.22}>
           <div
-            onClick={() => setActiveModal('poster2')}
+            onClick={() => openLightbox({
+              src: '/references/room1/img_010.jpeg',
+              title: '4 Key Points for Breastfeeding Positioning (มาตรฐานสากล)',
+              caption: 'ท้องแนบท้อง หันหน้าหาเต้า ลำตัวและคอตรงแนว ประคองศีรษะและสะโพกมั่นคง',
+              category: 'การให้นมบุตร (Nursery 201)',
+              clinicalDetails: [
+                '1. ลำตัวชิดกับแม่ (Tummy to Tummy ท้องแนบท้อง อกแนบอก)',
+                '2. ลูกหันหน้าเข้าหาเต้านมแม่ (จมูกตรงระดับหัวนมก่อนเข้าเต้า)',
+                '3. ศีรษะ ลำตัว และสะโพกทารกอยู่ในแนวเส้นตรงเดียวกัน',
+                '4. ทารกได้รับการประคองอย่างมั่นคงทั้งศีรษะ หลัง และก้น'
+              ]
+            })}
             className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-sky-500 shadow-xl hover:scale-105 transition overflow-hidden"
             style={{ width: '380px' }}
           >
@@ -240,7 +287,7 @@ export default function NewbornCare1Room() {
               style={{ width: '100%', height: '190px', objectFit: 'cover', borderRadius: '6px' }}
             />
             <div className="text-center py-1 bg-sky-50 rounded mt-1">
-              <span className="text-[11px] font-bold text-sky-900">🤱 4 Key Points ท่าอุ้มให้นม (คลิกอ่าน)</span>
+              <span className="text-[11px] font-bold text-sky-900">🤱 4 Key Points ท่าอุ้มให้นม (คลิกดูภาพขยาย)</span>
             </div>
           </div>
         </Html>
@@ -252,7 +299,18 @@ export default function NewbornCare1Room() {
           castShadow
           receiveShadow
           className="cursor-pointer"
-          onClick={() => setActiveModal('poster3')}
+          onClick={() => openLightbox({
+            src: '/references/room1/img_011.png',
+            title: 'ท่าให้นมทารก 4 ท่าสากล (Breastfeeding Holds)',
+            caption: 'Cradle Hold, Football Hold, Side-lying, Cross Cradle',
+            category: 'การให้นมบุตร (Nursery 201)',
+            clinicalDetails: [
+              '1. Cradle Hold (ท่าอุ้มลูกบนแขน): ท่าพื้นฐาน เหมาะสำหรับทารกที่เข้าเต้าได้เก่งแล้ว',
+              '2. Football Hold (ท่าอุ้มฟุตบอล): เหมาะกับแม่ผ่าตัดคลอด เต้านมใหญ่ หรือลูกแฝด',
+              '3. Side-lying (ท่านอนตะแคง): เหมาะสำหรับให้นมบนเตียง แม่พักผ่อนไปพร้อมกันได้',
+              '4. Cross Cradle (ท่าอุ้มข้ามตัก): ควบคุมศีรษะลูกได้ดี เหมาะสำหรับฝึกเข้าเต้าช่วงแรก'
+            ]
+          })}
         >
           <boxGeometry args={[2.4, 1.4, 0.04]} />
           <meshStandardMaterial color="#fce7f3" roughness={0.4} />
@@ -263,7 +321,18 @@ export default function NewbornCare1Room() {
         </mesh>
         <Html position={[0, 0, 0.05]} center transform scale={0.22}>
           <div
-            onClick={() => setActiveModal('poster3')}
+            onClick={() => openLightbox({
+              src: '/references/room1/img_011.png',
+              title: 'ท่าให้นมทารก 4 ท่าสากล (Breastfeeding Holds)',
+              caption: 'Cradle Hold, Football Hold, Side-lying, Cross Cradle',
+              category: 'การให้นมบุตร (Nursery 201)',
+              clinicalDetails: [
+                '1. Cradle Hold (ท่าอุ้มลูกบนแขน): ท่าพื้นฐาน เหมาะสำหรับทารกที่เข้าเต้าได้เก่งแล้ว',
+                '2. Football Hold (ท่าอุ้มฟุตบอล): เหมาะกับแม่ผ่าตัดคลอด เต้านมใหญ่ หรือลูกแฝด',
+                '3. Side-lying (ท่านอนตะแคง): เหมาะสำหรับให้นมบนเตียง แม่พักผ่อนไปพร้อมกันได้',
+                '4. Cross Cradle (ท่าอุ้มข้ามตัก): ควบคุมศีรษะลูกได้ดี เหมาะสำหรับฝึกเข้าเต้าช่วงแรก'
+              ]
+            })}
             className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-pink-500 shadow-xl hover:scale-105 transition overflow-hidden"
             style={{ width: '440px' }}
           >
@@ -273,7 +342,7 @@ export default function NewbornCare1Room() {
               style={{ width: '100%', height: '190px', objectFit: 'cover', borderRadius: '6px' }}
             />
             <div className="text-center py-1 bg-pink-50 rounded mt-1">
-              <span className="text-[11px] font-bold text-pink-900">🌸 ท่าให้นมทารก 4 ท่าสากล (คลิกอ่าน)</span>
+              <span className="text-[11px] font-bold text-pink-900">🌸 ท่าให้นมทารก 4 ท่าสากล (คลิกดูภาพขยาย)</span>
             </div>
           </div>
         </Html>
@@ -399,61 +468,76 @@ export default function NewbornCare1Room() {
         {/* TV Screen Interactive Display */}
         <Html position={[0, 0, 0.06]} center transform scale={0.24}>
           <div
-            className="select-none bg-slate-900 text-white rounded-lg p-3.5 shadow-2xl flex flex-col justify-between"
+            className="select-none bg-slate-950 text-white rounded-lg p-3 shadow-2xl flex flex-col justify-between"
             style={{ width: '560px', height: '330px', border: '3px solid #38bdf8' }}
           >
             {/* Top Bar */}
-            <div className="flex items-center justify-between border-b border-slate-700 pb-2">
-              <span className="font-bold text-sky-400 text-sm flex items-center gap-1.5">
-                📺 สื่อให้ความรู้การให้นมบุตร (สไลด์ {tvSlide + 1}/7)
+            <div className="flex items-center justify-between border-b border-slate-700 pb-1.5 px-1">
+              <span className="font-bold text-sky-400 text-xs flex items-center gap-1.5">
+                📺 สื่อให้ความรู้การให้นมบุตร ({tvSlide + 1}/{tvSlidesData.length})
               </span>
-              <button
-                onClick={() => setShowTvModal(true)}
-                className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1 rounded text-xs font-semibold shadow"
-              >
-                🔍 ขยายเต็มจอ
-              </button>
-            </div>
-
-            {/* Slide Content Preview */}
-            <div className="my-2 bg-slate-800/90 p-2.5 rounded border border-slate-700 flex gap-3 items-center overflow-hidden">
-              <img
-                src={tvSlidesData[tvSlide].img}
-                alt={tvSlidesData[tvSlide].title}
-                className="w-36 h-28 object-contain rounded bg-white p-1 border border-slate-600"
-              />
-              <div className="flex-1 text-left">
-                <h4 className="font-bold text-amber-300 text-xs line-clamp-1">{tvSlidesData[tvSlide].title}</h4>
-                <ul className="text-[11px] text-slate-200 mt-1 space-y-1 list-disc pl-3">
-                  {tvSlidesData[tvSlide].bullets.slice(0, 2).map((b, idx) => (
-                    <li key={idx} className="line-clamp-2">{b}</li>
-                  ))}
-                </ul>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openLightbox({
+                    src: tvSlidesData[tvSlide].img,
+                    title: tvSlidesData[tvSlide].title,
+                    caption: 'ภาพสื่อการเรียนรู้การให้นมบุตรตามมาตรฐานสากล',
+                    category: 'การให้นมบุตร (Nursery 201)',
+                    clinicalDetails: tvSlidesData[tvSlide].bullets
+                  })}
+                  className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-0.5 rounded text-[11px] font-semibold shadow"
+                >
+                  🔍 ขยายเต็มจอ
+                </button>
+                <button
+                  onClick={() => {
+                    setShowVideo(true);
+                    setShowTvModal(true);
+                  }}
+                  className="bg-rose-600 hover:bg-rose-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow flex items-center gap-1"
+                >
+                  ▶ วิดีโอคลิป
+                </button>
               </div>
             </div>
 
-            {/* Bottom Controls */}
-            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+            {/* Slide Content Preview — Image Only per Client Note */}
+            <div
+              className="my-1.5 flex-1 relative bg-slate-900 rounded-lg overflow-hidden border border-slate-800 cursor-pointer flex items-center justify-center group"
+              onClick={() => openLightbox({
+                src: tvSlidesData[tvSlide].img,
+                title: tvSlidesData[tvSlide].title,
+                caption: 'คลิกดูภาพขยายความละเอียดสูง',
+                category: 'การให้นมบุตร (Nursery 201)',
+                clinicalDetails: tvSlidesData[tvSlide].bullets
+              })}
+            >
+              <img
+                src={tvSlidesData[tvSlide].img}
+                alt={tvSlidesData[tvSlide].title}
+                className="w-full h-full object-contain p-1 group-hover:scale-105 transition"
+              />
+              <div className="absolute bottom-1 inset-x-2 bg-black/65 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-sky-200 text-center truncate">
+                {tvSlidesData[tvSlide].title} (คลิกดูภาพขยาย)
+              </div>
+            </div>
+
+            {/* Bottom Controls with Source Citation */}
+            <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between text-[10px] px-1">
               <button
                 disabled={tvSlide === 0}
                 onClick={() => setTvSlide((s) => Math.max(0, s - 1))}
-                className="px-3 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-xs rounded font-bold"
+                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 rounded font-bold"
               >
-                ◀ ย้อนกลับ
+                ◀ ก่อนหน้า
               </button>
-              <button
-                onClick={() => {
-                  setShowVideo(true);
-                  setShowTvModal(true);
-                }}
-                className="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-xs rounded font-bold text-white flex items-center gap-1"
-              >
-                ▶ ดูคลิปวิดีโอ 1 ท่าอุ้มดูดนม
-              </button>
+              <div className="text-slate-400 text-[10px] text-center truncate px-2 font-medium">
+                ที่มา: คณะพยาบาลศาสตร์ มหาวิทยาลัยขอนแก่น & กรมอนามัย กระทรวงสาธารณสุข
+              </div>
               <button
                 disabled={tvSlide === tvSlidesData.length - 1}
                 onClick={() => setTvSlide((s) => Math.min(tvSlidesData.length - 1, s + 1))}
-                className="px-3 py-1 bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-xs rounded font-bold"
+                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 disabled:opacity-30 rounded font-bold"
               >
                 ถัดไป ▶
               </button>
@@ -581,13 +665,19 @@ export default function NewbornCare1Room() {
         <RealPlant type="potted" position={[0, 0.6, 0]} scale={1.1} />
       </group>
 
+      {/* ── Top-Right Corner Doctor Desk & Consultation Chair (Requirement: มุมขวาบนเพิ่มโต๊ะและเก้าอี้ 1 ตัว) ── */}
+      <group position={[4.6, 0, -4.8]} rotation={[0, -Math.PI * 0.75, 0]}>
+        <DoctorDesk position={[0, 0, 0]} scale={0.88} />
+        <NursingChair position={[0, 0, 0.7]} rotation={[0, Math.PI, 0]} scale={0.85} />
+      </group>
+
       {/* ══════════════════════════════════════════════════════════════════════════
           5. CENTER AREA:
-             - Mother's Reclining Cream Nursing Armchair
-             - Low Coffee Table with Feeding Glass, Syringe + Zip bag, Bottles
+             - Mother's Reclining Cream Nursing Armchair (Facing TV on West Wall)
+             - Low Coffee Table with Feeding Glass, Syringe + Zip bag, Bottles (In front of Armchair)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Mother's Comfortable Nursing Armchair */}
-      <group position={[1.8, 0, 0.4]} rotation={[0, -0.3, 0]}>
+      {/* Mother's Comfortable Nursing Armchair (Facing West toward TV) */}
+      <group position={[1.6, 0, 0.4]} rotation={[0, -Math.PI / 2, 0]}>
         {/* Armchair Base & Cushions (Cream/Beige Fabric matching reference) */}
         <mesh position={[0, 0.32, 0]} castShadow receiveShadow>
           <boxGeometry args={[1.15, 0.5, 1.05]} />
@@ -649,8 +739,8 @@ export default function NewbornCare1Room() {
         </Html>
       </group>
 
-      {/* Low Wooden Coffee Table in Front of Sofa (per img_000.jpg & img_001.jpg) */}
-      <group position={[-0.4, 0, 0.4]}>
+      {/* Low Wooden Coffee Table in Front of Sofa (Facing TV, placed directly in front of Armchair) */}
+      <group position={[0.2, 0, 0.4]} rotation={[0, -Math.PI / 2, 0]}>
         {/* Table Surface */}
         <mesh
           position={[0, 0.36, 0]}

@@ -455,7 +455,7 @@ export default function QuizRoom() {
               ) : (
                 /* Post-test Complete Screen */
                 <>
-                  <h1 style={{ color: score >= 16 ? '#16a34a' : '#dc2626', fontSize: '30px', margin: '0 0 10px 0', fontWeight: '900' }}>
+                  <h1 style={{ color: score >= 16 ? '#16a34a' : '#dc2626', fontSize: '28px', margin: '0 0 10px 0', fontWeight: '900' }}>
                     {score >= 16 ? '🎉 ผ่านการประเมินความรู้หลังเรียนตามเกณฑ์!' : '⚠️ ผลการประเมินหลังเรียน (Post-test)'}
                   </h1>
 
@@ -464,17 +464,17 @@ export default function QuizRoom() {
                     gridTemplateColumns: '1fr 1fr 1fr',
                     gap: '10px',
                     maxWidth: '560px',
-                    margin: '0 auto 16px auto'
+                    margin: '0 auto 12px auto'
                   }}>
                     <div style={{
                       background: '#f8fafc',
                       border: '1.5px solid #cbd5e1',
                       borderRadius: '14px',
-                      padding: '14px'
+                      padding: '12px'
                     }}>
-                      <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>คะแนนก่อนเรียน</div>
-                      <div style={{ fontSize: '26px', fontWeight: '900', color: '#475569', marginTop: '4px' }}>
-                        {pretestScore} <span style={{ fontSize: '15px' }}>/ 20</span>
+                      <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>คะแนนก่อนเรียน (Pre-test)</div>
+                      <div style={{ fontSize: '24px', fontWeight: '900', color: '#475569', marginTop: '2px' }}>
+                        {pretestScore} <span style={{ fontSize: '14px' }}>/ 20</span>
                       </div>
                     </div>
 
@@ -482,11 +482,11 @@ export default function QuizRoom() {
                       background: score >= 16 ? '#f0fdf4' : '#fef2f2',
                       border: `2px solid ${score >= 16 ? '#86efac' : '#fca5a5'}`,
                       borderRadius: '14px',
-                      padding: '14px'
+                      padding: '12px'
                     }}>
-                      <div style={{ fontSize: '12px', color: score >= 16 ? '#166534' : '#991b1b', fontWeight: 'bold' }}>คะแนนหลังเรียน</div>
-                      <div style={{ fontSize: '28px', fontWeight: '900', color: score >= 16 ? '#15803d' : '#b91c1c', marginTop: '4px' }}>
-                        {score} <span style={{ fontSize: '15px' }}>/ 20</span>
+                      <div style={{ fontSize: '12px', color: score >= 16 ? '#166534' : '#991b1b', fontWeight: 'bold' }}>คะแนนหลังเรียน (Post-test)</div>
+                      <div style={{ fontSize: '26px', fontWeight: '900', color: score >= 16 ? '#15803d' : '#b91c1c', marginTop: '2px' }}>
+                        {score} <span style={{ fontSize: '14px' }}>/ 20</span>
                       </div>
                     </div>
 
@@ -494,27 +494,129 @@ export default function QuizRoom() {
                       background: '#f5f3ff',
                       border: '1.5px solid #c084fc',
                       borderRadius: '14px',
-                      padding: '14px'
+                      padding: '12px'
                     }}>
-                      <div style={{ fontSize: '12px', color: '#6b21a8', fontWeight: 'bold' }}>พัฒนาการ (Gain)</div>
-                      <div style={{ fontSize: '26px', fontWeight: '900', color: '#7c3aed', marginTop: '4px' }}>
+                      <div style={{ fontSize: '12px', color: '#6b21a8', fontWeight: 'bold' }}>พัฒนาการความรู้ (Gain)</div>
+                      <div style={{ fontSize: '24px', fontWeight: '900', color: '#7c3aed', marginTop: '2px' }}>
                         +{Math.max(0, score - pretestScore)}
                       </div>
                     </div>
                   </div>
 
-                  <p style={{ color: '#4b5563', fontSize: '14px', marginBottom: '20px', maxWidth: '520px', margin: '0 auto 20px auto', lineHeight: '1.45' }}>
-                    {score >= 16
-                      ? 'ยอดเยี่ยมมาก! คุณมีความรู้และความเข้าใจถูกต้องครบถ้วนในการดูแลตนเองและทารกแรกเกิดก่อนจำหน่ายตามมาตรฐานงานวิจัย (ผ่านเกณฑ์ 80%)'
-                      : 'ท่านสามารถทบทวนเนื้อหาในห้องการเรียนรู้ต่าง ๆ และกลับมาทำแบบทดสอบใหม่เพื่อเพิ่มพูนคะแนนได้ตลอดเวลา'}
-                  </p>
+                  {/* ── 🩺 การวิเคราะห์ภาวะพร่องความรู้ (Knowledge Deficit Analysis) ── */}
+                  <div style={{
+                    background: '#ffffff',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '14px',
+                    padding: '12px 16px',
+                    margin: '0 auto 14px auto',
+                    textAlign: 'left',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+                    maxHeight: '210px',
+                    overflowY: 'auto'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>📊</span>
+                        <strong style={{ fontSize: '14px', color: '#1e293b' }}>
+                          รายงานการวิเคราะห์ภาวะพร่องความรู้ (Knowledge Deficit Analysis)
+                        </strong>
+                      </div>
+                      <span style={{ fontSize: '11px', background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+                        จำแนกตาม 8 ห้องเรียนรู้
+                      </span>
+                    </div>
+
+                    {(() => {
+                      const domainMap = [
+                        { key: 'motherCare1', title: 'Ward 101: การดูแลร่างกายและการฟื้นตัว', qIds: [5, 6, 8] },
+                        { key: 'motherCare2', title: 'Ward 102: การดูแลแผลฝีเย็บและผ่าคลอด', qIds: [2, 10] },
+                        { key: 'motherCare3', title: 'Ward 103: การดูแลเต้านมและการให้นมแม่', qIds: [3, 9, 14] },
+                        { key: 'motherCare4', title: 'Ward 104: สัญญาณอันตรายและภาวะแทรกซ้อน', qIds: [1, 4, 7] },
+                        { key: 'newbornCare1', title: 'Nursery 201: ท่าอุ้มและการเข้าเต้าทารก', qIds: [11, 17] },
+                        { key: 'newbornCare2', title: 'Nursery 202: การอาบน้ำและทำความสะอาด', qIds: [16, 18] },
+                        { key: 'newbornCare3', title: 'Nursery 203: การดูแลสายสะดือ (ภาพจำลอง)', qIds: [12, 19] },
+                        { key: 'newbornCare4', title: 'Nursery 204: สิ่งแวดล้อมปลอดภัย & Safe Sleep', qIds: [13, 15, 20] },
+                      ];
+
+                      const deficits = domainMap.map(dm => {
+                        const domainAnswers = answersHistory.filter(a => dm.qIds.includes(a.id));
+                        const wrongCount = domainAnswers.filter(a => !a.isCorrect).length;
+                        return {
+                          ...dm,
+                          wrongCount,
+                          totalQ: dm.qIds.length,
+                          hasDeficit: wrongCount > 0
+                        };
+                      });
+
+                      const hasAnyDeficit = deficits.some(d => d.hasDeficit);
+
+                      if (!hasAnyDeficit) {
+                        return (
+                          <div style={{ background: '#f0fdf4', border: '1px solid #86efac', padding: '10px', borderRadius: '8px', color: '#166534', fontSize: '12px', textAlign: 'center' }}>
+                            🎉 ยอดเยี่ยมที่สุด! ไม่พบภาวะพร่องความรู้ในทุกหัวข้อ คุณแม่มีความรู้ครบถ้วนถูกต้อง 100% พร้อมสำหรับการดูแลตนเองและทารกที่บ้าน
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#475569' }}>
+                            ระบบตรวจพบหัวข้อที่คุณแม่ยังตอบผิดหรือพร่องความรู้ แนะนำให้คลิกเข้าทบทวนบทเรียนในห้องต่อไปนี้:
+                          </p>
+                          {deficits.filter(d => d.hasDeficit).map(d => (
+                            <div
+                              key={d.key}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                background: '#fef2f2',
+                                border: '1px solid #fca5a5',
+                                padding: '6px 10px',
+                                borderRadius: '8px'
+                              }}
+                            >
+                              <div>
+                                <span style={{ fontWeight: 'bold', fontSize: '12px', color: '#991b1b' }}>
+                                  ⚠️ {d.title}
+                                </span>
+                                <span style={{ fontSize: '11px', color: '#dc2626', marginLeft: '6px' }}>
+                                  (ตอบผิด {d.wrongCount}/{d.totalQ} ข้อ)
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setShowSuccessModal(false);
+                                  setRoom(d.key);
+                                }}
+                                style={{
+                                  background: '#dc2626',
+                                  color: 'white',
+                                  border: 'none',
+                                  padding: '4px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                เข้าทบทวนห้องนี้ ➔
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
 
                   <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
                     <button
                       onClick={restartQuiz}
                       style={{
-                        padding: '12px 24px',
-                        fontSize: '15px',
+                        padding: '10px 20px',
+                        fontSize: '14px',
                         fontWeight: 'bold',
                         background: '#f3f4f6',
                         color: '#374151',
@@ -531,8 +633,8 @@ export default function QuizRoom() {
                         setRoom('lobby');
                       }}
                       style={{
-                        padding: '12px 28px',
-                        fontSize: '15px',
+                        padding: '10px 24px',
+                        fontSize: '14px',
                         fontWeight: 'bold',
                         background: '#7c3aed',
                         color: 'white',

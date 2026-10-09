@@ -19,7 +19,60 @@ import { getQuestionsByRoomKey } from '../../data/quizData';
 
 export default function MotherCare3Room() {
   const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
+  const openLightbox = useStore((s) => s.openLightbox);
   const [activeTab, setActiveTab] = useState(0); // 0: การดูแลเต้านม, 1: การนวดเต้านม, 2: ปัญหาเต้านม 4 สถานการณ์, 3: แบบประเมิน
+  const [showLearningModal, setShowLearningModal] = useState(false);
+  const [practiceStep, setPracticeStep] = useState(0); // 0: not started, 1: warm compress, 2: spiral massage, 3: C-hold expression
+  const [practiceFeedback, setPracticeFeedback] = useState(null);
+
+  // ── 3-Wall Educational Posters (Breast Care) ──
+  const breastCarePosters = [
+    {
+      id: 'poster_mc3_left',
+      title: '1. การดูแลเต้านมและทำความสะอาด',
+      subtitle: 'สัมผัสอ่อนโยน ซับแห้ง ไม่ใช้สบู่หรือแอลกอฮอล์ถูหัวนม',
+      imageSrc: '/references/mother_zone1/breast_care.png',
+      position: [-8.85, 2.7, 0],
+      rotation: [0, Math.PI / 2, 0],
+      clinicalDetails: [
+        'การดูแลเต้านมในระยะให้นมบุตร',
+        'ข้อแนะนำ: ทำความสะอาดด้วยน้ำสะอาดขณะอาบน้ำ และซับแห้งด้วยผ้าสะอาดนุ่ม',
+        'ข้อควรระวัง: หลีกเลี่ยงการฟอกสบู่ที่มีฤทธิ์แรงหรือแอลกอฮอล์ที่หัวนม เพราะจะทำลายไขมันธรรมชาติที่ปกป้องผิว ทำให้หัวนมแห้งแตก',
+      ],
+      category: 'การดูแลเต้านม (Ward 103)'
+    },
+    {
+      id: 'poster_mc3_back',
+      title: '2. การนวดเต้านมและเปิดท่อน้ำนม',
+      subtitle: 'นวดสัมผัสนุ่มนวล กระตุ้นฮอร์โมน Oxytocin ห้ามบีบเค้นรุนแรง',
+      imageSrc: '/references/mother_zone1/breast_massage.png',
+      position: [0, 2.8, -8.85],
+      rotation: [0, 0, 0],
+      clinicalDetails: [
+        'เทคนิคการนวดเต้านมเพื่อกระตุ้นการหลั่งน้ำนม (Butdapan et al. 2024)',
+        '1. ล้างมือให้สะอาดและเตรียมผ้าประคบอุ่น 3–5 นาที',
+        '2. ใช้นิ้วนวดวนเป็นวงกลมก้นหอยตามแนวท่อน้ำนมเข้าหาลานนม',
+        '3. ใช้แรงสัมผัสเบามือ นุ่มนวล ไม่เค้นบีบจนเจ็บช้ำ',
+      ],
+      category: 'การดูแลเต้านม (Ward 103)'
+    },
+    {
+      id: 'poster_mc3_right',
+      title: '3. จัดการปัญหาเต้านม 4 สถานการณ์',
+      subtitle: 'คัดตึง, หัวนมแตก, ท่อน้ำนมอุดตัน, เต้านมอักเสบ',
+      imageSrc: '/references/mother_zone1/breast_problems.png',
+      position: [8.85, 2.7, 0],
+      rotation: [0, -Math.PI / 2, 0],
+      clinicalDetails: [
+        'ปัญหาเต้านมที่พบบ่อยและการดูแล',
+        '1. คัดตึงเต้านม: ให้นมบ่อยทุก 2–3 ชม. ประคบเย็นหลังให้นมเพื่อลดปวด',
+        '2. หัวนมแตก: ปรับท่าเข้าเต้าให้อมลึกถึงลานนม (Asymmetrical latch)',
+        '3. ท่อน้ำนมอุดตัน: ประคบอุ่น นวดคลึงเบาๆ คางลูกชี้ไปทางก้อน',
+        '4. เต้านมอักเสบ (Mastitis): มีไข้สูงหนาวสั่น ปวดเต้าบวมแดง ต้องพบแพทย์ทันที',
+      ],
+      category: 'การดูแลเต้านม (Ward 103)'
+    }
+  ];
 
   // ── กิจกรรม 1: การดูแลเต้านมและทำความสะอาด ──
   const [act1Behaviors, setAct1Behaviors] = useState([
@@ -228,6 +281,81 @@ export default function MotherCare3Room() {
       <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
       <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
 
+      {/* ── 3-Wall Educational Posters (Breast Care across 3 Walls) ── */}
+      {breastCarePosters.map((poster) => (
+        <group key={poster.id} position={poster.position} rotation={poster.rotation}>
+          {/* Outer Bezel Frame */}
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[2.0, 1.45, 0.06]} />
+            <meshStandardMaterial color="#9d174d" roughness={0.3} metalness={0.2} />
+          </mesh>
+          {/* Inner Matte */}
+          <mesh position={[0, 0, 0.032]}>
+            <boxGeometry args={[1.92, 1.37, 0.01]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.7} />
+          </mesh>
+          {/* Poster Surface with HTML Preview & Lightbox Trigger */}
+          <Html position={[0, 0, 0.045]} center transform scale={0.19} distanceFactor={14}>
+            <div
+              onClick={() => openLightbox({
+                src: poster.imageSrc,
+                title: poster.title,
+                caption: poster.subtitle,
+                category: poster.category,
+                clinicalDetails: poster.clinicalDetails
+              })}
+              className="cursor-pointer select-none rounded-xl overflow-hidden shadow-2xl transition-all duration-300 hover:scale-105"
+              style={{
+                width: '420px',
+                height: '290px',
+                background: '#0f172a',
+                border: '3px solid #f472b6',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                <img
+                  src={poster.imageSrc}
+                  alt={poster.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{
+                background: 'rgba(15, 23, 42, 0.95)',
+                padding: '8px 12px',
+                borderTop: '1.5px solid #f472b6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <div>
+                  <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: 'bold' }}>
+                    {poster.title}
+                  </div>
+                  <div style={{ color: '#fbcfe8', fontSize: '10.5px' }}>
+                    {poster.subtitle}
+                  </div>
+                </div>
+                <span style={{
+                  background: '#db2777',
+                  color: 'white',
+                  fontSize: '10.5px',
+                  fontWeight: 'bold',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  whiteSpace: 'nowrap'
+                }}>
+                  🔍 ขยายภาพ
+                </span>
+              </div>
+            </div>
+          </Html>
+        </group>
+      ))}
+
       {/* ── 1. Ergonomic Nursing Chair (กิจกรรม 1: สังเกตเต้านมและการดูแล) ── */}
       <InteractiveSeat
         id="room103_nursing_chair"
@@ -237,13 +365,22 @@ export default function MotherCare3Room() {
         rotation={[0, Math.PI / 6, 0]}
         seatOffset={[0, 0.48, 0]}
       >
-        <group onClick={() => setActiveTab(0)}>
+        <group onClick={() => { setActiveTab(0); setShowLearningModal(true); }}>
           <NursingChair position={[0, 0, 0]} scale={1.1} />
         </group>
+        <Html position={[0, 1.4, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => { e.stopPropagation(); setActiveTab(0); setShowLearningModal(true); }}
+            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
+            style={{ background: 'linear-gradient(135deg, #e91e63, #c2185b)', border: '2px solid white' }}
+          >
+            <span>🤱 เก้าอี้ให้นม (คลิกเปิดคู่มือ)</span>
+          </div>
+        </Html>
       </InteractiveSeat>
 
       {/* ── 2. Bedside Nightstand with Hydration & Breast Pump Accessories ── */}
-      <group position={[-7.0, 0, -6.8]} onClick={() => setActiveTab(0)}>
+      <group position={[-7.0, 0, -6.8]} onClick={() => { setActiveTab(0); setShowLearningModal(true); }}>
         <HospitalNightstand position={[0, 0, 0]} scale={1.05}>
           <FlowerVase position={[0.12, 0.82, 0.08]} scale={0.65} />
           <mesh position={[-0.15, 0.72, -0.05]} castShadow>
@@ -288,56 +425,83 @@ export default function MotherCare3Room() {
         rotation={[0, -Math.PI / 6, 0]}
         seatOffset={[0, 0.42, 0.15]}
       >
-        <group onClick={() => setActiveTab(1)}>
+        <group onClick={() => { setActiveTab(1); setShowLearningModal(true); }}>
           <HospitalSofa position={[0, 0, 0]} scale={1.1} />
           <Pillows position={[-0.2, 0.45, 0]} scale={0.85} />
         </group>
+        <Html position={[0, 1.35, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => { e.stopPropagation(); setActiveTab(1); setShowLearningModal(true); }}
+            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
+            style={{ background: 'linear-gradient(135deg, #d946ef, #a21caf)', border: '2px solid white' }}
+          >
+            <span>🛋️ โซฟา (คลิกลองฝึกนวดเต้านม)</span>
+          </div>
+        </Html>
       </InteractiveSeat>
 
       {/* ── 5. Medical Cart with Breast Pumps & Hot/Cold Compresses (กิจกรรม 3: ปัญหาเต้านม) ── */}
-      <group position={[7.8, 0, -2.0]} rotation={[0, -Math.PI / 2, 0]} onClick={() => setActiveTab(2)}>
+      <group position={[7.8, 0, -2.0]} rotation={[0, -Math.PI / 2, 0]} onClick={() => { setActiveTab(2); setShowLearningModal(true); }}>
         <MedicalCart position={[0, 0, 0]} scale={1.05} />
       </group>
 
       {/* ── 6. Clinical Consultation Desk & Quiz Kiosk (กิจกรรม 4: แบบประเมิน) ── */}
-      <group position={[7.8, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => setActiveTab(3)}>
+      <group position={[7.8, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => { setActiveTab(3); setShowLearningModal(true); }}>
         <DoctorDesk position={[0, 0, 0]} scale={0.85} />
+        <Html position={[0, 1.35, 0]} center distanceFactor={14}>
+          <div
+            onClick={(e) => { e.stopPropagation(); setActiveTab(3); setShowLearningModal(true); }}
+            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: '2px solid white' }}
+          >
+            <span>🩺 โต๊ะตรวจ & แบบประเมิน (คลิก)</span>
+          </div>
+        </Html>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          🤱 INTERACTIVE LEARNING HUD (Based on Manual Zone 1: Breast Care)
+          🤱 INTERACTIVE LEARNING MODAL (Based on Manual Zone 1: Breast Care)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.98)',
-          padding: '24px',
-          borderRadius: '24px',
-          width: '880px',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
-          border: '3px solid #f48fb1',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          color: '#333'
-        }}>
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fce4ec', paddingBottom: '12px', marginBottom: '16px' }}>
-            <div>
-              <span style={{ background: '#e91e63', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
-                ZONE 1: การดูแลเต้านมและเทคนิคการให้นมบุตร (Ward 103)
-              </span>
-              <h2 style={{ margin: '6px 0 0 0', color: '#c2185b', fontSize: '22px' }}>
-                {activeTab === 0 && 'กิจกรรม 1 — การสังเกตและดูแลเต้านม'}
-                {activeTab === 1 && 'กิจกรรม 2 — การนวดเต้านมและกระตุ้นการไหลของน้ำนม'}
-                {activeTab === 2 && 'กิจกรรม 3 — การจัดการปัญหาเต้านมที่พบบ่อย (4 สถานการณ์)'}
-                {activeTab === 3 && 'แบบประเมินความรู้ประจำห้องที่ 3 (ข้อ 3, 9 & 14)'}
-              </h2>
+      {showLearningModal && (
+        <Html position={[0, 1.85, -5.5]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.98)',
+            padding: '24px',
+            borderRadius: '24px',
+            width: '880px',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.35)',
+            border: '3px solid #f48fb1',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            color: '#333'
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fce4ec', paddingBottom: '12px', marginBottom: '16px' }}>
+              <div>
+                <span style={{ background: '#e91e63', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
+                  ZONE 1: การดูแลเต้านมและเทคนิคการให้นมบุตร (Ward 103)
+                </span>
+                <h2 style={{ margin: '6px 0 0 0', color: '#c2185b', fontSize: '22px' }}>
+                  {activeTab === 0 && 'กิจกรรม 1 — การสังเกตและดูแลเต้านม'}
+                  {activeTab === 1 && 'กิจกรรม 2 — การนวดเต้านมและกระตุ้นการไหลของน้ำนม'}
+                  {activeTab === 2 && 'กิจกรรม 3 — การจัดการปัญหาเต้านมที่พบบ่อย (4 สถานการณ์)'}
+                  {activeTab === 3 && 'แบบประเมินความรู้ประจำห้องที่ 3 (ข้อ 3, 9 & 14)'}
+                </h2>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setShowLearningModal(false)}
+                  style={{ background: '#ec4899', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                >
+                  ✕ ปิดหน้าต่าง
+                </button>
+                <button
+                  onClick={() => setRoom('lobby')}
+                  style={{ background: '#f3f4f6', border: '1px solid #ccc', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                >
+                  ⬅ ล็อบบี้
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setRoom('lobby')}
-              style={{ background: '#f3f4f6', border: '1px solid #ccc', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
-            >
-              ⬅ กลับสู่ล็อบบี้
-            </button>
-          </div>
 
           {/* Navigation Tabs */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
@@ -544,6 +708,77 @@ export default function MotherCare3Room() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* ── 3. หัวข้อที่ 2: กดลองทำ (Interactive Practice Step) ── */}
+              <div style={{ background: '#fdf2f8', padding: '16px', borderRadius: '14px', border: '2px solid #f472b6', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <h4 style={{ margin: 0, color: '#be185d', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>💆‍♀️</span> 3. ฝึกปฏิบัติการนวดเต้านมทีละขั้นตอน (Practice Simulation)
+                  </h4>
+                  <span style={{ fontSize: '11px', background: '#fce7f3', color: '#9d174d', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+                    ขั้นตอนที่ {practiceStep}/3 {practiceStep === 3 && '✓ เสร็จสมบูรณ์'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' }}>
+                  <button
+                    onClick={() => { setPracticeStep(1); setPracticeFeedback('ขั้นที่ 1: ประคบผ้าอุ่น 3–5 นาทีรอบเต้านม ช่วยให้หลอดเลือดขยายตัว ท่อน้ำนมคลายตัว และคุณแม่รู้สึกผ่อนคลาย'); }}
+                    style={{
+                      padding: '12px 8px',
+                      borderRadius: '10px',
+                      border: practiceStep === 1 ? '2px solid #e11d48' : '1.5px solid #cbd5e1',
+                      background: practiceStep >= 1 ? '#ffe4e6' : 'white',
+                      color: practiceStep >= 1 ? '#9f1239' : '#475569',
+                      fontWeight: 'bold',
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    1. ♨️ ประคบอุ่น (3–5 นาที)
+                  </button>
+
+                  <button
+                    disabled={practiceStep < 1}
+                    onClick={() => { setPracticeStep(2); setPracticeFeedback('ขั้นที่ 2: ใช้นิ้วนวดวนก้นหอยตามแนวท่อน้ำนมจากฐานเต้าเข้าหาลานนมอย่างนุ่มนวล ช่วยเปิดทางเดินน้ำนม'); }}
+                    style={{
+                      padding: '12px 8px',
+                      borderRadius: '10px',
+                      border: practiceStep === 2 ? '2px solid #e11d48' : '1.5px solid #cbd5e1',
+                      background: practiceStep >= 2 ? '#ffe4e6' : (practiceStep < 1 ? '#f1f5f9' : 'white'),
+                      color: practiceStep >= 2 ? '#9f1239' : (practiceStep < 1 ? '#94a3b8' : '#475569'),
+                      fontWeight: 'bold',
+                      fontSize: '12px',
+                      cursor: practiceStep < 1 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    2. 🌀 นวดวนก้นหอย (Spiral)
+                  </button>
+
+                  <button
+                    disabled={practiceStep < 2}
+                    onClick={() => { setPracticeStep(3); setPracticeFeedback('ขั้นที่ 3: ใช้ฝ่ามือและนิ้วมือจับท่า C-Hold กดและบีบเข้าหากันเบาๆ น้ำนมสีเหลืองทอง (Colostrum) จะค่อยๆ ไหลซึมออกมาอย่างสบาย'); }}
+                    style={{
+                      padding: '12px 8px',
+                      borderRadius: '10px',
+                      border: practiceStep === 3 ? '2px solid #16a34a' : '1.5px solid #cbd5e1',
+                      background: practiceStep === 3 ? '#dcfce7' : (practiceStep < 2 ? '#f1f5f9' : 'white'),
+                      color: practiceStep === 3 ? '#15803d' : (practiceStep < 2 ? '#94a3b8' : '#475569'),
+                      fontWeight: 'bold',
+                      fontSize: '12px',
+                      cursor: practiceStep < 2 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    3. 💧 บีบระบายน้ำนม (C-Hold)
+                  </button>
+                </div>
+
+                {practiceFeedback && (
+                  <div style={{ background: practiceStep === 3 ? '#f0fdf4' : '#fff1f2', border: `1px solid ${practiceStep === 3 ? '#86efac' : '#fecdd3'}`, padding: '10px 14px', borderRadius: '8px', fontSize: '12.5px', color: practiceStep === 3 ? '#166534' : '#9f1239', lineHeight: '1.4' }}>
+                    <strong>{practiceStep === 3 ? '🎉 สำเร็จการฝึกปฏิบัติ: ' : '✨ กำลังปฏิบัติ: '}</strong>
+                    {practiceFeedback}
+                  </div>
+                )}
               </div>
 
               {act2Feedback && (
@@ -808,6 +1043,7 @@ export default function MotherCare3Room() {
           )}
         </div>
       </Html>
+      )}
 
       {/* ── GTA Player Controller ── */}
       <PlayerController initialPosition={[0, 0, 3]} />

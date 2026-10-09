@@ -62,22 +62,77 @@ const useStore = create((set, get) => ({
     vectorZ: 0,
   },
 
+  // ── User ID & Session History Memory (จดจำข้อมูลผู้ใช้ครั้งแรก) ──
+  userId: (() => {
+    if (typeof localStorage === 'undefined') return 'USER-1001';
+    let id = localStorage.getItem('3dnurse_user_id');
+    if (!id) {
+      id = 'NURSE-' + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('3dnurse_user_id', id);
+    }
+    return id;
+  })(),
+  setUserId: (id) => {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('3dnurse_user_id', id);
+    set({ userId: id });
+  },
+
+  // ── Post-Pretest Timer & Playtime (เริ่มจับเวลาและนับ Stamina หลังทำ Pre-test) ──
+  playTimeSeconds: 0,
+  incrementPlayTime: () => set((state) => ({ playTimeSeconds: state.playTimeSeconds + 1 })),
+  resetPlayTime: () => set({ playTimeSeconds: 0 }),
+
   // ── Learning progress (tracks completed modules) ──
-  learningProgress: {},
+  learningProgress: (() => {
+    if (typeof localStorage === 'undefined') return {};
+    try {
+      return JSON.parse(localStorage.getItem('3dnurse_progress') || '{}');
+    } catch {
+      return {};
+    }
+  })(),
 
   // ── Mandatory Pre-test (แบบทดสอบก่อนเรียน 20 ข้อ) ──
-  hasCompletedPretest: false,
-  pretestScore: 0,
+  hasCompletedPretest: (() => {
+    if (typeof localStorage === 'undefined') return false;
+    return localStorage.getItem('3dnurse_pretest_done') === 'true';
+  })(),
+  pretestScore: (() => {
+    if (typeof localStorage === 'undefined') return 0;
+    return parseInt(localStorage.getItem('3dnurse_pretest_score') || '0', 10);
+  })(),
   posttestScore: 0,
   showPretestWarning: false,
   pretestWarningTargetRoom: null,
+
+  // ── Lightbox Image Viewer (คลิกภาพโปสเตอร์แล้วขยายใหญ่เต็มตา) ──
+  activeLightboxImage: null, // { src, title, description, badge }
+  openLightbox: (imgData) => set({ activeLightboxImage: imgData }),
+  closeLightbox: () => set({ activeLightboxImage: null }),
+
+  // ── Room Entry Confirmation Modal (ปุ่มยืนยันก่อนเข้าแต่ละห้อง) ──
+  pendingRoomConfirmation: null, // { roomKey, roomTitle, roomNumber, icon }
+  requestRoomEntry: (info) => set({ pendingRoomConfirmation: info }),
+  cancelRoomEntry: () => set({ pendingRoomConfirmation: null }),
 
   // ── UI state ──
   showSuccessModal: false,
   successMessage: '',
 
   // ── Actions ──
-  setCompletedPretest: (score) => set({ hasCompletedPretest: true, pretestScore: score }),
+  setCompletedPretest: (score) => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('3dnurse_pretest_done', 'true');
+      localStorage.setItem('3dnurse_pretest_score', String(score));
+    }
+    set({ hasCompletedPretest: true, pretestScore: score });
+  },
+  unlockAllRooms: () => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('3dnurse_pretest_done', 'true');
+    }
+    set({ hasCompletedPretest: true, showPretestWarning: false, pretestWarningTargetRoom: null });
+  },
   setCompletedPosttest: (score) => set({ posttestScore: score }),
   triggerPretestWarning: (roomKey) => set({ showPretestWarning: true, pretestWarningTargetRoom: roomKey }),
   dismissPretestWarning: () => set({ showPretestWarning: false, pretestWarningTargetRoom: null }),
@@ -221,9 +276,13 @@ const useStore = create((set, get) => ({
     })),
 
   completeModule: (moduleId) =>
-    set((state) => ({
-      learningProgress: { ...state.learningProgress, [moduleId]: true },
-    })),
+    set((state) => {
+      const nextProgress = { ...state.learningProgress, [moduleId]: true };
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('3dnurse_progress', JSON.stringify(nextProgress));
+      }
+      return { learningProgress: nextProgress };
+    }),
 
   setShowSuccessModal: (show, message = '') =>
     set({ showSuccessModal: show, successMessage: message }),

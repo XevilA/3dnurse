@@ -205,33 +205,103 @@ export default function HospitalRoomShell({
         </mesh>
       </group>
 
-      {/* ── 4b. Front / South Wall Architecture (Fully Enclosing Room) ── */}
+      {/* ── 4b. Front / South Wall Architecture (Floor-to-Ceiling Panoramic Glass & Outdoor Garden) ── */}
       {theme === 'lobby' ? (
-        // Grand Hospital Entrance Facade (Floor-to-Ceiling Medical Glass & Stainless Mullions)
+        // Grand Hospital Entrance Facade (Floor-to-Ceiling Medical Glass & Outside Scenery View)
         <group position={[0, height / 2, halfD]}>
-          <mesh position={[0, (height / 2) - 0.6, 0]} receiveShadow>
-            <boxGeometry args={[width, 1.2, 0.4]} />
-            <meshStandardMaterial color={colors.wallUpper} roughness={0.5} />
+          {/* Top Architectural Soffit */}
+          <mesh position={[0, (height / 2) - 0.5, 0]} receiveShadow>
+            <boxGeometry args={[width, 1.0, 0.4]} />
+            <meshStandardMaterial color={colors.wallUpper} roughness={0.4} />
           </mesh>
-          <mesh position={[0, -0.6, 0]}>
-            <boxGeometry args={[width, height - 1.2, 0.08]} />
-            <meshStandardMaterial
+
+          {/* Panoramic Hospital Glass Curtain Wall */}
+          <mesh position={[0, -0.5, 0]}>
+            <boxGeometry args={[width, height - 1.0, 0.06]} />
+            <meshPhysicalMaterial
               color="#e0f2fe"
-              roughness={0.1}
-              metalness={0.2}
+              transmission={0.88}
+              roughness={0.05}
+              metalness={0.1}
               transparent
-              opacity={0.35}
+              opacity={0.85}
+              ior={1.5}
             />
           </mesh>
-          {[-8, -5, -2, 2, 5, 8].map((mx) => (
-            <mesh key={`mullion_${mx}`} position={[mx, -0.6, 0.05]} castShadow>
-              <boxGeometry args={[0.12, height - 1.2, 0.16]} />
-              <meshStandardMaterial color="#94a3b8" metalness={0.8} roughness={0.2} />
+
+          {/* Stainless Steel Vertical Mullions */}
+          {[-8, -5.5, -3, 0, 3, 5.5, 8].map((mx) => (
+            <mesh key={`mullion_${mx}`} position={[mx, -0.5, 0.04]} castShadow>
+              <boxGeometry args={[0.10, height - 1.0, 0.14]} />
+              <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.2} />
             </mesh>
           ))}
+
+          {/* Horizontal Transom Glass Rails */}
+          {[-1.2, 1.4].map((ry) => (
+            <mesh key={`rail_${ry}`} position={[0, ry, 0.04]}>
+              <boxGeometry args={[width, 0.08, 0.12]} />
+              <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.2} />
+            </mesh>
+          ))}
+
+          {/* Bottom Kickplate Threshold */}
           <mesh position={[0, -(height / 2) + 0.15, 0.05]}>
-            <boxGeometry args={[width, 0.3, 0.2]} />
-            <meshStandardMaterial color="#64748b" metalness={0.5} roughness={0.3} />
+            <boxGeometry args={[width, 0.3, 0.22]} />
+            <meshStandardMaterial color="#475569" metalness={0.6} roughness={0.3} />
+          </mesh>
+
+          {/* ══════════════════════════════════════════════════════════════════════════
+              🌳 OUTDOOR SCENERY & HOSPITAL GARDEN VIEW (มองเห็นภาพวิวภายนอกผ่านกระจก)
+              ══════════════════════════════════════════════════════════════════════════ */}
+          {/* Outdoor Ground / Garden Lawn Terrace */}
+          <group position={[0, -(height / 2), 5.0]} rotation={[-Math.PI / 2, 0, 0]}>
+            {/* Lush Lawn */}
+            <mesh position={[0, 0, -0.05]}>
+              <planeGeometry args={[width * 1.5, 14]} />
+              <meshStandardMaterial color="#4ade80" roughness={0.9} />
+            </mesh>
+            {/* Paved Walkway Pathway */}
+            <mesh position={[0, 2, -0.03]}>
+              <planeGeometry args={[width * 1.2, 4]} />
+              <meshStandardMaterial color="#e2e8f0" roughness={0.5} />
+            </mesh>
+          </group>
+
+          {/* Garden Planters & Outdoor Trees outside the window */}
+          {[-7.5, -3.5, 3.5, 7.5].map((tx) => (
+            <group key={`out_tree_${tx}`} position={[tx, -(height / 2), 3.2]}>
+              {/* Planter Box */}
+              <mesh position={[0, 0.45, 0]} castShadow>
+                <boxGeometry args={[1.4, 0.9, 1.4]} />
+                <meshStandardMaterial color="#ffffff" roughness={0.3} />
+              </mesh>
+              {/* Tree Trunk */}
+              <mesh position={[0, 1.8, 0]}>
+                <cylinderGeometry args={[0.12, 0.16, 2.2, 12]} />
+                <meshStandardMaterial color="#78350f" roughness={0.8} />
+              </mesh>
+              {/* Lush Tree Foliage */}
+              <mesh position={[0, 3.2, 0]}>
+                <sphereGeometry args={[1.2, 16, 16]} />
+                <meshStandardMaterial color="#22c55e" roughness={0.6} />
+              </mesh>
+              <mesh position={[0.2, 3.8, 0.1]}>
+                <sphereGeometry args={[0.9, 14, 14]} />
+                <meshStandardMaterial color="#16a34a" roughness={0.6} />
+              </mesh>
+            </group>
+          ))}
+
+          {/* Outdoor Sunny Sky Landscape Backdrop */}
+          <mesh position={[0, 2.5, 8.5]}>
+            <planeGeometry args={[width * 1.8, height * 1.6]} />
+            <meshBasicMaterial color="#7dd3fc" />
+          </mesh>
+          {/* Distant Soft Mountain / City Skyline Horizon */}
+          <mesh position={[0, 0.8, 8.4]}>
+            <planeGeometry args={[width * 1.8, 4.2]} />
+            <meshBasicMaterial color="#38bdf8" transparent opacity={0.65} />
           </mesh>
         </group>
       ) : (

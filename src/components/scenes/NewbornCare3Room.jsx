@@ -14,8 +14,8 @@ import DoctorDesk from '../furniture/DoctorDesk';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
 export default function NewbornCare3Room() {
-  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
-  const [activeTab, setActiveTab] = useState(0); // 0: ขั้นตอนการเช็ดสะดือ, 1: การพับผ้าอ้อม, 2: สังเกตการติดเชื้อ, 3: แบบประเมิน
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby, openLightbox } = useStore();
+  const [activeTab, setActiveTab] = useState(0); // 0: ขั้นตอนการเช็ดสะดือ, 1: สะดือเปียกน้ำทำอย่างไร, 2: การพับผ้าอ้อม, 3: สังเกตการติดเชื้อ, 4: แบบประเมิน
 
   // ── กิจกรรม 1: ขั้นตอนการเช็ดทำความสะอาดสายสะดือ (เรียงลำดับ 4 ขั้นตอน) ──
   const [cordSteps, setCordSteps] = useState([
@@ -48,6 +48,39 @@ export default function NewbornCare3Room() {
       setAct1Feedback({
         pass: false,
         msg: '✕ ลำดับยังไม่ถูกต้อง: ต้องเริ่มจากล้างมือให้สะอาด ชุบสำลี เช็ดจากโคนขึ้นสู่ปลาย และปล่อยให้แห้ง'
+      });
+    }
+  };
+
+  // ── สถานการณ์จำลองพิเศษ: "สะดือเปียกน้ำ ต้องทำอย่างไร ?" ──
+  const [wetCordAnswer, setWetCordAnswer] = useState(null);
+  const [wetCordFeedback, setWetCordFeedback] = useState(null);
+
+  const handleSelectWetCord = (ans) => {
+    setWetCordAnswer(ans);
+    if (ans === 'dry_and_alcohol') {
+      setWetCordFeedback({
+        pass: true,
+        title: '✓ ถูกต้องยอดเยี่ยมตามหลักสุขอนามัยทางการพยาบาล!',
+        msg: 'เมื่อสะดือเปียกน้ำ ต้องรีบใช้สำลีสะอาดซับให้แห้งสนิททันที แล้วใช้สำลีชุบ 70% แอลกอฮอล์เช็ดรอบโคนสะดือวนขึ้นสู่ปลายอีกครั้ง ปล่อยให้แห้งตามธรรมชาติ ห้ามโรยแป้ง ยาผง หรือสมุนไพรใดๆ เด็ดขาด เพื่อป้องกันการสะสมของเชื้อแบคทีเรีย'
+      });
+    } else if (ans === 'powder') {
+      setWetCordFeedback({
+        pass: false,
+        title: '✕ ห้ามโรยแป้งเด็ดขาด!',
+        msg: 'แป้งเด็กจะจับตัวเป็นก้อนหมักหมมความชื้นไว้ใต้โคนสะดือ กลายเป็นแหล่งเพาะเชื้อแบคทีเรียชั้นดี และทำให้สะดืออักเสบติดเชื้อรุนแรงได้'
+      });
+    } else if (ans === 'blow_dry') {
+      setWetCordFeedback({
+        pass: false,
+        title: '✕ ไม่ควรใช้ไดร์เป่าผม!',
+        msg: 'ลมร้อนจากไดร์เป่าผมอาจลวกผิวหนังทารกที่บอบบาง และกระแสลมอาจพัดพาฝุ่นละอองเชื้อโรคเข้าสู่แผลสะดือได้'
+      });
+    } else {
+      setWetCordFeedback({
+        pass: false,
+        title: '✕ ไม่ถูกต้อง!',
+        msg: 'การปล่อยทิ้งไว้ให้สะดือชื้นและใส่ผ้าอ้อมทับ จะทำให้เกิดภาวะอับชื้น เป็นสาเหตุหลักของการติดเชื้อที่สายสะดือ (Omphalitis)'
       });
     }
   };
@@ -142,9 +175,117 @@ export default function NewbornCare3Room() {
       {/* ── Realistic 3D Hospital Room Architecture ── */}
       <HospitalRoomShell
         theme="mother"
-        roomTitle="ห้องบริบาลทารก 3: การดูแลสายสะดือทารกแรกเกิด"
+        roomTitle="ห้องบริบาลทารก 3: การดูแลสายสะดือทารกแรกเกิด (ภาพจำลอง)"
         roomNumber="Cord Care Nursery 203"
       />
+
+      {/* ── Wall Poster 1 on North Wall: การดูแลสายสะดือและการพับผ้าอ้อม ── */}
+      <group position={[-3.4, 3.2, -7.8]}>
+        <mesh
+          castShadow
+          className="cursor-pointer"
+          onClick={() => openLightbox({
+            src: '/references/room2/img_009.png',
+            title: 'การดูแลสายสะดือทารกแรกเกิดและการพับผ้าอ้อม',
+            caption: 'เช็ดวนรอบโคนสะดือสู่ปลาย ปล่อยให้แห้ง และพับขอบผ้าอ้อมใต้สะดือ',
+            category: 'การดูแลสายสะดือ (Nursery 203)',
+            clinicalDetails: [
+              '1. เช็ดสายสะดือด้วยสำลีชุบ 70% แอลกอฮอล์ จากโคนสะดือวนขึ้นสู่ปลายสะดือ',
+              '2. เช็ดรอบเดียวแล้วทิ้ง ห้ามเช็ดย้อนกลับไปมาเด็ดขาด',
+              '3. ปล่อยให้แห้งเองตามธรรมชาติ ห้ามโรยแป้ง ยาผง หรือสมุนไพรใดๆ',
+              '4. พับขอบผ้าอ้อมลงให้อยู่ใต้สายสะดือเสมอ เพื่อป้องกันการหมักหมมปัสสาวะและการเสียดสี'
+            ]
+          })}
+        >
+          <boxGeometry args={[2.0, 1.4, 0.04]} />
+          <meshStandardMaterial color="#fffbeb" roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 0, 0.025]}>
+          <boxGeometry args={[2.08, 1.48, 0.02]} />
+          <meshStandardMaterial color="#d97706" roughness={0.3} />
+        </mesh>
+        <Html position={[0, 0, 0.05]} center transform scale={0.22}>
+          <div
+            onClick={() => openLightbox({
+              src: '/references/room2/img_009.png',
+              title: 'การดูแลสายสะดือทารกแรกเกิดและการพับผ้าอ้อม',
+              caption: 'เช็ดวนรอบโคนสะดือสู่ปลาย ปล่อยให้แห้ง และพับขอบผ้าอ้อมใต้สะดือ',
+              category: 'การดูแลสายสะดือ (Nursery 203)',
+              clinicalDetails: [
+                '1. เช็ดสายสะดือด้วยสำลีชุบ 70% แอลกอฮอล์ จากโคนสะดือวนขึ้นสู่ปลายสะดือ',
+                '2. เช็ดรอบเดียวแล้วทิ้ง ห้ามเช็ดย้อนกลับไปมาเด็ดขาด',
+                '3. ปล่อยให้แห้งเองตามธรรมชาติ ห้ามโรยแป้ง ยาผง หรือสมุนไพรใดๆ',
+                '4. พับขอบผ้าอ้อมลงให้อยู่ใต้สายสะดือเสมอ เพื่อป้องกันการหมักหมมปัสสาวะและการเสียดสี'
+              ]
+            })}
+            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-amber-500 shadow-xl hover:scale-105 transition overflow-hidden"
+            style={{ width: '360px' }}
+          >
+            <img
+              src="/references/room2/img_009.png"
+              alt="การดูแลสายสะดือ"
+              style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '6px' }}
+            />
+            <div className="text-center py-1 bg-amber-50 rounded mt-1">
+              <span className="text-[11px] font-bold text-amber-900">🩹 การดูแลสายสะดือ & ผ้าอ้อม (คลิกดูภาพขยาย)</span>
+            </div>
+          </div>
+        </Html>
+      </group>
+
+      {/* ── Wall Poster 2 on North Wall: เทคนิคการเช็ดสะดือ (โคนสู่ปลาย) ── */}
+      <group position={[3.4, 3.2, -7.8]}>
+        <mesh
+          castShadow
+          className="cursor-pointer"
+          onClick={() => openLightbox({
+            src: '/references/zone1_2/img_001.png',
+            title: 'เทคนิคการเช็ดทำความสะอาดสายสะดืออย่างถูกวิธี',
+            caption: 'การใช้ 70% แอลกอฮอล์ เช็ดรอบโคนสะดือวนขึ้นสู่ปลาย',
+            category: 'การดูแลสายสะดือ (Nursery 203)',
+            clinicalDetails: [
+              '1. ล้างมือให้สะอาดก่อนสัมผัสสะดือทารกทุกครั้ง',
+              '2. ใช้สำลีชุบ 70% แอลกอฮอล์พอหมาด เช็ดรอบโคนสะดือให้สะอาด',
+              '3. วนขึ้นสู่ปลายสายสะดือ ทิ้งสำลีก้อนเดิมทันที',
+              '4. ห้ามโรยแป้งฝุ่นรอบสะดือเด็ดขาด เพราะทำให้สะดือเปียกชื้นและอักเสบ'
+            ]
+          })}
+        >
+          <boxGeometry args={[2.0, 1.4, 0.04]} />
+          <meshStandardMaterial color="#fffbeb" roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 0, 0.025]}>
+          <boxGeometry args={[2.08, 1.48, 0.02]} />
+          <meshStandardMaterial color="#b45309" roughness={0.3} />
+        </mesh>
+        <Html position={[0, 0, 0.05]} center transform scale={0.22}>
+          <div
+            onClick={() => openLightbox({
+              src: '/references/zone1_2/img_001.png',
+              title: 'เทคนิคการเช็ดทำความสะอาดสายสะดืออย่างถูกวิธี',
+              caption: 'การใช้ 70% แอลกอฮอล์ เช็ดรอบโคนสะดือวนขึ้นสู่ปลาย',
+              category: 'การดูแลสายสะดือ (Nursery 203)',
+              clinicalDetails: [
+                '1. ล้างมือให้สะอาดก่อนสัมผัสสะดือทารกทุกครั้ง',
+                '2. ใช้สำลีชุบ 70% แอลกอฮอล์พอหมาด เช็ดรอบโคนสะดือให้สะอาด',
+                '3. วนขึ้นสู่ปลายสายสะดือ ทิ้งสำลีก้อนเดิมทันที',
+                '4. ห้ามโรยแป้งฝุ่นรอบสะดือเด็ดขาด เพราะทำให้สะดือเปียกชื้นและอักเสบ'
+              ]
+            })}
+            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-amber-600 shadow-xl hover:scale-105 transition overflow-hidden"
+            style={{ width: '360px' }}
+          >
+            <img
+              src="/references/zone1_2/img_001.png"
+              alt="เทคนิคเช็ดสะดือ"
+              style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '6px' }}
+            />
+            <div className="text-center py-1 bg-amber-50 rounded mt-1">
+              <span className="text-[11px] font-bold text-amber-900">✨ เทคนิคเช็ดสะดือโคนสู่ปลาย (คลิกดูภาพขยาย)</span>
+            </div>
+          </div>
+        </Html>
+      </group>
 
       {/* ── REAL 3D ASSETS ── */}
       <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
@@ -215,13 +356,14 @@ export default function NewbornCare3Room() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fef3c7', paddingBottom: '12px', marginBottom: '16px' }}>
             <div>
               <span style={{ background: '#d97706', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
-                NURSERY 203: การดูแลสายสะดือทารกแรกเกิด
+                NURSERY 203: การดูแลสายสะดือทารกแรกเกิด (ภาพจำลอง)
               </span>
               <h2 style={{ margin: '6px 0 0 0', color: '#b45309', fontSize: '22px' }}>
                 {activeTab === 0 && 'ขั้นตอนการเช็ดทำความสะอาดสายสะดือ'}
-                {activeTab === 1 && 'การใส่ผ้าอ้อม: พับขอบต่ำกว่าสายสะดือ'}
-                {activeTab === 2 && 'การสังเกตอาการผิดปกติและสะดือติดเชื้อ'}
-                {activeTab === 3 && 'แบบประเมินความรู้ประจำห้อง Nursery 203 (ข้อ 12 & 19)'}
+                {activeTab === 1 && 'สถานการณ์จำลอง: สะดือเปียกน้ำ ต้องทำอย่างไร ?'}
+                {activeTab === 2 && 'การใส่ผ้าอ้อม: พับขอบต่ำกว่าสายสะดือ'}
+                {activeTab === 3 && 'การสังเกตอาการผิดปกติและสะดือติดเชื้อ'}
+                {activeTab === 4 && 'แบบประเมินความรู้ประจำห้อง Nursery 203 (ข้อ 12 & 19)'}
               </h2>
             </div>
             <button
@@ -232,21 +374,21 @@ export default function NewbornCare3Room() {
             </button>
           </div>
 
-          {/* Navigation Tabs */}
+          {/* Navigation Tabs (5 Tabs) */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
-            {['1. ขั้นตอนเช็ดสะดือ', '2. การพับขอบผ้าอ้อม', '3. สังเกตการติดเชื้อ', '4. แบบประเมิน (Quiz)'].map((label, idx) => (
+            {['1. ขั้นตอนเช็ดสะดือ', '2. สะดือเปียกน้ำทำอย่างไร?', '3. การพับขอบผ้าอ้อม', '4. สังเกตการติดเชื้อ', '5. แบบประเมิน (Quiz)'].map((label, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveTab(idx)}
                 style={{
                   flex: 1,
-                  padding: '10px 6px',
+                  padding: '10px 4px',
                   borderRadius: '12px',
                   border: 'none',
                   background: activeTab === idx ? '#d97706' : '#fef3c7',
                   color: activeTab === idx ? 'white' : '#92400e',
                   fontWeight: 'bold',
-                  fontSize: '13px',
+                  fontSize: '12.5px',
                   cursor: 'pointer',
                   transition: 'all 0.2s'
                 }}
@@ -310,6 +452,104 @@ export default function NewbornCare3Room() {
                     onClick={() => setActiveTab(1)}
                     style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
                   >
+                    ไปสถานการณ์สะดือเปียกน้ำ ➜
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB 1: สถานการณ์จำลอง "สะดือเปียกน้ำ ต้องทำอย่างไร ?" ── */}
+          {activeTab === 1 && (
+            <div>
+              <div style={{ background: '#ecfeff', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #06b6d4' }}>
+                <strong style={{ color: '#0e7490' }}>💦 สถานการณ์จำลองทางคลินิก:</strong> ระหว่างการอาบน้ำหรือทำความสะอาด หากน้ำกระเด็นใส่สายสะดือของทารกจนเปียกชื้น คุณแม่ควรปฏิบัติตามข้อใดจึงจะถูกต้องที่สุดตามหลักการพยาบาล ?
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginBottom: '16px' }}>
+                {[
+                  {
+                    id: 'dry_and_alcohol',
+                    title: '1. ซับให้แห้งสนิททันทีด้วยสำลีสะอาด แล้วเช็ดด้วย 70% แอลกอฮอล์รอบโคนสะดือวนขึ้นสู่ปลายอีกครั้ง ปล่อยให้แห้งตามธรรมชาติ ห้ามโรยแป้ง',
+                    badge: 'ทางเลือกที่ 1'
+                  },
+                  {
+                    id: 'powder',
+                    title: '2. ใช้แป้งเด็กโรยหนาๆ รอบโคนสะดือทันที เพื่อช่วยดูดซับความชื้นและทำให้สะดือแห้งไว',
+                    badge: 'ทางเลือกที่ 2'
+                  },
+                  {
+                    id: 'blow_dry',
+                    title: '3. ใช้ไดร์เป่าผมลมร้อนเป่าสะดือจนแห้งสนิท แล้วทาครีมกันผื่นเพื่อสมานแผล',
+                    badge: 'ทางเลือกที่ 3'
+                  },
+                  {
+                    id: 'do_nothing',
+                    title: '4. ไม่ต้องทำอะไร ปล่อยทิ้งไว้แล้วรีบดึงขอบผ้าอ้อมคลุมปิดทับไว้ทันที',
+                    badge: 'ทางเลือกที่ 4'
+                  }
+                ].map((opt) => (
+                  <div
+                    key={opt.id}
+                    onClick={() => handleSelectWetCord(opt.id)}
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      border: wetCordAnswer === opt.id
+                        ? (opt.id === 'dry_and_alcohol' ? '2px solid #16a34a' : '2px solid #dc2626')
+                        : '1px solid #e2e8f0',
+                      background: wetCordAnswer === opt.id
+                        ? (opt.id === 'dry_and_alcohol' ? '#f0fdf4' : '#fef2f2')
+                        : 'white',
+                      transition: 'all 0.2s',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{
+                        background: wetCordAnswer === opt.id
+                          ? (opt.id === 'dry_and_alcohol' ? '#16a34a' : '#dc2626')
+                          : '#e2e8f0',
+                        color: wetCordAnswer === opt.id ? 'white' : '#64748b',
+                        padding: '2px 8px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: 'bold'
+                      }}>
+                        {opt.badge}
+                      </span>
+                      <span style={{ fontSize: '13.5px', fontWeight: '500', color: '#1e293b' }}>
+                        {opt.title}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {wetCordFeedback && (
+                <div style={{
+                  padding: '14px',
+                  borderRadius: '12px',
+                  marginBottom: '14px',
+                  background: wetCordFeedback.pass ? '#dcfce7' : '#fee2e2',
+                  border: `1.5px solid ${wetCordFeedback.pass ? '#86efac' : '#fca5a5'}`,
+                  color: wetCordFeedback.pass ? '#166534' : '#991b1b',
+                  fontSize: '13px'
+                }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
+                    {wetCordFeedback.title}
+                  </div>
+                  <div>{wetCordFeedback.msg}</div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                {wetCordFeedback?.pass && (
+                  <button
+                    onClick={() => setActiveTab(2)}
+                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
+                  >
                     ไปการพับขอบผ้าอ้อม ➜
                   </button>
                 )}
@@ -317,8 +557,8 @@ export default function NewbornCare3Room() {
             </div>
           )}
 
-          {/* ── TAB 1: การพับขอบผ้าอ้อม ── */}
-          {activeTab === 1 && (
+          {/* ── TAB 2: การพับขอบผ้าอ้อม ── */}
+          {activeTab === 2 && (
             <div>
               <div style={{ background: '#fffbeb', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #f59e0b' }}>
                 <strong>เป้าหมาย:</strong> เรียนรู้วิธีการใส่ผ้าอ้อมที่ปลอดภัยสำหรับทารกแรกเกิดที่สายสะดือยังไม่หลุด
@@ -381,7 +621,7 @@ export default function NewbornCare3Room() {
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 {act2Feedback?.pass && (
                   <button
-                    onClick={() => setActiveTab(2)}
+                    onClick={() => setActiveTab(3)}
                     style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
                   >
                     ไปสังเกตการติดเชื้อ ➜
@@ -391,8 +631,8 @@ export default function NewbornCare3Room() {
             </div>
           )}
 
-          {/* ── TAB 2: สังเกตการติดเชื้อสายสะดือ ── */}
-          {activeTab === 2 && (
+          {/* ── TAB 3: สังเกตการติดเชื้อสายสะดือ ── */}
+          {activeTab === 3 && (
             <div>
               <div style={{ background: '#fffbeb', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #f59e0b' }}>
                 <strong>เป้าหมาย:</strong> แยกแยะสัญญาณอันตรายของภาวะสะดืออักเสบติดเชื้อ (Omphalitis) ที่ต้องรีบพาไปพบแพทย์
@@ -440,7 +680,7 @@ export default function NewbornCare3Room() {
                 </button>
                 {act3Feedback?.pass && (
                   <button
-                    onClick={() => setActiveTab(3)}
+                    onClick={() => setActiveTab(4)}
                     style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
                   >
                     ทำแบบประเมินความรู้ท้ายบท ➜
@@ -450,8 +690,8 @@ export default function NewbornCare3Room() {
             </div>
           )}
 
-          {/* ── TAB 3: แบบประเมินความรู้ประจำห้อง Nursery 203 (ข้อ 12 & 19) ── */}
-          {activeTab === 3 && (
+          {/* ── TAB 4: แบบประเมินความรู้ประจำห้อง Nursery 203 (ข้อ 12 & 19) ── */}
+          {activeTab === 4 && (
             <div>
               {!quizFinished ? (
                 <>

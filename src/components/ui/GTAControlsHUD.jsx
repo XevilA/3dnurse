@@ -202,11 +202,38 @@ export default function GTAControlsHUD() {
     return null;
   }
 
+  const hasCompletedPretest = useStore((s) => s.hasCompletedPretest);
+  const playTimeSeconds = useStore((s) => s.playTimeSeconds);
+
+  // Format playtime MM:SS
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
+
   return (
     <div className="pointer-events-none select-none">
-      {/* ── RPG Status Bar: Maternal Wellness & Energy (Top Left) ── */}
+      {/* ── RPG Status Bar: Maternal Wellness, Energy & Timer (Top Left) ── */}
       {/* Desktop view (>= 640px): Full Detailed Card */}
-      <div className="hidden sm:block absolute top-16 left-4 z-20 pointer-events-auto bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl p-3 shadow-2xl text-white min-w-[210px]">
+      <div className="hidden sm:block absolute top-16 left-4 z-20 pointer-events-auto bg-black/85 backdrop-blur-md border border-white/20 rounded-2xl p-3 shadow-2xl text-white min-w-[220px]">
+        {/* Playtime Timer */}
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-xs font-bold">
+          <span className="flex items-center gap-1.5 text-cyan-300">
+            <span>⏱️</span>
+            <span>เวลาเล่น:</span>
+          </span>
+          {hasCompletedPretest ? (
+            <span className="font-mono text-emerald-400 font-black tracking-wider text-[13px] bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40 animate-pulse">
+              {formatTime(playTimeSeconds)}
+            </span>
+          ) : (
+            <span className="text-[10px] text-amber-300 font-semibold bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">
+              เริ่มหลัง Pre-test
+            </span>
+          )}
+        </div>
+
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs font-bold text-pink-300 flex items-center gap-1.5">
             <span>❤️</span>
@@ -224,7 +251,7 @@ export default function GTAControlsHUD() {
             <span>พลังงาน (Stamina)</span>
           </span>
           <span className="text-[11px] font-mono font-bold text-yellow-300">
-            {Math.round(stamina)}%
+            {hasCompletedPretest ? `${Math.round(stamina)}%` : '100% (ล็อค)'}
           </span>
         </div>
         <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
@@ -234,7 +261,7 @@ export default function GTAControlsHUD() {
                 ? 'bg-gradient-to-r from-emerald-400 to-teal-300 animate-pulse'
                 : 'bg-gradient-to-r from-yellow-500 to-amber-300'
             }`}
-            style={{ width: `${Math.max(5, Math.min(100, stamina))}%` }}
+            style={{ width: `${hasCompletedPretest ? Math.max(5, Math.min(100, stamina)) : 100}%` }}
           />
         </div>
 
@@ -253,9 +280,9 @@ export default function GTAControlsHUD() {
           onClick={() => setIsStatusExpanded(!isStatusExpanded)}
           className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white shadow-xl"
         >
-          <div className="flex items-center gap-1 text-[10px] font-bold text-pink-300">
-            <span>❤️</span>
-            <span>100%</span>
+          <div className="flex items-center gap-1 text-[10px] font-bold text-cyan-300 font-mono">
+            <span>⏱️</span>
+            <span>{hasCompletedPretest ? formatTime(playTimeSeconds) : '--:--'}</span>
           </div>
           <div className="h-2.5 w-px bg-white/30" />
           <div className="flex items-center gap-1 text-[10px] font-bold text-yellow-300">
@@ -265,9 +292,12 @@ export default function GTAControlsHUD() {
         </button>
 
         {isStatusExpanded && (
-          <div className="mt-1.5 p-2 bg-black/90 backdrop-blur-md rounded-xl border border-white/20 text-white text-[10px] shadow-2xl max-w-[170px] animate-fadeIn">
-            <div className="text-pink-300 font-bold mb-1">❤️ สุขภาพคุณแม่: 100%</div>
-            <div className="text-yellow-300 font-bold mb-1">⚡ พลังงาน: {Math.round(stamina)}%</div>
+          <div className="mt-1.5 p-2 bg-black/90 backdrop-blur-md rounded-xl border border-white/20 text-white text-[10px] shadow-2xl max-w-[180px] animate-fadeIn space-y-1">
+            <div className="text-cyan-300 font-bold">
+              ⏱️ เวลาเล่น: {hasCompletedPretest ? formatTime(playTimeSeconds) : 'เริ่มหลัง Pre-test'}
+            </div>
+            <div className="text-pink-300 font-bold">❤️ สุขภาพคุณแม่: 100%</div>
+            <div className="text-yellow-300 font-bold">⚡ พลังงาน: {Math.round(stamina)}%</div>
             {isSitting && <div className="text-emerald-300 font-bold">✨ ฟื้นฟูร่างกายขณะนั่งพัก</div>}
           </div>
         )}
