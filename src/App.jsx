@@ -143,6 +143,29 @@ class RoomErrorBoundary extends React.Component {
   }
 }
 
+/** Error boundary for UI overlays to prevent white screen if an overlay errors */
+class GlobalUIErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('UI overlay error caught:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
+
 /** Elegant 3D In-Scene Hospital Loading Indicator to avoid blank/white canvas */
 function RoomLoadingFallback() {
   return (
@@ -222,11 +245,13 @@ export default function App() {
       </div>
 
       {/* ── UI Overlays (z-20 to z-50) ── */}
-      <HUD />
-      <GTAControlsHUD />
-      {showSuccessModal && <SuccessModal />}
-      <RoomConfirmationModal />
-      <ImageViewerModal />
+      <GlobalUIErrorBoundary>
+        <HUD />
+        <GTAControlsHUD />
+        {showSuccessModal && <SuccessModal />}
+        <RoomConfirmationModal />
+        <ImageViewerModal />
+      </GlobalUIErrorBoundary>
 
       {/* ── Visual Asset Loader ── */}
       <Loader

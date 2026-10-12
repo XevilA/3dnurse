@@ -178,6 +178,8 @@ export default function GTAControlsHUD() {
   const sitDown = useStore((s) => s.sitDown);
   const standUp = useStore((s) => s.standUp);
   const stamina = useStore((s) => s.stamina);
+  const hasCompletedPretest = useStore((s) => s.hasCompletedPretest);
+  const playTimeSeconds = useStore((s) => s.playTimeSeconds);
 
   // Controls UI state
   const [isSprintLocked, setIsSprintLocked] = useState(false);
@@ -201,9 +203,6 @@ export default function GTAControlsHUD() {
   if (currentRoom === 'dressingRoom' || currentRoom === 'quiz') {
     return null;
   }
-
-  const hasCompletedPretest = useStore((s) => s.hasCompletedPretest);
-  const playTimeSeconds = useStore((s) => s.playTimeSeconds);
 
   // Format playtime MM:SS
   const formatTime = (secs) => {
