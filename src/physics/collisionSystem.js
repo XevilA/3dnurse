@@ -151,37 +151,37 @@ export const ROOM_COLLIDERS = {
     ]
   },
 
-  // ── 6. Newborn Room 1: Infant Feeding Technique (18x18m) ──
+  // ── 6. Newborn Room 1: Infant Feeding Technique (14x14m) ──
   newbornCare1: {
-    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
-    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
+    bounds: { minX: -6.55, maxX: 6.55, minZ: -6.55, maxZ: 6.55 },
+    doorways: [{ wall: 'minX', minSpan: 2.4, maxSpan: 5.2, thresholdLimit: -6.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
-      { minX: 6.5, maxX: 8.3, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนคุณแม่', seatId: 'newborn1_sofa' },
+      { minX: 4.5, maxX: 6.3, minZ: -1.6, maxZ: 1.6, name: 'โซฟาพักผ่อนคุณแม่', seatId: 'newborn1_sofa' },
       { minX: -4.3, maxX: -2.7, minZ: -4.3, maxZ: -2.7, name: 'เก้าอี้ให้นมบุตร', seatId: 'newborn1_nursing_chair' },
-      { minX: 2.6, maxX: 4.4, minZ: -4.3, maxZ: -2.7, name: 'เตียงเด็ก' },
-      { minX: -6.2, maxX: -4.8, minZ: -4.2, maxZ: -2.8, name: 'โต๊ะวางขวดนม' },
+      { minX: 2.2, maxX: 4.0, minZ: -4.3, maxZ: -2.7, name: 'เตียงเด็ก' },
+      { minX: -5.8, maxX: -4.4, minZ: -4.2, maxZ: -2.8, name: 'โต๊ะวางขวดนม' },
     ],
     circles: [
-      { x: 6.0, z: 3.2, radius: 0.55, name: 'ตะกร้าผ้าอ้อม' },
-      { x: -5.8, z: 3.5, radius: 0.45, name: 'ถังขยะ' },
-      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
-      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
+      { x: 5.2, z: 2.8, radius: 0.55, name: 'ตะกร้าผ้าอ้อม' },
+      { x: -5.4, z: 2.8, radius: 0.45, name: 'ถังขยะ' },
+      { x: 5.8, z: -5.8, radius: 0.55, name: 'ต้นไม้' },
+      { x: -5.8, z: 5.4, radius: 0.55, name: 'ต้นไม้' },
     ]
   },
 
-  // ── 7. Newborn Room 2: Infant Bathing & Skin Care (18x18m) ──
+  // ── 7. Newborn Room 2: Infant Bathing & Skin Care (13x13m) ──
   newbornCare2: {
-    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
-    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
+    bounds: { minX: -6.05, maxX: 6.05, minZ: -6.05, maxZ: 6.05 },
+    doorways: [{ wall: 'minX', minSpan: 2.0, maxSpan: 4.6, thresholdLimit: -6.38, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Central Ergonomic Baby Bathtub
       { minX: -1.8, maxX: 1.8, minZ: -4.5, maxZ: -2.5, name: 'อ่างอาบน้ำทารก' },
       // Washbasin Counter
-      { minX: -6.4, maxX: -4.6, minZ: -0.9, maxZ: 0.9, name: 'อ่างล้างมือ' },
+      { minX: -5.8, maxX: -4.2, minZ: -0.9, maxZ: 0.9, name: 'อ่างล้างมือ' },
       // Baby Skincare & Towel Mobile Cart
-      { minX: 4.3, maxX: 6.1, minZ: 0.1, maxZ: 1.9, name: 'รถเข็นผ้าขนหนูและสบู่' },
+      { minX: 4.0, maxX: 5.6, minZ: 0.1, maxZ: 1.9, name: 'รถเข็นผ้าขนหนูและสบู่' },
       // Baby Toiletries Cabinet
-      { minX: 7.0, maxX: 8.3, minZ: -3.4, maxZ: -1.6, name: 'ตู้เก็บผลิตภัณฑ์อาบน้ำ' },
+      { minX: 5.0, maxX: 5.9, minZ: -3.4, maxZ: -1.6, name: 'ตู้เก็บผลิตภัณฑ์อาบน้ำ' },
       // Laundry Hamper
       { minX: 1.5, maxX: 2.9, minZ: -3.4, maxZ: -1.8, name: 'ตะกร้าผ้าเปียก' },
     ],
@@ -257,10 +257,10 @@ export const ROOM_COLLIDERS = {
     ]
   },
 
-  // ── 11. Final Examination & Certification Room (Quiz Room) ──
+  // ── 11. Final Examination & Certification Room (Quiz Room 26x26m) ──
   quiz: {
-    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
-    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
+    bounds: { minX: -12.55, maxX: 12.55, minZ: -12.55, maxZ: 12.55 },
+    doorways: [{ wall: 'minX', minSpan: 8.4, maxSpan: 11.2, thresholdLimit: -12.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Examiner / Doctor Desk (Left Wing)
       { minX: -8.8, maxX: -6.2, minZ: -7.5, maxZ: -5.5, name: 'โต๊ะกรรมการสอบ' },

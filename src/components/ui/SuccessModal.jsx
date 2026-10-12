@@ -5,7 +5,7 @@ export default function SuccessModal() {
   const setShowSuccessModal = useStore((s) => s.setShowSuccessModal);
   const successMessage = useStore((s) => s.successMessage);
   const setRoom = useStore((s) => s.setRoom);
-  const completedCount = Object.keys(useStore((s) => s.learningProgress)).length;
+  const completedCount = Object.keys(useStore((s) => s.learningProgress) || {}).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">

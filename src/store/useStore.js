@@ -149,8 +149,17 @@ const useStore = create((set, get) => ({
       } else if (room === 'dressingRoom') {
         spawnPos = customSpawn || [0, 0, 2];
         spawnRotY = typeof customRotY === 'number' ? customRotY : 0;
+      } else if (room === 'newbornCare1') {
+        spawnPos = customSpawn || [-5.2, 0, 3.8];
+        spawnRotY = typeof customRotY === 'number' ? customRotY : Math.PI / 2;
+      } else if (room === 'newbornCare2') {
+        spawnPos = customSpawn || [-4.8, 0, 3.3];
+        spawnRotY = typeof customRotY === 'number' ? customRotY : Math.PI / 2;
+      } else if (room === 'quiz') {
+        spawnPos = customSpawn || [0, 0, -4];
+        spawnRotY = typeof customRotY === 'number' ? customRotY : 0;
       } else {
-        // All clinical interior rooms have entrance doorway at X: -7.4, Z: 5.8 facing East (Math.PI / 2)
+        // Standard 18x18m clinical interior rooms have entrance doorway at X: -7.4, Z: 5.8 facing East (Math.PI / 2)
         spawnPos = customSpawn || [-7.4, 0, 5.8];
         spawnRotY = typeof customRotY === 'number' ? customRotY : Math.PI / 2;
       }

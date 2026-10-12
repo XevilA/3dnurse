@@ -220,7 +220,7 @@ export default function NewbornCare2Room() {
     <group>
       {/* ── Realistic 3D Architecture (Matching img_000.jpg floorplan layout) ── */}
       <HospitalRoomShell
-        theme="mother"
+        theme="newborn"
         width={13}
         depth={13}
         height={5.2}
@@ -813,7 +813,7 @@ export default function NewbornCare2Room() {
       <RealPlant type="potted" position={[5.2, 0, -5.0]} scale={1.0} />
 
       {/* 3D Player Controller */}
-      <PlayerController />
+      <PlayerController initialPosition={[-4.8, 0, 3.3]} initialRotation={Math.PI / 2} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
           2D HTML INTERACTIVE OVERLAYS & MODALS
