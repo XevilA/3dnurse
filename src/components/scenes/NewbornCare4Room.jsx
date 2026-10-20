@@ -8,7 +8,7 @@ import MotherAvatar from '../avatars/MotherAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import InteractiveSeat from '../furniture/InteractiveSeat';
 import RealPlant from '../decorations/RealPlant';
-import { useWovenRugTexture, WoodFramedBacklitPanel } from '../furniture/CozyRoomFurniture';
+import { useWovenRugTexture, FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
 /**
@@ -338,40 +338,40 @@ export default function NewbornCare4Room() {
       </Html>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. ผนังด้านเหนือ (North Wall, z = -6.85):
+          1. ผนังด้านเหนือ (North Wall, Flush against inner wall z = -6.78):
              "หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง" + ผ้าม่านสีครีมอบอุ่น
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[0.5, 2.65, -6.86]}>
-        {/* กรอบหน้าต่างไม้สีอบอุ่น */}
-        <mesh castShadow>
+      <group position={[0.5, 2.65, -6.78]}>
+        {/* กรอบหน้าต่างไม้สีอบอุ่น (ฝังแนบผิวกำแพงด้านใน) */}
+        <mesh position={[0, 0, -0.015]} castShadow>
           <boxGeometry args={[4.4, 2.5, 0.1]} />
           <meshStandardMaterial color="#8c5a3c" roughness={0.5} />
         </mesh>
 
         {/* วิวนอกหน้าต่างยามค่ำคืนที่เงียบสงบ น่านอน (Calm Night / Twilight Sky View) */}
-        <mesh position={[0, 0, 0.03]}>
+        <mesh position={[0, 0, 0.036]}>
           <planeGeometry args={[4.1, 2.25]} />
           <meshBasicMaterial color="#1b263b" />
         </mesh>
         {/* แสงขอบฟ้าและดวงจันทร์เสี้ยว */}
-        <mesh position={[0, -0.55, 0.035]}>
+        <mesh position={[0, -0.55, 0.04]}>
           <planeGeometry args={[4.1, 0.9]} />
           <meshBasicMaterial color="#283845" />
         </mesh>
-        <mesh position={[1.1, 0.6, 0.04]}>
+        <mesh position={[1.1, 0.6, 0.045]}>
           <circleGeometry args={[0.24, 24]} />
           <meshBasicMaterial color="#fef3c7" />
         </mesh>
         {/* พุ่มไม้และต้นไม้ด้านนอกหน้าต่าง */}
-        <mesh position={[-1.2, -0.75, 0.045]}>
+        <mesh position={[-1.2, -0.75, 0.048]}>
           <sphereGeometry args={[0.45, 16, 16]} />
           <meshBasicMaterial color="#1f4e3d" />
         </mesh>
-        <mesh position={[-0.5, -0.8, 0.045]}>
+        <mesh position={[-0.5, -0.8, 0.048]}>
           <sphereGeometry args={[0.38, 16, 16]} />
           <meshBasicMaterial color="#2d6a4f" />
         </mesh>
-        <mesh position={[1.3, -0.78, 0.045]}>
+        <mesh position={[1.3, -0.78, 0.048]}>
           <sphereGeometry args={[0.42, 16, 16]} />
           <meshBasicMaterial color="#1f4e3d" />
         </mesh>
@@ -419,165 +419,98 @@ export default function NewbornCare4Room() {
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          2. 5 โปสเตอร์ความรู้ขนาดใหญ่ ชัดเจน รอบผนังห้อง พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น (คลิกขยายได้)
+          2. 5 โปสเตอร์ความรู้ 3D Mesh ติดผนังแนบสนิท 100% พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น (คลิกขยายได้)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* ภาพที่ 1 (North Wall Left): การจัดสภาพแวดล้อมในห้องนอน */}
-      <WoodFramedBacklitPanel position={[-4.3, 2.7, -6.84]} width={2.95} height={1.95}>
-        <Html position={[0, 0, 0]} center transform scale={0.25}>
-          <div
-            onClick={() => openWallPoster(0)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-amber-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '480px' }}
-          >
-            <img
-              src="/images/rev/nb4_poster1_env.jpg"
-              alt="ภาพที่ 1 การจัดสภาพแวดล้อมในห้องนอน"
-              style={{
-                width: '100%',
-                height: '270px',
-                objectFit: 'contain',
-                backgroundColor: '#fffbeb',
-                borderRadius: '8px',
-              }}
-            />
-          </div>
-        </Html>
-      </WoodFramedBacklitPanel>
+      {/* ภาพที่ 1 (North Wall Left, z = -6.78): การจัดสภาพแวดล้อมในห้องนอน */}
+      <FramedImagePoster3D
+        imgSrc="/images/rev/nb4_poster1_env.jpg"
+        width={2.85}
+        height={1.9}
+        position={[-4.3, 2.7, -6.78]}
+        title="การจัดสภาพแวดล้อมในห้องนอนทารก"
+        badge="ภาพที่ 1"
+        frameColor="#8c5a32"
+        accentColor="#d97706"
+        onClick={() => openWallPoster(0)}
+      />
 
-      {/* ภาพที่ 2 (North Wall Right): ✓ นอนหงาย vs ✕ นอนคว่ำ */}
-      <WoodFramedBacklitPanel position={[4.7, 2.7, -6.84]} width={2.85} height={1.95}>
-        <Html position={[0, 0, 0]} center transform scale={0.25}>
-          <div
-            onClick={() => openWallPoster(1)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-emerald-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '460px' }}
-          >
-            <img
-              src="/images/rev/nb4_poster2_back_vs_prone.jpg"
-              alt="ภาพที่ 2 นอนหงาย vs นอนคว่ำ"
-              style={{
-                width: '100%',
-                height: '270px',
-                objectFit: 'contain',
-                backgroundColor: '#ecfdf5',
-                borderRadius: '8px',
-              }}
-            />
-          </div>
-        </Html>
-      </WoodFramedBacklitPanel>
+      {/* ภาพที่ 2 (North Wall Right, z = -6.78): ✓ นอนหงาย vs ✕ นอนคว่ำ */}
+      <FramedImagePoster3D
+        imgSrc="/images/rev/nb4_poster2_back_vs_prone.jpg"
+        width={2.75}
+        height={1.9}
+        position={[4.7, 2.7, -6.78]}
+        title="ท่านอนทารก (✓ นอนหงาย vs ✕ นอนคว่ำ)"
+        badge="ภาพที่ 2"
+        frameColor="#8c5a32"
+        accentColor="#10b981"
+        onClick={() => openWallPoster(1)}
+      />
 
-      {/* ภาพที่ 3 (East Wall North): ✓ ที่นอนทารกที่ปลอดภัย vs ✕ ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก */}
-      <WoodFramedBacklitPanel position={[6.84, 2.75, -3.6]} rotation={[0, -Math.PI / 2, 0]} width={3.05} height={2.0}>
-        <Html position={[0, 0, 0]} center transform scale={0.25}>
-          <div
-            onClick={() => openWallPoster(2)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-sky-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '500px' }}
-          >
-            <img
-              src="/images/rev/nb4_poster3_safe_mattress.jpg"
-              alt="ภาพที่ 3 ที่นอนทารกที่ปลอดภัย"
-              style={{
-                width: '100%',
-                height: '280px',
-                objectFit: 'contain',
-                backgroundColor: '#f0f9ff',
-                borderRadius: '8px',
-              }}
-            />
-          </div>
-        </Html>
-      </WoodFramedBacklitPanel>
+      {/* ภาพที่ 3 (East Wall North, x = 6.78): ✓ ที่นอนทารกที่ปลอดภัย vs ✕ ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก */}
+      <FramedImagePoster3D
+        imgSrc="/images/rev/nb4_poster3_safe_mattress.jpg"
+        width={2.95}
+        height={1.95}
+        position={[6.78, 2.75, -3.6]}
+        rotation={[0, -Math.PI / 2, 0]}
+        title="ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ"
+        badge="ภาพที่ 3"
+        frameColor="#8c5a32"
+        accentColor="#0284c7"
+        onClick={() => openWallPoster(2)}
+      />
 
-      {/* ภาพที่ 4 (East Wall Center): ✓ แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน */}
-      <WoodFramedBacklitPanel position={[6.84, 2.75, 0.2]} rotation={[0, -Math.PI / 2, 0]} width={2.95} height={2.0}>
-        <Html position={[0, 0, 0]} center transform scale={0.25}>
-          <div
-            onClick={() => openWallPoster(3)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-amber-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '480px' }}
-          >
-            <img
-              src="/images/rev/nb4_poster4_separate_bed.jpg"
-              alt="ภาพที่ 4 แยกเตียงจากผู้ปกครองแต่ให้อยู่ข้างกัน"
-              style={{
-                width: '100%',
-                height: '280px',
-                objectFit: 'contain',
-                backgroundColor: '#fffbeb',
-                borderRadius: '8px',
-              }}
-            />
-          </div>
-        </Html>
-      </WoodFramedBacklitPanel>
+      {/* ภาพที่ 4 (East Wall Center, x = 6.78): ✓ แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน */}
+      <FramedImagePoster3D
+        imgSrc="/images/rev/nb4_poster4_separate_bed.jpg"
+        width={2.85}
+        height={1.95}
+        position={[6.78, 2.75, 0.2]}
+        rotation={[0, -Math.PI / 2, 0]}
+        title="แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน"
+        badge="ภาพที่ 4"
+        frameColor="#8c5a32"
+        accentColor="#d97706"
+        onClick={() => openWallPoster(3)}
+      />
 
-      {/* ภาพที่ 5 (East Wall South): สังเกตอาการอันตรายระหว่างการนอนของทารก */}
-      <WoodFramedBacklitPanel position={[6.84, 2.75, 3.9]} rotation={[0, -Math.PI / 2, 0]} width={2.95} height={2.0}>
-        <Html position={[0, 0, 0]} center transform scale={0.25}>
-          <div
-            onClick={() => openWallPoster(4)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-rose-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '480px' }}
-          >
-            <img
-              src="/images/rev/nb4_poster5_danger_signs.jpg"
-              alt="ภาพที่ 5 สังเกตอาการอันตรายระหว่างการนอนของทารก"
-              style={{
-                width: '100%',
-                height: '280px',
-                objectFit: 'contain',
-                backgroundColor: '#fff1f2',
-                borderRadius: '8px',
-              }}
-            />
-          </div>
-        </Html>
-      </WoodFramedBacklitPanel>
+      {/* ภาพที่ 5 (East Wall South, x = 6.78): สังเกตอาการอันตรายระหว่างการนอนของทารก */}
+      <FramedImagePoster3D
+        imgSrc="/images/rev/nb4_poster5_danger_signs.jpg"
+        width={2.85}
+        height={1.95}
+        position={[6.78, 2.75, 3.9]}
+        rotation={[0, -Math.PI / 2, 0]}
+        title="สังเกตอาการอันตรายระหว่างการนอนของทารก"
+        badge="ภาพที่ 5"
+        frameColor="#8c5a32"
+        accentColor="#e11d48"
+        onClick={() => openWallPoster(4)}
+      />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          3. ผนังด้านซ้าย (West Wall): ทีวีติดผนัง + ตู้คอนโซลไม้ลิ้นชักขาวไฟซ่อนด้านล่าง + ชั้นวางโชว์ไม้
-             + มุมเก้าอี้นวมสีครีมหมอนชมพู + โต๊ะข้างโคมไฟโดมอุ่น (ตรงตาม /images/rev/nb4_room_ref.jpg)
+          3. ผนังด้านซ้าย (West Wall, x = -6.78): ทีวีติดผนัง 3D Mesh + ตู้คอนโซลไม้ลิ้นชักขาวไฟซ่อนด้านล่าง
+             + ชุดผ้าอ้อมพับและห่อแพมเพิสบนตู้คอนโซล + ชั้นวางโชว์ไม้
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[-6.78, 0, -0.5]} rotation={[0, Math.PI / 2, 0]}>
-        {/* ทีวีจอกว้างติดผนัง ("จัดเตียงนอนลูกอย่างไร? ให้ปลอดภัยและสบายตัว") */}
-        <group position={[0.25, 2.35, 0]}>
-          <mesh
-            castShadow
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveModal('practice');
-            }}
-          >
-            <boxGeometry args={[2.6, 1.5, 0.06]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.25} />
-          </mesh>
-          <Html position={[0, 0, 0.04]} center transform scale={0.22}>
-            <div
-              onClick={() => setActiveModal('practice')}
-              className="cursor-pointer select-none rounded-xl overflow-hidden border-2 border-amber-300 shadow-xl bg-amber-50 flex flex-col items-center justify-between p-3 text-center hover:scale-[1.02] transition"
-              style={{ width: '480px', height: '270px' }}
-            >
-              <div className="bg-amber-600 text-white text-xs font-extrabold px-3 py-1 rounded-full">
-                📺 สื่อการสอนบนจอทีวี (คลิกเพื่อเริ่มแบบทดลองปฏิบัติ)
-              </div>
-              <div className="text-xl font-black text-amber-950 leading-snug mt-1">
-                จัดเตียงนอนลูกอย่างไร?
-                <br />
-                <span className="text-emerald-700 text-base">ให้ปลอดภัยและสบายตัว (Safe Sleep)</span>
-              </div>
-              <img
-                src="/images/rev/nb4_poster1_env.jpg"
-                alt="ห้องนอนทารกที่ปลอดภัย"
-                style={{ width: '100%', height: '145px', objectFit: 'cover', borderRadius: '8px' }}
-              />
-            </div>
-          </Html>
-        </group>
+      {/* ทีวีจอกว้างติดผนัง 3D Mesh แนบสนิทกับผนังด้านซ้าย (x = -6.78) */}
+      <FramedImagePoster3D
+        imgSrc="/images/rev/nb4_poster1_env.jpg"
+        width={2.55}
+        height={1.55}
+        position={[-6.78, 2.35, -0.75]}
+        rotation={[0, Math.PI / 2, 0]}
+        title="จัดเตียงนอนลูกอย่างไร? ให้ปลอดภัยและสบายตัว"
+        subtitle="คลิกที่จอทีวีเพื่อเริ่มแบบทดลองปฏิบัติจัดเตียงทารก"
+        badge="📺 SAFE SLEEP TV"
+        frameColor="#1e293b"
+        accentColor="#d97706"
+        onClick={() => setActiveModal('practice')}
+      />
 
+      <group position={[-6.78, 0, -0.5]} rotation={[0, Math.PI / 2, 0]}>
         {/* ชั้นวางไม้ซ่อนไฟอุ่นติดผนังข้างทีวี (ตามภาพ nb4_room_ref.jpg) */}
-        <group position={[-1.65, 2.15, 0.14]}>
+        <group position={[-1.65, 2.15, 0.12]}>
           <mesh castShadow>
             <boxGeometry args={[0.72, 1.05, 0.24]} />
             <meshStandardMaterial color="#b07d4f" roughness={0.5} />
@@ -633,6 +566,33 @@ export default function NewbornCare4Room() {
               <meshStandardMaterial color="#4d7c0f" roughness={0.75} />
             </mesh>
           ))}
+        </group>
+        {/* ชุดผ้าอ้อมผ้าสาลูพับ + แพมเพิสสำเร็จรูปวางบนตู้คอนโซลกลางห้อง */}
+        <group position={[-0.18, 0.68, 0.28]}>
+          {[
+            [0.02, '#ffffff', '#38bdf8'],
+            [0.055, '#fce7f3', '#ec4899'],
+            [0.09, '#ffffff', '#38bdf8'],
+          ].map(([py, col, trim], idx) => (
+            <group key={`nb4_diaper_${idx}`} position={[-0.14, py, 0]}>
+              <mesh castShadow>
+                <boxGeometry args={[0.28, 0.032, 0.24]} />
+                <meshStandardMaterial color={col} roughness={0.8} />
+              </mesh>
+              <mesh position={[0, 0.002, 0.11]}>
+                <boxGeometry args={[0.282, 0.033, 0.022]} />
+                <meshStandardMaterial color={trim} />
+              </mesh>
+            </group>
+          ))}
+          <mesh position={[0.16, 0.11, 0]} castShadow>
+            <boxGeometry args={[0.2, 0.22, 0.22]} />
+            <meshStandardMaterial color="#0d9488" roughness={0.4} />
+          </mesh>
+          <mesh position={[0.16, 0.11, 0.112]}>
+            <planeGeometry args={[0.16, 0.15]} />
+            <meshBasicMaterial color="#fef08a" />
+          </mesh>
         </group>
         {/* เครื่องฟอกอากาศ/เบบี้มอนิเตอร์สีขาว + แจกันดอกไม้สีขาวบนคอนโซล */}
         <group position={[0.95, 0.68, 0.28]}>

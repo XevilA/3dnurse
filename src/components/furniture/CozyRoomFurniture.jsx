@@ -1,6 +1,93 @@
-import React, { useMemo } from 'react';
-import { Html } from '@react-three/drei';
+import React, { useMemo, useState, useEffect } from 'react';
+import { Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+
+const THAI_FONT = '"Sarabun","Noto Sans Thai","Thonburi","Ayuthaya",system-ui,sans-serif';
+
+function roundRect2D(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/**
+ * Creates a crisp high-DPI CanvasTexture for 3D poster headers/captions
+ * so we never need floating <Html transform> overlays on walls.
+ */
+export function usePosterTitleTexture({
+  title = '',
+  subtitle = '',
+  badge = '',
+  bgColor = '#fffdf9',
+  textColor = '#7c2d12',
+  accentColor = '#d97706',
+  widthPx = 1024,
+  heightPx = 180,
+}) {
+  return useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = widthPx;
+    canvas.height = heightPx;
+    const ctx = canvas.getContext('2d');
+
+    const draw = () => {
+      ctx.clearRect(0, 0, widthPx, heightPx);
+      ctx.fillStyle = bgColor;
+      roundRect2D(ctx, 0, 0, widthPx, heightPx, 20);
+      ctx.fill();
+
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 6;
+      roundRect2D(ctx, 4, 4, widthPx - 8, heightPx - 8, 18);
+      ctx.stroke();
+
+      let textStartX = 32;
+      if (badge) {
+        ctx.font = `900 32px ${THAI_FONT}`;
+        const bw = Math.max(110, ctx.measureText(badge).width + 44);
+        ctx.fillStyle = accentColor;
+        roundRect2D(ctx, 24, 24, bw, heightPx - 48, 16);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badge, 24 + bw / 2, heightPx / 2 + 2);
+        textStartX = 24 + bw + 24;
+      }
+
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = textColor;
+      ctx.font = `900 ${subtitle ? 40 : 44}px ${THAI_FONT}`;
+      ctx.fillText(title, textStartX, subtitle ? heightPx * 0.36 : heightPx * 0.5, widthPx - textStartX - 32);
+
+      if (subtitle) {
+        ctx.fillStyle = '#475569';
+        ctx.font = `700 28px ${THAI_FONT}`;
+        ctx.fillText(subtitle, textStartX, heightPx * 0.74, widthPx - textStartX - 32);
+      }
+    };
+
+    draw();
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    tex.needsUpdate = true;
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        draw();
+        tex.needsUpdate = true;
+      });
+    }
+    return tex;
+  }, [title, subtitle, badge, bgColor, textColor, accentColor, widthPx, heightPx]);
+}
 
 /**
  * Generates a woven beige fabric rug texture matching the reference images
@@ -56,30 +143,31 @@ export function useWovenRugTexture(pattern = 'weave') {
 
 /**
  * WoodFramedBacklitPanel — กรอบไม้โอ๊คโค้งมนพร้อมไฟซ่อน Warm LED รอบกรอบภาพ
- * (ตรงตามภาพตัวอย่าง สมุดโน้ตไม่มีชื่อ 2 หน้า 2 และหน้า 4)
+ * ยึดติดผนังแนบสนิท 100% (มีฐานยึดผนังด้านหลังลึกเข้าไปในเนื้อกำแพง ไม่ลอยเด็ดขาด)
  */
 export function WoodFramedBacklitPanel({
   width = 5.0,
   height = 4.2,
   position = [0, 0, 0],
   rotation = [0, 0, 0],
+  frameColor = '#8c5a32',
   children,
 }) {
   return (
     <group position={position} rotation={rotation}>
-      {/* แสงไฟซ่อน Warm LED รอบกรอบด้านหลัง */}
-      <mesh position={[0, 0, -0.045]}>
-        <planeGeometry args={[width + 0.52, height + 0.52]} />
-        <meshBasicMaterial color="#fde68a" transparent opacity={0.42} />
+      {/* แสงไฟซ่อน Warm LED รอบกรอบด้านหลัง (แนบผิวกำแพง) */}
+      <mesh position={[0, 0, 0.004]}>
+        <planeGeometry args={[width + 0.44, height + 0.44]} />
+        <meshBasicMaterial color="#fde68a" transparent opacity={0.38} />
       </mesh>
-      {/* กรอบไม้โอ๊คด้านนอก */}
-      <mesh position={[0, 0, -0.03]} castShadow receiveShadow>
-        <boxGeometry args={[width + 0.36, height + 0.36, 0.06]} />
-        <meshStandardMaterial color="#8c5a32" roughness={0.45} />
+      {/* กรอบไม้โอ๊คด้านนอก (ความลึกฝังแนบเข้ากับผิวกำแพงโดยตรง ไม่มีช่องว่าง) */}
+      <mesh position={[0, 0, -0.02]} castShadow receiveShadow>
+        <boxGeometry args={[width + 0.32, height + 0.32, 0.1]} />
+        <meshStandardMaterial color={frameColor} roughness={0.45} />
       </mesh>
       {/* เส้นไฟซ่อน LED สีส้มอุ่นด้านในขอบไม้ */}
-      <mesh position={[0, 0, -0.01]}>
-        <boxGeometry args={[width + 0.14, height + 0.14, 0.05]} />
+      <mesh position={[0, 0, 0.018]}>
+        <boxGeometry args={[width + 0.12, height + 0.12, 0.04]} />
         <meshStandardMaterial
           color="#fef3c7"
           emissive="#f59e0b"
@@ -88,14 +176,136 @@ export function WoodFramedBacklitPanel({
         />
       </mesh>
       {/* พื้นหลังบอร์ดสีขาวนวล */}
-      <mesh position={[0, 0, 0.01]} receiveShadow>
-        <boxGeometry args={[width, height, 0.03]} />
+      <mesh position={[0, 0, 0.032]} receiveShadow>
+        <boxGeometry args={[width, height, 0.025]} />
         <meshStandardMaterial color="#fffdf9" roughness={0.3} />
       </mesh>
       {children}
     </group>
   );
 }
+
+/**
+ * FramedImagePoster3D — โปสเตอร์/กรอบรูป 3D แท้ (WebGL Mesh + Texture) ติดผนังแนบสนิท 100%
+ * ไม่ใช้ <Html transform> จึงไม่ลอยออกมาจากกำแพงและไม่ทะลุวัตถุอื่นเวลาหมุนกล้อง
+ */
+export function FramedImagePoster3D({
+  imgSrc,
+  width = 2.6,
+  height = 3.0,
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  title = '',
+  subtitle = '',
+  badge = '',
+  frameColor = '#8c5a32',
+  accentColor = '#d97706',
+  backlit = true,
+  onClick,
+  children,
+}) {
+  const tex = useTexture(imgSrc);
+  useMemo(() => {
+    if (tex) {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 8;
+      tex.needsUpdate = true;
+    }
+  }, [tex]);
+
+  const hasHeader = Boolean(title || badge);
+  const headerH = hasHeader ? Math.min(0.46, height * 0.17) : 0;
+  const imgH = hasHeader ? height - headerH - 0.08 : height - 0.08;
+  const imgY = hasHeader ? -headerH / 2 - 0.01 : 0;
+  const headerY = height / 2 - headerH / 2 - 0.03;
+
+  const headerTex = usePosterTitleTexture({
+    title,
+    subtitle: subtitle || (onClick ? '🔍 คลิกที่ป้ายเพื่อดูภาพขยาย' : ''),
+    badge,
+    accentColor,
+    bgColor: '#fffdf9',
+    textColor: '#1e293b',
+  });
+
+  const [hovered, setHovered] = useState(false);
+  useEffect(() => {
+    if (!onClick) return undefined;
+    document.body.style.cursor = hovered ? 'pointer' : 'auto';
+    return () => {
+      document.body.style.cursor = 'auto';
+    };
+  }, [hovered, onClick]);
+
+  const handleClick = (e) => {
+    if (onClick) {
+      e.stopPropagation();
+      onClick(e);
+    }
+  };
+
+  return (
+    <group
+      position={position}
+      rotation={rotation}
+      onClick={handleClick}
+      onPointerOver={(e) => {
+        if (onClick) {
+          e.stopPropagation();
+          setHovered(true);
+        }
+      }}
+      onPointerOut={() => {
+        if (onClick) setHovered(false);
+      }}
+    >
+      {/* แสงไฟซ่อน Warm LED รอบกรอบด้านหลัง */}
+      {backlit && (
+        <mesh position={[0, 0, 0.004]}>
+          <planeGeometry args={[width + 0.4, height + 0.4]} />
+          <meshBasicMaterial color="#fde68a" transparent opacity={hovered ? 0.55 : 0.35} />
+        </mesh>
+      )}
+      {/* กรอบไม้/กรอบรูปยึดติดผนังโดยตรง (z = -0.02 ฝังเข้าผนังถึง +0.035) */}
+      <mesh position={[0, 0, -0.015]} castShadow receiveShadow>
+        <boxGeometry args={[width + 0.24, height + 0.24, 0.09]} />
+        <meshStandardMaterial color={hovered && onClick ? accentColor : frameColor} roughness={0.42} />
+      </mesh>
+      {/* ขอบไฟซ่อนหรือขอบด้านใน */}
+      <mesh position={[0, 0, 0.018]}>
+        <boxGeometry args={[width + 0.08, height + 0.08, 0.035]} />
+        <meshStandardMaterial
+          color="#fef3c7"
+          emissive={backlit ? '#f59e0b' : '#000000'}
+          emissiveIntensity={backlit ? 0.75 : 0}
+          roughness={0.25}
+        />
+      </mesh>
+      {/* แผ่นพื้นหลังสีขาว */}
+      <mesh position={[0, 0, 0.03]} receiveShadow>
+        <boxGeometry args={[width, height, 0.02]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.25} />
+      </mesh>
+
+      {/* แถบหัวข้อด้านบน (3D Mesh Texture) */}
+      {hasHeader && (
+        <mesh position={[0, headerY, 0.043]}>
+          <planeGeometry args={[width - 0.08, headerH]} />
+          <meshBasicMaterial map={headerTex} toneMapped={false} />
+        </mesh>
+      )}
+
+      {/* ภาพโปสเตอร์ 3D Mesh แนบสนิทในกรอบ */}
+      <mesh position={[0, imgY, 0.043]}>
+        <planeGeometry args={[width - 0.08, imgH]} />
+        <meshBasicMaterial map={tex} toneMapped={false} />
+      </mesh>
+
+      {children}
+    </group>
+  );
+}
+
 
 /**
  * CozySectionalSofaSet — ชุดโซฟาตัว L ผ้าบุนุ่มสีเทาอมเบจ + หมอนอิง 3 สี + หมอนรองให้นมรูปตัว U
@@ -216,11 +426,32 @@ export function CozySectionalSofaSet({
           </mesh>
         </group>
 
-        {/* ── ผ้าอ้อมพับวางบนส่วน Chaise Lounge ฝั่งซ้าย ── */}
-        <mesh position={[-1.05, 0.5, 0.65]} rotation={[0, 0.25, 0]} castShadow>
-          <boxGeometry args={[0.45, 0.04, 0.36]} />
-          <meshStandardMaterial color="#fff1f2" roughness={0.8} />
-        </mesh>
+        {/* ── ผ้าอ้อมผ้าสาลูพับ 3 ผืน + แพมเพิสวางบนส่วน Chaise Lounge ฝั่งซ้าย ── */}
+        <group position={[-1.05, 0.48, 0.68]} rotation={[0, 0.2, 0]}>
+          {/* ผ้าอ้อมผืนที่ 1 (ล่าง - ชมพูอ่อน) */}
+          <mesh position={[0, 0.02, 0]} castShadow>
+            <boxGeometry args={[0.42, 0.04, 0.34]} />
+            <meshStandardMaterial color="#ffe4e6" roughness={0.8} />
+          </mesh>
+          {/* ผ้าอ้อมผืนที่ 2 (กลาง - ขาวขลิบฟ้า) */}
+          <mesh position={[0.01, 0.06, -0.01]} rotation={[0, -0.08, 0]} castShadow>
+            <boxGeometry args={[0.4, 0.04, 0.32]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.8} />
+          </mesh>
+          <mesh position={[0.01, 0.062, 0.14]} rotation={[0, -0.08, 0]}>
+            <boxGeometry args={[0.4, 0.042, 0.03]} />
+            <meshStandardMaterial color="#38bdf8" />
+          </mesh>
+          {/* ผ้าอ้อมผืนที่ 3 (บน - ครีมอ่อนขลิบชมพู) */}
+          <mesh position={[-0.01, 0.1, 0.01]} rotation={[0, 0.06, 0]} castShadow>
+            <boxGeometry args={[0.38, 0.04, 0.3]} />
+            <meshStandardMaterial color="#fffbeb" roughness={0.8} />
+          </mesh>
+          <mesh position={[-0.01, 0.102, 0.14]} rotation={[0, 0.06, 0]}>
+            <boxGeometry args={[0.38, 0.042, 0.03]} />
+            <meshStandardMaterial color="#f472b6" />
+          </mesh>
+        </group>
       </group>
 
       {/* ── 3. สตูลพรมถักกลมสีเขียวอ่อน (Sage Knitted Pouf Ottoman) หน้าโซฟาตัว L ── */}
@@ -229,7 +460,7 @@ export function CozySectionalSofaSet({
         <meshStandardMaterial color="#a3b899" roughness={0.9} />
       </mesh>
 
-      {/* ── 4. โต๊ะกลางกลมท็อปสีขาว ขาไม้โอ๊ค + แท็บเล็ตสื่อการสอน + แก้วน้ำ + แจกันดอกเดซี่ ── */}
+      {/* ── 4. โต๊ะกลางกลมท็อปสีขาว ขาไม้โอ๊ค + แท็บเล็ตสื่อการสอน + ตะกร้าผ้าอ้อม + ขวดนม + แก้วน้ำ + แจกันดอกเดซี่ ── */}
       <group
         position={[0.75, 0, 1.38]}
         onClick={(e) => {
@@ -258,7 +489,7 @@ export function CozySectionalSofaSet({
         ))}
 
         {/* แท็บเล็ต / iPad ตั้งบนโต๊ะกลม (ตามภาพตัวอย่างมุมขวาล่าง) */}
-        <group position={[-0.12, 0.56, 0.06]} rotation={[-0.25, -0.3, 0]}>
+        <group position={[-0.12, 0.56, 0.08]} rotation={[-0.25, -0.3, 0]}>
           <mesh castShadow>
             <boxGeometry args={[0.36, 0.25, 0.018]} />
             <meshStandardMaterial color="#1e293b" roughness={0.25} />
@@ -274,8 +505,50 @@ export function CozySectionalSofaSet({
           </mesh>
         </group>
 
+        {/* ถาดตะกร้าผ้าอ้อมสำเร็จรูป (แพมเพิส) + ผ้าอ้อมพับ + ขวดนมบนโต๊ะ */}
+        <group position={[0.04, 0.45, -0.32]} rotation={[0, 0.2, 0]}>
+          {/* ถาดไม้ขอบมน */}
+          <mesh position={[0, 0.015, 0]} castShadow>
+            <boxGeometry args={[0.38, 0.03, 0.24]} />
+            <meshStandardMaterial color="#d4a373" roughness={0.5} />
+          </mesh>
+          {/* พับผ้าอ้อมผ้าสาลู 2 ผืนบนถาด */}
+          <mesh position={[-0.08, 0.045, 0]} castShadow>
+            <boxGeometry args={[0.16, 0.035, 0.18]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.8} />
+          </mesh>
+          <mesh position={[-0.08, 0.08, 0]} castShadow>
+            <boxGeometry args={[0.15, 0.035, 0.17]} />
+            <meshStandardMaterial color="#fce7f3" roughness={0.8} />
+          </mesh>
+          {/* แพมเพิสพับพร้อมแถบกาวสีฟ้า */}
+          <mesh position={[0.08, 0.05, 0.02]} castShadow>
+            <boxGeometry args={[0.13, 0.045, 0.16]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.7} />
+          </mesh>
+          <mesh position={[0.08, 0.074, 0.02]}>
+            <boxGeometry args={[0.132, 0.008, 0.04]} />
+            <meshStandardMaterial color="#38bdf8" />
+          </mesh>
+          {/* ขวดนมทารก */}
+          <group position={[0.12, 0.03, -0.06]}>
+            <mesh position={[0, 0.06, 0]} castShadow>
+              <cylinderGeometry args={[0.028, 0.03, 0.11, 14]} />
+              <meshStandardMaterial color="#fffbeb" roughness={0.2} />
+            </mesh>
+            <mesh position={[0, 0.125, 0]}>
+              <cylinderGeometry args={[0.026, 0.028, 0.025, 14]} />
+              <meshStandardMaterial color="#f472b6" />
+            </mesh>
+            <mesh position={[0, 0.15, 0]}>
+              <sphereGeometry args={[0.016, 10, 10]} />
+              <meshStandardMaterial color="#fbbf24" roughness={0.4} />
+            </mesh>
+          </group>
+        </group>
+
         {/* แก้วเซรามิกสีเขียวพาสเทลบนจานรองไม้ */}
-        <group position={[-0.32, 0.45, -0.18]}>
+        <group position={[-0.36, 0.45, -0.14]}>
           <mesh position={[0, 0.01, 0]}>
             <cylinderGeometry args={[0.065, 0.065, 0.015, 16]} />
             <meshStandardMaterial color="#b07d4f" />
@@ -287,7 +560,7 @@ export function CozySectionalSofaSet({
         </group>
 
         {/* แจกันดอกเดซี่สีขาวด้านขวาของโต๊ะ */}
-        <group position={[0.28, 0.45, -0.05]}>
+        <group position={[0.32, 0.45, 0.08]}>
           <mesh position={[0, 0.09, 0]} castShadow>
             <cylinderGeometry args={[0.065, 0.08, 0.18, 16]} />
             <meshStandardMaterial color="#f5ebe0" roughness={0.4} />
@@ -438,3 +711,137 @@ export function CozyRoomDecorCorners() {
     </group>
   );
 }
+
+/**
+ * WallMountedTV3D — จอทีวีสื่อการสอนติดผนังแนบสนิท 100% (3D CanvasTexture ไม่ลอย)
+ */
+export function WallMountedTV3D({
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  width = 2.5,
+  height = 1.48,
+  title = 'วิดีโอสื่อการสอน',
+  subtitle = 'คลิกที่จอทีวีเพื่อรับชมวิดีโอ',
+  badge = '📺 VIDEO LESSON',
+  accentColor = '#ec4899',
+  onClick,
+}) {
+  const screenTex = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+
+    const draw = () => {
+      const grad = ctx.createLinearGradient(0, 0, 1024, 600);
+      grad.addColorStop(0, '#0f172a');
+      grad.addColorStop(0.5, '#1e1b4b');
+      grad.addColorStop(1, '#311042');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1024, 600);
+
+      // Border glow
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 8;
+      roundRect2D(ctx, 20, 20, 984, 560, 28);
+      ctx.stroke();
+
+      // Badge
+      ctx.fillStyle = accentColor;
+      roundRect2D(ctx, 352, 65, 320, 54, 27);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `900 26px ${THAI_FONT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badge, 512, 93);
+
+      // Play button circle
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(512, 245, 68, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = accentColor;
+      ctx.beginPath();
+      ctx.moveTo(494, 212);
+      ctx.lineTo(494, 278);
+      ctx.lineTo(548, 245);
+      ctx.closePath();
+      ctx.fill();
+
+      // Title & subtitle
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `900 42px ${THAI_FONT}`;
+      ctx.fillText(title, 512, 390, 900);
+
+      ctx.fillStyle = '#fbcfe8';
+      ctx.font = `700 28px ${THAI_FONT}`;
+      ctx.fillText(subtitle, 512, 455, 900);
+
+      // Bottom pill
+      ctx.fillStyle = 'rgba(255,255,255,0.16)';
+      roundRect2D(ctx, 312, 495, 400, 50, 25);
+      ctx.fill();
+      ctx.fillStyle = '#fde047';
+      ctx.font = `800 24px ${THAI_FONT}`;
+      ctx.fillText('▶ คลิกที่จอทีวีเพื่อเปิดดูสื่อการสอน', 512, 521);
+    };
+
+    draw();
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    tex.needsUpdate = true;
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        draw();
+        tex.needsUpdate = true;
+      });
+    }
+    return tex;
+  }, [title, subtitle, badge, accentColor]);
+
+  const [hovered, setHovered] = useState(false);
+  useEffect(() => {
+    if (!onClick) return undefined;
+    document.body.style.cursor = hovered ? 'pointer' : 'auto';
+    return () => {
+      document.body.style.cursor = 'auto';
+    };
+  }, [hovered, onClick]);
+
+  return (
+    <group
+      position={position}
+      rotation={rotation}
+      onClick={(e) => {
+        if (onClick) {
+          e.stopPropagation();
+          onClick(e);
+        }
+      }}
+      onPointerOver={(e) => {
+        if (onClick) {
+          e.stopPropagation();
+          setHovered(true);
+        }
+      }}
+      onPointerOut={() => {
+        if (onClick) setHovered(false);
+      }}
+    >
+      {/* ขายึดผนังด้านหลังทีวี (ฝังแนบผิวกำแพง ไม่มีช่องว่าง) */}
+      <mesh position={[0, 0, -0.02]} castShadow>
+        <boxGeometry args={[width + 0.16, height + 0.16, 0.09]} />
+        <meshStandardMaterial color={hovered ? accentColor : '#0f172a'} roughness={0.3} metalness={0.5} />
+      </mesh>
+      {/* หน้าจอทีวี 3D */}
+      <mesh position={[0, 0, 0.028]}>
+        <planeGeometry args={[width, height]} />
+        <meshBasicMaterial map={screenTex} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+

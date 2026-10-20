@@ -46,12 +46,13 @@ export default function MotherCare2Room() {
         roomNumber="Wound Care Ward 102"
       />
 
-      <TitleSign position={[-6.9, 4.9, -8.93]} line1={B.title.line1} line2={B.title.line2} />
-      <WallBoard position={[-6.9, 2.9, -8.93]} width={3.2} height={2.7} title={B.goals.title} items={B.goals.items} />
-      <WallScreen position={[0, 3.0, -8.93]} width={6.6} src="/images/ward/zone2_slide.jpg" room={ROOM} label="Zone 2" />
-      <WallBoard position={[5.2, 3.6, -8.93]} width={3.2} height={3.8} title={B.howTo.title} items={B.howTo.items} numbered />
-      <WallBoard position={[7.8, 3.6, -8.93]} width={3.2} height={3.8} title={B.warning.title} items={B.warning.items} accent="#e53935" />
-      <WindowWithCurtains position={[-8.93, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
+      {/* ── ป้ายและบอร์ดผนัง (ติดผนังด้านใน z = -8.80, x = -8.80 อย่างแนบสนิท) ── */}
+      <TitleSign position={[-6.3, 4.9, -8.78]} width={4.4} height={2.0} line1={B.title.line1} line2={B.title.line2} />
+      <WallBoard position={[-6.3, 2.5, -8.78]} width={3.2} height={2.6} title={B.goals.title} items={B.goals.items} />
+      <WallScreen position={[-0.8, 3.0, -8.78]} width={5.8} src="/images/ward/zone2_slide.jpg" room={ROOM} label="Zone 2" />
+      <WallBoard position={[4.1, 3.4, -8.78]} width={2.85} height={3.6} title={B.howTo.title} items={B.howTo.items} numbered />
+      <WallBoard position={[7.2, 3.4, -8.78]} width={2.85} height={3.6} title={B.warning.title} items={B.warning.items} accent="#e53935" />
+      <WindowWithCurtains position={[-8.78, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
 
       <LoungeCorner position={[7.4, 0, 6.2]} rotation={[0, -Math.PI / 2, 0]} />
       <CareBooth position={[2.0, 0, 1.0]} locked={!slideSeen} onActivate={startActivity} />

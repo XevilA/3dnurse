@@ -50,13 +50,13 @@ export default function MotherCare1Room() {
         roomNumber="Ward 101"
       />
 
-      {/* ── ป้ายและบอร์ดผนัง (ตามรูปลูกค้า) ── */}
-      <TitleSign position={[-6.9, 4.9, -8.93]} line1={B.title.line1} line2={B.title.line2} />
-      <WallBoard position={[-6.9, 2.9, -8.93]} width={3.2} height={2.7} title={B.goals.title} items={B.goals.items} />
-      <WallScreen position={[0, 3.0, -8.93]} width={6.6} src={'/images/ward/zone1_slide.jpg'} room={ROOM} label="Zone 1" />
-      <WallBoard position={[5.2, 3.6, -8.93]} width={3.2} height={3.8} title={B.selfCare.title} items={B.selfCare.items} />
-      <WallBoard position={[7.8, 3.6, -8.93]} width={3.2} height={3.8} title={B.recovery.title} items={B.recovery.items} accent="#26a69a" />
-      <WindowWithCurtains position={[-8.93, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
+      {/* ── ป้ายและบอร์ดผนัง (ติดผนังด้านใน z = -8.80, x = -8.80 อย่างแนบสนิท) ── */}
+      <TitleSign position={[-6.3, 4.9, -8.78]} width={4.4} height={2.0} line1={B.title.line1} line2={B.title.line2} />
+      <WallBoard position={[-6.3, 2.5, -8.78]} width={3.2} height={2.6} title={B.goals.title} items={B.goals.items} />
+      <WallScreen position={[-0.8, 3.0, -8.78]} width={5.8} src={'/images/ward/zone1_slide.jpg'} room={ROOM} label="Zone 1" />
+      <WallBoard position={[4.1, 3.4, -8.78]} width={2.85} height={3.6} title={B.selfCare.title} items={B.selfCare.items} />
+      <WallBoard position={[7.2, 3.4, -8.78]} width={2.85} height={3.6} title={B.recovery.title} items={B.recovery.items} accent="#26a69a" />
+      <WindowWithCurtains position={[-8.78, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
 
       <LoungeCorner position={[7.4, 0, 6.2]} rotation={[0, -Math.PI / 2, 0]} />
       <DiningTable position={[1.5, 0, 1.5]} locked={!slideSeen} onActivate={startActivity} />
@@ -146,13 +146,24 @@ export default function MotherCare1Room() {
         {/* Soft supportive cushion on the chair */}
         <Pillows position={[0, 0.42, 0.05]} scale={0.65} />
       </group>
-      {/* Side table with warm nutrition/water carafe beside the chair */}
+      {/* Side table with warm nutrition/water carafe & folded baby diapers beside the chair */}
       <group position={[4.0, 0, -6.8]}>
         <HospitalNightstand position={[0, 0, 0]} scale={0.85}>
-          <mesh position={[0, 0.62, 0]} castShadow>
-            <cylinderGeometry args={[0.06, 0.07, 0.20, 20]} />
+          <mesh position={[-0.12, 0.90, -0.05]} castShadow>
+            <cylinderGeometry args={[0.06, 0.07, 0.22, 20]} />
             <meshPhysicalMaterial color="#f0fdf4" transmission={0.85} roughness={0.1} />
           </mesh>
+          {/* กองผ้าอ้อมพับสำหรับลูกน้อยบนโต๊ะข้างเก้าอี้ให้นม */}
+          {[
+            { y: 0.80, color: '#ffffff' },
+            { y: 0.84, color: '#fce7f3' },
+            { y: 0.88, color: '#e0f2fe' },
+          ].map((d, i) => (
+            <mesh key={i} position={[0.10, d.y, 0.04]} rotation={[0, i * 0.1, 0]} castShadow>
+              <boxGeometry args={[0.22, 0.036, 0.18]} />
+              <meshStandardMaterial color={d.color} roughness={0.85} />
+            </mesh>
+          ))}
         </HospitalNightstand>
       </group>
 

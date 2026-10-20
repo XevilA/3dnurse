@@ -1,8 +1,25 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
+import * as THREE from 'three';
 import RealisticNurse from '../characters/RealisticNurse';
 import RealisticComputerWorkstation from './RealisticComputerWorkstation';
+
+function usePlaqueTexture(drawFn, width = 720, height = 360, deps = []) {
+  return useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    drawFn(ctx, width, height);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    tex.needsUpdate = true;
+    return tex;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+}
 
 /**
  * HospitalNurseStation Component
@@ -18,6 +35,79 @@ import RealisticComputerWorkstation from './RealisticComputerWorkstation';
 export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation = [0, 0, 0], scale = 1 }) {
   const queueBlinkRef = useRef();
   const [showHisChart, setShowHisChart] = useState(false);
+
+  const counterPlaqueTex = usePlaqueTexture((ctx, w, h) => {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, w - 8, h - 8);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 54px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('เคาน์เตอร์พยาบาล', w / 2, h * 0.42);
+    ctx.fillStyle = '#475569';
+    ctx.font = '700 34px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('Nurse Station', w / 2, h * 0.75);
+  }, 800, 180, []);
+
+  const welcomePlaqueTex = usePlaqueTexture((ctx, w, h) => {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 88px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('ยินดีต้อนรับ', w / 2, h * 0.40);
+    ctx.fillStyle = '#e11d48';
+    ctx.font = '800 50px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('เราพร้อมดูแลคุณ ❤️', w / 2, h * 0.76);
+  }, 900, 320, []);
+
+  const newbornWallSignTex = usePlaqueTexture((ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#fffbeb');
+    g.addColorStop(0.5, '#fef3c7');
+    g.addColorStop(1, '#fce7f3');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 14;
+    ctx.strokeRect(7, 7, w - 14, h - 14);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '68px system-ui, sans-serif';
+    ctx.fillText('👶🌸', w / 2, h * 0.27);
+    ctx.fillStyle = '#be185d';
+    ctx.font = '900 66px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('ห้องดูแลทารก', w / 2, h * 0.58);
+    ctx.fillStyle = '#9d174d';
+    ctx.font = '700 38px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('Newborn Care Room', w / 2, h * 0.82);
+  }, 720, 440, []);
+
+  const motherWallSignTex = usePlaqueTexture((ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#fff1f2');
+    g.addColorStop(0.5, '#fce7f3');
+    g.addColorStop(1, '#fef3c7');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#f472b6';
+    ctx.lineWidth = 14;
+    ctx.strokeRect(7, 7, w - 14, h - 14);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '68px system-ui, sans-serif';
+    ctx.fillText('🤱💖', w / 2, h * 0.27);
+    ctx.fillStyle = '#be185d';
+    ctx.font = '900 66px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('ห้องดูแลคุณแม่', w / 2, h * 0.58);
+    ctx.fillStyle = '#9d174d';
+    ctx.font = '700 38px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('Maternal Care Room', w / 2, h * 0.82);
+  }, 720, 440, []);
 
   useFrame(({ clock }) => {
     if (queueBlinkRef.current) {
@@ -76,31 +166,16 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
         </mesh>
         <pointLight position={[0, 0.15, 1.6]} color="#fde047" intensity={0.95} distance={3.8} />
 
-        {/* Front Counter Title Sign: "เคาน์เตอร์พยาบาล / Nurse Station" */}
-        <group position={[0, 0.75, 2.68]}>
+        {/* Front Counter Title Sign: "เคาน์เตอร์พยาบาล / Nurse Station" (3D Mesh ติดหน้าเคาน์เตอร์ ไม่ลอย) */}
+        <group position={[0, 0.72, 2.66]}>
           <mesh castShadow>
-            <boxGeometry args={[1.7, 0.32, 0.02]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.2} />
+            <boxGeometry args={[1.7, 0.34, 0.03]} />
+            <meshStandardMaterial color="#e2e8f0" roughness={0.3} />
           </mesh>
-          <Html position={[0, 0, 0.02]} center transform scale={0.17}>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              whiteSpace: 'nowrap',
-              padding: '2px 10px',
-              userSelect: 'none'
-            }}>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e293b', letterSpacing: '0.4px' }}>
-                เคาน์เตอร์พยาบาล
-              </div>
-              <div style={{ fontSize: '10px', fontWeight: '600', color: '#64748b', letterSpacing: '0.8px' }}>
-                Nurse Station
-              </div>
-            </div>
-          </Html>
+          <mesh position={[0, 0, 0.017]}>
+            <planeGeometry args={[1.66, 0.30]} />
+            <meshBasicMaterial map={counterPlaqueTex} toneMapped={false} />
+          </mesh>
         </group>
 
         {/* ── Desktop Equipment on Counter Top ── */}
@@ -394,118 +469,35 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
             </mesh>
           </group>
 
-          {/* Thai Greeting: "ยินดีต้อนรับ / เราพร้อมดูแลคุณ ❤️" */}
-          <Html position={[0, 2.82, 0.07]} center transform scale={0.32}>
-            <div style={{
-              textAlign: 'center',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              userSelect: 'none',
-              whiteSpace: 'nowrap'
-            }}>
-              <h1 style={{
-                margin: '0',
-                fontSize: '28px',
-                fontWeight: '900',
-                color: '#0f172a',
-                letterSpacing: '0.8px'
-              }}>
-                ยินดีต้อนรับ
-              </h1>
-              <p style={{
-                margin: '4px 0 0 0',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                color: '#e11d48',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '5px'
-              }}>
-                <span>เราพร้อมดูแลคุณ</span>
-                <span style={{ fontSize: '18px' }}>❤️</span>
-              </p>
-            </div>
-          </Html>
+          {/* Thai Greeting: "ยินดีต้อนรับ / เราพร้อมดูแลคุณ ❤️" (3D Mesh ติดผนัง ไม่ลอย) */}
+          <mesh position={[0, 2.75, 0.048]}>
+            <planeGeometry args={[2.1, 0.74]} />
+            <meshBasicMaterial map={welcomePlaqueTex} toneMapped={false} />
+          </mesh>
         </group>
 
-        {/* ── Left Wall Section: Newborn Care Room Sign (Matching Client Welcome Zone Photo) ── */}
-        <group position={[-2.45, 2.75, 0.12]}>
+        {/* ── Left Wall Section: Newborn Care Room Sign (3D Mesh ติดผนัง ไม่ลอย) ── */}
+        <group position={[-2.45, 2.75, 0.08]}>
           <mesh castShadow>
             <boxGeometry args={[1.65, 1.05, 0.05]} />
             <meshStandardMaterial color="#b07d4b" roughness={0.35} />
           </mesh>
-          <mesh position={[0, 0, 0.028]}>
+          <mesh position={[0, 0, 0.027]}>
             <planeGeometry args={[1.55, 0.95]} />
-            <meshStandardMaterial color="#fffbeb" roughness={0.2} />
+            <meshBasicMaterial map={newbornWallSignTex} toneMapped={false} />
           </mesh>
-          <Html position={[0, 0, 0.035]} center transform scale={0.14}>
-            <div style={{
-              width: '360px',
-              height: '210px',
-              background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fce7f3 100%)',
-              borderRadius: '10px',
-              border: '3px solid #f59e0b',
-              padding: '14px 16px',
-              boxSizing: 'border-box',
-              color: '#881337',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-              userSelect: 'none',
-              boxShadow: 'inset 0 2px 10px rgba(245,158,11,0.15)'
-            }}>
-              <div style={{ fontSize: '28px', marginBottom: '4px' }}>👶🌸</div>
-              <div style={{ fontSize: '26px', fontWeight: '900', color: '#be185d', lineHeight: 1.15 }}>
-                ห้องดูแลทารก
-              </div>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#9d174d', marginTop: '6px' }}>
-                Newborn Care Room
-              </div>
-            </div>
-          </Html>
         </group>
 
-        {/* ── Right Wall Section: Maternal Care Room Sign (Matching Client Welcome Zone Photo) ── */}
-        <group position={[2.45, 2.75, 0.12]}>
+        {/* ── Right Wall Section: Maternal Care Room Sign (3D Mesh ติดผนัง ไม่ลอย) ── */}
+        <group position={[2.45, 2.75, 0.08]}>
           <mesh castShadow>
             <boxGeometry args={[1.65, 1.05, 0.05]} />
             <meshStandardMaterial color="#b07d4b" roughness={0.35} />
           </mesh>
-          <mesh position={[0, 0, 0.028]}>
+          <mesh position={[0, 0, 0.027]}>
             <planeGeometry args={[1.55, 0.95]} />
-            <meshStandardMaterial color="#fffbeb" roughness={0.2} />
+            <meshBasicMaterial map={motherWallSignTex} toneMapped={false} />
           </mesh>
-          <Html position={[0, 0, 0.035]} center transform scale={0.14}>
-            <div style={{
-              width: '360px',
-              height: '210px',
-              background: 'linear-gradient(135deg, #fff1f2 0%, #fce7f3 50%, #fef3c7 100%)',
-              borderRadius: '10px',
-              border: '3px solid #f472b6',
-              padding: '14px 16px',
-              boxSizing: 'border-box',
-              color: '#881337',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-              userSelect: 'none',
-              boxShadow: 'inset 0 2px 10px rgba(244,114,182,0.15)'
-            }}>
-              <div style={{ fontSize: '28px', marginBottom: '4px' }}>🤱💖</div>
-              <div style={{ fontSize: '26px', fontWeight: '900', color: '#be185d', lineHeight: 1.15 }}>
-                ห้องดูแลคุณแม่
-              </div>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#9d174d', marginTop: '6px' }}>
-                Maternal Care Room
-              </div>
-            </div>
-          </Html>
         </group>
 
         {/* ── Top Curved Wood Canopy / Architectural Drop Ceiling with Downlights ── */}

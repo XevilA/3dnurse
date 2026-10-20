@@ -150,6 +150,80 @@ export default function WalkableRoomPortal({
     return cloned;
   }, [textures.door]);
 
+  const headerSignTex = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1050;
+    canvas.height = 240;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = isLocked ? '#ef4444' : themeConfig.primary;
+    ctx.lineWidth = 10;
+    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+
+    // Top badge pill
+    const badgeColor = isLocked
+      ? '#dc2626'
+      : roomKey === 'quiz' && !hasCompletedPretest
+      ? '#d97706'
+      : themeConfig.primary;
+    ctx.fillStyle = badgeColor;
+    ctx.fillRect(24, 18, canvas.width - 48, 66);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 34px "Sarabun", system-ui, -apple-system, sans-serif';
+    const badgeLabel = isLocked
+      ? `🔒 ${roomNumber} (ล็อค — ทำ Pre-test ที่ Hall 301 ก่อน)`
+      : roomKey === 'quiz' && !hasCompletedPretest
+      ? `⭐ จุดเริ่มต้น: ${roomNumber} • ทำ Pre-test 20 ข้อ`
+      : `${icon || ''} ${roomNumber}${isCompleted ? '  ✅ ผ่านแล้ว' : ''}`;
+    ctx.fillText(badgeLabel, canvas.width / 2, 51);
+
+    // Room title
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 44px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText(roomTitle || '', canvas.width / 2, 136);
+
+    // Subtitle action hint
+    ctx.fillStyle = isLocked ? '#dc2626' : themeConfig.text;
+    ctx.font = '800 26px "Sarabun", system-ui, -apple-system, sans-serif';
+    const subLabel = isLocked
+      ? '⚠️ กรุณาทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน'
+      : '🚪 เดินเข้าใกล้เพื่อให้ประตูเปิดอัตโนมัติ หรือคลิกที่ป้ายเพื่อเข้าห้อง ➜';
+    ctx.fillText(subLabel, canvas.width / 2, 198);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    tex.needsUpdate = true;
+    return tex;
+  }, [isLocked, roomKey, hasCompletedPretest, roomNumber, roomTitle, icon, isCompleted, themeConfig.primary, themeConfig.text]);
+
+  const lockBannerTex = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 960;
+    canvas.height = 110;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 32px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('🔒 ห้องล็อค • ต้องทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน', canvas.width / 2, canvas.height / 2);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+
   const [px, py, pz] = position;
 
   // Proximity, Automatic Door Swing & Walk-in Trigger
@@ -426,227 +500,43 @@ export default function WalkableRoomPortal({
         <meshStandardMaterial map={configuredFloor} roughness={0.4} />
       </mesh>
 
-      {/* ── Holographic 3D Security Lock Barrier for locked learning rooms ── */}
+      {/* ── 3D Security Lock Barrier for locked learning rooms (3D Mesh ไม่ลอย) ── */}
       {isLocked && (
-        <group position={[0, 1.22, 0.08]}>
+        <group position={[0, 1.22, 0.04]} onClick={handleEnter}>
           <mesh>
-            <boxGeometry args={[1.56, 0.16, 0.02]} />
+            <boxGeometry args={[1.56, 0.18, 0.02]} />
             <meshStandardMaterial
               color="#ef4444"
               emissive="#dc2626"
-              emissiveIntensity={0.6}
-              transparent
-              opacity={0.88}
+              emissiveIntensity={0.35}
             />
           </mesh>
-          <Html position={[0, 0, 0.02]} center transform scale={0.12}>
-            <div style={{
-              background: 'rgba(220, 38, 38, 0.95)',
-              color: 'white',
-              padding: '4px 14px',
-              borderRadius: '12px',
-              fontWeight: '900',
-              fontSize: '13px',
-              border: '1.5px solid white',
-              boxShadow: '0 0 12px rgba(220, 38, 38, 0.9)',
-              whiteSpace: 'nowrap',
-              userSelect: 'none',
-              cursor: 'pointer'
-            }}
-            onClick={handleEnter}
-            >
-              🔒 ห้องล็อค • ต้องทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน
-            </div>
-          </Html>
+          <mesh position={[0, 0, 0.012]}>
+            <planeGeometry args={[1.54, 0.17]} />
+            <meshBasicMaterial map={lockBannerTex} toneMapped={false} />
+          </mesh>
         </group>
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          5. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้องมาตรฐานโมเดิร์นคลีน)
+          5. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้อง 3D แท้ติดผนัง ไม่ลอย)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Acrylic Backlit Header Box (Enlarged for high visibility from afar) */}
-      <group position={[0, 2.78, 0.03]}>
+      <group position={[0, 2.82, 0.03]} onClick={handleEnter}>
         {/* Main Sign Box */}
         <mesh castShadow>
-          <boxGeometry args={[2.10, 0.42, 0.05]} />
+          <boxGeometry args={[2.36, 0.54, 0.05]} />
           <meshStandardMaterial color="#ffffff" roughness={0.15} metalness={0.08} />
         </mesh>
         {/* Stainless Steel Perimeter Trim */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[2.14, 0.44, 0.03]} />
+        <mesh position={[0, 0, -0.005]}>
+          <boxGeometry args={[2.42, 0.58, 0.04]} />
           <meshStandardMaterial map={configuredMetal} color="#94a3b8" metalness={0.8} roughness={0.3} />
         </mesh>
-
-        {/* Crisp HTML Sign Content (Larger scale for clear visibility) */}
-        <Html position={[0, 0, 0.035]} center transform scale={0.21}>
-          <div
-            onClick={handleEnter}
-            onPointerDown={handleEnter}
-            style={{
-              cursor: 'pointer',
-              userSelect: 'none',
-              textAlign: 'center',
-              width: '460px',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              pointerEvents: 'auto',
-            }}
-          >
-            {isLocked ? (
-              /* Locked Header Sign */
-              <>
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-                    color: 'white',
-                    padding: '5px 20px',
-                    borderRadius: '18px',
-                    fontSize: '17px',
-                    fontWeight: '900',
-                    letterSpacing: '0.5px',
-                    boxShadow: '0 3px 10px rgba(239, 68, 68, 0.4)',
-                  }}
-                >
-                  <span>🔒</span>
-                  <span>{roomNumber} (ล็อค)</span>
-                </div>
-
-                <div
-                  style={{
-                    color: '#1e293b',
-                    fontSize: '20px',
-                    fontWeight: '900',
-                    marginTop: '6px',
-                    lineHeight: '1.25',
-                    whiteSpace: 'nowrap',
-                    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
-                  }}
-                >
-                  {roomTitle}
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '4px',
-                    fontSize: '13px',
-                    fontWeight: '800',
-                    color: '#dc2626',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <span>⚠️ กรุณาทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน</span>
-                </div>
-              </>
-            ) : roomKey === 'quiz' && !hasCompletedPretest ? (
-              /* Pre-test Starting Point Sign */
-              <>
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                    color: 'white',
-                    padding: '6px 24px',
-                    borderRadius: '20px',
-                    fontSize: '18px',
-                    fontWeight: '900',
-                    letterSpacing: '0.5px',
-                    boxShadow: '0 0 20px rgba(245, 158, 11, 0.8)',
-                  }}
-                >
-                  <span>⭐</span>
-                  <span>จุดเริ่มต้น: ทำแบบทดสอบก่อนเรียน (20 ข้อ)</span>
-                </div>
-
-                <div
-                  style={{
-                    color: '#0f172a',
-                    fontSize: '22px',
-                    fontWeight: '900',
-                    marginTop: '6px',
-                    lineHeight: '1.2',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {roomTitle}
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '4px',
-                    fontSize: '13px',
-                    fontWeight: '800',
-                    color: '#d97706',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <span>{isNear ? '🚪 ประตูเปิดแล้ว — แตะเพื่อยืนยันเข้าห้อง ➜' : '✨ ก้าวเข้าไปเพื่อทำ Pre-test 20 ข้อ (ปลดล็อคทุกห้อง)'}</span>
-                </div>
-              </>
-            ) : (
-              /* Regular Unlocked Sign */
-              <>
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: themeConfig.badgeBg,
-                    color: 'white',
-                    padding: '5px 22px',
-                    borderRadius: '18px',
-                    fontSize: '17px',
-                    fontWeight: '900',
-                    letterSpacing: '0.5px',
-                    boxShadow: '0 3px 10px rgba(0,0,0,0.22)',
-                  }}
-                >
-                  <span style={{ fontSize: '18px' }}>{icon}</span>
-                  <span>{roomNumber}</span>
-                  {isCompleted && <span>✅ ผ่านแล้ว</span>}
-                </div>
-
-                <div
-                  style={{
-                    color: '#0f172a',
-                    fontSize: '21px',
-                    fontWeight: '900',
-                    marginTop: '6px',
-                    lineHeight: '1.25',
-                    whiteSpace: 'nowrap',
-                    textShadow: '0 1px 2px rgba(255,255,255,0.8)',
-                  }}
-                >
-                  {roomTitle}
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '4px',
-                    fontSize: '13px',
-                    fontWeight: '800',
-                    color: isNear ? themeConfig.primary : '#475569',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <span>{isNear ? '🚪 ประตูเปิดแล้ว — แตะเพื่อยืนยันเข้าห้อง ➜' : 'เดินเข้าใกล้เพื่อให้ประตูเปิด / แตะเพื่อเข้าห้อง'}</span>
-                </div>
-              </>
-            )}
-          </div>
-        </Html>
+        {/* 3D Sign Face Texture (แนบติดกรอบป้ายบนกำแพง 100% ไม่ใช้ Html transform) */}
+        <mesh position={[0, 0, 0.027]}>
+          <planeGeometry args={[2.32, 0.52]} />
+          <meshBasicMaterial map={headerSignTex} toneMapped={false} />
+        </mesh>
       </group>
     </group>
   );

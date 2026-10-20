@@ -155,91 +155,241 @@ export default function BabyBathtub({
             <meshStandardMaterial color="#fde68a" roughness={0.85} />
           </mesh>
         ))}
-        {/* Spread Out Soft White/Pastel Towel when Towels are Prepared */}
-        {preparedItems.towels && (
-          <mesh position={[0, 0.045, 0]} receiveShadow>
-            <boxGeometry args={[0.64, 0.015, 0.92]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.9} />
-          </mesh>
-        )}
+        {/* Spread Out Soft White/Pastel Towel on Changing Pad (Always Visible) */}
+        <mesh position={[0, 0.045, 0]} receiveShadow>
+          <boxGeometry args={[0.64, 0.015, 0.92]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.9} />
+        </mesh>
+        {/* ขอบกุ๊นผ้าขนหนูสีชมพูอ่อน */}
+        <mesh position={[0, 0.048, 0.44]}>
+          <boxGeometry args={[0.64, 0.016, 0.04]} />
+          <meshStandardMaterial color="#f9a8d4" roughness={0.85} />
+        </mesh>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          STAGED ACCESSORIES ON RIGHT SIDE OF TABLE (x = 1.52)
+          อุปกรณ์อาบน้ำและชุดเปลี่ยนผ้าอ้อมบนโต๊ะ (แสดงครบทุกชิ้นตลอดเวลาตามบรีฟ)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* 1. Folded Towel & Swaddle Cloth Stack */}
-      {preparedItems.towels && (
-        <group position={[1.52, 0.86, -0.42]}>
-          <mesh position={[0, 0.035, 0]} castShadow>
-            <boxGeometry args={[0.42, 0.07, 0.36]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.9} />
-          </mesh>
-          <mesh position={[0, 0.085, 0]} castShadow>
-            <boxGeometry args={[0.38, 0.04, 0.32]} />
-            <meshStandardMaterial color="#fef08a" roughness={0.85} />
-          </mesh>
-        </group>
-      )}
 
-      {/* 2. Baby Liquid Soap & Gentle Shampoo Bottles */}
-      {preparedItems.soap && (
-        <group position={[1.54, 0.86, -0.02]}>
-          <mesh position={[-0.07, 0.09, 0]} castShadow>
-            <cylinderGeometry args={[0.04, 0.045, 0.18, 20]} />
-            <meshStandardMaterial color="#bae6fd" roughness={0.3} />
-          </mesh>
-          <mesh position={[0.07, 0.09, 0]} castShadow>
-            <cylinderGeometry args={[0.04, 0.045, 0.18, 20]} />
-            <meshStandardMaterial color="#fbcfe8" roughness={0.3} />
-          </mesh>
-        </group>
-      )}
+      {/* 1. ผ้าเช็ดตัวผืนใหญ่ 2 ผืน + ผ้าห่อตัวทารก (มุมขวาบนของโต๊ะ z = -0.46) */}
+      <group position={[1.48, 0.86, -0.46]} onClick={onMatClick}>
+        {/* ผ้าเช็ดตัวผืนที่ 1 (สีขาวนวล) */}
+        <mesh position={[0, 0.03, 0]} castShadow>
+          <boxGeometry args={[0.42, 0.06, 0.34]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.9} />
+        </mesh>
+        {/* ผ้าเช็ดตัวผืนที่ 2 (สีชมพูพาสเทล) */}
+        <mesh position={[0, 0.085, 0]} castShadow>
+          <boxGeometry args={[0.4, 0.05, 0.32]} />
+          <meshStandardMaterial color="#fbcfe8" roughness={0.88} />
+        </mesh>
+        {/* ผ้าห่อตัวทารก (สีเหลืองอ่อนพาสเทล) */}
+        <mesh position={[0, 0.13, 0]} castShadow>
+          <boxGeometry args={[0.36, 0.04, 0.28]} />
+          <meshStandardMaterial color="#fef08a" roughness={0.85} />
+        </mesh>
+      </group>
 
-      {/* 3. Soft Bathing Sponge & Small Cloth */}
-      {preparedItems.sponge && (
-        <group position={[1.45, 0.88, 0.22]}>
+      {/* 2. กองผ้าอ้อมผ้าสาลูพับ 4 ผืน + ผ้าอ้อมสำเร็จรูป (แพมเพิส) วางเรียงชัดเจนบนโต๊ะ (x = 1.48, z = 0.02) */}
+      <group position={[1.48, 0.86, 0.02]} onClick={onMatClick}>
+        {/* ถาดรองผ้าอ้อมสีครีม */}
+        <mesh position={[0, 0.012, 0]} castShadow>
+          <boxGeometry args={[0.46, 0.024, 0.44]} />
+          <meshStandardMaterial color="#f5ebe0" roughness={0.6} />
+        </mesh>
+        {/* กองผ้าอ้อมผ้าสาลูพับ 4 ชั้น (ด้านซ้ายของถาด) */}
+        {[
+          [0.038, '#ffffff', '#38bdf8'],
+          [0.072, '#fff1f2', '#f472b6'],
+          [0.106, '#ffffff', '#38bdf8'],
+          [0.14, '#fefce8', '#facc15'],
+        ].map(([py, clothCol, trimCol], idx) => (
+          <group key={`diaper_stack_${idx}`} position={[-0.09, py, -0.02]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.22, 0.03, 0.28]} />
+              <meshStandardMaterial color={clothCol} roughness={0.82} />
+            </mesh>
+            <mesh position={[0, 0.002, 0.13]}>
+              <boxGeometry args={[0.222, 0.031, 0.024]} />
+              <meshStandardMaterial color={trimCol} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* ผ้าอ้อมสำเร็จรูป (แพมเพิส) พับพร้อมแถบกาวสีฟ้า 2 ชิ้น (ด้านขวาของถาด) */}
+        {[0.042, 0.092].map((py, idx) => (
+          <group key={`pampers_${idx}`} position={[0.11, py, 0.02]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.17, 0.044, 0.24]} />
+              <meshStandardMaterial color="#ffffff" roughness={0.75} />
+            </mesh>
+            {/* แถบคาดเอวสีฟ้า-เหลืองของแพมเพิส */}
+            <mesh position={[0, 0.023, 0.06]}>
+              <boxGeometry args={[0.172, 0.006, 0.05]} />
+              <meshStandardMaterial color="#38bdf8" />
+            </mesh>
+            <mesh position={[0, 0.024, 0.06]}>
+              <boxGeometry args={[0.06, 0.008, 0.03]} />
+              <meshStandardMaterial color="#facc15" />
+            </mesh>
+          </group>
+        ))}
+      </group>
+
+      {/* 3. ชุดเสื้อผ้าทารกผูกหน้า + ห่อแพมเพิส (มุมขวาล่างของโต๊ะ x = 1.48, z = 0.48) */}
+      <group position={[1.48, 0.86, 0.48]} onClick={onMatClick}>
+        {/* เสื้อผ้าทารกแบบผูกหน้าสีฟ้าพาสเทล */}
+        <mesh position={[-0.08, 0.025, 0]} castShadow>
+          <boxGeometry args={[0.24, 0.04, 0.28]} />
+          <meshStandardMaterial color="#bae6fd" roughness={0.8} />
+        </mesh>
+        {/* โบว์ผูกเสื้อด้านหน้า */}
+        <mesh position={[-0.08, 0.048, 0]}>
+          <boxGeometry args={[0.08, 0.01, 0.26]} />
+          <meshStandardMaterial color="#ffffff" />
+        </mesh>
+        {/* ห่อผ้าอ้อมสำเร็จรูป (Pampers Pack) ตั้งคู่กัน */}
+        <group position={[0.11, 0.11, -0.02]}>
           <mesh castShadow>
-            <sphereGeometry args={[0.06, 16, 16]} />
-            <meshStandardMaterial color="#fde047" roughness={0.95} />
+            <boxGeometry args={[0.16, 0.22, 0.24]} />
+            <meshStandardMaterial color="#0d9488" roughness={0.35} />
           </mesh>
-          <mesh position={[0.12, -0.01, 0]} castShadow>
-            <boxGeometry args={[0.14, 0.03, 0.14]} />
-            <meshStandardMaterial color="#bae6fd" roughness={0.8} />
+          <mesh position={[-0.082, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+            <planeGeometry args={[0.2, 0.16]} />
+            <meshBasicMaterial color="#fef08a" />
           </mesh>
         </group>
-      )}
+      </group>
 
-      {/* 4. Small Sterile Cup with 2 Damp Cotton Balls (น้ำต้มสุก / 0.9% NSS) */}
-      {preparedItems.cottonBalls && (
-        <group position={[1.32, 0.86, -0.45]}>
-          <mesh position={[0, 0.03, 0]} castShadow>
-            <cylinderGeometry args={[0.05, 0.038, 0.06, 24]} />
+      {/* 4. ขวดสบู่เหลวอาบน้ำทารก + แชมพูสระผมทารก + ฟองน้ำธรรมชาติ (ด้านหลังอ่างอาบน้ำ z = -0.56) */}
+      <group position={[-0.65, 0.86, -0.56]} onClick={onMatClick}>
+        {/* ถาดวางสบู่และแชมพู */}
+        <mesh position={[0, 0.012, 0]} castShadow>
+          <boxGeometry args={[0.52, 0.024, 0.24]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.3} />
+        </mesh>
+        {/* ขวดสบู่เหลวทารก (หัวปั๊มสีชมพู) */}
+        <group position={[-0.14, 0.02, 0]}>
+          <mesh position={[0, 0.09, 0]} castShadow>
+            <cylinderGeometry args={[0.048, 0.052, 0.18, 20]} />
+            <meshStandardMaterial color="#f472b6" roughness={0.25} />
+          </mesh>
+          <mesh position={[0, 0.09, 0.05]}>
+            <boxGeometry args={[0.06, 0.1, 0.008]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+          <mesh position={[0, 0.2, 0]}>
+            <cylinderGeometry args={[0.016, 0.02, 0.04, 12]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+        </group>
+        {/* ขวดแชมพูสระผมทารก (หัวปั๊มสีเหลือง/ฟ้า) */}
+        <group position={[0.02, 0.02, 0]}>
+          <mesh position={[0, 0.09, 0]} castShadow>
+            <cylinderGeometry args={[0.048, 0.052, 0.18, 20]} />
+            <meshStandardMaterial color="#38bdf8" roughness={0.25} />
+          </mesh>
+          <mesh position={[0, 0.09, 0.05]}>
+            <boxGeometry args={[0.06, 0.1, 0.008]} />
+            <meshStandardMaterial color="#fef08a" />
+          </mesh>
+          <mesh position={[0, 0.2, 0]}>
+            <cylinderGeometry args={[0.016, 0.02, 0.04, 12]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+        </group>
+        {/* ฟองน้ำธรรมชาติสีเหลืองนุ่ม */}
+        <mesh position={[0.17, 0.055, 0.01]} castShadow>
+          <sphereGeometry args={[0.065, 16, 16]} />
+          <meshStandardMaterial color="#facc15" roughness={0.92} />
+        </mesh>
+      </group>
+
+      {/* 5. ชุดเช็ดตาและสะดือ: ถ้วยสแตนเลสใส่สำลีก้อน + ขวดน้ำเกลือ 0.9% NSS + แอลกอฮอล์ 70% + ไม้พันสำลี (x = 0.25, z = -0.56) */}
+      <group position={[0.25, 0.86, -0.56]} onClick={onMatClick}>
+        {/* ถาดสแตนเลสปลอดเชื้อ */}
+        <mesh position={[0, 0.012, 0]} castShadow>
+          <boxGeometry args={[0.56, 0.024, 0.24]} />
+          <meshStandardMaterial color="#cbd5e1" metalness={0.5} roughness={0.25} />
+        </mesh>
+        {/* ถ้วยใส่สำลีก้อนชุบน้ำต้มสุก */}
+        <group position={[-0.18, 0.02, 0]}>
+          <mesh position={[0, 0.04, 0]} castShadow>
+            <cylinderGeometry args={[0.06, 0.048, 0.08, 24]} />
             <meshStandardMaterial color="#e2e8f0" metalness={0.6} roughness={0.2} />
           </mesh>
-          <mesh position={[-0.015, 0.05, 0]} castShadow>
-            <sphereGeometry args={[0.018, 12, 12]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.9} />
+          {[
+            [-0.02, 0.08, -0.01],
+            [0.02, 0.08, -0.01],
+            [0, 0.085, 0.02],
+            [0, 0.095, 0],
+          ].map(([cx, cy, cz], i) => (
+            <mesh key={i} position={[cx, cy, cz]} castShadow>
+              <sphereGeometry args={[0.022, 12, 12]} />
+              <meshStandardMaterial color="#ffffff" roughness={0.9} />
+            </mesh>
+          ))}
+        </group>
+        {/* ขวดน้ำเกลือ 0.9% Normal Saline (ฉลากสีเขียว/ฟ้า) */}
+        <group position={[-0.02, 0.02, 0]}>
+          <mesh position={[0, 0.1, 0]} castShadow>
+            <cylinderGeometry args={[0.042, 0.042, 0.2, 18]} />
+            <meshStandardMaterial color="#f0fdf4" roughness={0.2} />
           </mesh>
-          <mesh position={[0.015, 0.05, 0]} castShadow>
-            <sphereGeometry args={[0.018, 12, 12]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.9} />
+          <mesh position={[0, 0.1, 0.043]}>
+            <boxGeometry args={[0.055, 0.11, 0.006]} />
+            <meshStandardMaterial color="#10b981" />
+          </mesh>
+          <mesh position={[0, 0.215, 0]}>
+            <cylinderGeometry args={[0.02, 0.024, 0.035, 12]} />
+            <meshStandardMaterial color="#059669" />
           </mesh>
         </group>
-      )}
-
-      {/* 5. Fresh Baby Clothes & Diaper */}
-      {preparedItems.clothes && (
-        <group position={[1.52, 0.86, 0.48]}>
-          <mesh position={[0, 0.02, 0]} castShadow>
-            <boxGeometry args={[0.28, 0.035, 0.24]} />
-            <meshStandardMaterial color="#f8fafc" roughness={0.8} />
+        {/* ขวดแอลกอฮอล์ 70% เช็ดสะดือ (ฉลากสีฟ้าเข้ม) */}
+        <group position={[0.11, 0.02, 0]}>
+          <mesh position={[0, 0.085, 0]} castShadow>
+            <cylinderGeometry args={[0.038, 0.038, 0.17, 18]} />
+            <meshStandardMaterial color="#e0f2fe" roughness={0.2} />
           </mesh>
+          <mesh position={[0, 0.085, 0.039]}>
+            <boxGeometry args={[0.05, 0.09, 0.006]} />
+            <meshStandardMaterial color="#0284c7" />
+          </mesh>
+          <mesh position={[0, 0.185, 0]}>
+            <cylinderGeometry args={[0.018, 0.02, 0.03, 12]} />
+            <meshStandardMaterial color="#0369a1" />
+          </mesh>
+        </group>
+        {/* กระปุกไม้พันสำลี (Cotton Swabs) */}
+        <group position={[0.22, 0.02, 0]}>
           <mesh position={[0, 0.05, 0]} castShadow>
-            <boxGeometry args={[0.22, 0.025, 0.18]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
+            <cylinderGeometry args={[0.036, 0.036, 0.1, 16]} />
+            <meshStandardMaterial color="#ffffff" transparent opacity={0.85} />
           </mesh>
+          {[-0.012, 0, 0.012].map((sx, i) => (
+            <mesh key={i} position={[sx, 0.11, 0]}>
+              <cylinderGeometry args={[0.004, 0.004, 0.06, 8]} />
+              <meshStandardMaterial color="#fef08a" />
+            </mesh>
+          ))}
         </group>
-      )}
+      </group>
+
+      {/* 6. ชั้นวางของด้านล่างโต๊ะอาบน้ำ (วางตะกร้าผ้าอ้อมสำรอง & ห่อแพมเพิส) */}
+      <group position={[0.85, 0.24, 0]}>
+        <mesh position={[-0.35, 0.12, 0]} castShadow>
+          <boxGeometry args={[0.48, 0.22, 0.38]} />
+          <meshStandardMaterial color="#d4a373" roughness={0.7} />
+        </mesh>
+        <mesh position={[-0.35, 0.25, 0]} castShadow>
+          <boxGeometry args={[0.42, 0.06, 0.32]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.85} />
+        </mesh>
+        <mesh position={[0.25, 0.14, 0]} castShadow>
+          <boxGeometry args={[0.38, 0.26, 0.28]} />
+          <meshStandardMaterial color="#0d9488" roughness={0.4} />
+        </mesh>
+      </group>
     </group>
   );
 }

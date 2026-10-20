@@ -197,6 +197,38 @@ export default function RealisticHospitalSofa({
             <meshBasicMaterial color="#ec4899" />
           </mesh>
         </group>
+
+        {/* กองผ้าอ้อมพับและขวดนมบนโต๊ะรับรองสำหรับคุณแม่และทารก */}
+        {[
+          { y: 0.39, color: '#ffffff', trim: '#f472b6' },
+          { y: 0.422, color: '#fce7f3', trim: '#ec4899' },
+          { y: 0.454, color: '#e0f2fe', trim: '#38bdf8' },
+        ].map((d, i) => (
+          <group key={i} position={[-0.08, d.y, 0.14]} rotation={[0, 0.15 + i * 0.08, 0]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.20, 0.03, 0.16]} />
+              <meshStandardMaterial color={d.color} roughness={0.85} />
+            </mesh>
+            <mesh position={[0, 0, 0.081]}>
+              <boxGeometry args={[0.18, 0.012, 0.006]} />
+              <meshStandardMaterial color={d.trim} roughness={0.6} />
+            </mesh>
+          </group>
+        ))}
+        <group position={[0.14, 0.375, -0.14]}>
+          <mesh position={[0, 0.055, 0]} castShadow>
+            <cylinderGeometry args={[0.032, 0.035, 0.11, 16]} />
+            <meshStandardMaterial color="#fffbeb" roughness={0.2} />
+          </mesh>
+          <mesh position={[0, 0.12, 0]}>
+            <cylinderGeometry args={[0.034, 0.034, 0.022, 16]} />
+            <meshStandardMaterial color="#f472b6" roughness={0.4} />
+          </mesh>
+          <mesh position={[0, 0.145, 0]}>
+            <coneGeometry args={[0.018, 0.035, 14]} />
+            <meshStandardMaterial color="#fcd34d" roughness={0.4} />
+          </mesh>
+        </group>
       </group>
     </group>
   );

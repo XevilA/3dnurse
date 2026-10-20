@@ -8,6 +8,7 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
 import { TitleSign, WindowWithCurtains } from '../ward/WardKit';
 import {
   WoodFramedBacklitPanel,
+  FramedImagePoster3D,
   CozySectionalSofaSet,
   CozyRoomDecorCorners,
 } from '../furniture/CozyRoomFurniture';
@@ -212,218 +213,76 @@ export default function MotherCare4Room() {
         roomNumber="Ward 104"
       />
 
+      {/* ป้ายชื่อห้องและหน้าต่าง ติดผนังด้านใน z = -8.78 อย่างแนบสนิท */}
       <TitleSign
-        position={[0, 4.9, -8.92]}
+        position={[0, 4.95, -8.78]}
         width={6.2}
         height={1.65}
         line1="Ward 104"
         line2="การสังเกตอาการผิดปกติและแทรกซ้อนหลังคลอด"
       />
 
-      <WindowWithCurtains position={[-5.8, 2.8, -8.92]} width={3.4} height={2.8} />
-      <WindowWithCurtains position={[5.8, 2.8, -8.92]} width={3.4} height={2.8} />
+      <WindowWithCurtains position={[-5.8, 2.8, -8.78]} width={3.4} height={2.8} />
+      <WindowWithCurtains position={[5.8, 2.8, -8.78]} width={3.4} height={2.8} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังกลาง (Z = -8.84): ภาพรวม 5 อาการสำคัญ (IMG_7526.JPG) พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น
+          ผนังกลาง (Z = -8.78): ภาพรวม 5 อาการสำคัญ (IMG_7526.JPG) พร้อมกรอบไม้โอ๊ค 3D แท้ติดผนัง
           ══════════════════════════════════════════════════════════════════════════ */}
-      <WoodFramedBacklitPanel position={[0, 2.55, -8.84]} rotation={[0, 0, 0]} width={5.8} height={4.1}>
-        <Html position={[0, 0, 0]} center transform scale={0.28}>
-          <div
-            onClick={() => openGalleryAt(0)}
-            style={{
-              width: '770px',
-              height: '540px',
-              borderRadius: '18px',
-              overflow: 'hidden',
-              border: '5px solid #ffffff',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
-              cursor: 'pointer',
-              background: '#fff1f2',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <img
-              src="/images/rev/w104_overview.jpg"
-              alt="การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด"
-              style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#fff1f2' }}
-            />
-            <div style={{
-              background: '#be185d',
-              color: '#ffffff',
-              padding: '8px 16px',
-              fontWeight: 900,
-              fontSize: '17px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <span>การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด (5 อาการสำคัญ)</span>
-              <span style={{ background: '#ffffff', color: '#be185d', padding: '3px 12px', borderRadius: '999px', fontSize: '14px' }}>
-                🔍 คลิกเพื่อดูภาพขยาย
-              </span>
-            </div>
-          </div>
-        </Html>
+      <FramedImagePoster3D
+        position={[0, 2.45, -8.78]}
+        rotation={[0, 0, 0]}
+        width={5.6}
+        height={3.9}
+        src="/images/rev/w104_overview.jpg"
+        title="การสังเกตอาการผิดปกติหลังคลอด (5 อาการสำคัญ)"
+        badgeText="🔍 คลิกขยาย"
+        headerColor="#be185d"
+        onClick={() => openGalleryAt(0)}
+      />
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          ผนังที่ 1 (ซ้าย X = -8.78): แสดงภาพ 1, 2, 3 ด้วย 3D Mesh แท้ติดผนังซ้าย
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <WoodFramedBacklitPanel position={[-8.78, 2.75, 0]} rotation={[0, Math.PI / 2, 0]} width={11.0} height={4.3}>
+        {[
+          { idx: 1, x: -3.55, title: '1. เลือดออกมากหลังคลอด', img: '/images/rev/w104_card1_pph.jpg' },
+          { idx: 2, x: 0, title: '2. ไข้ น้ำคาวปลามีกลิ่นเหม็น', img: '/images/rev/w104_card2_fever_lochia.jpg' },
+          { idx: 3, x: 3.55, title: '3. ปวดศีรษะรุนแรง ตาพร่ามัว', img: '/images/rev/w104_card3_preeclampsia.jpg' },
+        ].map((card) => (
+          <FramedImagePoster3D
+            key={card.idx}
+            position={[card.x, 0, 0.02]}
+            width={3.3}
+            height={3.75}
+            src={card.img}
+            title={card.title}
+            badgeText="🔍 ขยาย"
+            headerColor="#e11d48"
+            onClick={() => openGalleryAt(card.idx)}
+          />
+        ))}
       </WoodFramedBacklitPanel>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 1 (ซ้าย X = -8.84): แสดงภาพ 1, 2, 3 (ตามสมุดโน้ตไม่มีชื่อ 2 หน้า 3–4) พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น
+          ผนังที่ 2 (ขวา X = +8.78): แสดงภาพ 4, 5 ด้วย 3D Mesh แท้ติดผนังขวา
           ══════════════════════════════════════════════════════════════════════════ */}
-      <WoodFramedBacklitPanel position={[-8.84, 2.75, 0]} rotation={[0, Math.PI / 2, 0]} width={10.8} height={4.2}>
-        <Html position={[0, 0, 0]} center transform scale={0.28}>
-          <div
-            style={{
-              width: '1420px',
-              height: '540px',
-              borderRadius: '20px',
-              background: 'linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%)',
-              border: '5px solid #ffffff',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
-              padding: '14px 18px',
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-            }}
-          >
-            <div style={{
-              background: '#e11d48',
-              color: '#ffffff',
-              padding: '8px 18px',
-              borderRadius: '12px',
-              fontWeight: 900,
-              fontSize: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <span>ผนังที่ 1: อาการผิดปกติที่ต้องเฝ้าระวัง (ภาพที่ 1, 2, 3) — คลิกที่ภาพเพื่อขยายอ่านชัดเจน</span>
-              <span style={{ fontSize: '14px', background: 'rgba(255,255,255,0.2)', padding: '3px 12px', borderRadius: '999px' }}>
-                มีปุ่ม ก่อนหน้า / ถัดไป
-              </span>
-            </div>
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
-              {[
-                { idx: 1, title: '1. เลือดออกมากหลังคลอด', img: '/images/rev/w104_card1_pph.jpg' },
-                { idx: 2, title: '2. ไข้ น้ำคาวปลามีกลิ่นเหม็น', img: '/images/rev/w104_card2_fever_lochia.jpg' },
-                { idx: 3, title: '3. ปวดศีรษะรุนแรง ตาพร่ามัว', img: '/images/rev/w104_card3_preeclampsia.jpg' },
-              ].map((card) => (
-                <div
-                  key={card.idx}
-                  onClick={() => openGalleryAt(card.idx)}
-                  style={{
-                    background: '#ffffff',
-                    borderRadius: '14px',
-                    border: '2px solid #fecdd3',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <img
-                    src={card.img}
-                    alt={card.title}
-                    style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#fff1f2' }}
-                  />
-                  <div style={{
-                    background: '#ffe4e6',
-                    color: '#9f1239',
-                    fontWeight: 900,
-                    fontSize: '15px',
-                    padding: '8px 12px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  }}>
-                    <span>{card.title}</span>
-                    <span>🔍 ขยาย</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Html>
-      </WoodFramedBacklitPanel>
-
-      {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 2 (ขวา X = +8.84): แสดงภาพ 4, 5 (ตามสมุดโน้ตไม่มีชื่อ 2 หน้า 4) พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น
-          ══════════════════════════════════════════════════════════════════════════ */}
-      <WoodFramedBacklitPanel position={[8.84, 2.75, 0]} rotation={[0, -Math.PI / 2, 0]} width={8.4} height={4.2}>
-        <Html position={[0, 0, 0]} center transform scale={0.28}>
-          <div
-            style={{
-              width: '1100px',
-              height: '540px',
-              borderRadius: '20px',
-              background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)',
-              border: '5px solid #ffffff',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
-              padding: '14px 18px',
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-            }}
-          >
-            <div style={{
-              background: '#d97706',
-              color: '#ffffff',
-              padding: '8px 18px',
-              borderRadius: '12px',
-              fontWeight: 900,
-              fontSize: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <span>ผนังที่ 2: อาการผิดปกติที่ต้องเฝ้าระวัง (ภาพที่ 4, 5) — คลิกที่ภาพเพื่อขยายอ่านชัดเจน</span>
-              <span style={{ fontSize: '14px', background: 'rgba(255,255,255,0.2)', padding: '3px 12px', borderRadius: '999px' }}>
-                มีปุ่ม ก่อนหน้า / ถัดไป
-              </span>
-            </div>
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              {[
-                { idx: 4, title: '4. ปวดหรือบวมน่อง', img: '/images/rev/w104_card4_dvt.jpg' },
-                { idx: 5, title: '5. เจ็บหน้าอก หรือหายใจลำบาก', img: '/images/rev/w104_card5_chest_pain.jpg' },
-              ].map((card) => (
-                <div
-                  key={card.idx}
-                  onClick={() => openGalleryAt(card.idx)}
-                  style={{
-                    background: '#ffffff',
-                    borderRadius: '14px',
-                    border: '2px solid #fde68a',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <img
-                    src={card.img}
-                    alt={card.title}
-                    style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#fffbeb' }}
-                  />
-                  <div style={{
-                    background: '#fef3c7',
-                    color: '#92400e',
-                    fontWeight: 900,
-                    fontSize: '16px',
-                    padding: '8px 14px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  }}>
-                    <span>{card.title}</span>
-                    <span>🔍 ขยาย</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Html>
+      <WoodFramedBacklitPanel position={[8.78, 2.75, 0]} rotation={[0, -Math.PI / 2, 0]} width={8.2} height={4.3}>
+        {[
+          { idx: 4, x: -1.95, title: '4. ปวดหรือบวมน่อง', img: '/images/rev/w104_card4_dvt.jpg' },
+          { idx: 5, x: 1.95, title: '5. เจ็บหน้าอก หรือหายใจลำบาก', img: '/images/rev/w104_card5_chest_pain.jpg' },
+        ].map((card) => (
+          <FramedImagePoster3D
+            key={card.idx}
+            position={[card.x, 0, 0.02]}
+            width={3.65}
+            height={3.75}
+            src={card.img}
+            title={card.title}
+            badgeText="🔍 ขยาย"
+            headerColor="#d97706"
+            onClick={() => openGalleryAt(card.idx)}
+          />
+        ))}
       </WoodFramedBacklitPanel>
 
       {/* ══════════════════════════════════════════════════════════════════════════

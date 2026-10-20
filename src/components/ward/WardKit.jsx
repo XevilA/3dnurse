@@ -471,13 +471,62 @@ export function LoungeCorner({ position = [0, 0, 0], rotation = [0, 0, 0] }) {
       {[-0.95, 0.95].map((x) => (
         <mesh key={x} position={[x, 0.78, -0.12]} rotation={[0.2, 0, 0.1]}><boxGeometry args={[0.42, 0.42, 0.12]} /><meshStandardMaterial color="#f4a3c3" /></mesh>
       ))}
-      {/* พรม + โต๊ะกลาง */}
+      {/* พรม + โต๊ะกลางพร้อมผ้าอ้อมและชุดดูแลทารก */}
       <mesh position={[0, 0.01, 1.7]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[1.5, 40]} /><meshStandardMaterial color="#efe6da" roughness={1} /></mesh>
       <group position={[0, 0, 1.55]}>
-        <mesh position={[0, 0.4, 0]} castShadow><cylinderGeometry args={[0.55, 0.55, 0.05, 28]} /><meshStandardMaterial color="#a9784f" roughness={0.5} /></mesh>
+        <mesh position={[0, 0.4, 0]} castShadow receiveShadow><cylinderGeometry args={[0.55, 0.55, 0.05, 28]} /><meshStandardMaterial color="#a9784f" roughness={0.5} /></mesh>
         {[[-0.3, -0.3], [0.3, -0.3], [-0.3, 0.3], [0.3, 0.3]].map((p, i) => (
           <mesh key={i} position={[p[0], 0.2, p[1]]}><cylinderGeometry args={[0.03, 0.03, 0.4, 8]} /><meshStandardMaterial color="#8a5c38" /></mesh>
         ))}
+        {/* ถาดไม้พร้อมผ้าอ้อมพับ แพมเพิส และขวดนมบนโต๊ะกลาง */}
+        <mesh position={[0, 0.435, 0]} castShadow>
+          <boxGeometry args={[0.62, 0.025, 0.42]} />
+          <meshStandardMaterial color="#dfc19b" roughness={0.6} />
+        </mesh>
+        {[
+          { y: 0.465, color: '#ffffff', trim: '#f48fb1' },
+          { y: 0.505, color: '#e0f2fe', trim: '#38bdf8' },
+          { y: 0.545, color: '#fce7f3', trim: '#ec4899' },
+        ].map((d, i) => (
+          <group key={i} position={[-0.14, d.y, -0.04]} rotation={[0, i * 0.08, 0]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.24, 0.036, 0.20]} />
+              <meshStandardMaterial color={d.color} roughness={0.85} />
+            </mesh>
+            <mesh position={[0, 0, 0.101]}>
+              <boxGeometry args={[0.22, 0.014, 0.008]} />
+              <meshStandardMaterial color={d.trim} roughness={0.6} />
+            </mesh>
+          </group>
+        ))}
+        {/* แพมเพิส (ผ้าอ้อมสำเร็จรูป) */}
+        {[0, 1].map((i) => (
+          <group key={i} position={[0.14, 0.462 + i * 0.036, 0.04]} rotation={[0, -0.15, 0]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.20, 0.032, 0.16]} />
+              <meshStandardMaterial color="#fffef8" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, 0.017, 0.05]}>
+              <boxGeometry args={[0.18, 0.005, 0.028]} />
+              <meshStandardMaterial color="#38bdf8" roughness={0.5} />
+            </mesh>
+          </group>
+        ))}
+        {/* ขวดนม */}
+        <group position={[0.16, 0.45, -0.11]}>
+          <mesh position={[0, 0.06, 0]} castShadow>
+            <cylinderGeometry args={[0.034, 0.038, 0.12, 16]} />
+            <meshStandardMaterial color="#fffbeb" roughness={0.2} />
+          </mesh>
+          <mesh position={[0, 0.13, 0]}>
+            <cylinderGeometry args={[0.036, 0.036, 0.025, 16]} />
+            <meshStandardMaterial color="#f472b6" roughness={0.4} />
+          </mesh>
+          <mesh position={[0, 0.16, 0]}>
+            <coneGeometry args={[0.02, 0.04, 14]} />
+            <meshStandardMaterial color="#fcd34d" roughness={0.4} />
+          </mesh>
+        </group>
       </group>
       {/* ชั้นหนังสือ */}
       <group position={[2.9, 0, 0.1]}>

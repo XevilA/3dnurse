@@ -8,6 +8,7 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
 import { TitleSign, WindowWithCurtains } from '../ward/WardKit';
 import {
   WoodFramedBacklitPanel,
+  FramedImagePoster3D,
   CozySectionalSofaSet,
   CozyRoomDecorCorners,
 } from '../furniture/CozyRoomFurniture';
@@ -264,208 +265,88 @@ export default function MotherCare3Room() {
       {/* แสงไฟโทนอบอุ่นสบายตาในห้อง */}
       <pointLight position={[0, 4.2, 0.5]} intensity={0.75} color="#ffd8a8" distance={14} />
 
-      {/* ป้ายชื่อห้องด้านบนผนังกลาง */}
+      {/* ป้ายชื่อห้องด้านบนผนังกลาง (ติดผนังด้านใน z = -8.78 อย่างแนบสนิท) */}
       <TitleSign
-        position={[0, 5.15, -8.85]}
+        position={[0, 5.05, -8.78]}
         width={5.4}
         height={1.55}
         line1="ZONE 1 การดูแลเต้านม"
         line2="Ward 103 • การดูแลเต้านมและกระตุ้นน้ำนม"
       />
 
-      {/* หน้าต่างบานใหญ่พร้อมผ้าม่านโทนอบอุ่น */}
-      <WindowWithCurtains position={[-5.6, 2.8, -8.88]} width={3.4} height={2.8} />
-      <WindowWithCurtains position={[5.6, 2.8, -8.88]} width={3.4} height={2.8} />
+      {/* หน้าต่างบานใหญ่พร้อมผ้าม่านโทนอบอุ่น ติดผนังด้านใน z = -8.78 */}
+      <WindowWithCurtains position={[-5.6, 2.8, -8.78]} width={3.4} height={2.8} />
+      <WindowWithCurtains position={[5.6, 2.8, -8.78]} width={3.4} height={2.8} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 1 (ซ้าย X = -8.78): กรอบไม้ไฟซ่อน LED แปะภาพ "1 การดูแลเต้านม"
+          ผนังที่ 1 (ซ้าย X = -8.78): กรอบไม้ 3D แท้ติดผนัง แปะภาพ "1 การดูแลเต้านม" + โจทย์ 4 สถานการณ์
           ══════════════════════════════════════════════════════════════════════════ */}
-      <WoodFramedBacklitPanel
-        position={[-8.78, 2.75, 0]}
+      <FramedImagePoster3D
+        position={[-8.78, 2.75, -2.35]}
         rotation={[0, Math.PI / 2, 0]}
-        width={4.4}
-        height={5.1}
-      >
-        <Html position={[0, 0, 0.03]} center transform scale={0.28}>
-          <div
-            onClick={() => openGalleryAt(0)}
-            style={{
-              width: '580px',
-              height: '680px',
-              borderRadius: '18px',
-              overflow: 'hidden',
-              border: '4px solid #fde68a',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
-              cursor: 'pointer',
-              background: '#fff1f2',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <img
-              src="/images/rev/w103_col1.jpg"
-              alt="1 การดูแลเต้านม"
-              style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#fff1f2' }}
-            />
-            <div style={{
-              background: '#db2777',
-              color: '#ffffff',
-              padding: '10px 16px',
-              fontWeight: 900,
-              fontSize: '18px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <span>ผนังที่ 1: 1. การดูแลเต้านม</span>
-              <span style={{ background: '#ffffff', color: '#db2777', padding: '3px 12px', borderRadius: '999px', fontSize: '15px' }}>
-                🔍 คลิกเพื่อดูภาพขยาย
-              </span>
-            </div>
-          </div>
-        </Html>
-      </WoodFramedBacklitPanel>
+        width={4.2}
+        height={4.6}
+        src="/images/rev/w103_col1.jpg"
+        title="ผนังที่ 1: 1. การดูแลเต้านม"
+        badgeText="🔍 คลิกขยาย"
+        headerColor="#db2777"
+        onClick={() => openGalleryAt(0)}
+      />
+
+      <FramedImagePoster3D
+        position={[-8.78, 2.75, 2.55]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={4.2}
+        height={4.6}
+        src="/images/rev/w103_scenarios.jpg"
+        title="สถานการณ์จำลอง: การดูแลเต้านม (4 ข้อ)"
+        badgeText="🔍 คลิกขยาย"
+        headerColor="#be185d"
+        onClick={() => openGalleryAt(6)}
+      />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 2 (กลาง Z = -8.78): กรอบไม้ไฟซ่อน LED แปะภาพ "2 การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
+          ผนังที่ 2 (กลาง Z = -8.78): กรอบไม้ 3D แท้ติดผนัง "2 การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
           ══════════════════════════════════════════════════════════════════════════ */}
-      <WoodFramedBacklitPanel
-        position={[0, 2.5, -8.78]}
+      <FramedImagePoster3D
+        position={[0, 2.45, -8.78]}
         rotation={[0, 0, 0]}
-        width={4.6}
-        height={4.3}
-      >
-        <Html position={[0, 0, 0.03]} center transform scale={0.28}>
-          <div
-            onClick={() => openGalleryAt(1)}
-            style={{
-              width: '610px',
-              height: '570px',
-              borderRadius: '18px',
-              overflow: 'hidden',
-              border: '4px solid #fde68a',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
-              cursor: 'pointer',
-              background: '#f0f9ff',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <img
-              src="/images/rev/w103_col2.jpg"
-              alt="2 การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
-              style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#f0f9ff' }}
-            />
-            <div style={{
-              background: '#0284c7',
-              color: '#ffffff',
-              padding: '10px 16px',
-              fontWeight: 900,
-              fontSize: '18px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <span>ผนังที่ 2: 2. การนวดเต้านมและกระตุ้นการไหลของน้ำนม</span>
-              <span style={{ background: '#ffffff', color: '#0284c7', padding: '3px 12px', borderRadius: '999px', fontSize: '15px' }}>
-                🔍 คลิกเพื่อดูภาพขยาย
-              </span>
-            </div>
-          </div>
-        </Html>
-      </WoodFramedBacklitPanel>
+        width={4.4}
+        height={3.9}
+        src="/images/rev/w103_col2.jpg"
+        title="ผนังที่ 2: 2. การนวดเต้านมและกระตุ้นน้ำนม"
+        badgeText="🔍 คลิกขยาย"
+        headerColor="#0284c7"
+        onClick={() => openGalleryAt(1)}
+      />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 3 (ขวา X = +8.78): กรอบไม้ไฟซ่อน LED แปะรูป 1, 2, 3, 4 จัดเรียง 2x2
+          ผนังที่ 3 (ขวา X = +8.78): กรอบไม้ไฟซ่อน LED ติดผนัง แปะรูป 1, 2, 3, 4 จัดเรียง 2x2 ด้วย 3D Mesh แท้
           ══════════════════════════════════════════════════════════════════════════ */}
       <WoodFramedBacklitPanel
         position={[8.78, 2.75, 0]}
         rotation={[0, -Math.PI / 2, 0]}
-        width={7.4}
+        width={7.6}
         height={4.9}
       >
-        <Html position={[0, 0, 0.03]} center transform scale={0.28}>
-          <div
-            style={{
-              width: '980px',
-              height: '640px',
-              borderRadius: '20px',
-              background: 'linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%)',
-              border: '4px solid #fde68a',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
-              padding: '14px 18px',
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-            }}
-          >
-            <div style={{
-              background: 'linear-gradient(90deg, #ea580c, #f97316)',
-              color: '#ffffff',
-              padding: '8px 18px',
-              borderRadius: '12px',
-              fontWeight: 900,
-              fontSize: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <span>3. การจัดการปัญหาที่พบบ่อยของเต้านม (คลิกที่แต่ละภาพเพื่อขยายใหญ่)</span>
-              <span style={{ fontSize: '14px', background: 'rgba(255,255,255,0.2)', padding: '3px 10px', borderRadius: '999px' }}>
-                มีปุ่ม ก่อนหน้า / ถัดไป
-              </span>
-            </div>
-            <div style={{
-              flex: 1,
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gridTemplateRows: '1fr 1fr',
-              gap: '12px',
-            }}>
-              {[
-                { idx: 2, label: 'รูปที่ 1: เต้านมคัดตึง', img: '/images/rev/w103_prob1.jpg' },
-                { idx: 3, label: 'รูปที่ 2: หัวนมเจ็บ / หัวนมแตก', img: '/images/rev/w103_prob2.jpg' },
-                { idx: 4, label: 'รูปที่ 3: ท่อน้ำนมอุดตัน', img: '/images/rev/w103_prob3.jpg' },
-                { idx: 5, label: 'รูปที่ 4: เต้านมอักเสบ', img: '/images/rev/w103_prob4.jpg' },
-              ].map((card) => (
-                <div
-                  key={card.idx}
-                  onClick={() => openGalleryAt(card.idx)}
-                  style={{
-                    background: '#ffffff',
-                    borderRadius: '14px',
-                    border: '2px solid #fed7aa',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                  }}
-                >
-                  <img
-                    src={card.img}
-                    alt={card.label}
-                    style={{ width: '100%', height: '210px', objectFit: 'contain', background: '#fff7ed' }}
-                  />
-                  <div style={{
-                    background: '#ffedd5',
-                    color: '#9a3412',
-                    fontWeight: 800,
-                    fontSize: '14px',
-                    padding: '5px 12px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  }}>
-                    <span>{card.label}</span>
-                    <span>🔍 ขยาย</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Html>
+        {[
+          { idx: 2, pos: [-1.82, 1.12, 0.02], label: '1. เต้านมคัดตึง', img: '/images/rev/w103_prob1.jpg' },
+          { idx: 3, pos: [1.82, 1.12, 0.02], label: '2. หัวนมเจ็บ / หัวนมแตก', img: '/images/rev/w103_prob2.jpg' },
+          { idx: 4, pos: [-1.82, -1.12, 0.02], label: '3. ท่อน้ำนมอุดตัน', img: '/images/rev/w103_prob3.jpg' },
+          { idx: 5, pos: [1.82, -1.12, 0.02], label: '4. เต้านมอักเสบ', img: '/images/rev/w103_prob4.jpg' },
+        ].map((card) => (
+          <FramedImagePoster3D
+            key={card.idx}
+            position={card.pos}
+            width={3.4}
+            height={2.05}
+            src={card.img}
+            title={card.label}
+            badgeText="🔍 ขยาย"
+            headerColor="#ea580c"
+            onClick={() => openGalleryAt(card.idx)}
+          />
+        ))}
       </WoodFramedBacklitPanel>
 
       {/* ══════════════════════════════════════════════════════════════════════════
