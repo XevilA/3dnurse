@@ -1,1052 +1,1008 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
-import NursingChair from '../furniture/NursingChair';
-import HospitalNightstand from '../furniture/HospitalNightstand';
-import MedicalCart from '../furniture/MedicalCart';
-import BabyCrib from '../furniture/BabyCrib';
-import BabyAvatar from '../avatars/BabyAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
-import FlowerVase from '../decorations/FlowerVase';
-import HospitalSofa from '../furniture/HospitalSofa';
 import InteractiveSeat from '../furniture/InteractiveSeat';
-import Pillows from '../decorations/Pillows';
-import HospitalTrashBin from '../decorations/HospitalTrashBin';
-import DoctorDesk from '../furniture/DoctorDesk';
+import { TitleSign, WindowWithCurtains } from '../ward/WardKit';
+import {
+  WoodFramedBacklitPanel,
+  CozySectionalSofaSet,
+  CozyRoomDecorCorners,
+} from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
+// ── ข้อมูลโปสเตอร์ผนังทั้ง 3 ด้าน (ตามไฟล์สมุดโน้ตไม่มีชื่อ 2.pdf และ IMG_7528.JPG) ──
+const W103_GALLERY = [
+  {
+    src: '/images/rev/w103_col1.jpg',
+    title: 'ผนังที่ 1: 1. การดูแลเต้านม',
+    badge: 'ผนังที่ 1 • Ward 103',
+    description: 'สังเกตความปกติของเต้านม (ปกติ, บวม, แดง ร้อน, เจ็บ กดเจ็บ), การทำความสะอาดเต้านม และการประเมินเต้านมด้วยตนเอง',
+    details: [
+      'สังเกตความปกติของเต้านม: ปกติ / บวม / แดง ร้อน / เจ็บ กดเจ็บ',
+      'การทำความสะอาดเต้านม: อาบน้ำด้วยน้ำสะอาด, ไม่ถูแรง, เช็ดให้แห้ง, ไม่ใช้สบู่/แอลกอฮอล์บริเวณหัวนม',
+      'การประเมินเต้านมด้วยตนเอง: คลำหาก้อน, สังเกตผิวหนัง, ดูหัวนมและทิศทางการไหลของน้ำนม, สอบถามเมื่อมีความผิดปกติ',
+    ],
+  },
+  {
+    src: '/images/rev/w103_col2.jpg',
+    title: 'ผนังที่ 2: 2. การนวดเต้านมและกระตุ้นการไหลของน้ำนม',
+    badge: 'ผนังที่ 2 • Ward 103',
+    description: 'นวดเบา ๆ วันละ 2–3 ครั้ง หรือก่อนให้นม/เมื่อรู้สึกคัดตึง',
+    details: [
+      '1. ใช้นิ้วมือวนเบา ๆ จากฐานเต้านมเข้าหาหัวนม',
+      '2. นวดจากด้านนอกเข้าหาลานหัวนม',
+      '3. ใช้นิ้วหัวแม่มือและนิ้วชี้คลึงเบา ๆ รอบลานหัวนม',
+      '4. เคล้น/บีบเบา ๆ เข้าหาหัวนมเพื่อช่วยระบายน้ำนม',
+    ],
+  },
+  {
+    src: '/images/rev/w103_prob1.jpg',
+    title: 'ผนังที่ 3 (รูปที่ 1): เต้านมคัดตึง (Breast engorgement)',
+    badge: 'ผนังที่ 3 • รูปที่ 1/4',
+    description: 'อาการ: เต้านมแข็ง ตึง เจ็บ, รู้สึกร้อนหนัก, ลูกดูดไม่สะดวก',
+    details: [
+      'ให้ลูกดูดบ่อยขึ้น',
+      'ประคบอุ่นก่อนให้นม 5–10 นาที',
+      'นวดเบา ๆ และระบายน้ำนม',
+      'สวมเสื้อในที่รองรับ ไม่รัดแน่น',
+    ],
+  },
+  {
+    src: '/images/rev/w103_prob2.jpg',
+    title: 'ผนังที่ 3 (รูปที่ 2): หัวนมเจ็บ / หัวนมแตก (Nipple pain / cracked nipple)',
+    badge: 'ผนังที่ 3 • รูปที่ 2/4',
+    description: 'อาการ: เจ็บแสบขณะให้นม, หัวนมแดง แห้ง แตก, อาจมีเลือดออก',
+    details: [
+      'ตรวจและแก้ท่าให้นม/การเข้าเต้า',
+      'บีบน้ำนมทาลานหัวนม',
+      'ปล่อยให้แห้ง ลดการเสียดสี',
+      'หากไม่ดีขึ้น ควรพบแพทย์',
+    ],
+  },
+  {
+    src: '/images/rev/w103_prob3.jpg',
+    title: 'ผนังที่ 3 (รูปที่ 3): ท่อน้ำนมอุดตัน (Blocked duct)',
+    badge: 'ผนังที่ 3 • รูปที่ 3/4',
+    description: 'อาการ: คลำพบก้อนแข็ง, เจ็บเป็นจุด, อาจมีผิวหนังแดงเล็กน้อย',
+    details: [
+      'ให้ลูกดูดบ่อย กระตุ้นการไหล',
+      'นวดเบา ๆ จากด้านนอกเข้าหาหัวนม',
+      'ประคบอุ่นก่อนให้นม',
+      'หากมีไข้ ปวดมาก ควรพบแพทย์',
+    ],
+  },
+  {
+    src: '/images/rev/w103_prob4.jpg',
+    title: 'ผนังที่ 3 (รูปที่ 4): เต้านมอักเสบ (Mastitis)',
+    badge: 'ผนังที่ 3 • รูปที่ 4/4',
+    description: 'อาการ: เต้านมแดง ร้อน บวม, เจ็บมาก, อาจมีไข้ อ่อนเพลีย',
+    details: [
+      'พักผ่อน ดื่มน้ำมาก ๆ',
+      'ให้ลูกดูดต่อเนื่อง/ระบายน้ำนม',
+      'รับประทานยาตามแพทย์สั่ง',
+      'พบแพทย์ทันที',
+    ],
+  },
+  {
+    src: '/images/rev/w103_scenarios.jpg',
+    title: 'สถานการณ์จำลอง: การดูแลเต้านม (4 สถานการณ์)',
+    badge: 'สถานการณ์จำลอง • Ward 103',
+    description: 'ฝึกวิเคราะห์และเลือกวิธีจัดการปัญหาเต้านมทั้ง 4 สถานการณ์อย่างเหมาะสม',
+  },
+];
+
+// ── สถานการณ์จำลอง 4 ข้อ ตามแผ่นภาพ IMG_7527.JPG แบบเป๊ะ 100% ──
+const W103_SCENARIOS = [
+  {
+    id: 1,
+    title: '1. เต้านมคัดตึง',
+    situation: 'หลังคลอดวันที่ 3 รู้สึกเต้านมทั้งสองข้างตึง แข็ง เจ็บ โดยเฉพาะช่วงเช้า',
+    prompt: 'เลือกวิธีจัดการที่เหมาะสม (เลือก 2–3 ข้อ)',
+    options: [
+      { id: 's1_1', text: 'ให้นมหรือบีบระบายน้ำนม', correct: true },
+      { id: 's1_2', text: 'ประคบเย็นเพื่อลดอาการ', correct: true },
+      { id: 's1_3', text: 'กดหรือนวดเต้านมอย่างรุนแรง', correct: false },
+    ],
+  },
+  {
+    id: 2,
+    title: '2. หัวนมเจ็บ / หัวนมแตก',
+    situation: 'ให้นมแล้วรู้สึกเจ็บบริเวณหัวนม และพบรอยแตกเล็กน้อย เวลาลูกดูดนมเจ็บมาก',
+    prompt: 'เลือกวิธีจัดการที่เหมาะสม',
+    options: [
+      { id: 's2_1', text: 'จัดท่าให้นมและการเข้าเต้าที่ถูกต้อง', correct: true },
+      { id: 's2_2', text: 'ทาน้ำนมแม่หรือครีมบำรุง', correct: true },
+      { id: 's2_3', text: 'ใช้แอลกอฮอล์เช็ดหัวนม', correct: false },
+    ],
+  },
+  {
+    id: 3,
+    title: '3. มีก้อน และเจ็บเฉพาะจุด',
+    situation: 'หลังคลอด 2 สัปดาห์ คลำพบก้อนเล็ก ๆ ที่เต้านมซ้าย เจ็บเมื่อกด ไม่แดง ไม่มีไข้',
+    prompt: 'เลือกวิธีจัดการที่เหมาะสม',
+    options: [
+      { id: 's3_1', text: 'นวดอย่างอ่อนโยนขณะให้นม', correct: true },
+      { id: 's3_2', text: 'สังเกตอาการอย่างต่อเนื่อง', correct: true },
+      { id: 's3_3', text: 'หากไม่ดีขึ้นให้พบแพทย์', correct: true },
+    ],
+  },
+  {
+    id: 4,
+    title: '4. เต้านมแดง ร้อน ปวดมาก (เต้านมอักเสบ)',
+    situation: 'หลังคลอด 1 เดือน มีไข้ 38.5 °C เต้านมขวาแดง ร้อน ปวดมาก รู้สึกไม่สบาย',
+    prompt: 'เลือกวิธีจัดการที่เหมาะสม',
+    options: [
+      { id: 's4_1', text: 'รับประทานยาเองและรอดูอาการ', correct: false },
+      { id: 's4_2', text: 'ติดต่อบุคลากรสุขภาพเพื่อรับการประเมินทันที', correct: true },
+    ],
+  },
+];
+
+const MASSAGE_STEPS = [
+  { id: 1, title: 'ขั้นตอนที่ 1', desc: 'ใช้นิ้วมือวนเบา ๆ จากฐานเต้านมเข้าหาหัวนม' },
+  { id: 2, title: 'ขั้นตอนที่ 2', desc: 'นวดจากด้านนอกเข้าหาลานหัวนม' },
+  { id: 3, title: 'ขั้นตอนที่ 3', desc: 'ใช้นิ้วหัวแม่มือและนิ้วชี้คลึงเบา ๆ รอบลานหัวนม' },
+  { id: 4, title: 'ขั้นตอนที่ 4', desc: 'เคล้น/บีบเบา ๆ เข้าหาหัวนมเพื่อช่วยระบายน้ำนม' },
+];
+
 export default function MotherCare3Room() {
-  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, setHoldingBaby, sitDown, seatedTarget } = useStore();
   const openLightbox = useStore((s) => s.openLightbox);
-  const [activeTab, setActiveTab] = useState(0); // 0: การดูแลเต้านม, 1: การนวดเต้านม, 2: ปัญหาเต้านม 4 สถานการณ์, 3: แบบประเมิน
-  const [showLearningModal, setShowLearningModal] = useState(false);
-  const [practiceStep, setPracticeStep] = useState(0); // 0: not started, 1: warm compress, 2: spiral massage, 3: C-hold expression
-  const [practiceFeedback, setPracticeFeedback] = useState(null);
 
-  // ── 3-Wall Educational Posters (Breast Care) ──
-  const breastCarePosters = [
-    {
-      id: 'poster_mc3_left',
-      title: '1. การดูแลเต้านมและทำความสะอาด',
-      subtitle: 'สัมผัสอ่อนโยน ซับแห้ง ไม่ใช้สบู่หรือแอลกอฮอล์ถูหัวนม',
-      imageSrc: '/references/mother_zone1/breast_care.png',
-      position: [-8.85, 2.7, 0],
-      rotation: [0, Math.PI / 2, 0],
-      clinicalDetails: [
-        'การดูแลเต้านมในระยะให้นมบุตร',
-        'ข้อแนะนำ: ทำความสะอาดด้วยน้ำสะอาดขณะอาบน้ำ และซับแห้งด้วยผ้าสะอาดนุ่ม',
-        'ข้อควรระวัง: หลีกเลี่ยงการฟอกสบู่ที่มีฤทธิ์แรงหรือแอลกอฮอล์ที่หัวนม เพราะจะทำลายไขมันธรรมชาติที่ปกป้องผิว ทำให้หัวนมแห้งแตก',
-      ],
-      category: 'การดูแลเต้านม (Ward 103)'
-    },
-    {
-      id: 'poster_mc3_back',
-      title: '2. การนวดเต้านมและเปิดท่อน้ำนม',
-      subtitle: 'นวดสัมผัสนุ่มนวล กระตุ้นฮอร์โมน Oxytocin ห้ามบีบเค้นรุนแรง',
-      imageSrc: '/references/mother_zone1/breast_massage.png',
-      position: [0, 2.8, -8.85],
-      rotation: [0, 0, 0],
-      clinicalDetails: [
-        'เทคนิคการนวดเต้านมเพื่อกระตุ้นการหลั่งน้ำนม (Butdapan et al. 2024)',
-        '1. ล้างมือให้สะอาดและเตรียมผ้าประคบอุ่น 3–5 นาที',
-        '2. ใช้นิ้วนวดวนเป็นวงกลมก้นหอยตามแนวท่อน้ำนมเข้าหาลานนม',
-        '3. ใช้แรงสัมผัสเบามือ นุ่มนวล ไม่เค้นบีบจนเจ็บช้ำ',
-      ],
-      category: 'การดูแลเต้านม (Ward 103)'
-    },
-    {
-      id: 'poster_mc3_right',
-      title: '3. จัดการปัญหาเต้านม 4 สถานการณ์',
-      subtitle: 'คัดตึง, หัวนมแตก, ท่อน้ำนมอุดตัน, เต้านมอักเสบ',
-      imageSrc: '/references/mother_zone1/breast_problems.png',
-      position: [8.85, 2.7, 0],
-      rotation: [0, -Math.PI / 2, 0],
-      clinicalDetails: [
-        'ปัญหาเต้านมที่พบบ่อยและการดูแล',
-        '1. คัดตึงเต้านม: ให้นมบ่อยทุก 2–3 ชม. ประคบเย็นหลังให้นมเพื่อลดปวด',
-        '2. หัวนมแตก: ปรับท่าเข้าเต้าให้อมลึกถึงลานนม (Asymmetrical latch)',
-        '3. ท่อน้ำนมอุดตัน: ประคบอุ่น นวดคลึงเบาๆ คางลูกชี้ไปทางก้อน',
-        '4. เต้านมอักเสบ (Mastitis): มีไข้สูงหนาวสั่น ปวดเต้าบวมแดง ต้องพบแพทย์ทันที',
-      ],
-      category: 'การดูแลเต้านม (Ward 103)'
-    }
-  ];
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('massage'); // 'massage' | 'scenarios' | 'quiz'
+  const [practicedSteps, setPracticedSteps] = useState([]);
+  const [selectedOpts, setSelectedOpts] = useState({ 1: [], 2: [], 3: [], 4: [] });
+  const [scenarioFeedback, setScenarioFeedback] = useState(null);
+  const [activeHint, setActiveHint] = useState(null);
 
-  // ── กิจกรรม 1: การดูแลเต้านมและทำความสะอาด ──
-  const [act1Behaviors, setAct1Behaviors] = useState([
-    { id: 'inspect', text: 'สังเกตผิวหนังเต้านม อาการบวม แดง ร้อน และอาการเจ็บเป็นประจำ', cat: null, correct: 'do', reason: 'ช่วยให้สังเกตพบความผิดปกติได้ตั้งแต่ระยะแรกเริ่ม' },
-    { id: 'shower', text: 'อาบน้ำทำความสะอาดร่างกายตามปกติ ซับแห้งอย่างเบามือด้วยผ้าสะอาด', cat: null, correct: 'do', reason: 'รักษาความสะอาดโดยไม่ทำให้ผิวหนังระคายเคือง' },
-    { id: 'rough_rub', text: 'ขยี้หรือถูหัวนมแรงๆ เพื่อกระตุ้นหรือทำความสะอาด', cat: null, correct: 'avoid', reason: 'ทำให้ผิวหนังหัวนมถลอก เกิดแผลแตก และเจ็บแสบ' },
-    { id: 'alcohol_soap', text: 'ฟอกสบู่ที่มีฤทธิ์แรง หรือใช้แอลกอฮอล์เช็ดบริเวณหัวนมเป็นประจำ', cat: null, correct: 'avoid', reason: 'ทำลายไขมันตามธรรมชาติที่ต่อม Montgomery สร้างขึ้น ทำให้หัวนมแห้งแตกง่าย' },
-  ]);
-  const [act1Feedback, setAct1Feedback] = useState(null);
+  // ห้อง Ward 103 ไม่เอาลูก/เตียงเด็ก ตามที่ลูกค้าสั่ง ("ไม่เอาลูก")
+  useEffect(() => {
+    setHoldingBaby(false);
+  }, [setHoldingBaby]);
 
-  const assignAct1 = (id, targetCat) => {
-    setAct1Behaviors(prev => prev.map(b => b.id === id ? { ...b, cat: targetCat } : b));
-    setAct1Feedback(null);
+  const openGalleryAt = (index) => {
+    openLightbox({
+      ...W103_GALLERY[index],
+      items: W103_GALLERY,
+      currentIndex: index,
+    });
   };
 
-  const checkAct1 = () => {
-    const allFilled = act1Behaviors.every(b => b.cat !== null);
-    if (!allFilled) {
-      setAct1Feedback({ pass: false, msg: 'กรุณาจัดหมวดหมู่พฤติกรรมให้ครบทุกข้อก่อนตรวจคำตอบครับ' });
-      return;
-    }
-    const isAllCorrect = act1Behaviors.every(b => b.cat === b.correct);
-    if (isAllCorrect) {
-      setAct1Feedback({
-        pass: true,
-        msg: '✓ ถูกต้องทั้งหมด! การสังเกตและดูแลเต้านมอย่างอ่อนโยนช่วยรักษาความชุ่มชื้นตามธรรมชาติ และป้องกันการเกิดแผลหัวนมแตก (Tharana & Somsap 2024)'
-      });
-    } else {
-      setAct1Feedback({
-        pass: false,
-        msg: '✕ ยังมีบางข้อไม่ถูกต้อง: ควรหลีกเลี่ยงการขยี้แรง หรือใช้แอลกอฮอล์/สบู่แรงเช็ดหัวนม เพราะจะทำให้หัวนมแห้งแตก'
-      });
-    }
+  const toggleMassageStep = (stepId) => {
+    setPracticedSteps((prev) => (prev.includes(stepId) ? prev : [...prev, stepId]));
   };
 
-  // ── กิจกรรม 2: การนวดเต้านมและกระตุ้นการไหลของน้ำนม ──
-  const [massagePressure, setMassagePressure] = useState(null); // 'gentle' | 'hard'
-  const [massageChecklist, setMassageChecklist] = useState([]);
-  const [act2Feedback, setAct2Feedback] = useState(null);
-
-  const massageRules = [
-    { id: 'clean_hands', text: 'ล้างมือให้สะอาดก่อนสัมผัสเต้านมเสมอ', correct: true },
-    { id: 'gentle_touch', text: 'ประคองและลูบคลึงอย่างนุ่มนวลตามแนวท่อน้ำนม', correct: true },
-    { id: 'stop_if_pain', text: 'หยุดกิจกรรมทันทีหากมีอาการเจ็บหรือปวดมาก', correct: true },
-    { id: 'force_milk', text: 'ออกแรงกด บีบ หรือคลึงรุนแรงเพื่อให้มีน้ำนมพุ่งออกมาเร็วขึ้น', correct: false },
-  ];
-
-  const toggleMassageRule = (id) => {
-    setMassageChecklist(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-    setAct2Feedback(null);
+  const toggleScenarioOption = (scenId, optId) => {
+    setSelectedOpts((prev) => {
+      const cur = prev[scenId] || [];
+      const next = cur.includes(optId) ? cur.filter((x) => x !== optId) : [...cur, optId];
+      return { ...prev, [scenId]: next };
+    });
+    setScenarioFeedback(null);
   };
 
-  const checkAct2 = () => {
-    if (!massagePressure) {
-      setAct2Feedback({ pass: false, msg: 'กรุณาเลือกระดับแรงกดในการนวดเต้านม' });
-      return;
+  const checkAllScenarios = () => {
+    for (const sc of W103_SCENARIOS) {
+      const picked = selectedOpts[sc.id] || [];
+      const correctIds = sc.options.filter((o) => o.correct).map((o) => o.id);
+      const wrongPicked = picked.some((id) => !correctIds.includes(id));
+      const allCorrectPicked = correctIds.every((id) => picked.includes(id));
+      if (wrongPicked || !allCorrectPicked) {
+        setScenarioFeedback({
+          pass: false,
+          msg: `✕ สถานการณ์ที่ ${sc.id} (${sc.title}) ยังเลือกไม่ครบหรือไม่ถูกต้อง กรุณาเลือกเฉพาะข้อที่ถูกต้อง (✓) ให้ครบทุกข้อ แล้วกดตรวจคำตอบอีกครั้งค่ะ`,
+        });
+        return;
+      }
     }
-    const hasUnsafe = massageChecklist.includes('force_milk');
-    const hasAllSafe = massageChecklist.includes('clean_hands') && massageChecklist.includes('gentle_touch') && massageChecklist.includes('stop_if_pain');
-
-    if (massagePressure === 'hard') {
-      setAct2Feedback({ pass: false, msg: '✕ ไม่ควรใช้แรงกดรุนแรง! การบีบหรือกดแรงทำให้เนื้อเยื่อเต้านมอักเสบ บอบช้ำ และท่อน้ำนมบาดเจ็บ' });
-    } else if (hasUnsafe) {
-      setAct2Feedback({ pass: false, msg: '✕ การออกแรงกดบีบรุนแรงเพื่อเค้นน้ำนมเป็นสิ่งที่ไม่ควรทำ เพราะเสี่ยงต่อเต้านมอักเสบ' });
-    } else if (hasAllSafe) {
-      setAct2Feedback({
-        pass: true,
-        msg: '✓ ถูกต้องทั้งหมด! การนวดเต้านมต้องใช้แรงเบานุ่มนวล มือสะอาด และหยุดเมื่อเจ็บ (Butdapan et al. 2024) ไม่ควรกดแรงจนเจ็บ'
-      });
-    } else {
-      setAct2Feedback({ pass: false, msg: '✕ กรุณาเลือกหลักการนวดที่ถูกต้องและปลอดภัยให้ครบทั้ง 3 ข้อ' });
-    }
+    setScenarioFeedback({
+      pass: true,
+      msg: '✓ ยอดเยี่ยมมากค่ะ! คุณแม่เลือกวิธีจัดการปัญหาเต้านมได้ถูกต้องครบทั้ง 4 สถานการณ์',
+    });
+    completeModule('motherCare3');
   };
 
-  // ── กิจกรรม 3: การจัดการปัญหาที่พบบ่อยของเต้านม 4 สถานการณ์ ──
-  const [activeScenario, setActiveScenario] = useState('A'); // A, B, C, D
-  const [scenarioAnswers, setScenarioAnswers] = useState({
-    A: null,
-    B: null,
-    C: null,
-    D: null
-  });
-  const [act3Feedback, setAct3Feedback] = useState(null);
-
-  const scenarios = {
-    A: {
-      code: 'A',
-      title: 'สถานการณ์ A: เต้านมคัดตึง (Breast Engorgement)',
-      symptom: 'คุณแม่รู้สึกเต้านมตึง แข็ง ผิวตึงเงา และไม่สบายเต้านมในวันที่ 3 หลังคลอด',
-      options: [
-        { id: 'opt_A1', text: 'ให้ลูกดูดเร็วและบ่อย (ทุก 2–3 ชม.) ระบายน้ำนมออก และประคบเย็นหลังให้นมเพื่อลดบวม', correct: true },
-        { id: 'opt_A2', text: 'งดให้นมและทนรอให้เต้านมยุบไปเอง', correct: false },
-        { id: 'opt_A3', text: 'บีบเค้นเต้านมอย่างรุนแรงจนช้ำเพื่อให้หายคัด', correct: false }
-      ],
-      solution: 'เต้านมคัดตึงแก้ได้ด้วยการระบายน้ำนมอย่างสม่ำเสมอ ประคบอุ่นสั้นๆ ก่อนให้นม และประคบเย็นหลังให้นมเพื่อลดปวดบวม'
-    },
-    B: {
-      code: 'B',
-      title: 'สถานการณ์ B: หัวนมเจ็บหรือแตก (Sore/Cracked Nipple)',
-      symptom: 'คุณแม่รู้สึกเจ็บแปลบที่หัวนมขณะลูกดูดนม และเห็นรอยแตกตื้นๆ ที่ปลายหัวนม',
-      options: [
-        { id: 'opt_B1', text: 'ทบทวนและปรับท่าให้นม ให้ลูกอ้าปากกว้าง อมลึกถึงลานนม ไม่ใช่อมเฉพาะหัวนม', correct: true },
-        { id: 'opt_B2', text: 'ทาแอลกอฮอล์เพื่อฆ่าเชื้อที่รอยแตกทุก 1 ชั่วโมง', correct: false },
-        { id: 'opt_B3', text: 'ให้ลูกดูดเฉพาะปลายหัวนมเบาๆ', correct: false }
-      ],
-      solution: 'สาเหตุหลักของหัวนมแตกคือการเข้าเต้าไม่ลึกพอ ปรับให้ทารกอมลึกถึงลานนม (Asymmetrical latch) จะไม่เจ็บหัวนม'
-    },
-    C: {
-      code: 'C',
-      title: 'สถานการณ์ C: ท่อน้ำนมอุดตัน / ก้อนเจ็บเฉพาะจุด (Plugged Duct)',
-      symptom: 'คลำได้ก้อนไตแข็งขนาดเล็ก กดเจ็บเฉพาะจุด ไม่มีไข้ เต้านมไม่แดงเป็นวงกว้าง',
-      options: [
-        { id: 'opt_C1', text: 'นวดคลึงเบาๆ บริเวณก้อนขณะลูกดูด ให้ลูกดูดเต้าที่มีก้อนก่อน และจัดคางลูกชี้ไปทางก้อน', correct: true },
-        { id: 'opt_C2', text: 'ใช้เข็มเจาะก้อนไตเองที่บ้าน', correct: false },
-        { id: 'opt_C3', text: 'งดให้ลูกดูดเต้าข้างนั้นตลอดไป', correct: false }
-      ],
-      solution: 'การให้ลูกดูดโดยจัดคางชี้ไปทางก้อนไต และประคบอุ่นพร้อมนวดเบาๆ ช่วยระบายน้ำนมที่คั่งค้างในท่อได้ดีที่สุด'
-    },
-    D: {
-      code: 'D',
-      title: 'สถานการณ์ D: เต้านมอักเสบ (Mastitis)',
-      symptom: 'เต้านมบวม แดงเป็นปื้น ร้อน ปวดรุนแรง ร่วมกับมีไข้สูง ≥ 38.5°C หนาวสั่น อ่อนเพลีย',
-      options: [
-        { id: 'opt_D1', text: 'เป็นสัญญาณอันตราย! ต้องรีบติดต่อบุคลากรสุขภาพเพื่อรับยาปฏิชีวนะและการรักษาทันที', correct: true },
-        { id: 'opt_D2', text: 'นวดคลึงรุนแรงเองที่บ้านต่อไปโดยไม่ต้องพบแพทย์', correct: false },
-        { id: 'opt_D3', text: 'ซื้อยาชุดมาทานเองโดยไม่ปรึกษาแพทย์', correct: false }
-      ],
-      solution: 'เต้านมอักเสบติดเชื้อต้องได้รับการประเมินและรักษาด้วยยาปฏิชีวนะจากแพทย์ทันที ห้ามพึ่งการนวดเพียงอย่างเดียว'
-    }
-  };
-
-  const handleSelectScenarioOpt = (scenarioKey, optId) => {
-    setScenarioAnswers(prev => ({ ...prev, [scenarioKey]: optId }));
-    setAct3Feedback(null);
-  };
-
-  const checkAct3 = () => {
-    const isA = scenarioAnswers.A === 'opt_A1';
-    const isB = scenarioAnswers.B === 'opt_B1';
-    const isC = scenarioAnswers.C === 'opt_C1';
-    const isD = scenarioAnswers.D === 'opt_D1';
-
-    if (!scenarioAnswers.A || !scenarioAnswers.B || !scenarioAnswers.C || !scenarioAnswers.D) {
-      setAct3Feedback({ pass: false, msg: 'กรุณาตอบคำถามให้ครบทั้ง 4 สถานการณ์ (A, B, C, D) ก่อนตรวจคำตอบครับ' });
-      return;
-    }
-
-    if (isA && isB && isC && isD) {
-      setAct3Feedback({
-        pass: true,
-        msg: '✓ ถูกต้องครบทั้ง 4 สถานการณ์! คุณแม่เข้าใจแนวทางการดูแลเต้านมคัดตึง หัวนมเจ็บ ท่อน้ำนมอุดตัน และรู้ว่าเต้านมอักเสบมีไข้สูงต้องพบแพทย์ทันที'
-      });
-    } else {
-      setAct3Feedback({
-        pass: false,
-        msg: '✕ ยังมีบางสถานการณ์ที่เลือกวิธีแก้ไขไม่ถูกต้อง ลองทบทวนว่ากรณีใดดูแลเบื้องต้นได้ และกรณีใดเป็นสัญญาณอันตรายที่ต้องพบแพทย์'
-      });
-    }
-  };
-
-  // ── แบบประเมินความรู้ท้ายห้อง (ข้อ 3, 9 & 14) ──
+  // แบบประเมินความรู้ท้ายห้อง
   const room3Questions = getQuestionsByRoomKey('motherCare3');
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizUserChoice, setQuizUserChoice] = useState(null);
   const [quizShowFeedback, setQuizShowFeedback] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
-
   const currentQ = room3Questions[quizIndex] || room3Questions[0];
 
   const handleQuizAnswer = (choice) => {
     if (quizShowFeedback) return;
     setQuizUserChoice(choice);
     setQuizShowFeedback(true);
-    if (choice === currentQ.answer) {
-      setQuizScore(prev => prev + 1);
-    }
+    if (choice === currentQ.answer) setQuizScore((prev) => prev + 1);
   };
 
   const handleNextQuizQuestion = () => {
     setQuizUserChoice(null);
     setQuizShowFeedback(false);
     if (quizIndex < room3Questions.length - 1) {
-      setQuizIndex(prev => prev + 1);
+      setQuizIndex((prev) => prev + 1);
     } else {
       setQuizFinished(true);
       completeModule('motherCare3');
       setShowSuccessModal(
         true,
-        `ยินดีด้วย! คุณผ่านบทเรียนและการประเมินความรู้ห้องที่ 3 แล้ว (ได้ ${quizScore + (quizUserChoice === currentQ.answer ? 1 : 0)}/${room3Questions.length} คะแนน)`
+        `ยินดีด้วย! คุณผ่านบทเรียนและการประเมินความรู้ห้อง Ward 103 การดูแลเต้านมเรียบร้อยแล้ว`
       );
     }
   };
 
+  const handleSitAndPractice = () => {
+    sitDown({
+      id: 'room103_practice_sofa',
+      name: 'โซฟาฝึกนวดเต้านมและทำสถานการณ์จำลอง',
+      type: 'sofa',
+      position: [0, 0, -0.2],
+      rotationY: 0,
+      seatOffset: [0, 0.44, 0.15],
+      isDrivable: false,
+    });
+    setActiveHint('sofa');
+    setShowActivityModal(true);
+  };
+
   return (
     <group>
-      {/* ── Realistic 3D Hospital Room Architecture ── */}
+      {/* ── โครงสร้างห้องอบอุ่น พื้นไม้โอ๊คแท้ + ไฟหลุมฝ้าเพดานอบอุ่น (ตามภาพตัวอย่าง สมุดโน้ตไม่มีชื่อ 2 หน้า 2) ── */}
       <HospitalRoomShell
         theme="mother"
-        roomTitle="ห้องบริบาลมารดา 3: การดูแลเต้านมและเทคนิคการให้นมบุตร"
-        roomNumber="Lactation Ward 103"
+        cozyMode={true}
+        roomTitle="ห้องบริบาลมารดา 3: การดูแลเต้านม"
+        roomNumber="Ward 103"
       />
 
-      {/* ── REAL 3D CLINICAL ASSETS & ARCHITECTURE ── */}
-      <RealPlant type="potted" position={[7.5, 0, -7.5]} scale={1.1} />
-      <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
-      <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
+      {/* แสงไฟโทนอบอุ่นสบายตาในห้อง */}
+      <pointLight position={[0, 4.2, 0.5]} intensity={0.75} color="#ffd8a8" distance={14} />
 
-      {/* ── 3-Wall Educational Posters (Breast Care across 3 Walls) ── */}
-      {breastCarePosters.map((poster) => (
-        <group key={poster.id} position={poster.position} rotation={poster.rotation}>
-          {/* Outer Bezel Frame */}
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[2.0, 1.45, 0.06]} />
-            <meshStandardMaterial color="#9d174d" roughness={0.3} metalness={0.2} />
-          </mesh>
-          {/* Inner Matte */}
-          <mesh position={[0, 0, 0.032]}>
-            <boxGeometry args={[1.92, 1.37, 0.01]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
-          </mesh>
-          {/* Poster Surface with HTML Preview & Lightbox Trigger */}
-          <Html position={[0, 0, 0.045]} center transform scale={0.19} distanceFactor={14}>
-            <div
-              onClick={() => openLightbox({
-                src: poster.imageSrc,
-                title: poster.title,
-                caption: poster.subtitle,
-                category: poster.category,
-                clinicalDetails: poster.clinicalDetails
-              })}
-              className="cursor-pointer select-none rounded-xl overflow-hidden shadow-2xl transition-all duration-300 hover:scale-105"
-              style={{
-                width: '420px',
-                height: '290px',
-                background: '#0f172a',
-                border: '3px solid #f472b6',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}
-            >
-              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-                <img
-                  src={poster.imageSrc}
-                  alt={poster.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </div>
-              <div style={{
-                background: 'rgba(15, 23, 42, 0.95)',
-                padding: '8px 12px',
-                borderTop: '1.5px solid #f472b6',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-                <div>
-                  <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: 'bold' }}>
-                    {poster.title}
-                  </div>
-                  <div style={{ color: '#fbcfe8', fontSize: '10.5px' }}>
-                    {poster.subtitle}
-                  </div>
-                </div>
-                <span style={{
-                  background: '#db2777',
-                  color: 'white',
-                  fontSize: '10.5px',
-                  fontWeight: 'bold',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  whiteSpace: 'nowrap'
-                }}>
-                  🔍 ขยายภาพ
-                </span>
-              </div>
-            </div>
-          </Html>
-        </group>
-      ))}
+      {/* ป้ายชื่อห้องด้านบนผนังกลาง */}
+      <TitleSign
+        position={[0, 5.15, -8.85]}
+        width={5.4}
+        height={1.55}
+        line1="ZONE 1 การดูแลเต้านม"
+        line2="Ward 103 • การดูแลเต้านมและกระตุ้นน้ำนม"
+      />
 
-      {/* ── 1. Ergonomic Nursing Chair (กิจกรรม 1: สังเกตเต้านมและการดูแล) ── */}
-      <InteractiveSeat
-        id="room103_nursing_chair"
-        name="เก้าอี้ให้นมบุตรสรีรศาสตร์"
-        type="chair"
-        position={[-5.2, 0, -6.0]}
-        rotation={[0, Math.PI / 6, 0]}
-        seatOffset={[0, 0.48, 0]}
+      {/* หน้าต่างบานใหญ่พร้อมผ้าม่านโทนอบอุ่น */}
+      <WindowWithCurtains position={[-5.6, 2.8, -8.88]} width={3.4} height={2.8} />
+      <WindowWithCurtains position={[5.6, 2.8, -8.88]} width={3.4} height={2.8} />
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          ผนังที่ 1 (ซ้าย X = -8.78): กรอบไม้ไฟซ่อน LED แปะภาพ "1 การดูแลเต้านม"
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <WoodFramedBacklitPanel
+        position={[-8.78, 2.75, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={4.4}
+        height={5.1}
       >
-        <group onClick={() => { setActiveTab(0); setShowLearningModal(true); }}>
-          <NursingChair position={[0, 0, 0]} scale={1.1} />
-        </group>
-        <Html position={[0, 1.4, 0]} center distanceFactor={14}>
+        <Html position={[0, 0, 0.03]} center transform scale={0.28}>
           <div
-            onClick={(e) => { e.stopPropagation(); setActiveTab(0); setShowLearningModal(true); }}
-            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
-            style={{ background: 'linear-gradient(135deg, #e91e63, #c2185b)', border: '2px solid white' }}
+            onClick={() => openGalleryAt(0)}
+            style={{
+              width: '580px',
+              height: '680px',
+              borderRadius: '18px',
+              overflow: 'hidden',
+              border: '4px solid #fde68a',
+              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
+              cursor: 'pointer',
+              background: '#fff1f2',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
           >
-            <span>🤱 เก้าอี้ให้นม (คลิกเปิดคู่มือ)</span>
+            <img
+              src="/images/rev/w103_col1.jpg"
+              alt="1 การดูแลเต้านม"
+              style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#fff1f2' }}
+            />
+            <div style={{
+              background: '#db2777',
+              color: '#ffffff',
+              padding: '10px 16px',
+              fontWeight: 900,
+              fontSize: '18px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <span>ผนังที่ 1: 1. การดูแลเต้านม</span>
+              <span style={{ background: '#ffffff', color: '#db2777', padding: '3px 12px', borderRadius: '999px', fontSize: '15px' }}>
+                🔍 คลิกเพื่อดูภาพขยาย
+              </span>
+            </div>
           </div>
         </Html>
-      </InteractiveSeat>
+      </WoodFramedBacklitPanel>
 
-      {/* ── 2. Bedside Nightstand with Hydration & Breast Pump Accessories ── */}
-      <group position={[-7.0, 0, -6.8]} onClick={() => { setActiveTab(0); setShowLearningModal(true); }}>
-        <HospitalNightstand position={[0, 0, 0]} scale={1.05}>
-          <FlowerVase position={[0.12, 0.82, 0.08]} scale={0.65} />
-          <mesh position={[-0.15, 0.72, -0.05]} castShadow>
-            <cylinderGeometry args={[0.07, 0.08, 0.26, 24]} />
-            <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
-          </mesh>
-        </HospitalNightstand>
-      </group>
-
-      {/* ── 3. Baby Crib with Resting Newborn (Rooming-in beside nursing chair) ── */}
-      <group position={[-3.2, 0, -6.0]} rotation={[0, -0.15, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
-        <BabyCrib position={[0, 0, 0]} scale={0.9}>
-          {!isHoldingBaby && (
-            <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
-          )}
-        </BabyCrib>
-        <Html position={[0, 1.25, 0]} center distanceFactor={12}>
+      {/* ══════════════════════════════════════════════════════════════════════════
+          ผนังที่ 2 (กลาง Z = -8.78): กรอบไม้ไฟซ่อน LED แปะภาพ "2 การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <WoodFramedBacklitPanel
+        position={[0, 2.5, -8.78]}
+        rotation={[0, 0, 0]}
+        width={4.6}
+        height={4.3}
+      >
+        <Html position={[0, 0, 0.03]} center transform scale={0.28}>
           <div
+            onClick={() => openGalleryAt(1)}
+            style={{
+              width: '610px',
+              height: '570px',
+              borderRadius: '18px',
+              overflow: 'hidden',
+              border: '4px solid #fde68a',
+              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
+              cursor: 'pointer',
+              background: '#f0f9ff',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <img
+              src="/images/rev/w103_col2.jpg"
+              alt="2 การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
+              style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#f0f9ff' }}
+            />
+            <div style={{
+              background: '#0284c7',
+              color: '#ffffff',
+              padding: '10px 16px',
+              fontWeight: 900,
+              fontSize: '18px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <span>ผนังที่ 2: 2. การนวดเต้านมและกระตุ้นการไหลของน้ำนม</span>
+              <span style={{ background: '#ffffff', color: '#0284c7', padding: '3px 12px', borderRadius: '999px', fontSize: '15px' }}>
+                🔍 คลิกเพื่อดูภาพขยาย
+              </span>
+            </div>
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          ผนังที่ 3 (ขวา X = +8.78): กรอบไม้ไฟซ่อน LED แปะรูป 1, 2, 3, 4 จัดเรียง 2x2
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <WoodFramedBacklitPanel
+        position={[8.78, 2.75, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={7.4}
+        height={4.9}
+      >
+        <Html position={[0, 0, 0.03]} center transform scale={0.28}>
+          <div
+            style={{
+              width: '980px',
+              height: '640px',
+              borderRadius: '20px',
+              background: 'linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%)',
+              border: '4px solid #fde68a',
+              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
+              padding: '14px 18px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+            }}
+          >
+            <div style={{
+              background: 'linear-gradient(90deg, #ea580c, #f97316)',
+              color: '#ffffff',
+              padding: '8px 18px',
+              borderRadius: '12px',
+              fontWeight: 900,
+              fontSize: '20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <span>3. การจัดการปัญหาที่พบบ่อยของเต้านม (คลิกที่แต่ละภาพเพื่อขยายใหญ่)</span>
+              <span style={{ fontSize: '14px', background: 'rgba(255,255,255,0.2)', padding: '3px 10px', borderRadius: '999px' }}>
+                มีปุ่ม ก่อนหน้า / ถัดไป
+              </span>
+            </div>
+            <div style={{
+              flex: 1,
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gridTemplateRows: '1fr 1fr',
+              gap: '12px',
+            }}>
+              {[
+                { idx: 2, label: 'รูปที่ 1: เต้านมคัดตึง', img: '/images/rev/w103_prob1.jpg' },
+                { idx: 3, label: 'รูปที่ 2: หัวนมเจ็บ / หัวนมแตก', img: '/images/rev/w103_prob2.jpg' },
+                { idx: 4, label: 'รูปที่ 3: ท่อน้ำนมอุดตัน', img: '/images/rev/w103_prob3.jpg' },
+                { idx: 5, label: 'รูปที่ 4: เต้านมอักเสบ', img: '/images/rev/w103_prob4.jpg' },
+              ].map((card) => (
+                <div
+                  key={card.idx}
+                  onClick={() => openGalleryAt(card.idx)}
+                  style={{
+                    background: '#ffffff',
+                    borderRadius: '14px',
+                    border: '2px solid #fed7aa',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  }}
+                >
+                  <img
+                    src={card.img}
+                    alt={card.label}
+                    style={{ width: '100%', height: '210px', objectFit: 'contain', background: '#fff7ed' }}
+                  />
+                  <div style={{
+                    background: '#ffedd5',
+                    color: '#9a3412',
+                    fontWeight: 800,
+                    fontSize: '14px',
+                    padding: '5px 12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}>
+                    <span>{card.label}</span>
+                    <span>🔍 ขยาย</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          🛋️ ชุดโซฟาตัว L ผ้าบุนุ่มสีเทาอมเบจ + หมอนรองให้นมรูปตัว U + สตูลถักสีเขียว + พรมทอ
+             + โต๊ะกลมท็อปขาวขาไม้ + แท็บเล็ตสื่อการสอน (ตรงตามภาพตัวอย่าง สมุดโน้ตไม่มีชื่อ 2 หน้า 2)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <InteractiveSeat
+        id="room103_practice_sofa"
+        name="โซฟาฝึกนวดเต้านมและทำสถานการณ์จำลอง"
+        type="sofa"
+        position={[0.5, 0, -0.2]}
+        rotation={[0, 0, 0]}
+        seatOffset={[0, 0.44, 0.15]}
+      >
+        <Html position={[0, 1.38, 0]} center distanceFactor={12} zIndexRange={[20, 0]}>
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
-              setHoldingBaby(!isHoldingBaby);
+              handleSitAndPractice();
             }}
-            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg"
             style={{
-              background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
-              color: 'white',
-              border: '2px solid white',
+              background: 'linear-gradient(135deg, #ec4899, #be185d)',
+              color: '#ffffff',
+              border: '2px solid #ffffff',
+              borderRadius: '999px',
+              padding: '8px 20px',
+              fontWeight: 900,
+              fontSize: '15px',
+              cursor: 'pointer',
+              boxShadow: '0 6px 18px rgba(190,24,93,0.4)',
               whiteSpace: 'nowrap',
             }}
           >
-            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อย (คลิกอุ้ม)'}
-          </div>
-        </Html>
-      </group>
-
-      {/* ── 4. Velvet Nursing Recliner / Lounge Sofa (กิจกรรม 2: การนวดเต้านม) ── */}
-      <InteractiveSeat
-        id="room103_sofa"
-        name="โซฟาพักผ่อนให้นม"
-        type="sofa"
-        position={[5.4, 0, -6.5]}
-        rotation={[0, -Math.PI / 6, 0]}
-        seatOffset={[0, 0.42, 0.15]}
-      >
-        <group onClick={() => { setActiveTab(1); setShowLearningModal(true); }}>
-          <HospitalSofa position={[0, 0, 0]} scale={1.1} />
-          <Pillows position={[-0.2, 0.45, 0]} scale={0.85} />
-        </group>
-        <Html position={[0, 1.35, 0]} center distanceFactor={14}>
-          <div
-            onClick={(e) => { e.stopPropagation(); setActiveTab(1); setShowLearningModal(true); }}
-            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
-            style={{ background: 'linear-gradient(135deg, #d946ef, #a21caf)', border: '2px solid white' }}
-          >
-            <span>🛋️ โซฟา (คลิกลองฝึกนวดเต้านม)</span>
-          </div>
+            {seatedTarget?.id === 'room103_practice_sofa'
+              ? '🤱 กำลังนั่งบนโซฟา — คลิกเพื่อเปิดฝึกนวดเต้านม & สถานการณ์จำลอง'
+              : '🛋️ คลิกนั่งโซฟาเพื่อฝึกนวดเต้านม & ทำสถานการณ์จำลอง 4 ข้อ'}
+          </button>
         </Html>
       </InteractiveSeat>
 
-      {/* ── 5. Medical Cart with Breast Pumps & Hot/Cold Compresses (กิจกรรม 3: ปัญหาเต้านม) ── */}
-      <group position={[7.8, 0, -2.0]} rotation={[0, -Math.PI / 2, 0]} onClick={() => { setActiveTab(2); setShowLearningModal(true); }}>
-        <MedicalCart position={[0, 0, 0]} scale={1.05} />
-      </group>
+      <CozySectionalSofaSet
+        onClickSofa={handleSitAndPractice}
+        onClickTablet={() => {
+          setShowActivityModal(true);
+          setActiveTab('scenarios');
+        }}
+        tabletLabel="📋 คลิกแท็บเล็ตบนโต๊ะ: ทำสถานการณ์จำลอง 4 ข้อ"
+      />
 
-      {/* ── 6. Clinical Consultation Desk & Quiz Kiosk (กิจกรรม 4: แบบประเมิน) ── */}
-      <group position={[7.8, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => { setActiveTab(3); setShowLearningModal(true); }}>
-        <DoctorDesk position={[0, 0, 0]} scale={0.85} />
-        <Html position={[0, 1.35, 0]} center distanceFactor={14}>
-          <div
-            onClick={(e) => { e.stopPropagation(); setActiveTab(3); setShowLearningModal(true); }}
-            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: '2px solid white' }}
-          >
-            <span>🩺 โต๊ะตรวจ & แบบประเมิน (คลิก)</span>
-          </div>
-        </Html>
-      </group>
+      {/* ของตกแต่งมุมห้องอบอุ่นตามภาพตัวอย่าง (ตะกร้าหวายบนพรมกลม, ตู้ไม้โคมไฟอุ่น, ตุ๊กตากระต่าย, ต้นไม้) */}
+      <CozyRoomDecorCorners />
+      <RealPlant type="potted" position={[-7.6, 0, -7.2]} scale={1.2} />
+      <RealPlant type="potted" position={[7.6, 0, -7.2]} scale={1.2} />
+      <RealPlant type="succulent" position={[7.5, 0, 6.8]} scale={1.25} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          🤱 INTERACTIVE LEARNING MODAL (Based on Manual Zone 1: Breast Care)
+          📋 หน้าต่างกิจกรรมฝึกนวดเต้านมบนโซฟา & สถานการณ์จำลอง 4 สถานการณ์ (IMG_7527.JPG)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {showLearningModal && (
-        <Html position={[0, 1.85, -5.5]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.98)',
-            padding: '24px',
-            borderRadius: '24px',
-            width: '880px',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.35)',
-            border: '3px solid #f48fb1',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            color: '#333'
-          }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fce4ec', paddingBottom: '12px', marginBottom: '16px' }}>
-              <div>
-                <span style={{ background: '#e91e63', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
-                  ZONE 1: การดูแลเต้านมและเทคนิคการให้นมบุตร (Ward 103)
-                </span>
-                <h2 style={{ margin: '6px 0 0 0', color: '#c2185b', fontSize: '22px' }}>
-                  {activeTab === 0 && 'กิจกรรม 1 — การสังเกตและดูแลเต้านม'}
-                  {activeTab === 1 && 'กิจกรรม 2 — การนวดเต้านมและกระตุ้นการไหลของน้ำนม'}
-                  {activeTab === 2 && 'กิจกรรม 3 — การจัดการปัญหาเต้านมที่พบบ่อย (4 สถานการณ์)'}
-                  {activeTab === 3 && 'แบบประเมินความรู้ประจำห้องที่ 3 (ข้อ 3, 9 & 14)'}
-                </h2>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={() => setShowLearningModal(false)}
-                  style={{ background: '#ec4899', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
-                >
-                  ✕ ปิดหน้าต่าง
-                </button>
-                <button
-                  onClick={() => setRoom('lobby')}
-                  style={{ background: '#f3f4f6', border: '1px solid #ccc', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
-                >
-                  ⬅ ล็อบบี้
-                </button>
-              </div>
-            </div>
-
-          {/* Navigation Tabs */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
-            {['1. การดูแลเต้านม', '2. การนวดเต้านม', '3. จัดการปัญหาเต้านม (4 ข้อ)', '4. แบบประเมิน (Quiz)'].map((label, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveTab(idx)}
+      {showActivityModal && (
+        <Html fullscreen zIndexRange={[120, 0]}>
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(15, 23, 42, 0.72)',
+              backdropFilter: 'blur(6px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px',
+              zIndex: 200,
+              fontFamily: '"Sarabun", system-ui, -apple-system, sans-serif',
+            }}
+            onClick={() => setShowActivityModal(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: 'min(980px, 96vw)',
+                maxHeight: '90vh',
+                background: '#fffdf9',
+                borderRadius: '26px',
+                border: '4px solid #f472b6',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Header */}
+              <div
                 style={{
-                  flex: 1,
-                  padding: '10px 6px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: activeTab === idx ? '#e91e63' : '#fce4ec',
-                  color: activeTab === idx ? 'white' : '#c2185b',
-                  fontWeight: 'bold',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  background: 'linear-gradient(90deg, #fce7f3 0%, #fbcfe8 50%, #fde68a 100%)',
+                  padding: '16px 24px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: '2px solid #f9a8d4',
                 }}
               >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* ── TAB 0: กิจกรรม 1 — การสังเกตและดูแลเต้านม ── */}
-          {activeTab === 0 && (
-            <div>
-              <div style={{ background: '#fdf2f8', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #ec4899' }}>
-                <strong>เป้าหมาย:</strong> ให้คุณแม่ฝึกสังเกตความผิดปกติของเต้านม และเลือกพฤติกรรมการดูแลความสะอาดที่เหมาะสมและอ่อนโยน
-              </div>
-
-              {/* Reference Infographic Header */}
-              <div style={{ display: 'flex', gap: '14px', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
-                <img
-                  src="/references/mother_zone1/breast_care.png"
-                  alt="การดูแลเต้านม"
-                  style={{ width: '130px', height: '90px', objectFit: 'contain', borderRadius: '8px', background: 'white', border: '1px solid #cbd5e1', padding: '2px' }}
-                />
-                <div style={{ flex: 1, fontSize: '12.5px', color: '#475569', lineHeight: '1.4' }}>
-                  <strong style={{ color: '#be185d', fontSize: '13px' }}>คำแนะนำจากหลักสูตร:</strong>
-                  <br />
-                  เต้านมเป็นอวัยวะที่บอบบางในช่วงให้นมบุตร ทำความสะอาดด้วยน้ำสะอาด ไม่ขยี้แรง ไม่ใช้สบู่หรือแอลกอฮอล์เพื่อป้องกันผิวแห้งแตก
+                <div>
+                  <span style={{
+                    background: '#db2777',
+                    color: '#fff',
+                    padding: '4px 14px',
+                    borderRadius: '999px',
+                    fontSize: '13px',
+                    fontWeight: 900,
+                  }}>
+                    Ward 103 • การดูแลเต้านม
+                  </span>
+                  <h2 style={{ margin: '6px 0 0', fontSize: '24px', fontWeight: 900, color: '#831843' }}>
+                    ฝึกปฏิบัติบนโซฟาและทำสถานการณ์จำลองการดูแลเต้านม
+                  </h2>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => openGalleryAt(6)}
+                    style={{
+                      background: '#ffffff',
+                      color: '#be185d',
+                      border: '2px solid #f472b6',
+                      padding: '8px 14px',
+                      borderRadius: '12px',
+                      fontWeight: 800,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    🖼️ ดูแผ่นภาพโจทย์เต็ม
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowActivityModal(false)}
+                    style={{
+                      background: '#be185d',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: '12px',
+                      fontWeight: 900,
+                      fontSize: '15px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ✕ ปิดหน้าต่าง
+                  </button>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                {act1Behaviors.map(b => (
-                  <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                    <div style={{ fontSize: '13.5px', fontWeight: '500' }}>
-                      {b.text}
-                      {act1Feedback && <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }}>💡 {b.reason}</div>}
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => assignAct1(b.id, 'do')}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: '8px',
-                          border: '1.5px solid',
-                          borderColor: b.cat === 'do' ? '#16a34a' : '#cbd5e1',
-                          background: b.cat === 'do' ? '#dcfce7' : 'white',
-                          color: b.cat === 'do' ? '#15803d' : '#475569',
-                          fontWeight: 'bold',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        ควรทำ
-                      </button>
-                      <button
-                        onClick={() => assignAct1(b.id, 'avoid')}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: '8px',
-                          border: '1.5px solid',
-                          borderColor: b.cat === 'avoid' ? '#dc2626' : '#cbd5e1',
-                          background: b.cat === 'avoid' ? '#fee2e2' : 'white',
-                          color: b.cat === 'avoid' ? '#991b1b' : '#475569',
-                          fontWeight: 'bold',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        ควรหลีกเลี่ยง
-                      </button>
-                    </div>
-                  </div>
+              {/* Tabs */}
+              <div style={{ display: 'flex', gap: '10px', padding: '14px 24px 0', background: '#fff5f7' }}>
+                {[
+                  { id: 'massage', label: '1. นั่งโซฟาฝึกนวดเต้านมทำตาม (4 ขั้นตอน)' },
+                  { id: 'scenarios', label: '2. สถานการณ์จำลองการดูแลเต้านม (4 สถานการณ์)' },
+                  { id: 'quiz', label: '3. แบบทดสอบท้ายห้อง' },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setActiveTab(t.id)}
+                    style={{
+                      flex: 1,
+                      padding: '12px 14px',
+                      borderRadius: '14px 14px 0 0',
+                      border: 'none',
+                      background: activeTab === t.id ? '#db2777' : '#fce7f3',
+                      color: activeTab === t.id ? '#ffffff' : '#9d174d',
+                      fontWeight: 900,
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t.label}
+                  </button>
                 ))}
               </div>
 
-              {act1Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act1Feedback.pass ? '#dcfce7' : '#fee2e2', color: act1Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act1Feedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                  onClick={checkAct1}
-                  style={{ background: '#e91e63', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ✓ ตรวจคำตอบกิจกรรม 1
-                </button>
-                {act1Feedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(1)}
-                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ไปกิจกรรม 2: การนวดเต้านม ➜
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 1: กิจกรรม 2 — การนวดเต้านมและกระตุ้นการไหลของน้ำนม ── */}
-          {activeTab === 1 && (
-            <div>
-              <div style={{ background: '#fdf2f8', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #ec4899' }}>
-                <strong>เป้าหมาย:</strong> เรียนรู้หลักการสัมผัส/นวดเต้านมอย่างอ่อนโยน นุ่มนวล และรู้ว่าไม่ควรใช้แรงกดรุนแรงจนเจ็บหรือเกิดการบาดเจ็บ
-              </div>
-
-              {/* Reference Infographic Header */}
-              <div style={{ display: 'flex', gap: '14px', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
-                <img
-                  src="/references/mother_zone1/breast_massage.png"
-                  alt="การนวดเต้านม"
-                  style={{ width: '130px', height: '90px', objectFit: 'contain', borderRadius: '8px', background: 'white', border: '1px solid #cbd5e1', padding: '2px' }}
-                />
-                <div style={{ flex: 1, fontSize: '12.5px', color: '#475569', lineHeight: '1.4' }}>
-                  <strong style={{ color: '#be185d', fontSize: '13px' }}>คำแนะนำจากหลักสูตร (Butdapan et al. 2024):</strong>
-                  <br />
-                  การนวดเต้านมช่วยเปิดท่อน้ำนมและกระตุ้น Oxytocin ต้องนวดสัมผัสอย่างนุ่มนวล ห้ามบีบเค้นรุนแรงจนเจ็บ
-                </div>
-              </div>
-
-              {/* Pressure Level Selector */}
-              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>🖐️ 1. เลือกระดับแรงกดในการนวดเต้านม:</h4>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    onClick={() => setMassagePressure('gentle')}
-                    style={{
-                      flex: 1,
-                      padding: '12px',
-                      borderRadius: '10px',
-                      border: '2px solid',
-                      borderColor: massagePressure === 'gentle' ? '#16a34a' : '#cbd5e1',
-                      background: massagePressure === 'gentle' ? '#dcfce7' : 'white',
-                      color: massagePressure === 'gentle' ? '#15803d' : '#334155',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    🌸 เบามือ นุ่มนวล และผ่อนคลาย (แนะนำ)
-                  </button>
-                  <button
-                    onClick={() => setMassagePressure('hard')}
-                    style={{
-                      flex: 1,
-                      padding: '12px',
-                      borderRadius: '10px',
-                      border: '2px solid',
-                      borderColor: massagePressure === 'hard' ? '#dc2626' : '#cbd5e1',
-                      background: massagePressure === 'hard' ? '#fee2e2' : 'white',
-                      color: massagePressure === 'hard' ? '#991b1b' : '#334155',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    ⚠️ กดแรง บีบเค้นเต้านม (เสี่ยงช้ำ)
-                  </button>
-                </div>
-              </div>
-
-              {/* Rules Checklist */}
-              <div style={{ background: '#f0fdf4', padding: '14px', borderRadius: '14px', border: '1px solid #bbf7d0', marginBottom: '14px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#166534' }}>📋 2. เลือกหลักปฏิบัติที่ "ถูกต้องและปลอดภัย" (คลิกเลือกทุกข้อที่ถูกต้อง):</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {massageRules.map(r => {
-                    const isChecked = massageChecklist.includes(r.id);
-                    return (
-                      <div
-                        key={r.id}
-                        onClick={() => toggleMassageRule(r.id)}
-                        style={{
-                          background: isChecked ? '#dcfce7' : 'white',
-                          border: isChecked ? '2px solid #16a34a' : '1px solid #cbd5e1',
-                          padding: '10px 14px',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          fontSize: '13px',
-                          fontWeight: 'bold',
-                          color: isChecked ? '#14532d' : '#374151'
-                        }}
-                      >
-                        <span>{isChecked ? '☑' : '☐'}</span>
-                        <span>{r.text}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* ── 3. หัวข้อที่ 2: กดลองทำ (Interactive Practice Step) ── */}
-              <div style={{ background: '#fdf2f8', padding: '16px', borderRadius: '14px', border: '2px solid #f472b6', marginBottom: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <h4 style={{ margin: 0, color: '#be185d', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>💆‍♀️</span> 3. ฝึกปฏิบัติการนวดเต้านมทีละขั้นตอน (Practice Simulation)
-                  </h4>
-                  <span style={{ fontSize: '11px', background: '#fce7f3', color: '#9d174d', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
-                    ขั้นตอนที่ {practiceStep}/3 {practiceStep === 3 && '✓ เสร็จสมบูรณ์'}
-                  </span>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' }}>
-                  <button
-                    onClick={() => { setPracticeStep(1); setPracticeFeedback('ขั้นที่ 1: ประคบผ้าอุ่น 3–5 นาทีรอบเต้านม ช่วยให้หลอดเลือดขยายตัว ท่อน้ำนมคลายตัว และคุณแม่รู้สึกผ่อนคลาย'); }}
-                    style={{
-                      padding: '12px 8px',
-                      borderRadius: '10px',
-                      border: practiceStep === 1 ? '2px solid #e11d48' : '1.5px solid #cbd5e1',
-                      background: practiceStep >= 1 ? '#ffe4e6' : 'white',
-                      color: practiceStep >= 1 ? '#9f1239' : '#475569',
-                      fontWeight: 'bold',
-                      fontSize: '12px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    1. ♨️ ประคบอุ่น (3–5 นาที)
-                  </button>
-
-                  <button
-                    disabled={practiceStep < 1}
-                    onClick={() => { setPracticeStep(2); setPracticeFeedback('ขั้นที่ 2: ใช้นิ้วนวดวนก้นหอยตามแนวท่อน้ำนมจากฐานเต้าเข้าหาลานนมอย่างนุ่มนวล ช่วยเปิดทางเดินน้ำนม'); }}
-                    style={{
-                      padding: '12px 8px',
-                      borderRadius: '10px',
-                      border: practiceStep === 2 ? '2px solid #e11d48' : '1.5px solid #cbd5e1',
-                      background: practiceStep >= 2 ? '#ffe4e6' : (practiceStep < 1 ? '#f1f5f9' : 'white'),
-                      color: practiceStep >= 2 ? '#9f1239' : (practiceStep < 1 ? '#94a3b8' : '#475569'),
-                      fontWeight: 'bold',
-                      fontSize: '12px',
-                      cursor: practiceStep < 1 ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    2. 🌀 นวดวนก้นหอย (Spiral)
-                  </button>
-
-                  <button
-                    disabled={practiceStep < 2}
-                    onClick={() => { setPracticeStep(3); setPracticeFeedback('ขั้นที่ 3: ใช้ฝ่ามือและนิ้วมือจับท่า C-Hold กดและบีบเข้าหากันเบาๆ น้ำนมสีเหลืองทอง (Colostrum) จะค่อยๆ ไหลซึมออกมาอย่างสบาย'); }}
-                    style={{
-                      padding: '12px 8px',
-                      borderRadius: '10px',
-                      border: practiceStep === 3 ? '2px solid #16a34a' : '1.5px solid #cbd5e1',
-                      background: practiceStep === 3 ? '#dcfce7' : (practiceStep < 2 ? '#f1f5f9' : 'white'),
-                      color: practiceStep === 3 ? '#15803d' : (practiceStep < 2 ? '#94a3b8' : '#475569'),
-                      fontWeight: 'bold',
-                      fontSize: '12px',
-                      cursor: practiceStep < 2 ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    3. 💧 บีบระบายน้ำนม (C-Hold)
-                  </button>
-                </div>
-
-                {practiceFeedback && (
-                  <div style={{ background: practiceStep === 3 ? '#f0fdf4' : '#fff1f2', border: `1px solid ${practiceStep === 3 ? '#86efac' : '#fecdd3'}`, padding: '10px 14px', borderRadius: '8px', fontSize: '12.5px', color: practiceStep === 3 ? '#166534' : '#9f1239', lineHeight: '1.4' }}>
-                    <strong>{practiceStep === 3 ? '🎉 สำเร็จการฝึกปฏิบัติ: ' : '✨ กำลังปฏิบัติ: '}</strong>
-                    {practiceFeedback}
-                  </div>
-                )}
-              </div>
-
-              {act2Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act2Feedback.pass ? '#dcfce7' : '#fee2e2', color: act2Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act2Feedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                  onClick={checkAct2}
-                  style={{ background: '#e91e63', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ✓ ตรวจคำตอบกิจกรรม 2
-                </button>
-                {act2Feedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(2)}
-                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ไปกิจกรรม 3: ปัญหาเต้านม 4 สถานการณ์ ➜
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 2: กิจกรรม 3 — การจัดการปัญหาเต้านมที่พบบ่อย (4 สถานการณ์) ── */}
-          {activeTab === 2 && (
-            <div>
-              <div style={{ background: '#fdf2f8', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #ec4899' }}>
-                <strong>เป้าหมาย:</strong> จำแนกอาการของเต้านมคัดตึง หัวนมเจ็บ/แตก ท่อน้ำนมอุดตัน และเต้านมอักเสบ พร้อมเลือกแนวทางดูแลที่ปลอดภัย
-              </div>
-
-              {/* Reference Infographic Header */}
-              <div style={{ display: 'flex', gap: '14px', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
-                <img
-                  src="/references/mother_zone1/breast_problems.png"
-                  alt="ปัญหาเต้านมที่พบบ่อย"
-                  style={{ width: '130px', height: '90px', objectFit: 'contain', borderRadius: '8px', background: 'white', border: '1px solid #cbd5e1', padding: '2px' }}
-                />
-                <div style={{ flex: 1, fontSize: '12.5px', color: '#475569', lineHeight: '1.4' }}>
-                  <strong style={{ color: '#be185d', fontSize: '13px' }}>ปัญหาเต้านม 4 สถานการณ์:</strong>
-                  <br />
-                  คัดตึงเต้านม, หัวนมแตกเจ็บ, ท่อน้ำนมอุดตัน, เต้านมอักเสบ (Mastitis) ต้องแก้ไขให้ตรงจุดเพื่อให้นมบุตรได้อย่างต่อเนื่อง
-                </div>
-              </div>
-
-              {/* Scenario Selector Tabs */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
-                {Object.keys(scenarios).map(key => {
-                  const s = scenarios[key];
-                  const isSelected = activeScenario === key;
-                  const isAnswered = scenarioAnswers[key] !== null;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setActiveScenario(key)}
+              {/* Body */}
+              <div style={{ padding: '22px 24px', overflowY: 'auto', flex: 1 }}>
+                {activeTab === 'massage' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', alignItems: 'start' }}>
+                    <div
+                      onClick={() => openGalleryAt(1)}
                       style={{
-                        flex: 1,
-                        padding: '8px 4px',
-                        borderRadius: '8px',
-                        border: '1.5px solid',
-                        borderColor: isSelected ? '#e91e63' : '#cbd5e1',
-                        background: isSelected ? '#fce4ec' : (isAnswered ? '#f0fdf4' : 'white'),
-                        color: isSelected ? '#c2185b' : '#334155',
-                        fontWeight: 'bold',
-                        fontSize: '12px',
-                        cursor: 'pointer'
+                        background: '#f0f9ff',
+                        borderRadius: '18px',
+                        border: '2px solid #bae6fd',
+                        padding: '10px',
+                        cursor: 'pointer',
+                        textAlign: 'center',
                       }}
                     >
-                      {s.code}. {s.title.split(':')[1]?.trim() || s.title} {isAnswered && '✓'}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Active Scenario Card */}
-              {scenarios[activeScenario] && (
-                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
-                  <h4 style={{ margin: '0 0 6px 0', color: '#c2185b', fontSize: '15px' }}>
-                    {scenarios[activeScenario].title}
-                  </h4>
-                  <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#475569', background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <strong>อาการ:</strong> {scenarios[activeScenario].symptom}
-                  </p>
-
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>
-                    เลือกแนวทางการจัดการที่ถูกต้อง:
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {scenarios[activeScenario].options.map(opt => {
-                      const isChosen = scenarioAnswers[activeScenario] === opt.id;
-                      return (
-                        <div
-                          key={opt.id}
-                          onClick={() => handleSelectScenarioOpt(activeScenario, opt.id)}
-                          style={{
-                            padding: '10px 14px',
-                            borderRadius: '8px',
-                            border: isChosen ? '2px solid #e91e63' : '1px solid #cbd5e1',
-                            background: isChosen ? '#fce4ec' : 'white',
-                            cursor: 'pointer',
-                            fontSize: '13px',
-                            fontWeight: isChosen ? 'bold' : 'normal',
-                            color: isChosen ? '#c2185b' : '#334155',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                          }}
-                        >
-                          <span>{isChosen ? '◉' : '○'}</span>
-                          <span>{opt.text}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {act3Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act3Feedback.pass ? '#dcfce7' : '#fee2e2', color: act3Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act3Feedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                  onClick={checkAct3}
-                  style={{ background: '#e91e63', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ✓ ตรวจคำตอบทั้ง 4 สถานการณ์
-                </button>
-                {act3Feedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(3)}
-                    style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ทำแบบประเมินความรู้ท้ายบท ➜
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 3: แบบประเมินความรู้ประจำห้องที่ 3 (ข้อ 3, 9 & 14) ── */}
-          {activeTab === 3 && (
-            <div>
-              {!quizFinished ? (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ background: '#fce4ec', color: '#c2185b', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-                      📋 แบบประเมิน: {currentQ.room}
-                    </span>
-                    <span style={{ fontSize: '13px', color: '#666', fontWeight: 'bold' }}>
-                      ข้อ {quizIndex + 1} / {room3Questions.length} | คะแนนสะสม: {quizScore}
-                    </span>
-                  </div>
-
-                  <h3 style={{ color: '#222', fontSize: '17px', fontWeight: 'bold', lineHeight: '1.45', margin: '0 0 16px 0' }}>
-                    "{currentQ.question}"
-                  </h3>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                    <button
-                      disabled={quizShowFeedback}
-                      onClick={() => handleQuizAnswer(true)}
-                      style={{
-                        padding: '14px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: quizShowFeedback && currentQ.answer === true ? '#16a34a' : (quizUserChoice === true ? '#e91e63' : '#d1d5db'),
-                        background: quizShowFeedback && currentQ.answer === true ? '#dcfce7' : (quizUserChoice === true ? '#fce4ec' : '#f9fafb'),
-                        color: quizShowFeedback && currentQ.answer === true ? '#15803d' : '#1f2937',
-                        cursor: quizShowFeedback ? 'default' : 'pointer'
-                      }}
-                    >
-                      ✓ ถูก (True)
-                    </button>
-                    <button
-                      disabled={quizShowFeedback}
-                      onClick={() => handleQuizAnswer(false)}
-                      style={{
-                        padding: '14px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: quizShowFeedback && currentQ.answer === false ? '#16a34a' : (quizUserChoice === false ? '#e91e63' : '#d1d5db'),
-                        background: quizShowFeedback && currentQ.answer === false ? '#dcfce7' : (quizUserChoice === false ? '#fce4ec' : '#f9fafb'),
-                        color: quizShowFeedback && currentQ.answer === false ? '#15803d' : '#1f2937',
-                        cursor: quizShowFeedback ? 'default' : 'pointer'
-                      }}
-                    >
-                      ✕ ผิด (False)
-                    </button>
-                  </div>
-
-                  {quizShowFeedback && (
-                    <div style={{
-                      background: quizUserChoice === currentQ.answer ? '#f0fdf4' : '#fffbeb',
-                      border: `1.5px solid ${quizUserChoice === currentQ.answer ? '#86efac' : '#fde68a'}`,
-                      borderRadius: '10px',
-                      padding: '12px',
-                      marginBottom: '10px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '15px', color: quizUserChoice === currentQ.answer ? '#16a34a' : '#d97706' }}>
-                          {quizUserChoice === currentQ.answer ? '🎉 ถูกต้อง! (+1 คะแนน)' : `⚠️ เฉลย: ${currentQ.answerText}`}
-                        </span>
-                        <button
-                          onClick={handleNextQuizQuestion}
-                          style={{
-                            padding: '6px 16px',
-                            background: '#e91e63',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: '13px',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {quizIndex < room3Questions.length - 1 ? 'ข้อถัดไป ➜' : 'สำเร็จบทเรียน 🏆'}
-                        </button>
-                      </div>
-                      <div style={{ fontSize: '13px', color: '#444', lineHeight: '1.4' }}>
-                        <strong>💡 เหตุผล:</strong> {currentQ.reason}
+                      <img
+                        src="/images/rev/w103_col2.jpg"
+                        alt="การนวดเต้านม 4 ขั้นตอน"
+                        style={{ width: '100%', maxHeight: '380px', objectFit: 'contain', borderRadius: '12px' }}
+                      />
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#0369a1', marginTop: '6px' }}>
+                        🔍 คลิกที่ภาพเพื่อขยายใหญ่
                       </div>
                     </div>
-                  )}
-                </>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '16px 8px' }}>
-                  <h2 style={{ color: '#2e7d32', fontSize: '24px', margin: '0 0 10px 0' }}>🎉 ผ่านบทเรียนและการประเมินความรู้ห้องที่ 3 แล้ว!</h2>
-                  <div style={{ fontSize: '16px', color: '#444', marginBottom: '16px' }}>
-                    คะแนนของคุณ: <strong>{quizScore} / {room3Questions.length} คะแนน</strong>
+
+                    <div>
+                      <div style={{
+                        background: '#fef3c7',
+                        border: '2px solid #f59e0b',
+                        borderRadius: '14px',
+                        padding: '12px 16px',
+                        marginBottom: '14px',
+                        fontSize: '16px',
+                        fontWeight: 800,
+                        color: '#92400e',
+                      }}>
+                        💡 นวดเบา ๆ วันละ 2–3 ครั้ง หรือก่อนให้นม/เมื่อรู้สึกคัดตึง (กดทำตามทีละขั้นตอนให้ครบทั้ง 4 ขั้นตอน)
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {MASSAGE_STEPS.map((st) => {
+                          const done = practicedSteps.includes(st.id);
+                          return (
+                            <button
+                              key={st.id}
+                              type="button"
+                              onClick={() => toggleMassageStep(st.id)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '14px 18px',
+                                borderRadius: '14px',
+                                border: done ? '2.5px solid #16a34a' : '2px solid #f9a8d4',
+                                background: done ? '#dcfce7' : '#ffffff',
+                                color: '#1e293b',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                fontSize: '17px',
+                                fontWeight: 800,
+                              }}
+                            >
+                              <span>
+                                <strong style={{ color: '#db2777' }}>{st.title}:</strong> {st.desc}
+                              </span>
+                              <span style={{
+                                padding: '4px 12px',
+                                borderRadius: '999px',
+                                background: done ? '#16a34a' : '#fce7f3',
+                                color: done ? '#fff' : '#be185d',
+                                fontSize: '14px',
+                                fontWeight: 900,
+                                shrink: 0,
+                              }}>
+                                {done ? '✓ ทำตามแล้ว' : 'กดฝึกทำตาม'}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {practicedSteps.length === 4 && (
+                        <div style={{ marginTop: '16px', textAlign: 'right' }}>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('scenarios')}
+                            style={{
+                              background: '#16a34a',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '12px 24px',
+                              borderRadius: '14px',
+                              fontWeight: 900,
+                              fontSize: '17px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ฝึกครบ 4 ขั้นตอนแล้ว! ไปทำสถานการณ์จำลอง 4 ข้อ ➜
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-                    คุณมีความเข้าใจที่ถูกต้องในการดูแลเต้านม การนวดเต้านมอย่างอ่อนโยน และการแก้ไขปัญหาการให้นมแม่ตามหลักสากล
-                  </p>
-                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => { setQuizIndex(0); setQuizUserChoice(null); setQuizShowFeedback(false); setQuizScore(0); setQuizFinished(false); }}
-                      style={{ padding: '8px 18px', fontSize: '14px', fontWeight: 'bold', background: '#f3f4f6', color: '#333', border: '1px solid #ccc', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      ทำแบบประเมินซ้ำ ↻
-                    </button>
-                    <button
-                      onClick={() => setRoom('lobby')}
-                      style={{ padding: '8px 20px', fontSize: '14px', fontWeight: 'bold', background: '#e91e63', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      กลับสู่ล็อบบี้ 🏥
-                    </button>
+                )}
+
+                {activeTab === 'scenarios' && (
+                  <div>
+                    <div style={{
+                      background: '#fdf2f8',
+                      borderLeft: '5px solid #db2777',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      marginBottom: '16px',
+                      fontSize: '16px',
+                      color: '#831843',
+                      fontWeight: 700,
+                    }}>
+                      คำแนะนำ: อ่านสถานการณ์ทั้ง 4 ข้อ แล้วติ๊กเลือกวิธีจัดการที่เหมาะสมให้ครบทุกข้อตามหลักการดูแลเต้านม
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      {W103_SCENARIOS.map((sc) => {
+                        const picked = selectedOpts[sc.id] || [];
+                        return (
+                          <div
+                            key={sc.id}
+                            style={{
+                              background: '#ffffff',
+                              borderRadius: '18px',
+                              border: '2px solid #fbcfe8',
+                              padding: '16px',
+                              boxShadow: '0 4px 14px rgba(0,0,0,0.05)',
+                            }}
+                          >
+                            <div style={{ fontSize: '19px', fontWeight: 900, color: '#be185d', marginBottom: '6px' }}>
+                              {sc.title}
+                            </div>
+                            <div style={{
+                              background: '#fff7ed',
+                              border: '1px solid #fed7aa',
+                              borderRadius: '10px',
+                              padding: '10px 12px',
+                              fontSize: '15px',
+                              color: '#7c2d12',
+                              fontWeight: 700,
+                              marginBottom: '10px',
+                            }}>
+                              <strong>สถานการณ์:</strong> {sc.situation}
+                            </div>
+                            <div style={{ fontSize: '14px', fontWeight: 800, color: '#334155', marginBottom: '8px' }}>
+                              ❓ {sc.prompt}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              {sc.options.map((opt) => {
+                                const isChecked = picked.includes(opt.id);
+                                return (
+                                  <button
+                                    key={opt.id}
+                                    type="button"
+                                    onClick={() => toggleScenarioOption(sc.id, opt.id)}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      gap: '10px',
+                                      padding: '10px 14px',
+                                      borderRadius: '12px',
+                                      border: isChecked
+                                        ? opt.correct
+                                          ? '2px solid #16a34a'
+                                          : '2px solid #dc2626'
+                                        : '1.5px solid #cbd5e1',
+                                      background: isChecked
+                                        ? opt.correct
+                                          ? '#dcfce7'
+                                          : '#fee2e2'
+                                        : '#f8fafc',
+                                      color: '#0f172a',
+                                      fontWeight: 800,
+                                      fontSize: '15px',
+                                      cursor: 'pointer',
+                                      textAlign: 'left',
+                                    }}
+                                  >
+                                    <span>
+                                      {isChecked ? '☑ ' : '☐ '}
+                                      {opt.text}
+                                    </span>
+                                    {isChecked && (
+                                      <span style={{
+                                        fontWeight: 900,
+                                        color: opt.correct ? '#15803d' : '#dc2626',
+                                        whiteSpace: 'nowrap',
+                                      }}>
+                                        {opt.correct ? '✓ ถูกต้อง' : '✕ ไม่เหมาะสม'}
+                                      </span>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {scenarioFeedback && (
+                      <div style={{
+                        marginTop: '16px',
+                        padding: '14px 18px',
+                        borderRadius: '14px',
+                        background: scenarioFeedback.pass ? '#dcfce7' : '#fee2e2',
+                        color: scenarioFeedback.pass ? '#166534' : '#991b1b',
+                        fontWeight: 900,
+                        fontSize: '16px',
+                      }}>
+                        {scenarioFeedback.msg}
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={checkAllScenarios}
+                        style={{
+                          background: '#db2777',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '12px 28px',
+                          borderRadius: '14px',
+                          fontWeight: 900,
+                          fontSize: '17px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✓ ยืนยันและตรวจคำตอบทั้ง 4 สถานการณ์
+                      </button>
+
+                      {scenarioFeedback?.pass && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('quiz')}
+                          style={{
+                            background: '#7c3aed',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '12px 24px',
+                            borderRadius: '14px',
+                            fontWeight: 900,
+                            fontSize: '17px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ไปทำแบบทดสอบท้ายห้อง ➜
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
+                {activeTab === 'quiz' && (
+                  <div>
+                    {!quizFinished ? (
+                      <div style={{ background: '#ffffff', padding: '20px', borderRadius: '18px', border: '2px solid #fbcfe8' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 800, color: '#9d174d' }}>
+                          <span>แบบประเมินความรู้ Ward 103</span>
+                          <span>ข้อ {quizIndex + 1} / {room3Questions.length}</span>
+                        </div>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b', marginBottom: '16px' }}>
+                          "{currentQ.question}"
+                        </h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+                          {[
+                            { val: true, label: '✓ ใช่ / ถูกต้อง' },
+                            { val: false, label: '✕ ไม่ใช่ / ไม่ถูกต้อง' },
+                          ].map((btn) => (
+                            <button
+                              key={String(btn.val)}
+                              type="button"
+                              disabled={quizShowFeedback}
+                              onClick={() => handleQuizAnswer(btn.val)}
+                              style={{
+                                padding: '16px',
+                                fontSize: '18px',
+                                fontWeight: 900,
+                                borderRadius: '14px',
+                                border: '2px solid #f472b6',
+                                background: quizShowFeedback && currentQ.answer === btn.val ? '#dcfce7' : '#fff1f2',
+                                color: '#831843',
+                                cursor: quizShowFeedback ? 'default' : 'pointer',
+                              }}
+                            >
+                              {btn.label}
+                            </button>
+                          ))}
+                        </div>
+                        {quizShowFeedback && (
+                          <div style={{ background: '#f0fdf4', border: '2px solid #86efac', padding: '14px', borderRadius: '14px' }}>
+                            <div style={{ fontWeight: 900, fontSize: '17px', color: '#166534', marginBottom: '6px' }}>
+                              {quizUserChoice === currentQ.answer ? '🎉 ถูกต้องค่ะ!' : `เฉลย: ${currentQ.answerText}`}
+                            </div>
+                            <div style={{ fontSize: '15px', color: '#334155', marginBottom: '12px' }}>
+                              💡 {currentQ.reason}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleNextQuizQuestion}
+                              style={{
+                                background: '#db2777',
+                                color: '#fff',
+                                border: 'none',
+                                padding: '10px 22px',
+                                borderRadius: '12px',
+                                fontWeight: 900,
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {quizIndex < room3Questions.length - 1 ? 'ข้อถัดไป ➜' : 'เสร็จสิ้นบทเรียน 🏆'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '24px' }}>
+                        <h3 style={{ fontSize: '26px', fontWeight: 900, color: '#15803d' }}>
+                          🎉 ผ่านการเรียนรู้ Ward 103 การดูแลเต้านมเรียบร้อยแล้ว!
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setRoom('lobby')}
+                          style={{
+                            marginTop: '14px',
+                            background: '#db2777',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '12px 26px',
+                            borderRadius: '14px',
+                            fontWeight: 900,
+                            fontSize: '17px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          กลับสู่ล็อบบี้ 🏥
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      </Html>
+          </div>
+        </Html>
       )}
 
       {/* ── GTA Player Controller ── */}
-      <PlayerController initialPosition={[0, 0, 3]} />
+      <PlayerController initialPosition={[0, 0, 4.2]} />
     </group>
   );
 }

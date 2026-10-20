@@ -428,91 +428,81 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
           </Html>
         </group>
 
-        {/* ── Left Wall Section: Digital Queue Display Board (Exact Location from Photo) ── */}
-        <group position={[-2.45, 2.7, 0.12]}>
-          {/* Black Display Bezel */}
+        {/* ── Left Wall Section: Newborn Care Room Sign (Matching Client Welcome Zone Photo) ── */}
+        <group position={[-2.45, 2.75, 0.12]}>
           <mesh castShadow>
-            <boxGeometry args={[1.5, 1.15, 0.05]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.2} />
+            <boxGeometry args={[1.65, 1.05, 0.05]} />
+            <meshStandardMaterial color="#b07d4b" roughness={0.35} />
           </mesh>
-          {/* Sky Blue LED Screen */}
           <mesh position={[0, 0, 0.028]}>
-            <planeGeometry args={[1.42, 1.07]} />
-            <meshStandardMaterial color="#0284c7" emissive="#0369a1" emissiveIntensity={0.4} roughness={0.1} />
+            <planeGeometry args={[1.55, 0.95]} />
+            <meshStandardMaterial color="#fffbeb" roughness={0.2} />
           </mesh>
-          {/* Queue HTML Display Content */}
           <Html position={[0, 0, 0.035]} center transform scale={0.14}>
             <div style={{
               width: '360px',
-              height: '240px',
-              background: 'linear-gradient(135deg, #0284c7, #0369a1)',
-              borderRadius: '6px',
-              padding: '8px 12px',
+              height: '210px',
+              background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fce7f3 100%)',
+              borderRadius: '10px',
+              border: '3px solid #f59e0b',
+              padding: '14px 16px',
               boxSizing: 'border-box',
-              color: 'white',
-              fontFamily: 'system-ui, -apple-system, monospace',
-              userSelect: 'none'
+              color: '#881337',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              userSelect: 'none',
+              boxShadow: 'inset 0 2px 10px rgba(245,158,11,0.15)'
             }}>
-              {/* Header */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                borderBottom: '2px solid rgba(255,255,255,0.4)',
-                paddingBottom: '5px',
-                fontSize: '12px',
-                fontWeight: '900',
-                letterSpacing: '0.5px'
-              }}>
-                <span>เรียกคิว (QUEUE)</span>
-                <span>ช่องบริการ</span>
+              <div style={{ fontSize: '28px', marginBottom: '4px' }}>👶🌸</div>
+              <div style={{ fontSize: '26px', fontWeight: '900', color: '#be185d', lineHeight: 1.15 }}>
+                ห้องดูแลทารก
               </div>
-              {/* Queue Rows */}
-              <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  background: 'rgba(254, 240, 138, 0.25)',
-                  padding: '3px 8px',
-                  borderRadius: '5px',
-                  border: '1px solid #fef08a'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span ref={queueBlinkRef} style={{ color: '#22c55e', fontSize: '14px' }}>●</span>
-                    <span style={{ fontSize: '20px', fontWeight: '900', color: '#fef08a' }}>A015</span>
-                  </div>
-                  <span style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>01</span>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '2px 8px',
-                  opacity: 0.85
-                }}>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold' }}>A014</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold' }}>02</span>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '2px 8px',
-                  opacity: 0.7
-                }}>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold' }}>B007</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold' }}>03</span>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '2px 8px',
-                  opacity: 0.55
-                }}>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold' }}>B006</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold' }}>04</span>
-                </div>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: '#9d174d', marginTop: '6px' }}>
+                Newborn Care Room
+              </div>
+            </div>
+          </Html>
+        </group>
+
+        {/* ── Right Wall Section: Maternal Care Room Sign (Matching Client Welcome Zone Photo) ── */}
+        <group position={[2.45, 2.75, 0.12]}>
+          <mesh castShadow>
+            <boxGeometry args={[1.65, 1.05, 0.05]} />
+            <meshStandardMaterial color="#b07d4b" roughness={0.35} />
+          </mesh>
+          <mesh position={[0, 0, 0.028]}>
+            <planeGeometry args={[1.55, 0.95]} />
+            <meshStandardMaterial color="#fffbeb" roughness={0.2} />
+          </mesh>
+          <Html position={[0, 0, 0.035]} center transform scale={0.14}>
+            <div style={{
+              width: '360px',
+              height: '210px',
+              background: 'linear-gradient(135deg, #fff1f2 0%, #fce7f3 50%, #fef3c7 100%)',
+              borderRadius: '10px',
+              border: '3px solid #f472b6',
+              padding: '14px 16px',
+              boxSizing: 'border-box',
+              color: '#881337',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              userSelect: 'none',
+              boxShadow: 'inset 0 2px 10px rgba(244,114,182,0.15)'
+            }}>
+              <div style={{ fontSize: '28px', marginBottom: '4px' }}>🤱💖</div>
+              <div style={{ fontSize: '26px', fontWeight: '900', color: '#be185d', lineHeight: 1.15 }}>
+                ห้องดูแลคุณแม่
+              </div>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: '#9d174d', marginTop: '6px' }}>
+                Maternal Care Room
               </div>
             </div>
           </Html>

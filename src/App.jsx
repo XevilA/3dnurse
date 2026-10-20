@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Environment, Loader, Stars, Html, useGLTF, useTexture } from '@react-three/drei';
 import useStore from './store/useStore';
 import HUD from './components/ui/HUD';
+import WardModals from './components/ui/WardModals';
 import SuccessModal from './components/ui/SuccessModal';
 import GTAControlsHUD from './components/ui/GTAControlsHUD';
 import ImageViewerModal from './components/ui/ImageViewerModal';
@@ -248,6 +249,7 @@ export default function App() {
       <GlobalUIErrorBoundary>
         <HUD />
         <GTAControlsHUD />
+        <WardModals />
         {showSuccessModal && <SuccessModal />}
         <RoomConfirmationModal />
         <ImageViewerModal />

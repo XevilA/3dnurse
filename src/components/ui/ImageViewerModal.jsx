@@ -8,20 +8,52 @@ import useStore from '../../store/useStore';
  */
 export default function ImageViewerModal() {
   const activeLightboxImage = useStore((s) => s.activeLightboxImage);
+  const openLightbox = useStore((s) => s.openLightbox);
   const closeLightbox = useStore((s) => s.closeLightbox);
 
-  // Keyboard shortcut: Escape to close
+  const items = activeLightboxImage?.items || null;
+  const currentIndex = typeof activeLightboxImage?.currentIndex === 'number' ? activeLightboxImage.currentIndex : 0;
+  const hasGallery = Array.isArray(items) && items.length > 1;
+
+  const goPrev = () => {
+    if (!hasGallery) return;
+    const prevIdx = (currentIndex - 1 + items.length) % items.length;
+    openLightbox({ ...items[prevIdx], items, currentIndex: prevIdx });
+  };
+
+  const goNext = () => {
+    if (!hasGallery) return;
+    const nextIdx = (currentIndex + 1) % items.length;
+    openLightbox({ ...items[nextIdx], items, currentIndex: nextIdx });
+  };
+
+  // Keyboard shortcut: Escape to close, ArrowLeft/ArrowRight to navigate
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') closeLightbox();
+      if (hasGallery && e.key === 'ArrowLeft') goPrev();
+      if (hasGallery && e.key === 'ArrowRight') goNext();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeLightbox]);
+  });
 
   if (!activeLightboxImage) return null;
 
-  const { src, title, description, badge, details, tips } = activeLightboxImage;
+  const {
+    src,
+    title,
+    description,
+    caption,
+    badge,
+    category,
+    details,
+    clinicalDetails,
+    tips,
+  } = activeLightboxImage;
+  const descText = description || caption;
+  const badgeText = badge || category;
+  const detailsList = details || clinicalDetails;
 
   return (
     <div
@@ -35,9 +67,9 @@ export default function ImageViewerModal() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-gradient-to-r from-slate-50 via-sky-50 to-pink-50 border-b border-slate-200">
           <div className="flex items-center gap-2.5 min-w-0">
-            {badge && (
+            {badgeText && (
               <span className="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-black bg-pink-600 text-white shadow-sm shrink-0">
-                {badge}
+                {badgeText}
               </span>
             )}
             <h3 className="text-sm sm:text-lg font-black text-slate-900 truncate">
@@ -67,25 +99,25 @@ export default function ImageViewerModal() {
           )}
 
           {/* Description & Clinical Information */}
-          {description && (
+          {descText && (
             <div className="bg-sky-50/70 border border-sky-200 rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm text-sky-950 leading-relaxed font-medium">
               <div className="flex items-center gap-1.5 font-bold text-sky-800 mb-1">
                 <span>📖</span>
                 <span>คำอธิบาย / สาระสำคัญ:</span>
               </div>
-              <p className="whitespace-pre-line">{description}</p>
+              <p className="whitespace-pre-line">{descText}</p>
             </div>
           )}
 
           {/* Detailed Points */}
-          {Array.isArray(details) && details.length > 0 && (
+          {Array.isArray(detailsList) && detailsList.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
                 <span>🔍</span>
                 <span>รายละเอียดและขั้นตอนสำคัญ:</span>
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {details.map((d, i) => (
+                {detailsList.map((d, i) => (
                   <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700">
                     {d}
                   </div>
@@ -107,10 +139,32 @@ export default function ImageViewerModal() {
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-3 bg-slate-100/90 border-t border-slate-200 flex items-center justify-between">
-          <span className="text-[11px] text-slate-500">
-            แตะพื้นหลังหรือกด ESC เพื่อปิดหน้าต่าง
-          </span>
+        <div className="px-4 sm:px-6 py-3 bg-slate-100/90 border-t border-slate-200 flex items-center justify-between gap-2 flex-wrap">
+          {hasGallery ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={goPrev}
+                className="px-3.5 py-1.5 bg-white hover:bg-pink-50 border border-slate-300 text-slate-800 rounded-xl text-xs sm:text-sm font-black transition active:scale-95 cursor-pointer shadow-sm"
+              >
+                ◀ ก่อนหน้า
+              </button>
+              <span className="text-xs sm:text-sm font-black text-pink-700 px-2">
+                ภาพที่ {currentIndex + 1} / {items.length}
+              </span>
+              <button
+                type="button"
+                onClick={goNext}
+                className="px-3.5 py-1.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs sm:text-sm font-black transition active:scale-95 cursor-pointer shadow-sm"
+              >
+                ถัดไป ▶
+              </button>
+            </div>
+          ) : (
+            <span className="text-[11px] text-slate-500">
+              แตะพื้นหลังหรือกด ESC เพื่อปิดหน้าต่าง
+            </span>
+          )}
           <button
             type="button"
             onClick={closeLightbox}

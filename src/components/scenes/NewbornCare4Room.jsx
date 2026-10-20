@@ -1,966 +1,1440 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyCrib from '../furniture/BabyCrib';
 import BabyAvatar from '../avatars/BabyAvatar';
+import MotherAvatar from '../avatars/MotherAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
-import RealPlant from '../decorations/RealPlant';
-import MedicineCabinet from '../furniture/MedicineCabinet';
-import DoctorDesk from '../furniture/DoctorDesk';
-import HospitalSofa from '../furniture/HospitalSofa';
 import InteractiveSeat from '../furniture/InteractiveSeat';
-import Pillows from '../decorations/Pillows';
+import RealPlant from '../decorations/RealPlant';
+import { useWovenRugTexture, WoodFramedBacklitPanel } from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
+/**
+ * NewbornCare4Room — ห้องที่ 4: การจัดสิ่งแวดล้อมการนอนหลับที่ปลอดภัย (Nursery 204)
+ *
+ * Updated 100% per "ทารก 3 เเละ 4.pdf" (pages 6–9):
+ * - Warm, soothing, sleep-friendly bedroom atmosphere ("ขอภาพสีสบายตา น่านอน")
+ *   matching /images/rev/nb4_room_ref.jpg:
+ *   - Window slightly open showing calm evening outside view ("หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง")
+ *   - Parent's Bed ("เตียงผู้ปกครอง") with sleeping Mother + Baby's Crib right next to it
+ *     ("เตียงทารก แยกเตียงจากผู้ปกครองแต่ให้อยู่ข้างกัน")
+ *   - Wall-mounted TV ("จัดเตียงนอนลูกอย่างไร? ให้ปลอดภัยและสบายตัว") + wooden console + cozy armchair
+ * - 5 Large, Clear Educational Wall Posters around the room with Lightbox Prev/Next:
+ *   1. /images/rev/nb4_poster1_env.jpg (การจัดสภาพแวดล้อมในห้องนอน)
+ *   2. /images/rev/nb4_poster2_back_vs_prone.jpg (✓ นอนหงาย vs ✕ นอนคว่ำ)
+ *   3. /images/rev/nb4_poster3_safe_mattress.jpg (✓ ที่นอนทารกที่ปลอดภัย vs ✕ ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก)
+ *   4. /images/rev/nb4_poster4_separate_bed.jpg (✓ แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน)
+ *   5. /images/rev/nb4_poster5_danger_signs.jpg (สังเกตอาการอันตรายระหว่างการนอนของทารก)
+ * - Initial State & Hands-on Practice ("แบบทดลองปฏิบัติ"):
+ *   - When entering for the first time, the baby is sleeping face-down ("เข้าไปครั้งแรก ลูกนอนคว่ำอยู่")
+ *   - Inside the baby crib are 4 unsafe soft items ("หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม")
+ *   - Mother practices removing all 4 soft items from the crib ("หยิบ หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม ออก")
+ *     AND turning the baby from prone (นอนคว่ำ) to supine (นอนหงาย).
+ */
 export default function NewbornCare4Room() {
-  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby, openLightbox } = useStore();
-  const [activeTab, setActiveTab] = useState(0); // 0: Safe Sleep Practice, 1: ตรวจความปลอดภัยในเปล, 2: สภาพแวดล้อมห้อง, 3: แบบประเมิน
+  const {
+    completeModule,
+    learningProgress,
+    setShowSuccessModal,
+    setHoldingBaby,
+    openLightbox,
+  } = useStore();
 
-  // ── กิจกรรม 1: ท่านอนที่ปลอดภัย (Safe Sleep Practice: Back to Sleep) ──
-  const [sleepPose, setSleepPose] = useState('supine'); // 'supine' (หงาย) | 'prone' (คว่ำ) | 'side' (ตะแคง)
-  const [act1Feedback, setAct1Feedback] = useState({
-    pass: true,
-    msg: '✓ ท่านอนหงาย (Supine position) เป็นท่านอนที่ปลอดภัยที่สุดตามคำแนะนำของ AAP และ WHO ช่วยลดความเสี่ยงต่อภาวะทารกเสียชีวิตเฉียบพลันขณะหลับ (SIDS)'
-  });
+  // Ensure baby remains in the crib in Nursery 204
+  useEffect(() => {
+    setHoldingBaby(false);
+  }, [setHoldingBaby]);
 
-  const handleSelectSleepPose = (pose) => {
-    setSleepPose(pose);
-    if (pose === 'supine') {
-      setAct1Feedback({
-        pass: true,
-        msg: '✓ ถูกต้องยอดเยี่ยม! ท่านอนหงาย (Back to Sleep) เป็นท่านอนที่ปลอดภัยที่สุดสำหรับทารกแรกเกิด ทั้งเวลากลางวันและกลางคืน ทางเดินหายใจจะเปิดโล่ง ไม่ถูกกดทับ'
-      });
-    } else if (pose === 'prone') {
-      setAct1Feedback({
-        pass: false,
-        msg: '✕ อันตรายมาก! ท่านอนคว่ำ (Prone) เพิ่มความเสี่ยงต่อการขาดอากาศหายใจและการเสียชีวิตเฉียบพลัน (SIDS) ห้ามให้ทารกนอนคว่ำโดยไม่มีผู้ดูแลใกล้ชิด'
-      });
-    } else {
-      setAct1Feedback({
-        pass: false,
-        msg: '✕ ไม่แนะนำ: ท่านอนตะแคง (Side) ไม่ปลอดภัยเนื่องจากทารกสามารถพลิกคว่ำหน้าลงไปได้ง่าย เสี่ยงต่อการอุดกั้นทางเดินหายใจ'
-      });
-    }
-  };
+  // ── Active Modal State ──
+  const [activeModal, setActiveModal] = useState(null); // null | 'practice' | 'quiz'
 
-  // ── กิจกรรม 2: ตรวจความปลอดภัยในเปลนอน (Bare is Best) ──
-  // วัตถุในเปล: อะไรควรอยู่ / อะไรต้องนำออก
+  // ── แบบทดลองปฏิบัติ: เข้าไปครั้งแรก ลูกนอนคว่ำอยู่ ('prone') และมี หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม ในเตียงทารก ──
+  const [sleepPose, setSleepPose] = useState('prone'); // 'prone' (นอนคว่ำ - เริ่มต้น) | 'supine' (นอนหงาย - ปลอดภัย)
   const [cribItems, setCribItems] = useState([
-    { id: 'mattress', name: 'ที่นอนแน่นและเรียบ (Firm Mattress) ผ้าปูตึงพอดี', keep: true, status: 'kept' },
-    { id: 'baby_clothing', name: 'เสื้อผ้าเด็กพอดีตัว อบอุ่นกำลังดี', keep: true, status: 'kept' },
-    { id: 'pillow', name: 'หมอนหนุนศีรษะนุ่มๆ', keep: false, status: 'in_crib' },
-    { id: 'bolster', name: 'หมอนข้างนิ่มๆ วางขนาบข้างลำตัว', keep: false, status: 'in_crib' },
-    { id: 'doll', name: 'ตุ๊กตาผ้า / ของเล่นนุ่มนิ่ม', keep: false, status: 'in_crib' },
-    { id: 'thick_blanket', name: 'ผ้านวมหนา / ผ้าห่มขนสัตว์ฟู', keep: false, status: 'in_crib' },
+    {
+      id: 'pillow',
+      name: 'หมอนหนุนศีรษะ',
+      shortName: 'หมอน',
+      icon: '🛌',
+      dangerDesc: 'เสี่ยงทำให้คอทารกพับงอหรืออุดกั้นทางเดินหายใจ',
+      inCrib: true,
+    },
+    {
+      id: 'bolster',
+      name: 'หมอนข้าง',
+      shortName: 'หมอนข้าง',
+      icon: '🥖',
+      dangerDesc: 'เสี่ยงกลิ้งทับใบหน้าและจมูกของทารกขณะหลับ',
+      inCrib: true,
+    },
+    {
+      id: 'doll',
+      name: 'ตุ๊กตาผ้าขนฟู',
+      shortName: 'ตุ๊กตา',
+      icon: '🧸',
+      dangerDesc: 'ของนุ่มในเตียงอาจปิดทับจมูกและปากทารก รวมถึงสะสมฝุ่น',
+      inCrib: true,
+    },
+    {
+      id: 'blanket',
+      name: 'ผ้าห่มผืนหนา',
+      shortName: 'ผ้าห่ม',
+      icon: '🧣',
+      dangerDesc: 'ผ้าห่มอาจเลื่อนขึ้นคลุมศีรษะและใบหน้าทารก ทำให้ขาดอากาศหายใจ',
+      inCrib: true,
+    },
   ]);
-  const [act2Feedback, setAct2Feedback] = useState(null);
 
-  const toggleCribItem = (id) => {
-    setCribItems(prev => prev.map(item => item.id === id ? { ...item, status: item.status === 'in_crib' ? 'removed' : 'in_crib' } : item));
-    setAct2Feedback(null);
-  };
+  const removedCount = cribItems.filter((item) => !item.inCrib).length;
+  const allItemsRemoved = removedCount === cribItems.length;
+  const isBabySupine = sleepPose === 'supine';
+  const isPracticeComplete = allItemsRemoved && isBabySupine;
 
-  const checkCribSafety = () => {
-    // Correct if all unsafe items are 'removed'
-    const unsafeItems = cribItems.filter(i => !i.keep);
-    const allUnsafeRemoved = unsafeItems.every(i => i.status === 'removed');
-
-    if (allUnsafeRemoved) {
-      setAct2Feedback({
-        pass: true,
-        msg: '✓ ยอดเยี่ยมมาก! เปลนอนปลอดภัย 100% ตามหลัก "Bare is Best" ไม่มีหมอน หมอนข้าง ตุ๊กตา หรือผ้านวมหนา ที่อาจตกลงมาอุดกั้นจมูกและปากของทารก'
-      });
-    } else {
-      setAct2Feedback({
-        pass: false,
-        msg: '✕ ยังมีสิ่งของอันตรายอยู่ในเปลนอน! กรุณานำหมอน หมอนข้าง ตุ๊กตา และผ้านวมหนาออกจากเปลให้หมด'
-      });
+  // Automatically record module completion when both conditions are met
+  useEffect(() => {
+    if (isPracticeComplete) {
+      completeModule('newbornCare4');
     }
+  }, [isPracticeComplete, completeModule]);
+
+  const handleToggleCribItem = (id) => {
+    setCribItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, inCrib: !item.inCrib } : item))
+    );
   };
 
-  // ── กิจกรรม 3: สภาพแวดล้อมห้องนอนที่ปลอดภัย ──
-  const [envFactors, setEnvFactors] = useState({
-    temp: '25', // '25' | 'cold' | 'hot'
-    smoke: 'no', // 'no' | 'yes'
-    room_share: 'share_crib', // 'share_crib' | 'share_bed' | 'separate_room'
-  });
-  const [act3Feedback, setAct3Feedback] = useState(null);
-
-  const checkEnv = () => {
-    const isTempOk = envFactors.temp === '25';
-    const isSmokeOk = envFactors.smoke === 'no';
-    const isShareOk = envFactors.room_share === 'share_crib';
-
-    if (isTempOk && isSmokeOk && isShareOk) {
-      setAct3Feedback({
-        pass: true,
-        msg: '✓ การจัดสภาพแวดล้อมถูกต้องสมบูรณ์! อุณหภูมิ 25–26°C อากาศถ่ายเท ปลอดควันบุหรี่ 100% และนอนในเปลเด็กข้างเตียงแม่ (Room-sharing) ช่วยลดความเสี่ยง SIDS ได้ถึง 50%'
-      });
-    } else {
-      setAct3Feedback({
-        pass: false,
-        msg: '✕ กรุณาปรับสภาพแวดล้อมให้เหมาะสม: อุณหภูมิห้อง 25–26°C ปลอดควันบุหรี่ และนอนในเปลเด็กแยกต่างหากข้างเตียงแม่ ไม่นอนเตียงเดียวกันเพื่อป้องกันการนอนทับ'
-      });
-    }
+  const handleRemoveSingleItem = (id) => {
+    setCribItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, inCrib: false } : item))
+    );
   };
 
-  // ── แบบประเมินความรู้ท้ายห้อง (ข้อ 13 & 15) ──
+  const handleRemoveAllItems = () => {
+    setCribItems((prev) => prev.map((item) => ({ ...item, inCrib: false })));
+  };
+
+  const handleResetPractice = () => {
+    setSleepPose('prone');
+    setCribItems((prev) => prev.map((item) => ({ ...item, inCrib: true })));
+  };
+
+  // ── 5 Large Educational Wall Posters (Per ทารก 3 เเละ 4.pdf p6–p9) ──
+  const wallPosters = [
+    {
+      src: '/images/rev/nb4_poster1_env.jpg',
+      title: 'ภาพที่ 1: การจัดสภาพแวดล้อมในห้องนอนทารก',
+      caption:
+        'อุณหภูมิเหมาะสม ไม่ร้อนและไม่หนาวเกินไป • อากาศถ่ายเทสะดวก ไม่อับชื้น • ปลอดควันบุหรี่ ฝุ่น และกลิ่นฉุน • แสงและเสียงเหมาะสม',
+      category: 'การนอนหลับที่ปลอดภัย (Nursery 204)',
+      clinicalDetails: [
+        '1. อุณหภูมิเหมาะสม (ประมาณ 25–26 °C) ไม่ร้อนและไม่หนาวเกินไป',
+        '2. อากาศถ่ายเทสะดวก ไม่อับชื้น (เปิดหน้าต่างระบายอากาศเล็กน้อย)',
+        '3. ปลอดควันบุหรี่ ฝุ่น และกลิ่นฉุน 100%',
+        '4. แสงไฟนวลสบายตาและเสียงเงียบสงบช่วยให้ทารกหลับสนิท',
+      ],
+    },
+    {
+      src: '/images/rev/nb4_poster2_back_vs_prone.jpg',
+      title: 'ภาพที่ 2: ท่านอนทารก (✓ นอนหงาย vs ✕ นอนคว่ำ)',
+      caption:
+        '✓ นอนหงาย: ท่านอนที่ปลอดภัยที่สุดสำหรับทารก ช่วยลดความเสี่ยงการอุดกั้นทางเดินหายใจ • ✕ นอนคว่ำ: เสี่ยงอุดกั้นทางเดินหายใจและภาวะไหลตาย (SIDS)',
+      category: 'การนอนหลับที่ปลอดภัย (Nursery 204)',
+      clinicalDetails: [
+        '✓ นอนหงาย (Supine / Back to Sleep): ท่านอนที่ปลอดภัยที่สุด ทางเดินหายใจเปิดโล่ง',
+        '✕ นอนคว่ำ (Prone): ห้ามให้ทารกนอนคว่ำ เพราะเสี่ยงต่อการอุดกั้นทางเดินหายใจและภาวะ SIDS',
+      ],
+    },
+    {
+      src: '/images/rev/nb4_poster3_safe_mattress.jpg',
+      title: 'ภาพที่ 3: ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก',
+      caption:
+        '✓ ที่นอนเรียบ ตึง ไม่ยุบตัว • ✕ ไม่ควรมีหมอน หมอนข้าง ตุ๊กตา หรือผ้าห่มคลุมหน้า เพราะเสี่ยงอุดกั้นทางเดินหายใจ',
+      category: 'การนอนหลับที่ปลอดภัย (Nursery 204)',
+      clinicalDetails: [
+        '✓ ที่นอนทารกที่ปลอดภัย: ที่นอนเรียบ ตึง ไม่ยุบตัว ไม่มีสิ่งของวางเกะกะ',
+        '✕ สิ่งที่ต้องนำออกจากเตียงทารก: หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่มหนา (เสี่ยงปิดกั้นจมูกและปากทารก)',
+      ],
+    },
+    {
+      src: '/images/rev/nb4_poster4_separate_bed.jpg',
+      title: 'ภาพที่ 4: แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน (Room-Sharing)',
+      caption:
+        '✓ แยกเตียงทารกออกจากเตียงผู้ปกครอง แต่ตั้งไว้ข้างเตียงเดียวกัน ช่วยลดความเสี่ยงการนอนทับทารก และดูแลลูกได้ใกล้ชิด',
+      category: 'การนอนหลับที่ปลอดภัย (Nursery 204)',
+      clinicalDetails: [
+        '✓ ให้ทารกนอนในเตียง/เปลเด็กแยกจากเตียงผู้ปกครอง แต่ตั้งอยู่ชิดข้างเตียงคุณแม่',
+        '✓ ป้องกันอุบัติเหตุผู้ปกครองพลิกตัวนอนทับทารกหรือผ้าห่มผู้ใหญ่คลุมหน้าลูก',
+        '✓ คุณแม่สามารถมองเห็นและให้นมลูกในเวลากลางคืนได้สะดวก',
+      ],
+    },
+    {
+      src: '/images/rev/nb4_poster5_danger_signs.jpg',
+      title: 'ภาพที่ 5: สังเกตอาการอันตรายระหว่างการนอนของทารก',
+      caption:
+        'หายใจลำบาก หรือหยุดหายใจ • ตัวเขียว ซีด • ซึม ปลุกไม่ตื่น • ตัวร้อนหรือตัวเย็นผิดปกติ หากพบอาการเหล่านี้ต้องรีบไปพบแพทย์ทันที',
+      category: 'การนอนหลับที่ปลอดภัย (Nursery 204)',
+      clinicalDetails: [
+        '1. หายใจลำบาก หายใจเร็วผิดปกติ หรือหยุดหายใจ',
+        '2. ผิวหนังหรือริมฝีปากเขียวคล้ำ หรือซีด',
+        '3. ทารกซึมผิดปกติ ปลุกไม่ตื่น',
+        '4. ตัวร้อนจัด (มีไข้) หรือตัวเย็นผิดปกติ',
+      ],
+    },
+  ];
+
+  const openWallPoster = (index) => {
+    openLightbox({
+      ...wallPosters[index],
+      items: wallPosters,
+      currentIndex: index,
+    });
+  };
+
+  // ── แบบประเมินความรู้ท้ายห้อง ──
   const room4Questions = getQuestionsByRoomKey('newbornCare4');
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizUserChoice, setQuizUserChoice] = useState(null);
   const [quizShowFeedback, setQuizShowFeedback] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
-
   const currentQ = room4Questions[quizIndex] || room4Questions[0];
 
   const handleQuizAnswer = (choice) => {
     if (quizShowFeedback) return;
     setQuizUserChoice(choice);
     setQuizShowFeedback(true);
-    if (choice === currentQ.answer) {
-      setQuizScore(prev => prev + 1);
-    }
+    if (choice === currentQ.answer) setQuizScore((prev) => prev + 1);
   };
 
   const handleNextQuizQuestion = () => {
     setQuizUserChoice(null);
     setQuizShowFeedback(false);
     if (quizIndex < room4Questions.length - 1) {
-      setQuizIndex(prev => prev + 1);
+      setQuizIndex((prev) => prev + 1);
     } else {
       setQuizFinished(true);
       completeModule('newbornCare4');
       setShowSuccessModal(
         true,
-        `ยินดีด้วย! คุณผ่านบทเรียนและการประเมินความรู้ห้อง Nursery 204 แล้ว (ได้ ${quizScore + (quizUserChoice === currentQ.answer ? 1 : 0)}/${room4Questions.length} คะแนน)`
+        'ยินดีด้วย! คุณผ่านการฝึกจัดเตียงนอนทารกที่ปลอดภัยและทำแบบประเมินห้อง Nursery 204 เรียบร้อยแล้ว'
       );
     }
   };
 
+  // ── พรมทอสีครีมลายข้าวหลามตัด (ตามภาพตัวอย่าง /images/rev/nb4_room_ref.jpg) ──
+  const diamondRugTex = useWovenRugTexture('diamond');
+
   return (
     <group>
-      {/* ── Realistic 3D Hospital Room Architecture ── */}
+      {/* ── โครงสร้างห้องนอนโทนอบอุ่น สบายตา น่านอน (พื้นไม้โอ๊คแผ่นจริงจาก HospitalRoomShell) ── */}
       <HospitalRoomShell
-        theme="mother"
-        roomTitle="ห้องบริบาลทารก 4: สภาพแวดล้อมที่ปลอดภัยสำหรับทารก (Safe Sleep)"
-        roomNumber="Safe Nursery Ward 204"
+        theme="newborn"
+        cozyMode={true}
+        width={14}
+        depth={14}
+        height={5.2}
+        roomTitle="ห้องที่ 4: การจัดสิ่งแวดล้อมการนอนหลับที่ปลอดภัย (Safe Sleep Room)"
+        roomNumber="Nursery 204"
       />
 
-      {/* ── REAL 3D ASSETS ── */}
-      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
-      <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
-      <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
+      {/* ── แสงไฟโทนอบอุ่น สบายตา น่านอน (Soothing Warm Bedroom Lighting) ── */}
+      <pointLight position={[2.4, 3.2, -1.6]} intensity={0.95} color="#ffd8a8" distance={13} />
+      <pointLight position={[-3.5, 2.8, -2.5]} intensity={0.75} color="#ffe8cc" distance={11} />
+      <pointLight position={[4.5, 1.4, -3.5]} intensity={0.65} color="#ffb76b" distance={8} />
+
+      {/* พรมปูพื้นสีครีมลายข้าวหลามตัด (Diamond Woven Cream Rug) ใต้เตียงผู้ปกครองและเตียงทารก */}
+      <mesh position={[1.1, 0.014, -1.3]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[7.1, 5.5]} />
+        <meshStandardMaterial color="#dfd1c1" roughness={0.95} />
+      </mesh>
+      <mesh position={[1.1, 0.017, -1.3]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[6.8, 5.2]} />
+        <meshStandardMaterial map={diamondRugTex} color="#faf4ec" roughness={0.92} />
+      </mesh>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. 3D SIDS CRIB SIMULATION (จำลอง 3 มิติ: พลิกตัวทารก & หยิบของออกจากเปล)
+          TOP-RIGHT TRANSLUCENT MISSION HUD (ภารกิจห้องการนอนหลับที่ปลอดภัย)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[-3.8, 0, -3.2]}>
-        <BabyCrib position={[0, 0, 0]} scale={1.12}>
-          {/* SIDS Risk Aura Indicator on Mattress */}
-          <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[1.2, 0.65]} />
-            <meshBasicMaterial
-              color={sleepPose === 'prone' || cribItems.some(i => !i.keep && i.status === 'in_crib') ? '#ef4444' : '#10b981'}
-              transparent
-              opacity={0.25}
-            />
-          </mesh>
-
-          {/* Baby Avatar inside Crib with Supine/Prone Flip */}
-          {!isHoldingBaby && (
-            <group
-              position={[0, sleepPose === 'prone' ? 0.06 : 0, 0]}
-              rotation={sleepPose === 'prone' ? [Math.PI, 0, 0] : [0, 0, 0]}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectSleepPose(sleepPose === 'prone' ? 'supine' : 'prone');
-              }}
-              className="cursor-pointer"
-            >
-              <BabyAvatar
-                pose="sleeping"
-                position={[0, 0, 0]}
-                scale={1.0}
-                withBlanket={cribItems.find(i => i.id === 'baby_clothing')?.status === 'kept'}
-                blanketColor={sleepPose === 'prone' ? '#fecaca' : '#bae6fd'}
-              />
-            </group>
-          )}
-
-          {/* ── 3D Interactive Crib Hazards (คลิกหยิบออกจากเปลได้) ── */}
-          {/* 1. หมอนหนุนศีรษะ (Soft Pillow Hazard) */}
-          {cribItems.find(i => i.id === 'pillow')?.status === 'in_crib' && (
-            <group
-              position={[0, 0.05, -0.22]}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleCribItem('pillow');
-              }}
-              className="cursor-pointer"
-            >
-              <mesh castShadow receiveShadow>
-                <boxGeometry args={[0.42, 0.06, 0.24]} />
-                <meshStandardMaterial color="#fbcfe8" roughness={0.9} />
-              </mesh>
-              <Html position={[0, 0.12, 0]} center distanceFactor={14}>
-                <span className="select-none bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap animate-pulse">
-                  ⚠️ หมอน (คลิกหยิบออก)
-                </span>
-              </Html>
-            </group>
-          )}
-
-          {/* 2. ตุ๊กตาผ้า / ของเล่นนุ่มนิ่ม (Plush Teddy Bear Hazard) */}
-          {cribItems.find(i => i.id === 'doll')?.status === 'in_crib' && (
-            <group
-              position={[0.34, 0.06, 0.08]}
-              rotation={[0, -0.4, 0.1]}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleCribItem('doll');
-              }}
-              className="cursor-pointer"
-            >
-              {/* Teddy Body */}
-              <mesh castShadow>
-                <sphereGeometry args={[0.075, 16, 16]} />
-                <meshStandardMaterial color="#d97706" roughness={0.95} />
-              </mesh>
-              {/* Teddy Head */}
-              <mesh position={[0, 0.085, 0]} castShadow>
-                <sphereGeometry args={[0.055, 16, 16]} />
-                <meshStandardMaterial color="#d97706" roughness={0.95} />
-              </mesh>
-              {/* Ears */}
-              <mesh position={[-0.04, 0.13, 0]}>
-                <sphereGeometry args={[0.02, 12, 12]} />
-                <meshStandardMaterial color="#b45309" />
-              </mesh>
-              <mesh position={[0.04, 0.13, 0]}>
-                <sphereGeometry args={[0.02, 12, 12]} />
-                <meshStandardMaterial color="#b45309" />
-              </mesh>
-              <Html position={[0, 0.18, 0]} center distanceFactor={14}>
-                <span className="select-none bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap animate-pulse">
-                  ⚠️ ตุ๊กตา (คลิกหยิบออก)
-                </span>
-              </Html>
-            </group>
-          )}
-
-          {/* 3. หมอนข้างนิ่มๆ (Bolster Hazard) */}
-          {cribItems.find(i => i.id === 'bolster')?.status === 'in_crib' && (
-            <group
-              position={[-0.32, 0.05, 0]}
-              rotation={[0, 0, Math.PI / 2]}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleCribItem('bolster');
-              }}
-              className="cursor-pointer"
-            >
-              <mesh castShadow receiveShadow>
-                <capsuleGeometry args={[0.045, 0.45, 8, 16]} />
-                <meshStandardMaterial color="#fed7aa" roughness={0.9} />
-              </mesh>
-              <Html position={[0, 0.15, 0]} center distanceFactor={14}>
-                <span className="select-none bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap animate-pulse">
-                  ⚠️ หมอนข้าง (คลิกหยิบออก)
-                </span>
-              </Html>
-            </group>
-          )}
-
-          {/* 4. ผ้านวมหนา / ผ้าห่มฟู (Thick Blanket Hazard) */}
-          {cribItems.find(i => i.id === 'thick_blanket')?.status === 'in_crib' && (
-            <group
-              position={[0, 0.04, 0.22]}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleCribItem('thick_blanket');
-              }}
-              className="cursor-pointer"
-            >
-              <mesh castShadow receiveShadow>
-                <boxGeometry args={[0.5, 0.05, 0.24]} />
-                <meshStandardMaterial color="#cbd5e1" roughness={0.95} />
-              </mesh>
-              <Html position={[0, 0.12, 0]} center distanceFactor={14}>
-                <span className="select-none bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap animate-pulse">
-                  ⚠️ ผ้านวมหนา (คลิกหยิบออก)
-                </span>
-              </Html>
-            </group>
-          )}
-        </BabyCrib>
-
-        {/* 3D Crib Control Floating Action Bar */}
-        <Html position={[0, 1.45, 0]} center distanceFactor={16}>
-          <div className="flex flex-col items-center gap-1.5 select-none whitespace-nowrap">
-            {/* Flip Baby Button */}
-            <button
-              onClick={() => handleSelectSleepPose(sleepPose === 'prone' ? 'supine' : 'prone')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 border-2 border-white ${
-                sleepPose === 'prone'
-                  ? 'bg-rose-600 hover:bg-rose-500 animate-bounce'
-                  : 'bg-emerald-600 hover:bg-emerald-500'
+      <Html fullscreen style={{ pointerEvents: 'none' }}>
+        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-amber-950/85 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border border-amber-400/50 text-amber-50">
+          <div className="flex items-center justify-between border-b border-amber-400/30 pb-1.5 mb-2">
+            <span className="text-xs font-extrabold text-amber-200 tracking-wide flex items-center gap-1.5">
+              🌙 ภารกิจห้องการนอนทารก (Nursery 204)
+            </span>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isPracticeComplete || learningProgress?.newbornCare4
+                  ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/50'
+                  : 'bg-amber-500/30 text-amber-200 border border-amber-400/50'
               }`}
             >
-              <span>{sleepPose === 'prone' ? '⚠️ นอนคว่ำอยู่ (คลิกพลิกนอนหงาย ป้องกัน SIDS)' : '✓ นอนหงาย (Back to Sleep)'}</span>
+              {isPracticeComplete || learningProgress?.newbornCare4 ? 'สำเร็จแล้ว ✓' : 'กำลังปฏิบัติ'}
+            </span>
+          </div>
+
+          {/* สถานะแบบทดลองปฏิบัติสด (Live Checklist) */}
+          <div className="bg-black/30 rounded-xl p-2.5 mb-2 space-y-1.5 border border-white/10 text-[11px]">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-amber-100">
+                1. หยิบของนุ่มออกจากเตียงลูก (4 ชิ้น):
+              </span>
+              <span
+                className={`font-black ${
+                  allItemsRemoved ? 'text-emerald-300' : 'text-rose-300'
+                }`}
+              >
+                {removedCount}/4 ชิ้น {allItemsRemoved ? '✓' : ''}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-amber-100">
+                2. จัดท่านอนลูก (หงาย = ปลอดภัย):
+              </span>
+              <span
+                className={`font-black ${
+                  isBabySupine ? 'text-emerald-300' : 'text-rose-300'
+                }`}
+              >
+                {isBabySupine ? '✓ นอนหงายแล้ว' : '✕ ลูกนอนคว่ำอยู่!'}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => openWallPoster(0)}
+              className="w-full p-2 rounded-xl border border-amber-300/30 bg-white/10 hover:bg-white/20 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+            >
+              <span>🖼️ 1. ดูโปสเตอร์ความรู้รอบห้อง (5 ภาพ)</span>
+              <span className="text-amber-300 font-bold">เปิดดู ▶</span>
             </button>
 
-            {/* Quick Remove All Hazards Button */}
-            {cribItems.some(i => !i.keep && i.status === 'in_crib') ? (
+            <button
+              type="button"
+              onClick={() => setActiveModal('practice')}
+              className={`w-full p-2.5 rounded-xl border text-left font-bold flex items-center justify-between transition cursor-pointer ${
+                isPracticeComplete
+                  ? 'bg-emerald-600/40 border-emerald-400 text-emerald-100'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-200 text-white shadow-lg'
+              }`}
+            >
+              <span>🛏️ 2. แบบทดลองปฏิบัติ: จัดเตียง & พลิกตัวลูก</span>
+              <span>{isPracticeComplete ? 'สำเร็จ ✓' : 'เริ่มทำ ▶'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveModal('quiz')}
+              className="w-full p-2 rounded-xl border border-amber-300/30 bg-white/10 hover:bg-white/20 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+            >
+              <span>📝 3. แบบประเมินความรู้ท้ายห้อง</span>
+              <span className="text-amber-300 font-bold">ทำข้อสอบ ▶</span>
+            </button>
+          </div>
+        </div>
+      </Html>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          1. ผนังด้านเหนือ (North Wall, z = -6.85):
+             "หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง" + ผ้าม่านสีครีมอบอุ่น
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <group position={[0.5, 2.65, -6.86]}>
+        {/* กรอบหน้าต่างไม้สีอบอุ่น */}
+        <mesh castShadow>
+          <boxGeometry args={[4.4, 2.5, 0.1]} />
+          <meshStandardMaterial color="#8c5a3c" roughness={0.5} />
+        </mesh>
+
+        {/* วิวนอกหน้าต่างยามค่ำคืนที่เงียบสงบ น่านอน (Calm Night / Twilight Sky View) */}
+        <mesh position={[0, 0, 0.03]}>
+          <planeGeometry args={[4.1, 2.25]} />
+          <meshBasicMaterial color="#1b263b" />
+        </mesh>
+        {/* แสงขอบฟ้าและดวงจันทร์เสี้ยว */}
+        <mesh position={[0, -0.55, 0.035]}>
+          <planeGeometry args={[4.1, 0.9]} />
+          <meshBasicMaterial color="#283845" />
+        </mesh>
+        <mesh position={[1.1, 0.6, 0.04]}>
+          <circleGeometry args={[0.24, 24]} />
+          <meshBasicMaterial color="#fef3c7" />
+        </mesh>
+        {/* พุ่มไม้และต้นไม้ด้านนอกหน้าต่าง */}
+        <mesh position={[-1.2, -0.75, 0.045]}>
+          <sphereGeometry args={[0.45, 16, 16]} />
+          <meshBasicMaterial color="#1f4e3d" />
+        </mesh>
+        <mesh position={[-0.5, -0.8, 0.045]}>
+          <sphereGeometry args={[0.38, 16, 16]} />
+          <meshBasicMaterial color="#2d6a4f" />
+        </mesh>
+        <mesh position={[1.3, -0.78, 0.045]}>
+          <sphereGeometry args={[0.42, 16, 16]} />
+          <meshBasicMaterial color="#1f4e3d" />
+        </mesh>
+
+        {/* บานหน้าต่างเลื่อนเปิดแง้มเล็กน้อย ("หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง") */}
+        {/* บานซ้าย */}
+        <mesh position={[-1.05, 0, 0.06]}>
+          <boxGeometry args={[1.95, 2.2, 0.04]} />
+          <meshStandardMaterial color="#e0f2fe" transparent opacity={0.22} roughness={0.1} />
+        </mesh>
+        {/* บานขวาเลื่อนเปิดแง้มไว้ประมาณ 45 ซม. เพื่อระบายอากาศ */}
+        <mesh position={[0.6, 0, 0.08]}>
+          <boxGeometry args={[1.65, 2.2, 0.04]} />
+          <meshStandardMaterial color="#e0f2fe" transparent opacity={0.25} roughness={0.1} />
+        </mesh>
+        <mesh position={[0.6, 0, 0.085]}>
+          <boxGeometry args={[1.68, 2.22, 0.02]} />
+          <meshStandardMaterial color="#a47148" wireframe />
+        </mesh>
+
+        {/* ผ้าม่านสองฝั่งสีครีมอุ่น */}
+        <mesh position={[-2.05, 0, 0.12]} castShadow>
+          <boxGeometry args={[0.55, 2.6, 0.12]} />
+          <meshStandardMaterial color="#e6ccb2" roughness={0.85} />
+        </mesh>
+        <mesh position={[2.05, 0, 0.12]} castShadow>
+          <boxGeometry args={[0.55, 2.6, 0.12]} />
+          <meshStandardMaterial color="#e6ccb2" roughness={0.85} />
+        </mesh>
+        {/* ราวผ้าม่าน */}
+        <mesh position={[0, 1.32, 0.14]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.03, 0.03, 4.8, 12]} />
+          <meshStandardMaterial color="#5c3a21" />
+        </mesh>
+
+        {/* ป้ายกำกับหน้าต่างเปิดแง้มระบายอากาศ */}
+        <Html position={[1.4, -0.9, 0.15]} center distanceFactor={12} zIndexRange={[10, 0]}>
+          <div
+            onClick={() => openWallPoster(0)}
+            className="cursor-pointer select-none bg-amber-950/90 text-amber-100 border border-amber-400/70 px-3 py-1 rounded-full text-[11px] font-bold shadow-lg whitespace-nowrap hover:scale-105 transition"
+          >
+            🪟 หน้าต่างเปิดเล็กน้อย อากาศถ่ายเท • 25–26 °C
+          </div>
+        </Html>
+      </group>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          2. 5 โปสเตอร์ความรู้ขนาดใหญ่ ชัดเจน รอบผนังห้อง พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น (คลิกขยายได้)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ภาพที่ 1 (North Wall Left): การจัดสภาพแวดล้อมในห้องนอน */}
+      <WoodFramedBacklitPanel position={[-4.3, 2.7, -6.84]} width={2.95} height={1.95}>
+        <Html position={[0, 0, 0]} center transform scale={0.25}>
+          <div
+            onClick={() => openWallPoster(0)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-amber-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '480px' }}
+          >
+            <img
+              src="/images/rev/nb4_poster1_env.jpg"
+              alt="ภาพที่ 1 การจัดสภาพแวดล้อมในห้องนอน"
+              style={{
+                width: '100%',
+                height: '270px',
+                objectFit: 'contain',
+                backgroundColor: '#fffbeb',
+                borderRadius: '8px',
+              }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ภาพที่ 2 (North Wall Right): ✓ นอนหงาย vs ✕ นอนคว่ำ */}
+      <WoodFramedBacklitPanel position={[4.7, 2.7, -6.84]} width={2.85} height={1.95}>
+        <Html position={[0, 0, 0]} center transform scale={0.25}>
+          <div
+            onClick={() => openWallPoster(1)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-emerald-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '460px' }}
+          >
+            <img
+              src="/images/rev/nb4_poster2_back_vs_prone.jpg"
+              alt="ภาพที่ 2 นอนหงาย vs นอนคว่ำ"
+              style={{
+                width: '100%',
+                height: '270px',
+                objectFit: 'contain',
+                backgroundColor: '#ecfdf5',
+                borderRadius: '8px',
+              }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ภาพที่ 3 (East Wall North): ✓ ที่นอนทารกที่ปลอดภัย vs ✕ ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก */}
+      <WoodFramedBacklitPanel position={[6.84, 2.75, -3.6]} rotation={[0, -Math.PI / 2, 0]} width={3.05} height={2.0}>
+        <Html position={[0, 0, 0]} center transform scale={0.25}>
+          <div
+            onClick={() => openWallPoster(2)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-sky-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '500px' }}
+          >
+            <img
+              src="/images/rev/nb4_poster3_safe_mattress.jpg"
+              alt="ภาพที่ 3 ที่นอนทารกที่ปลอดภัย"
+              style={{
+                width: '100%',
+                height: '280px',
+                objectFit: 'contain',
+                backgroundColor: '#f0f9ff',
+                borderRadius: '8px',
+              }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ภาพที่ 4 (East Wall Center): ✓ แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน */}
+      <WoodFramedBacklitPanel position={[6.84, 2.75, 0.2]} rotation={[0, -Math.PI / 2, 0]} width={2.95} height={2.0}>
+        <Html position={[0, 0, 0]} center transform scale={0.25}>
+          <div
+            onClick={() => openWallPoster(3)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-amber-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '480px' }}
+          >
+            <img
+              src="/images/rev/nb4_poster4_separate_bed.jpg"
+              alt="ภาพที่ 4 แยกเตียงจากผู้ปกครองแต่ให้อยู่ข้างกัน"
+              style={{
+                width: '100%',
+                height: '280px',
+                objectFit: 'contain',
+                backgroundColor: '#fffbeb',
+                borderRadius: '8px',
+              }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ภาพที่ 5 (East Wall South): สังเกตอาการอันตรายระหว่างการนอนของทารก */}
+      <WoodFramedBacklitPanel position={[6.84, 2.75, 3.9]} rotation={[0, -Math.PI / 2, 0]} width={2.95} height={2.0}>
+        <Html position={[0, 0, 0]} center transform scale={0.25}>
+          <div
+            onClick={() => openWallPoster(4)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-rose-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '480px' }}
+          >
+            <img
+              src="/images/rev/nb4_poster5_danger_signs.jpg"
+              alt="ภาพที่ 5 สังเกตอาการอันตรายระหว่างการนอนของทารก"
+              style={{
+                width: '100%',
+                height: '280px',
+                objectFit: 'contain',
+                backgroundColor: '#fff1f2',
+                borderRadius: '8px',
+              }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          3. ผนังด้านซ้าย (West Wall): ทีวีติดผนัง + ตู้คอนโซลไม้ลิ้นชักขาวไฟซ่อนด้านล่าง + ชั้นวางโชว์ไม้
+             + มุมเก้าอี้นวมสีครีมหมอนชมพู + โต๊ะข้างโคมไฟโดมอุ่น (ตรงตาม /images/rev/nb4_room_ref.jpg)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <group position={[-6.78, 0, -0.5]} rotation={[0, Math.PI / 2, 0]}>
+        {/* ทีวีจอกว้างติดผนัง ("จัดเตียงนอนลูกอย่างไร? ให้ปลอดภัยและสบายตัว") */}
+        <group position={[0.25, 2.35, 0]}>
+          <mesh
+            castShadow
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveModal('practice');
+            }}
+          >
+            <boxGeometry args={[2.6, 1.5, 0.06]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.25} />
+          </mesh>
+          <Html position={[0, 0, 0.04]} center transform scale={0.22}>
+            <div
+              onClick={() => setActiveModal('practice')}
+              className="cursor-pointer select-none rounded-xl overflow-hidden border-2 border-amber-300 shadow-xl bg-amber-50 flex flex-col items-center justify-between p-3 text-center hover:scale-[1.02] transition"
+              style={{ width: '480px', height: '270px' }}
+            >
+              <div className="bg-amber-600 text-white text-xs font-extrabold px-3 py-1 rounded-full">
+                📺 สื่อการสอนบนจอทีวี (คลิกเพื่อเริ่มแบบทดลองปฏิบัติ)
+              </div>
+              <div className="text-xl font-black text-amber-950 leading-snug mt-1">
+                จัดเตียงนอนลูกอย่างไร?
+                <br />
+                <span className="text-emerald-700 text-base">ให้ปลอดภัยและสบายตัว (Safe Sleep)</span>
+              </div>
+              <img
+                src="/images/rev/nb4_room_ref.jpg"
+                alt="ห้องนอนทารกที่ปลอดภัย"
+                style={{ width: '100%', height: '145px', objectFit: 'cover', borderRadius: '8px' }}
+              />
+            </div>
+          </Html>
+        </group>
+
+        {/* ชั้นวางไม้ซ่อนไฟอุ่นติดผนังข้างทีวี (ตามภาพ nb4_room_ref.jpg) */}
+        <group position={[-1.65, 2.15, 0.14]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.72, 1.05, 0.24]} />
+            <meshStandardMaterial color="#b07d4f" roughness={0.5} />
+          </mesh>
+          <mesh position={[0, 0.24, 0.03]}>
+            <boxGeometry args={[0.62, 0.38, 0.2]} />
+            <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.45} />
+          </mesh>
+          <mesh position={[0, -0.24, 0.03]}>
+            <boxGeometry args={[0.62, 0.38, 0.2]} />
+            <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.35} />
+          </mesh>
+        </group>
+
+        {/* ตู้คอนโซลไม้โอ๊คยาว + หน้าลิ้นชักสีขาว 6 ช่อง + ไฟซ่อนด้านล่าง (ตามภาพ nb4_room_ref.jpg) */}
+        <mesh position={[0, 0.38, 0.28]} castShadow receiveShadow>
+          <boxGeometry args={[3.4, 0.58, 0.56]} />
+          <meshStandardMaterial color="#b58354" roughness={0.5} />
+        </mesh>
+        {/* แถบไฟ LED สีส้มอุ่นใต้ตู้คอนโซล */}
+        <mesh position={[0, 0.06, 0.48]}>
+          <boxGeometry args={[3.2, 0.04, 0.06]} />
+          <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.85} />
+        </mesh>
+        {/* หน้าลิ้นชักสีขาว 6 บาน (2 แถว × 3 คอลัมน์) พร้อมมือจับไม้ */}
+        {[-1.06, 0, 1.06].map((dx, col) =>
+          [0.49, 0.25].map((dy, row) => (
+            <group key={`drw_${col}_${row}`} position={[dx, dy, 0.565]}>
+              <mesh castShadow>
+                <boxGeometry args={[0.98, 0.2, 0.02]} />
+                <meshStandardMaterial color="#f8fafc" roughness={0.35} />
+              </mesh>
+              <mesh position={[0, 0, 0.015]}>
+                <boxGeometry args={[0.16, 0.025, 0.015]} />
+                <meshStandardMaterial color="#9c6b3f" roughness={0.45} />
+              </mesh>
+            </group>
+          ))
+        )}
+        {/* กระถางต้นพลูด่างใบห้อยด้านซ้ายบนคอนโซล */}
+        <group position={[-1.35, 0.68, 0.28]}>
+          <mesh position={[0, 0.1, 0]} castShadow>
+            <cylinderGeometry args={[0.11, 0.09, 0.2, 14]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.3} />
+          </mesh>
+          <mesh position={[0, 0.24, 0]}>
+            <sphereGeometry args={[0.16, 14, 14]} />
+            <meshStandardMaterial color="#3f6212" roughness={0.75} />
+          </mesh>
+          {[-0.08, 0, 0.08].map((vx, vi) => (
+            <mesh key={`vine_${vi}`} position={[vx, -0.02 - vi * 0.04, 0.12]}>
+              <sphereGeometry args={[0.06, 10, 10]} />
+              <meshStandardMaterial color="#4d7c0f" roughness={0.75} />
+            </mesh>
+          ))}
+        </group>
+        {/* เครื่องฟอกอากาศ/เบบี้มอนิเตอร์สีขาว + แจกันดอกไม้สีขาวบนคอนโซล */}
+        <group position={[0.95, 0.68, 0.28]}>
+          <mesh position={[0, 0.13, 0]} castShadow>
+            <cylinderGeometry args={[0.09, 0.1, 0.26, 18]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.25} />
+          </mesh>
+          <mesh position={[0.28, 0.11, 0.04]} castShadow>
+            <cylinderGeometry args={[0.06, 0.08, 0.22, 14]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.3} />
+          </mesh>
+          <mesh position={[0.28, 0.26, 0.04]}>
+            <sphereGeometry args={[0.1, 12, 12]} />
+            <meshStandardMaterial color="#fef3c7" roughness={0.8} />
+          </mesh>
+        </group>
+      </group>
+
+      {/* ── เก้าอี้นวมสีครีม + หมอนอิงสีชมพู + โต๊ะกลมวางโคมไฟโดมแสงอุ่น & กระถางต้นไม้เล็ก 2 ต้น + ต้นไม้ใหญ่ ── */}
+      <InteractiveSeat
+        id="nb204_cozy_armchair"
+        name="เก้าอี้นวมพักผ่อนมุมห้องนอน"
+        type="chair"
+        position={[-4.65, 0, -4.45]}
+        rotation={[0, Math.PI / 4, 0]}
+        seatOffset={[0, 0.45, 0]}
+      >
+        <group>
+          {/* ขาไม้ 4 ขา */}
+          {[[-0.36, -0.34], [0.36, -0.34], [-0.36, 0.34], [0.36, 0.34]].map(([lx, lz], idx) => (
+            <mesh key={`aleg_${idx}`} position={[lx, 0.11, lz]} castShadow>
+              <cylinderGeometry args={[0.028, 0.02, 0.22, 12]} />
+              <meshStandardMaterial color="#8c5a32" roughness={0.5} />
+            </mesh>
+          ))}
+          {/* เบาะนั่งและพนักพิงสีครีมเบจ */}
+          <mesh position={[0, 0.34, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.96, 0.32, 0.9]} />
+            <meshStandardMaterial color="#f5ebe0" roughness={0.85} />
+          </mesh>
+          <mesh position={[0, 0.78, -0.34]} castShadow>
+            <boxGeometry args={[0.94, 0.68, 0.22]} />
+            <meshStandardMaterial color="#f5ebe0" roughness={0.85} />
+          </mesh>
+          <mesh position={[-0.43, 0.54, 0]} castShadow>
+            <boxGeometry args={[0.16, 0.36, 0.86]} />
+            <meshStandardMaterial color="#e6d7c8" roughness={0.85} />
+          </mesh>
+          <mesh position={[0.43, 0.54, 0]} castShadow>
+            <boxGeometry args={[0.16, 0.36, 0.86]} />
+            <meshStandardMaterial color="#e6d7c8" roughness={0.85} />
+          </mesh>
+          {/* หมอนอิงสีชมพูพาสเทล (ตามภาพ nb4_room_ref.jpg) */}
+          <mesh position={[0.08, 0.58, -0.16]} rotation={[-0.22, -0.15, 0.08]} castShadow>
+            <boxGeometry args={[0.42, 0.34, 0.14]} />
+            <meshStandardMaterial color="#f4acb7" roughness={0.85} />
+          </mesh>
+        </group>
+      </InteractiveSeat>
+
+      {/* โต๊ะกลมไม้ข้างเก้าอี้นวม + โคมไฟโดมแสงอุ่น + กระถางต้นไม้เล็ก 2 ต้น (ตามภาพ nb4_room_ref.jpg) */}
+      <group position={[-3.35, 0, -5.2]}>
+        <mesh position={[0, 0.48, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.42, 0.42, 0.04, 28]} />
+          <meshStandardMaterial color="#b58354" roughness={0.5} />
+        </mesh>
+        {[[-0.22, -0.22], [0.22, -0.22], [0, 0.26]].map(([lx, lz], i) => (
+          <mesh key={`stleg_${i}`} position={[lx, 0.24, lz]} castShadow>
+            <cylinderGeometry args={[0.024, 0.018, 0.48, 12]} />
+            <meshStandardMaterial color="#8c5a32" roughness={0.5} />
+          </mesh>
+        ))}
+        {/* โคมไฟตั้งโต๊ะทรงโดมแสงอุ่น */}
+        <mesh position={[-0.1, 0.58, -0.05]} castShadow>
+          <cylinderGeometry args={[0.07, 0.09, 0.16, 16]} />
+          <meshStandardMaterial color="#e6ccb2" />
+        </mesh>
+        <mesh position={[-0.1, 0.72, -0.05]}>
+          <sphereGeometry args={[0.14, 18, 18]} />
+          <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.75} />
+        </mesh>
+        {/* กระถางต้นไม้สีขาวเล็ก 2 ต้นบนโต๊ะกลม */}
+        {[
+          [0.14, 0.08],
+          [0.08, -0.16],
+        ].map(([px, pz], pi) => (
+          <group key={`mini_pl_${pi}`} position={[px, 0.5, pz]}>
+            <mesh position={[0, 0.05, 0]} castShadow>
+              <cylinderGeometry args={[0.055, 0.045, 0.1, 12]} />
+              <meshStandardMaterial color="#ffffff" roughness={0.3} />
+            </mesh>
+            <mesh position={[0, 0.13, 0]}>
+              <sphereGeometry args={[0.075, 12, 12]} />
+              <meshStandardMaterial color="#4d7c0f" roughness={0.75} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+      {/* ต้นไม้ประดับมุมหน้าต่างซ้ายบน */}
+      <RealPlant type="potted" position={[-5.9, 0, -5.8]} scale={1.25} />
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          4. เตียงผู้ปกครอง (คุณแม่นอนหลับอยู่) + ตู้เสื้อผ้าบิวท์อินบานขาวตัดไม้โอ๊ค
+             + กรอบรูปใบไม้เหนือหัวเตียง 2 กรอบ + เตียงทารกขอบขาวตาข่ายโปร่งตั้งอยู่ข้างกัน
+             (ตรงตามภาพตัวอย่าง /images/rev/nb4_room_ref.jpg)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ── ตู้เสื้อผ้าบิวท์อินบานขาวตัดไม้โอ๊ค (Built-in White & Oak Wardrobe Closet) ── */}
+      <group position={[5.55, 0, -4.85]} rotation={[0, -Math.PI / 6, 0]}>
+        {/* โครงตู้ไม้โอ๊ค */}
+        <mesh position={[0, 1.55, 0]} castShadow receiveShadow>
+          <boxGeometry args={[1.65, 3.1, 0.68]} />
+          <meshStandardMaterial color="#b58354" roughness={0.5} />
+        </mesh>
+        {/* บานตู้สีขาวคู่ + มือจับไม้ยาว */}
+        {[-0.39, 0.39].map((dx, i) => (
+          <group key={`wd_door_${i}`} position={[dx, 1.55, 0.345]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.74, 2.94, 0.02]} />
+              <meshStandardMaterial color="#f8fafc" roughness={0.3} />
+            </mesh>
+            <mesh position={[i === 0 ? 0.28 : -0.28, 0, 0.02]}>
+              <boxGeometry args={[0.03, 0.55, 0.02]} />
+              <meshStandardMaterial color="#8c5a32" roughness={0.45} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+
+      {/* ── 4.1 เตียงผู้ปกครอง (Parent's Bed with Sleeping Mother) ── */}
+      <group position={[2.55, 0, -1.65]}>
+        {/* ฐานเตียงไม้โอ๊คขนาดใหญ่ */}
+        <mesh position={[0, 0.24, 0]} castShadow receiveShadow>
+          <boxGeometry args={[2.6, 0.42, 3.1]} />
+          <meshStandardMaterial color="#b07d4f" roughness={0.52} />
+        </mesh>
+        {/* หัวเตียงไม้โอ๊ค + แถบไฟซ่อน LED สีส้มอุ่นหลังหัวเตียง (ตามภาพ nb4_room_ref.jpg) */}
+        <mesh position={[0, 0.95, -1.48]} castShadow>
+          <boxGeometry args={[2.75, 1.32, 0.16]} />
+          <meshStandardMaterial color="#9c6b3f" roughness={0.5} />
+        </mesh>
+        <mesh position={[0, 1.63, -1.48]}>
+          <boxGeometry args={[2.72, 0.045, 0.12]} />
+          <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.85} />
+        </mesh>
+        <mesh position={[0, 0.92, -1.39]}>
+          <boxGeometry args={[2.45, 0.92, 0.06]} />
+          <meshStandardMaterial color="#f5ebe0" roughness={0.8} />
+        </mesh>
+
+        {/* กรอบรูปภาพใบไม้และดอกไม้ 2 กรอบเหนือหัวเตียงคุณแม่ (ตามภาพ nb4_room_ref.jpg) */}
+        {[-0.65, 0.65].map((fx, fi) => (
+          <group key={`hb_art_${fi}`} position={[fx, 2.28, -1.52]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.78, 0.96, 0.04]} />
+              <meshStandardMaterial color="#9c6b3f" roughness={0.45} />
+            </mesh>
+            <mesh position={[0, 0, 0.022]}>
+              <planeGeometry args={[0.66, 0.84]} />
+              <meshStandardMaterial color="#faf6f0" roughness={0.7} />
+            </mesh>
+            {/* ลวดลายใบไม้/ดอกไม้โทนธรรมชาติในกรอบรูป */}
+            <mesh position={[0, -0.04, 0.026]} rotation={[0, 0, fi === 0 ? 0.25 : -0.2]}>
+              <planeGeometry args={[0.24, 0.46]} />
+              <meshStandardMaterial color={fi === 0 ? '#84a98c' : '#d4a373'} roughness={0.8} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* ฟูกที่นอนสีครีม */}
+        <mesh position={[0, 0.52, 0.04]} castShadow receiveShadow>
+          <boxGeometry args={[2.42, 0.24, 2.9]} />
+          <meshStandardMaterial color="#fff8f0" roughness={0.75} />
+        </mesh>
+        {/* ผ้าห่มสีชมพูตุ่นอบอุ่นคลุมเตียงผู้ปกครอง (ตามภาพ nb4_room_ref.jpg) */}
+        <mesh position={[0, 0.65, 0.38]} castShadow receiveShadow>
+          <boxGeometry args={[2.44, 0.14, 2.1]} />
+          <meshStandardMaterial color="#d8a499" roughness={0.82} />
+        </mesh>
+        {/* หมอนหนุนบนเตียงผู้ปกครอง 2 ใบ */}
+        <mesh position={[-0.6, 0.7, -1.0]} castShadow>
+          <boxGeometry args={[0.85, 0.16, 0.48]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.7} />
+        </mesh>
+        <mesh position={[0.6, 0.7, -1.0]} castShadow>
+          <boxGeometry args={[0.85, 0.16, 0.48]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.7} />
+        </mesh>
+
+        {/* คุณแม่นอนหลับพักผ่อนอยู่บนเตียงผู้ปกครอง ("คุณแม่, ทารก นอนหลับอยู่") */}
+        <group position={[-0.55, 0.72, -0.95]} rotation={[-Math.PI / 2, 0, 0]}>
+          <MotherAvatar
+            position={[0, 0, 0]}
+            scale={0.94}
+            clothing="pajamas"
+            bellyState="postpartum"
+          />
+        </group>
+
+        {/* โต๊ะข้างเตียงไม้โอ๊ค 2 ลิ้นชัก + โคมไฟหัวเตียงแสงอุ่น + นาฬิกาดิจิทัล + ต้นไม้เล็ก */}
+        <group position={[1.78, 0, -1.1]}>
+          <mesh position={[0, 0.34, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.68, 0.68, 0.56]} />
+            <meshStandardMaterial color="#b07d4f" roughness={0.52} />
+          </mesh>
+          {[0.48, 0.22].map((dy, di) => (
+            <mesh key={`ns_drw_${di}`} position={[0, dy, 0.285]}>
+              <boxGeometry args={[0.58, 0.2, 0.02]} />
+              <meshStandardMaterial color="#c89666" roughness={0.5} />
+            </mesh>
+          ))}
+          {/* โคมไฟหัวเตียง */}
+          <mesh position={[-0.12, 0.78, -0.05]}>
+            <cylinderGeometry args={[0.07, 0.09, 0.2, 14]} />
+            <meshStandardMaterial color="#ddb892" />
+          </mesh>
+          <mesh position={[-0.12, 0.98, -0.05]}>
+            <cylinderGeometry args={[0.13, 0.21, 0.25, 16]} />
+            <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.65} />
+          </mesh>
+          {/* กรอบนาฬิกา/รูปเล็กและกระถางต้นไม้บนโต๊ะข้างเตียง */}
+          <mesh position={[0.16, 0.74, 0.06]} rotation={[-0.2, -0.3, 0]} castShadow>
+            <boxGeometry args={[0.16, 0.12, 0.03]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.3} />
+          </mesh>
+          <mesh position={[0.18, 0.74, -0.12]} castShadow>
+            <cylinderGeometry args={[0.05, 0.04, 0.1, 12]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+          <mesh position={[0.18, 0.83, -0.12]}>
+            <sphereGeometry args={[0.07, 12, 12]} />
+            <meshStandardMaterial color="#4d7c0f" roughness={0.75} />
+          </mesh>
+        </group>
+
+        {/* ป้ายแสดงหลักการ Room-Sharing */}
+        <Html position={[0, 1.75, -0.6]} center distanceFactor={13} zIndexRange={[10, 0]}>
+          <div
+            onClick={() => openWallPoster(3)}
+            className="cursor-pointer select-none bg-amber-900/90 text-amber-50 border border-amber-300/70 px-3 py-1 rounded-full text-xs font-bold shadow-lg whitespace-nowrap hover:scale-105 transition"
+          >
+            🛌 เตียงคุณแม่ (นอนแยกเตียงจากทารก แต่ตั้งอยู่ข้างกัน ✓)
+          </div>
+        </Html>
+      </group>
+
+      {/* ── 4.2 เตียงทารกขอบขาวโครงไม้โอ๊คตาข่ายโปร่ง ตั้งอยู่ข้างเตียงผู้ปกครอง (ตามภาพ nb4_room_ref.jpg) ── */}
+      <group position={[-0.55, 0, -1.55]}>
+        <BabyCrib position={[0, 0, 0]} scale={1.18} />
+        {/* ขอบเตียงทารกบุสีขาว + ผนังตาข่ายโปร่งระบายอากาศสีขาวนวลตามดีไซน์ Co-Sleeper Crib ในรูป */}
+        <mesh position={[-0.47, 0.84, 0]} castShadow>
+          <boxGeometry args={[0.04, 0.36, 1.32]} />
+          <meshStandardMaterial color="#f8fafc" transparent opacity={0.45} roughness={0.6} />
+        </mesh>
+        <mesh position={[0.47, 0.84, 0]} castShadow>
+          <boxGeometry args={[0.04, 0.36, 1.32]} />
+          <meshStandardMaterial color="#f8fafc" transparent opacity={0.45} roughness={0.6} />
+        </mesh>
+        <mesh position={[0, 1.03, -0.66]} castShadow>
+          <boxGeometry args={[0.98, 0.05, 0.05]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+        </mesh>
+        <mesh position={[0, 1.03, 0.66]} castShadow>
+          <boxGeometry args={[0.98, 0.05, 0.05]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+        </mesh>
+
+        {/* แผ่นที่นอนทารกเรียบตึงภายในเตียงไม้ */}
+        <mesh position={[0, 0.66, 0]} receiveShadow>
+          <boxGeometry args={[0.88, 0.08, 1.28]} />
+          <meshStandardMaterial color="#fffbeb" roughness={0.7} />
+        </mesh>
+
+        {/* ทารกนอนอยู่ในเตียง:
+            - เข้าไปครั้งแรก ลูกนอนคว่ำอยู่ (sleepPose === 'prone')
+            - เมื่อคุณแม่จับพลิกตัวแล้ว ลูกนอนหงาย (sleepPose === 'supine') */}
+        <group
+          position={[0, 0.75, 0.05]}
+          rotation={
+            sleepPose === 'prone'
+              ? [Math.PI / 2, 0, Math.PI] // นอนคว่ำหน้าลง (Prone)
+              : [-Math.PI / 2, 0, 0] // นอนหงาย (Supine - Safe)
+          }
+          onClick={(e) => {
+            e.stopPropagation();
+            setSleepPose((prev) => (prev === 'prone' ? 'supine' : 'prone'));
+          }}
+        >
+          <BabyAvatar position={[0, 0, 0]} scale={1.15} isSwaddled={true} />
+        </group>
+
+        {/* ── อุปกรณ์นุ่ม ๆ 4 ชิ้นในเตียงทารก ที่คุณแม่ต้องหยิบออก (หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม) ── */}
+        {/* 1. หมอน (Pillow) */}
+        {cribItems.find((i) => i.id === 'pillow')?.inCrib && (
+          <group
+            position={[0, 0.73, -0.35]}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveSingleItem('pillow');
+            }}
+          >
+            <mesh castShadow>
+              <boxGeometry args={[0.52, 0.09, 0.32]} />
+              <meshStandardMaterial color="#fde68a" roughness={0.75} />
+            </mesh>
+            <Html position={[0, 0.18, 0]} center distanceFactor={10} zIndexRange={[15, 0]}>
               <button
-                onClick={() => {
-                  setCribItems(prev => prev.map(i => i.keep ? i : { ...i, status: 'removed' }));
-                  setAct2Feedback({
-                    pass: true,
-                    msg: '✓ ยอดเยี่ยมมาก! เปลนอนปลอดภัย 100% ตามหลัก "Bare is Best" ไม่มีหมอน หมอนข้าง ตุ๊กตา หรือผ้านวมหนา'
-                  });
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveSingleItem('pillow');
                 }}
-                className="px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-lg bg-amber-600 hover:bg-amber-500 border border-white transition transform hover:scale-105"
+                className="cursor-pointer bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow border border-white whitespace-nowrap"
               >
-                🧸 หยิบของอันตรายออกจากเปล ({cribItems.filter(i => !i.keep && i.status === 'in_crib').length} ชิ้น)
+                ✕ หยิบหมอนออก
               </button>
-            ) : (
-              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 shadow">
-                ✓ เปลโล่งปลอดภัย 100% (Bare is Best)
-              </span>
+            </Html>
+          </group>
+        )}
+
+        {/* 2. หมอนข้าง (Bolster) */}
+        {cribItems.find((i) => i.id === 'bolster')?.inCrib && (
+          <group
+            position={[-0.25, 0.75, 0.08]}
+            rotation={[Math.PI / 2, 0, 0]}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveSingleItem('bolster');
+            }}
+          >
+            <mesh castShadow>
+              <cylinderGeometry args={[0.085, 0.085, 0.62, 16]} />
+              <meshStandardMaterial color="#fbcfe8" roughness={0.75} />
+            </mesh>
+            <Html position={[0, 0, -0.22]} center distanceFactor={10} zIndexRange={[15, 0]}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveSingleItem('bolster');
+                }}
+                className="cursor-pointer bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow border border-white whitespace-nowrap"
+              >
+                ✕ หยิบหมอนข้างออก
+              </button>
+            </Html>
+          </group>
+        )}
+
+        {/* 3. ตุ๊กตา (Plush Doll / Teddy Bear) */}
+        {cribItems.find((i) => i.id === 'doll')?.inCrib && (
+          <group
+            position={[0.26, 0.78, -0.28]}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveSingleItem('doll');
+            }}
+          >
+            {/* ตัวตุ๊กตาหมี */}
+            <mesh position={[0, 0, 0]} castShadow>
+              <sphereGeometry args={[0.11, 14, 14]} />
+              <meshStandardMaterial color="#c08552" roughness={0.85} />
+            </mesh>
+            <mesh position={[0, 0.14, 0]} castShadow>
+              <sphereGeometry args={[0.085, 14, 14]} />
+              <meshStandardMaterial color="#c08552" roughness={0.85} />
+            </mesh>
+            <mesh position={[-0.06, 0.21, 0]} castShadow>
+              <sphereGeometry args={[0.03, 10, 10]} />
+              <meshStandardMaterial color="#8c5a3c" />
+            </mesh>
+            <mesh position={[0.06, 0.21, 0]} castShadow>
+              <sphereGeometry args={[0.03, 10, 10]} />
+              <meshStandardMaterial color="#8c5a3c" />
+            </mesh>
+            <Html position={[0, 0.34, 0]} center distanceFactor={10} zIndexRange={[15, 0]}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveSingleItem('doll');
+                }}
+                className="cursor-pointer bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow border border-white whitespace-nowrap"
+              >
+                ✕ หยิบตุ๊กตาออก
+              </button>
+            </Html>
+          </group>
+        )}
+
+        {/* 4. ผ้าห่มหนา (Thick Blanket) */}
+        {cribItems.find((i) => i.id === 'blanket')?.inCrib && (
+          <group
+            position={[0.04, 0.79, 0.28]}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveSingleItem('blanket');
+            }}
+          >
+            <mesh castShadow>
+              <boxGeometry args={[0.68, 0.07, 0.55]} />
+              <meshStandardMaterial color="#bae6fd" roughness={0.85} />
+            </mesh>
+            <Html position={[0, 0.18, 0]} center distanceFactor={10} zIndexRange={[15, 0]}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveSingleItem('blanket');
+                }}
+                className="cursor-pointer bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow border border-white whitespace-nowrap"
+              >
+                ✕ หยิบผ้าห่มออก
+              </button>
+            </Html>
+          </group>
+        )}
+
+        {/* ปุ่มลอยเหนือเตียงทารกสำหรับกดพลิกตัวทารก หรือเปิดหน้าต่างแบบทดลองปฏิบัติ */}
+        <Html position={[0, 1.55, 0]} center distanceFactor={11} zIndexRange={[20, 0]}>
+          <div className="flex flex-col items-center gap-1.5">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveModal('practice');
+              }}
+              className={`cursor-pointer px-4 py-2 rounded-full font-black text-xs sm:text-sm shadow-2xl border-2 border-white whitespace-nowrap transition hover:scale-105 ${
+                isPracticeComplete
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'
+                  : 'bg-gradient-to-r from-rose-600 via-amber-600 to-orange-600 text-white animate-pulse'
+              }`}
+            >
+              {isPracticeComplete
+                ? '✓ เตียงทารกปลอดภัยแล้ว (ลูกนอนหงาย & ไม่มีของนุ่มในเตียง)'
+                : `⚠️ แบบทดลองปฏิบัติ: ${
+                    !allItemsRemoved ? `หยิบของนุ่มออก (${removedCount}/4)` : ''
+                  } ${!isBabySupine ? '• พลิกตัวลูกให้นอนหงาย!' : ''}`}
+            </button>
+            {!isBabySupine && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSleepPose('supine');
+                }}
+                className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-3.5 py-1 rounded-full shadow-lg border border-white whitespace-nowrap"
+              >
+                🔄 คลิกจับลูกพลิกตัวเป็น &ldquo;นอนหงาย&rdquo; (✓ ปลอดภัย)
+              </button>
             )}
           </div>
         </Html>
       </group>
 
-      {/* Mother Sofa for Room-Sharing Demo */}
-      <InteractiveSeat
-        id="nursery204_sofa"
-        name="เตียง/โซฟาคุณแม่ข้างเปล"
-        type="sofa"
-        position={[-6.2, 0, -3.2]}
-        rotation={[0, 0, 0]}
-        seatOffset={[0, 0.42, 0.15]}
-      >
-        <group onClick={() => setActiveTab(2)}>
-          <HospitalSofa position={[0, 0, 0]} scale={1.1} />
-          <Pillows position={[0.2, 0.45, 0]} scale={0.85} />
-        </group>
-      </InteractiveSeat>
-
-      {/* Doctor Consultation Desk & Quiz Kiosk */}
-      <group position={[4.5, 0, -4.5]} rotation={[0, -Math.PI / 4, 0]}>
-        <DoctorDesk position={[0, 0, 0]} scale={0.9} />
-      </group>
-
       {/* ══════════════════════════════════════════════════════════════════════════
-          2. 4 MODERN DISPLAY SCREENS (4 หน้าจอแสดงผลทันสมัย กดซูมดูภาพได้)
-             Mounted along East Wall (X: 7.8, rotation: [0, -Math.PI / 2, 0])
+          MODAL 1: แบบทดลองปฏิบัติ (Safe Sleep Hands-On Practice Modal)
+          ตามไฟล์ "ทารก 3 เเละ 4.pdf" หน้า 8–9:
+          1) หยิบ หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม ออกจากเตียงทารก
+          2) จับลูกพลิกตัวจาก "นอนคว่ำ" เป็น "นอนหงาย"
           ══════════════════════════════════════════════════════════════════════════ */}
-      {[
-        {
-          id: 'screen1',
-          pos: [7.8, 2.7, -4.5],
-          title: '1. Back to Sleep (ท่านอนหงาย)',
-          sub: 'ลดความเสี่ยง SIDS มากกว่า 50%',
-          img: '/references/zone1_2/img_007.png',
-          details: [
-            '1. ท่านอนหงาย (Supine) เป็นท่านอนที่ปลอดภัยที่สุดสำหรับทารกแรกเกิด',
-            '2. หลอดลมอยู่เหนือหลอดอาหาร ป้องกันการสำลักและเปิดทางเดินหายใจให้โล่ง',
-            '3. ห้ามทารกนอนคว่ำหรือนอนตะแคงโดยไม่มีผู้ดูแลเด็ดขาด'
-          ]
-        },
-        {
-          id: 'screen2',
-          pos: [7.8, 2.7, -1.5],
-          title: '2. Bare is Best (เตียงนอนโล่ง)',
-          sub: 'ปราศจากหมอน หมอนข้าง และตุ๊กตา',
-          img: '/references/room1/img_001.jpg',
-          details: [
-            '1. ที่นอนต้องแน่น เรียบ และมีขนาดพอดีกับเปล ไม่มียุบตัว',
-            '2. นำหมอน หมอนข้าง ตุ๊กตาผ้า และผ้านวมหนาออกจากเปลทั้งหมด',
-            '3. ป้องกันสิ่งของตกลงมาปิดทับปากและจมูกทารกขณะหลับ'
-          ]
-        },
-        {
-          id: 'screen3',
-          pos: [7.8, 2.7, 1.5],
-          title: '3. Room-Sharing (นอนร่วมห้อง)',
-          sub: 'แยกเตียงเด็กลดความเสี่ยงนอนทับ',
-          img: '/references/zone1_2/img_000.png',
-          details: [
-            '1. วางเปลนอนของทารกไว้ข้างเตียงคุณแม่ในระยะเอื้อมถึง อย่างน้อย 6 เดือนแรก',
-            '2. ไม่ควรให้ทารกนอนบนเตียงเดียวกันกับผู้ใหญ่ (หลีกเลี่ยง Bed-sharing)',
-            '3. ช่วยลดความเสี่ยงจากการนอนทับ และช่วยให้ให้นมแม่สะดวก'
-          ]
-        },
-        {
-          id: 'screen4',
-          pos: [7.8, 2.7, 4.5],
-          title: '4. Safe Climate & Smoke-Free',
-          sub: 'อุณหภูมิ 25°C ปลอดควันบุหรี่ 100%',
-          img: '/references/room2/img_003.png',
-          details: [
-            '1. ปรับอุณหภูมิห้องให้อยู่ที่ประมาณ 25–26°C อากาศถ่ายเทสะดวก',
-            '2. ไม่สวมเสื้อผ้าหนาเกินไปจนร่างกายร้อนจัด (Overheating)',
-            '3. ห้องนอนและสภาพแวดล้อมต้องปลอดควันบุหรี่ทั้งมือสองและมือสาม 100%'
-          ]
-        }
-      ].map((scr, idx) => (
-        <group key={scr.id} position={scr.pos} rotation={[0, -Math.PI / 2, 0]}>
-          {/* Futuristic Backlit Frame */}
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[2.4, 1.6, 0.08]} />
-            <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
-          </mesh>
-          {/* LED Glowing Border */}
-          <mesh position={[0, 0, 0.035]}>
-            <boxGeometry args={[2.46, 1.66, 0.02]} />
-            <meshStandardMaterial color="#06b6d4" emissive="#0891b2" emissiveIntensity={0.6} roughness={0.2} />
-          </mesh>
-          {/* Glass Screen Face */}
-          <mesh position={[0, 0, 0.045]}>
-            <planeGeometry args={[2.32, 1.52]} />
-            <meshStandardMaterial color="#020617" roughness={0.1} />
-          </mesh>
-
-          {/* Interactive Screen Overlay */}
-          <Html position={[0, 0, 0.06]} center transform scale={0.21}>
+      {activeModal === 'practice' && (
+        <Html fullscreen style={{ pointerEvents: 'none' }}>
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-5 pointer-events-auto"
+            onClick={() => setActiveModal(null)}
+          >
             <div
-              className="select-none bg-slate-950/95 text-white rounded-xl p-3 shadow-2xl flex flex-col justify-between border-2 border-cyan-400"
-              style={{ width: '420px', height: '280px' }}
+              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 border-2 border-amber-300 text-slate-800"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-cyan-800/60 pb-1.5">
-                <span className="text-cyan-400 font-bold text-xs flex items-center gap-1.5">
-                  🖥️ หน้าจออัจฉริยะ {idx + 1}/4
-                </span>
+              <div className="flex items-start justify-between gap-3 border-b border-slate-200 pb-3">
+                <div>
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 mb-1">
+                    Nursery 204 • แบบทดลองปฏิบัติสำหรับคุณแม่
+                  </span>
+                  <h2 className="text-base sm:text-xl font-black text-slate-900">
+                    🛏️ แบบทดลองปฏิบัติ: จัดเตียงทารกให้ปลอดภัย &amp; จับลูกพลิกตัวเป็นท่านอนหงาย
+                  </h2>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    เมื่อเข้ามาครั้งแรก ลูกนอนคว่ำอยู่และมีสิ่งของนุ่ม ๆ อยู่ในเตียงทารก กรุณาหยิบสิ่งของที่ไม่ปลอดภัยออกให้ครบ 4 ชิ้น และจับลูกพลิกตัวเป็นท่านอนหงายค่ะ
+                  </p>
+                </div>
                 <button
-                  onClick={() => openLightbox({
-                    src: scr.img,
-                    title: scr.title,
-                    caption: scr.sub,
-                    category: 'สภาพแวดล้อมที่ปลอดภัย (Nursery 204)',
-                    clinicalDetails: scr.details
-                  })}
-                  className="bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow flex items-center gap-1"
+                  type="button"
+                  onClick={() => setActiveModal(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center cursor-pointer shrink-0"
                 >
-                  🔍 ขยายภาพ
+                  ✕
                 </button>
               </div>
 
-              {/* Screen Graphic & Info */}
-              <div
-                className="my-1.5 flex-1 relative bg-slate-900 rounded-lg overflow-hidden border border-slate-800 cursor-pointer flex items-center justify-center group"
-                onClick={() => openLightbox({
-                  src: scr.img,
-                  title: scr.title,
-                  caption: scr.sub,
-                  category: 'สภาพแวดล้อมที่ปลอดภัย (Nursery 204)',
-                  clinicalDetails: scr.details
-                })}
-              >
-                <img
-                  src={scr.img}
-                  alt={scr.title}
-                  className="w-full h-full object-cover p-1 group-hover:scale-105 transition"
-                />
-                <div className="absolute bottom-1 inset-x-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded text-center">
-                  <div className="font-bold text-cyan-200 text-xs truncate">{scr.title}</div>
-                  <div className="text-[10px] text-slate-300 truncate">{scr.sub}</div>
+              {/* ── ส่วนที่ 1: หยิบ หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม ออกจากเตียงทารก ── */}
+              <div className="mt-4 bg-sky-50/70 border-2 border-sky-200 rounded-2xl p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                  <div>
+                    <h3 className="text-sm sm:text-base font-black text-sky-950">
+                      ภารกิจที่ 1: หยิบสิ่งของนุ่ม ๆ ออกจากเตียงทารก ({removedCount}/4 ชิ้น)
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      คลิกที่รายการด้านล่างเพื่อหยิบ <strong>หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม</strong> ออกจากที่นอนทารก (ป้องกันการอุดกั้นทางเดินหายใจ)
+                    </p>
+                  </div>
+                  {!allItemsRemoved && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveAllItems}
+                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow cursor-pointer"
+                    >
+                      ✨ หยิบออกทั้งหมด 4 ชิ้น
+                    </button>
+                  )}
+                </div>
+
+                {/* ภาพเปรียบเทียบ ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ บนที่นอน */}
+                <div className="mb-3 bg-white p-2 rounded-xl border border-sky-200">
+                  <img
+                    src="/images/rev/nb4_poster3_safe_mattress.jpg"
+                    alt="ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก"
+                    className="w-full h-44 sm:h-52 object-contain rounded-lg"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {cribItems.map((item) => {
+                    const isRemoved = !item.inCrib;
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => handleToggleCribItem(item.id)}
+                        className={`cursor-pointer p-3 rounded-xl border-2 flex items-center justify-between gap-3 transition ${
+                          isRemoved
+                            ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
+                            : 'bg-rose-50 border-rose-400 text-rose-950 hover:bg-rose-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-2xl">{item.icon}</span>
+                          <div>
+                            <div className="text-xs sm:text-sm font-black">
+                              {item.name} ({item.shortName})
+                            </div>
+                            <div className="text-[11px] opacity-85">{item.dangerDesc}</div>
+                          </div>
+                        </div>
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-black shrink-0 ${
+                            isRemoved
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-rose-600 text-white animate-pulse'
+                          }`}
+                        >
+                          {isRemoved ? '✓ หยิบออกแล้ว' : '👆 คลิกหยิบออก'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Bottom Clinical Note */}
-              <div className="pt-1 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 px-1">
-                <span>มาตรฐานความปลอดภัย AAP & WHO</span>
-                <span className="text-cyan-400 font-semibold underline cursor-pointer" onClick={() => openLightbox({
-                  src: scr.img,
-                  title: scr.title,
-                  caption: scr.sub,
-                  category: 'สภาพแวดล้อมที่ปลอดภัย (Nursery 204)',
-                  clinicalDetails: scr.details
-                })}>
-                  คลิกดูรายละเอียด ➔
-                </span>
+              {/* ── ส่วนที่ 2: จับลูกพลิกตัวจาก "นอนคว่ำ" เป็น "นอนหงาย" ── */}
+              <div className="mt-4 bg-amber-50/80 border-2 border-amber-200 rounded-2xl p-4">
+                <h3 className="text-sm sm:text-base font-black text-amber-950">
+                  ภารกิจที่ 2: จับลูกพลิกตัวเป็นท่านอนที่ปลอดภัย (✓ นอนหงาย vs ✕ นอนคว่ำ)
+                </h3>
+                <p className="text-xs text-slate-600 mt-0.5 mb-2.5">
+                  เมื่อเข้ามาครั้งแรก ลูกนอนคว่ำอยู่ ซึ่งเสี่ยงต่อการอุดกั้นทางเดินหายใจและภาวะไหลตาย (SIDS) กรุณาคลิกเลือกจับลูกพลิกตัวเป็น <strong>&ldquo;นอนหงาย&rdquo;</strong>
+                </p>
+
+                <div className="mb-3 bg-white p-2 rounded-xl border border-amber-200">
+                  <img
+                    src="/images/rev/nb4_poster2_back_vs_prone.jpg"
+                    alt="นอนหงาย vs นอนคว่ำ"
+                    className="w-full h-44 sm:h-52 object-contain rounded-lg"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSleepPose('supine')}
+                    className={`cursor-pointer p-3.5 rounded-2xl border-2 text-left transition flex items-center justify-between ${
+                      isBabySupine
+                        ? 'bg-emerald-600 border-emerald-700 text-white shadow-lg ring-2 ring-emerald-300'
+                        : 'bg-white border-emerald-400 text-emerald-950 hover:bg-emerald-50'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-sm font-black">
+                        ✓ จับลูกพลิกเป็น &ldquo;ท่านอนหงาย&rdquo; (Supine)
+                      </div>
+                      <div className="text-xs opacity-90 mt-0.5">
+                        ท่านอนที่ปลอดภัยที่สุดสำหรับทารก ลดความเสี่ยงการอุดกั้นทางเดินหายใจ
+                      </div>
+                    </div>
+                    <span className="text-xl font-black ml-2">
+                      {isBabySupine ? '☑' : '👆'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSleepPose('prone')}
+                    className={`cursor-pointer p-3.5 rounded-2xl border-2 text-left transition flex items-center justify-between ${
+                      !isBabySupine
+                        ? 'bg-rose-600 border-rose-700 text-white shadow-lg'
+                        : 'bg-white border-rose-300 text-rose-900 hover:bg-rose-50 opacity-75'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-sm font-black">
+                        ✕ ท่านอนคว่ำ (Prone - ตอนเข้าห้องครั้งแรก)
+                      </div>
+                      <div className="text-xs opacity-90 mt-0.5">
+                        อันตราย! เสี่ยงอุดกั้นทางเดินหายใจและเสียชีวิตเฉียบพลันขณะหลับ
+                      </div>
+                    </div>
+                    <span className="text-xl font-black ml-2">
+                      {!isBabySupine ? '⚠️' : ''}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* สรุปผลการทดลองปฏิบัติ */}
+              <div
+                className={`mt-4 p-4 rounded-2xl border-2 text-xs sm:text-sm font-bold ${
+                  isPracticeComplete
+                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
+                    : 'bg-amber-50 border-amber-300 text-amber-950'
+                }`}
+              >
+                {isPracticeComplete ? (
+                  <div>
+                    <div className="text-sm sm:text-base font-black text-emerald-800">
+                      🎉 ยอดเยี่ยมมากค่ะ! คุณแม่จัดเตียงนอนทารกและจัดท่านอนได้ปลอดภัยครบถ้วน 100%
+                    </div>
+                    <p className="mt-1 font-medium">
+                      ✓ หยิบหมอน, หมอนข้าง, ตุ๊กตา, และผ้าห่มออกจากเตียงลูกเรียบร้อยแล้ว (ที่นอนเรียบตึง ปลอดภัย)
+                      <br />✓ จับลูกพลิกตัวจากนอนคว่ำเป็น &ldquo;นอนหงาย&rdquo; และแยกเตียงทารกวางไว้ข้างเตียงคุณแม่
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    ⏳ กรุณาทำภารกิจให้ครบทั้ง 2 ข้อ: (1) หยิบหมอน หมอนข้าง ตุ๊กตา ผ้าห่มออกจากเตียง ({removedCount}/4) และ (2) กดจับลูกพลิกตัวเป็น &ldquo;ท่านอนหงาย&rdquo;
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Buttons */}
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={handleResetPractice}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs cursor-pointer"
+                >
+                  🔄 รีเซ็ตฝึกปฏิบัติใหม่
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal(null)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer"
+                  >
+                    ดูผลในห้อง 3D
+                  </button>
+                  {isPracticeComplete && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveModal(null);
+                        setShowSuccessModal(
+                          true,
+                          'ยินดีด้วย! คุณผ่านการฝึกปฏิบัติการจัดที่นอนทารกที่ปลอดภัยและการจัดท่านอนหงายห้อง Nursery 204 เรียบร้อยแล้ว'
+                        );
+                      }}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs sm:text-sm shadow-lg cursor-pointer"
+                    >
+                      🎉 บันทึกความสำเร็จภารกิจ
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </Html>
-        </group>
-      ))}
+          </div>
+        </Html>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          🏠 INTERACTIVE LEARNING HUD (Nursery 204: Safe Sleep Environment)
+          MODAL 2: แบบประเมินความรู้ท้ายห้อง (Quiz Modal)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.98)',
-          padding: '24px',
-          borderRadius: '24px',
-          width: '880px',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
-          border: '3px solid #38bdf8',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          color: '#333'
-        }}>
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #e0f2fe', paddingBottom: '12px', marginBottom: '16px' }}>
-            <div>
-              <span style={{ background: '#0284c7', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
-                NURSERY 204: สภาพแวดล้อมที่ปลอดภัยสำหรับทารก (Safe Sleep)
-              </span>
-              <h2 style={{ margin: '6px 0 0 0', color: '#0369a1', fontSize: '22px' }}>
-                {activeTab === 0 && 'ท่านอนที่ปลอดภัยสำหรับทารก (Back to Sleep)'}
-                {activeTab === 1 && 'การจัดเตียงนอนที่ปลอดภัยตามหลัก Bare is Best'}
-                {activeTab === 2 && 'การควบคุมสภาพแวดล้อมห้องนอน (อุณหภูมิและการนอนร่วมห้อง)'}
-                {activeTab === 3 && 'แบบประเมินความรู้ประจำห้อง Nursery 204 (ข้อ 13 & 15)'}
-              </h2>
-            </div>
-            <button
-              onClick={() => setRoom('lobby')}
-              style={{ background: '#f3f4f6', border: '1px solid #ccc', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+      {activeModal === 'quiz' && currentQ && (
+        <Html fullscreen style={{ pointerEvents: 'none' }}>
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 pointer-events-auto"
+            onClick={() => setActiveModal(null)}
+          >
+            <div
+              className="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-5 sm:p-6 border-2 border-amber-300 text-slate-800"
+              onClick={(e) => e.stopPropagation()}
             >
-              ⬅ กลับสู่ล็อบบี้
-            </button>
-          </div>
-
-          {/* Navigation Tabs */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
-            {['1. ท่านอนที่ปลอดภัย', '2. ตรวจความปลอดภัยในเปล', '3. สภาพแวดล้อมห้องนอน', '4. แบบประเมิน (Quiz)'].map((label, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveTab(idx)}
-                style={{
-                  flex: 1,
-                  padding: '10px 6px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: activeTab === idx ? '#0284c7' : '#e0f2fe',
-                  color: activeTab === idx ? 'white' : '#0369a1',
-                  fontWeight: 'bold',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* ── TAB 0: ท่านอนที่ปลอดภัย ── */}
-          {activeTab === 0 && (
-            <div>
-              <div style={{ background: '#f0f9ff', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #0284c7' }}>
-                <strong>เป้าหมาย:</strong> เรียนรู้ท่านอนที่ถูกต้องและปลอดภัยที่สุดสำหรับทารกแรกเกิดตามมาตรฐานของ AAP และ WHO เพื่อป้องกัน SIDS
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                <div
-                  onClick={() => handleSelectSleepPose('supine')}
-                  style={{
-                    padding: '16px',
-                    borderRadius: '14px',
-                    cursor: 'pointer',
-                    border: sleepPose === 'supine' ? '2px solid #16a34a' : '1px solid #e2e8f0',
-                    background: sleepPose === 'supine' ? '#f0fdf4' : 'white',
-                    transition: 'all 0.2s',
-                    textAlign: 'center'
-                  }}
-                >
-                  <div style={{ fontSize: '24px', marginBottom: '6px' }}>👶💤</div>
-                  <strong style={{ fontSize: '15px', color: '#166534', display: 'block', marginBottom: '6px' }}>
-                    1. ท่านอนหงาย (Supine)
-                  </strong>
-                  <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
-                    ปลอดภัยที่สุด (แนะนำ)
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                <div>
+                  <span className="text-[11px] font-black text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">
+                    Nursery 204 • แบบประเมินความรู้
                   </span>
-                  <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#475569', textAlign: 'left', lineHeight: '1.4' }}>
-                    ทางเดินหายใจเปิดโล่ง ลิ้นไม่ตกไปอุดหลอดลม ลดความเสี่ยงทารกเสียชีวิตเฉียบพลันขณะหลับ (SIDS)
-                  </p>
-                </div>
-
-                <div
-                  onClick={() => handleSelectSleepPose('prone')}
-                  style={{
-                    padding: '16px',
-                    borderRadius: '14px',
-                    cursor: 'pointer',
-                    border: sleepPose === 'prone' ? '2px solid #dc2626' : '1px solid #e2e8f0',
-                    background: sleepPose === 'prone' ? '#fef2f2' : 'white',
-                    transition: 'all 0.2s',
-                    textAlign: 'center'
-                  }}
-                >
-                  <div style={{ fontSize: '24px', marginBottom: '6px' }}>⚠️</div>
-                  <strong style={{ fontSize: '15px', color: '#991b1b', display: 'block', marginBottom: '6px' }}>
-                    2. ท่านอนคว่ำ (Prone)
-                  </strong>
-                  <span style={{ background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
-                    อันตราย ห้ามทำเด็ดขาด
-                  </span>
-                  <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#475569', textAlign: 'left', lineHeight: '1.4' }}>
-                    เสี่ยงต่อการขาดอากาศหายใจ ใบหน้าแนบที่นอน และเพิ่มความร้อนในร่างกายสูงเกินไป
-                  </p>
-                </div>
-
-                <div
-                  onClick={() => handleSelectSleepPose('side')}
-                  style={{
-                    padding: '16px',
-                    borderRadius: '14px',
-                    cursor: 'pointer',
-                    border: sleepPose === 'side' ? '2px solid #f59e0b' : '1px solid #e2e8f0',
-                    background: sleepPose === 'side' ? '#fffbeb' : 'white',
-                    transition: 'all 0.2s',
-                    textAlign: 'center'
-                  }}
-                >
-                  <div style={{ fontSize: '24px', marginBottom: '6px' }}>🔄</div>
-                  <strong style={{ fontSize: '15px', color: '#b45309', display: 'block', marginBottom: '6px' }}>
-                    3. ท่านอนตะแคง (Side)
-                  </strong>
-                  <span style={{ background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
-                    ไม่แนะนำ
-                  </span>
-                  <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#475569', textAlign: 'left', lineHeight: '1.4' }}>
-                    ไม่มั่นคง ทารกสามารถพลิกคว่ำหน้าลงไปได้ง่าย เสี่ยงต่อการอุดกั้นทางเดินหายใจ
-                  </p>
-                </div>
-              </div>
-
-              {act1Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act1Feedback.pass ? '#dcfce7' : '#fee2e2', color: act1Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act1Feedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  onClick={() => setActiveTab(1)}
-                  style={{ background: '#0284c7', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ไปตรวจความปลอดภัยในเปลนอน ➜
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 1: ตรวจความปลอดภัยในเปล (Bare is Best) ── */}
-          {activeTab === 1 && (
-            <div>
-              <div style={{ background: '#f0f9ff', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #0284c7' }}>
-                <strong>หลักการ Bare is Best:</strong> เปลนอนของทารกควรมีเพียง "ที่นอนแน่นเรียบและตัวทารก" เท่านั้น สิ่งของนุ่มๆ เช่น หมอน หมอนข้าง ตุ๊กตา หรือผ้านวมหนา ต้องนำออกจากเปลทั้งหมด
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-                {cribItems.filter(i => !i.keep).map(item => {
-                  const isRemoved = item.status === 'removed';
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => toggleCribItem(item.id)}
-                      style={{
-                        padding: '12px 14px',
-                        borderRadius: '10px',
-                        cursor: 'pointer',
-                        border: isRemoved ? '2px solid #16a34a' : '2px solid #dc2626',
-                        background: isRemoved ? '#f0fdf4' : '#fef2f2',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <div>
-                        <strong style={{ fontSize: '13.5px', color: isRemoved ? '#166534' : '#991b1b' }}>{item.name}</strong>
-                        <div style={{ fontSize: '11px', color: isRemoved ? '#15803d' : '#b91c1c', marginTop: '2px' }}>
-                          {isRemoved ? '✓ นำออกจากเปลแล้ว (ปลอดภัย)' : '⚠️ ยังอยู่ในเปล (เสี่ยงอุดกั้นทางเดินหายใจ)'}
-                        </div>
-                      </div>
-                      <button
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          background: isRemoved ? '#16a34a' : '#dc2626',
-                          color: 'white',
-                          fontWeight: 'bold',
-                          fontSize: '11px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {isRemoved ? 'ปลอดภัย' : 'คลิกนำออก'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {act2Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act2Feedback.pass ? '#dcfce7' : '#fee2e2', color: act2Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act2Feedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                  onClick={checkCribSafety}
-                  style={{ background: '#0284c7', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ✓ ตรวจสอบความปลอดภัยของเปลนอน
-                </button>
-                {act2Feedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(2)}
-                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ไปตั้งค่าสภาพแวดล้อมห้องนอน ➜
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 2: สภาพแวดล้อมห้องนอนที่ปลอดภัย ── */}
-          {activeTab === 2 && (
-            <div>
-              <div style={{ background: '#f0f9ff', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #0284c7' }}>
-                <strong>เป้าหมาย:</strong> กำหนดอุณหภูมิห้อง คุณภาพอากาศ และรูปแบบการนอนร่วมห้องที่ปลอดภัย
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-                {/* Temp */}
-                <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong style={{ fontSize: '13.5px', color: '#1e293b' }}>1. อุณหภูมิห้องนอน:</strong>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>อุณหภูมิที่เหมาะสมช่วยให้ทารกหลับสบาย ไม่ร้อนหรือเย็นเกินไป</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {[{ val: 'cold', label: 'หนาวเกินไป (< 22°C)' }, { val: '25', label: 'พอดี (25–26°C)' }, { val: 'hot', label: 'ร้อนจัด (> 28°C)' }].map(opt => (
-                      <button
-                        key={opt.val}
-                        onClick={() => { setEnvFactors(p => ({ ...p, temp: opt.val })); setAct3Feedback(null); }}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          border: envFactors.temp === opt.val ? '2px solid #0284c7' : '1px solid #cbd5e1',
-                          background: envFactors.temp === opt.val ? '#e0f2fe' : 'white',
-                          color: envFactors.temp === opt.val ? '#0369a1' : '#475569',
-                          fontWeight: 'bold',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Smoke */}
-                <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong style={{ fontSize: '13.5px', color: '#1e293b' }}>2. ควันบุหรี่ / มลพิษ:</strong>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>ควันบุหรี่มือสองและมือสามเพิ่มความเสี่ยง SIDS และโรคปอด</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {[{ val: 'no', label: 'ปลอดควันบุหรี่ 100%' }, { val: 'yes', label: 'อนุญาตให้สูบในห้อง' }].map(opt => (
-                      <button
-                        key={opt.val}
-                        onClick={() => { setEnvFactors(p => ({ ...p, smoke: opt.val })); setAct3Feedback(null); }}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          border: envFactors.smoke === opt.val ? (opt.val === 'no' ? '2px solid #16a34a' : '2px solid #dc2626') : '1px solid #cbd5e1',
-                          background: envFactors.smoke === opt.val ? (opt.val === 'no' ? '#dcfce7' : '#fee2e2') : 'white',
-                          color: envFactors.smoke === opt.val ? (opt.val === 'no' ? '#15803d' : '#991b1b') : '#475569',
-                          fontWeight: 'bold',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Room sharing */}
-                <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <strong style={{ fontSize: '13.5px', color: '#1e293b' }}>3. รูปแบบการนอนร่วมห้อง:</strong>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>การนอนห้องเดียวกันแต่แยกเปลนอน (Room-sharing without Bed-sharing)</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {[{ val: 'share_crib', label: 'นอนเปลแยกข้างเตียงแม่' }, { val: 'share_bed', label: 'นอนเตียงเดียวกับพ่อแม่' }].map(opt => (
-                      <button
-                        key={opt.val}
-                        onClick={() => { setEnvFactors(p => ({ ...p, room_share: opt.val })); setAct3Feedback(null); }}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          border: envFactors.room_share === opt.val ? (opt.val === 'share_crib' ? '2px solid #16a34a' : '2px solid #dc2626') : '1px solid #cbd5e1',
-                          background: envFactors.room_share === opt.val ? (opt.val === 'share_crib' ? '#dcfce7' : '#fee2e2') : 'white',
-                          color: envFactors.room_share === opt.val ? (opt.val === 'share_crib' ? '#15803d' : '#991b1b') : '#475569',
-                          fontWeight: 'bold',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {act3Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act3Feedback.pass ? '#dcfce7' : '#fee2e2', color: act3Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act3Feedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                  onClick={checkEnv}
-                  style={{ background: '#0284c7', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ✓ ตรวจสอบสภาพแวดล้อมห้องนอน
-                </button>
-                {act3Feedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(3)}
-                    style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ทำแบบประเมินความรู้ท้ายบท ➜
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 3: แบบประเมินความรู้ประจำห้อง Nursery 204 (ข้อ 13 & 15) ── */}
-          {activeTab === 3 && (
-            <div>
-              {!quizFinished ? (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-                      📋 แบบประเมิน: {currentQ.room}
-                    </span>
-                    <span style={{ fontSize: '13px', color: '#666', fontWeight: 'bold' }}>
-                      ข้อ {quizIndex + 1} / {room4Questions.length} | คะแนนสะสม: {quizScore}
-                    </span>
-                  </div>
-
-                  <h3 style={{ color: '#222', fontSize: '17px', fontWeight: 'bold', lineHeight: '1.45', margin: '0 0 16px 0' }}>
-                    "{currentQ.question}"
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 mt-1">
+                    📝 แบบประเมินเรื่องการนอนหลับที่ปลอดภัยของทารก
                   </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                    <button
-                      disabled={quizShowFeedback}
-                      onClick={() => handleQuizAnswer(true)}
-                      style={{
-                        padding: '14px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: quizShowFeedback && currentQ.answer === true ? '#16a34a' : (quizUserChoice === true ? '#0284c7' : '#d1d5db'),
-                        background: quizShowFeedback && currentQ.answer === true ? '#dcfce7' : (quizUserChoice === true ? '#e0f2fe' : '#f9fafb'),
-                        color: quizShowFeedback && currentQ.answer === true ? '#15803d' : '#1f2937',
-                        cursor: quizShowFeedback ? 'default' : 'pointer'
-                      }}
-                    >
-                      ✓ ถูก (True)
-                    </button>
-                    <button
-                      disabled={quizShowFeedback}
-                      onClick={() => handleQuizAnswer(false)}
-                      style={{
-                        padding: '14px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: quizShowFeedback && currentQ.answer === false ? '#16a34a' : (quizUserChoice === false ? '#0284c7' : '#d1d5db'),
-                        background: quizShowFeedback && currentQ.answer === false ? '#dcfce7' : (quizUserChoice === false ? '#e0f2fe' : '#f9fafb'),
-                        color: quizShowFeedback && currentQ.answer === false ? '#15803d' : '#1f2937',
-                        cursor: quizShowFeedback ? 'default' : 'pointer'
-                      }}
-                    >
-                      ✕ ผิด (False)
-                    </button>
+              {!quizFinished ? (
+                <div>
+                  <div className="text-xs font-bold text-slate-500 mb-1">
+                    คำถามข้อที่ {quizIndex + 1} / {room4Questions.length}
+                  </div>
+                  <div className="text-sm sm:text-base font-extrabold text-slate-900 mb-3 bg-amber-50 p-3.5 rounded-2xl border border-amber-200">
+                    {currentQ.question}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    {[
+                      { val: true, label: '✓ ใช่ / ถูกต้อง' },
+                      { val: false, label: '✕ ไม่ใช่ / ไม่ถูกต้อง' },
+                    ].map((btn) => {
+                      const isSelected = quizUserChoice === btn.val;
+                      return (
+                        <button
+                          key={String(btn.val)}
+                          type="button"
+                          onClick={() => handleQuizAnswer(btn.val)}
+                          className={`p-3 rounded-xl font-black text-xs sm:text-sm border-2 transition cursor-pointer ${
+                            quizShowFeedback
+                              ? btn.val === currentQ.answer
+                                ? 'bg-emerald-600 text-white border-emerald-700'
+                                : isSelected
+                                ? 'bg-rose-600 text-white border-rose-700'
+                                : 'bg-slate-100 text-slate-400 border-slate-200'
+                              : 'bg-white hover:bg-amber-50 text-slate-800 border-amber-300'
+                          }`}
+                        >
+                          {btn.label}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {quizShowFeedback && (
-                    <div style={{
-                      background: quizUserChoice === currentQ.answer ? '#f0fdf4' : '#fffbeb',
-                      border: `1.5px solid ${quizUserChoice === currentQ.answer ? '#86efac' : '#fde68a'}`,
-                      borderRadius: '10px',
-                      padding: '12px',
-                      marginBottom: '10px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '15px', color: quizUserChoice === currentQ.answer ? '#16a34a' : '#d97706' }}>
-                          {quizUserChoice === currentQ.answer ? '🎉 ถูกต้อง! (+1 คะแนน)' : `⚠️ เฉลย: ${currentQ.answerText}`}
-                        </span>
-                        <button
-                          onClick={handleNextQuizQuestion}
-                          style={{
-                            padding: '6px 16px',
-                            background: '#0284c7',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: '13px',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {quizIndex < room4Questions.length - 1 ? 'ข้อถัดไป ➜' : 'สำเร็จบทเรียน 🏆'}
-                        </button>
+                    <div
+                      className={`p-3.5 rounded-xl border text-xs mb-3 ${
+                        quizUserChoice === currentQ.answer
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                          : 'bg-rose-50 border-rose-300 text-rose-950'
+                      }`}
+                    >
+                      <div className="font-black mb-1">
+                        {quizUserChoice === currentQ.answer ? '✓ คำตอบถูกต้องค่ะ!' : '✕ คำตอบยังไม่ถูกต้อง'}
                       </div>
-                      <div style={{ fontSize: '13px', color: '#444', lineHeight: '1.4' }}>
-                        <strong>💡 เหตุผล:</strong> {currentQ.reason}
-                      </div>
+                      <p>{currentQ.explanation}</p>
                     </div>
                   )}
-                </>
+
+                  {quizShowFeedback && (
+                    <button
+                      type="button"
+                      onClick={handleNextQuizQuestion}
+                      className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs sm:text-sm shadow cursor-pointer"
+                    >
+                      {quizIndex < room4Questions.length - 1 ? 'ข้อถัดไป ▶' : 'สรุปผลคะแนน ▶'}
+                    </button>
+                  )}
+                </div>
               ) : (
-                <div style={{ textAlign: 'center', padding: '16px 8px' }}>
-                  <h2 style={{ color: '#2e7d32', fontSize: '24px', margin: '0 0 10px 0' }}>🎉 ผ่านบทเรียนและการประเมินความรู้ Nursery 204 แล้ว!</h2>
-                  <div style={{ fontSize: '16px', color: '#444', marginBottom: '16px' }}>
-                    คะแนนของคุณ: <strong>{quizScore} / {room4Questions.length} คะแนน</strong>
+                <div className="text-center space-y-3 py-2">
+                  <div className="text-3xl">🎉</div>
+                  <div className="text-base font-black text-slate-900">
+                    คุณได้คะแนน {quizScore} / {room4Questions.length} คะแนน
                   </div>
-                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-                    คุณมีความเข้าใจที่ถูกต้องในการจัดสภาพแวดล้อมที่ปลอดภัยสำหรับทารกตามหลัก Safe Sleep สากล
-                  </p>
-                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => { setQuizIndex(0); setQuizUserChoice(null); setQuizShowFeedback(false); setQuizScore(0); setQuizFinished(false); }}
-                      style={{ padding: '8px 18px', fontSize: '14px', fontWeight: 'bold', background: '#f3f4f6', color: '#333', border: '1px solid #ccc', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      ทำแบบประเมินซ้ำ ↻
-                    </button>
-                    <button
-                      onClick={() => setRoom('lobby')}
-                      style={{ padding: '8px 20px', fontSize: '14px', fontWeight: 'bold', background: '#0284c7', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      กลับสู่ล็อบบี้ 🏥
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal(null)}
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs cursor-pointer"
+                  >
+                    เสร็จสิ้น
+                  </button>
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </Html>
+          </div>
+        </Html>
+      )}
 
-      {/* ── GTA Player Controller ── */}
-      <PlayerController initialPosition={[0, 0, 3]} />
+      {/* ── Player Controller ── */}
+      <PlayerController />
     </group>
   );
 }

@@ -1,22 +1,116 @@
 import React, { useMemo } from 'react';
-import { useTexture, Html } from '@react-three/drei';
+import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import WalkableRoomPortal from './WalkableRoomPortal';
 
 /**
- * HospitalRoomShell — Authentic 3D Medical / Nursery Room Architecture with Real PBR Textures
- *
- * Features:
- * - Real hospital floors with authentic textures:
- *     - Mother Ward: Warm Nordic Oak Antibacterial Medical Timber Vinyl with plank seams
- *     - Newborn Nursery: Sterile Homogeneous Seamless Medical Sheet Vinyl with pastel speckles
- *     - Quiz & Conference Hall: High-gloss polished porcelain architectural checker tiles
- *     - Grand Lobby: Luxury Italian Carrara marble & Terrazzo with golden brass inlay seams
- * - Real hospital doors with photorealistic textures:
- *     - Mother Ward: Acoustic timber laminate hospital door with stainless kick plate & frosted safety window
- *     - Newborn Nursery: Clinical cyan-blue powder-coated door with observation window & hygiene pictogram
- *     - Quiz Hall: Soundproof architectural door with panic push bar & stainless steel frame
- * - Stainless steel kick plates, lever handles, recessed ceiling LEDs, and medical bedhead units
+ * Generates a high-resolution, realistic Warm Oak Wood Plank floor texture
+ * matching the client's reference rooms (Ward 103, Ward 104, Nursery 201-204).
+ */
+function useWarmWoodPlankTexture(repeatX = 5, repeatY = 5) {
+  return useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+
+    // Base warm honey-oak tone
+    ctx.fillStyle = '#c89b6e';
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    const rows = 8;
+    const rowH = 1024 / rows;
+    const plankColors = [
+      '#cfa377',
+      '#c49568',
+      '#d5ab80',
+      '#bd8d60',
+      '#cc9f72',
+      '#c7986b',
+      '#d2a679',
+      '#c09164',
+    ];
+
+    for (let r = 0; r < rows; r++) {
+      const y = r * rowH;
+      const offset = (r % 2) * 256 + ((r * 97) % 180);
+      const plankW = 512;
+
+      for (let c = -1; c < 3; c++) {
+        const x = c * plankW + offset;
+        const baseColor = plankColors[(r * 3 + c + 8) % plankColors.length];
+
+        // Plank body gradient
+        const grad = ctx.createLinearGradient(x, y, x + plankW, y + rowH);
+        grad.addColorStop(0, baseColor);
+        grad.addColorStop(0.5, '#d6ac82');
+        grad.addColorStop(1, baseColor);
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, plankW, rowH);
+
+        // Subtle wood grain fibers along plank
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, plankW, rowH);
+        ctx.clip();
+
+        for (let g = 0; g < 28; g++) {
+          const gy = y + (g / 28) * rowH + Math.sin(g * 1.7 + r) * 3;
+          ctx.strokeStyle = g % 3 === 0 ? 'rgba(120, 74, 36, 0.12)' : 'rgba(255, 235, 210, 0.10)';
+          ctx.lineWidth = 1.5 + (g % 2);
+          ctx.beginPath();
+          ctx.moveTo(x, gy);
+          ctx.bezierCurveTo(
+            x + plankW * 0.33,
+            gy + Math.sin(g + r) * 4,
+            x + plankW * 0.66,
+            gy - Math.cos(g + r) * 4,
+            x + plankW,
+            gy
+          );
+          ctx.stroke();
+        }
+
+        // Plank vertical joint line
+        ctx.strokeStyle = 'rgba(92, 54, 24, 0.55)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + rowH);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Plank horizontal seam line with subtle bevel highlight
+      ctx.strokeStyle = 'rgba(88, 50, 22, 0.62)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(1024, y);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 236, 209, 0.25)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, y + 2);
+      ctx.lineTo(1024, y + 2);
+      ctx.stroke();
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(repeatX, repeatY);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    tex.needsUpdate = true;
+    return tex;
+  }, [repeatX, repeatY]);
+}
+
+/**
+ * HospitalRoomShell — Authentic 3D Room Architecture with Warm Wood Plank Floor & Cozy Interior Styling
  */
 export default function HospitalRoomShell({
   theme = 'mother', // 'mother' | 'newborn' | 'quiz' | 'lobby'
@@ -24,36 +118,52 @@ export default function HospitalRoomShell({
   depth = 18,
   height = 8,
   doorWall = 'left',
-  windowWall = 'back',
+  windowWall = 'none', // default 'none' so custom room windows & posters never collide
+  cozyMode = true, // Warm residential-hospital interior (wood floor, wood baseboards, warm cove ceiling)
   roomTitle = 'ห้องบริบาลมารดาและทารก',
-  roomNumber = 'Room 101'
+  roomNumber = 'Room 101',
 }) {
+  const isWarmWoodRoom = cozyMode && (theme === 'mother' || theme === 'newborn');
+
   // Theme color palette
   const colors = useMemo(() => {
+    if (isWarmWoodRoom) {
+      return {
+        wallUpper: '#faf4ed',
+        wallLower: '#f3e9dc',
+        bumperRail: '#c89b6e',
+        baseboard: '#9c6b3f',
+        door: '#e6ccb2',
+        lightTint: '#fff3e0',
+      };
+    }
     switch (theme) {
       case 'newborn':
         return {
           wallUpper: '#f0f9ff',
           wallLower: '#e0f2fe',
           bumperRail: '#94a3b8',
+          baseboard: '#94a3b8',
           door: '#e0f2fe',
-          lightTint: '#e0f7fa'
+          lightTint: '#e0f7fa',
         };
       case 'quiz':
         return {
           wallUpper: '#faf5ff',
           wallLower: '#f3e8ff',
           bumperRail: '#94a3b8',
+          baseboard: '#94a3b8',
           door: '#f3e8ff',
-          lightTint: '#ede7f6'
+          lightTint: '#ede7f6',
         };
       case 'lobby':
         return {
-          wallUpper: '#ffffff',
-          wallLower: '#f1f5f9',
-          bumperRail: '#94a3b8',
+          wallUpper: '#fffcf7',
+          wallLower: '#f5efe6',
+          bumperRail: '#d4a373',
+          baseboard: '#b07d4b',
           door: '#e2e8f0',
-          lightTint: '#f0f9ff'
+          lightTint: '#fffbeb',
         };
       case 'mother':
       default:
@@ -61,41 +171,33 @@ export default function HospitalRoomShell({
           wallUpper: '#fff5f7',
           wallLower: '#fce7f3',
           bumperRail: '#94a3b8',
+          baseboard: '#94a3b8',
           door: '#fce7f3',
-          lightTint: '#fff0f5'
+          lightTint: '#fff0f5',
         };
     }
-  }, [theme]);
+  }, [theme, isWarmWoodRoom]);
 
-  // Load authentic floor and door textures matching each specific room
+  // Procedural high-res oak wood plank texture for Mother & Newborn rooms
+  const warmWoodPlankTex = useWarmWoodPlankTexture(
+    Math.max(4, Math.round(width / 3.2)),
+    Math.max(4, Math.round(depth / 3.2))
+  );
+
+  // Load floor texture for Lobby / Quiz fallback
   const floorTextureUrl =
-    theme === 'mother'
-      ? '/textures/floor_vinyl_mother.jpg'
-      : theme === 'newborn'
-      ? '/textures/floor_vinyl_nursery.jpg'
-      : theme === 'quiz'
+    theme === 'quiz'
       ? '/textures/floor_hall_quiz.jpg'
-      : '/textures/floor_marble_lobby.jpg';
-
-  const doorTextureUrl =
-    theme === 'mother'
-      ? '/textures/door_mother.jpg'
-      : theme === 'newborn'
-      ? '/textures/door_nursery.jpg'
-      : theme === 'quiz'
-      ? '/textures/door_quiz.jpg'
-      : '/textures/door_mother.jpg';
-
-  const metalTextureUrl = '/textures/door_frame_metal.jpg';
+      : theme === 'lobby'
+      ? '/textures/floor_marble_lobby.jpg'
+      : '/textures/floor_vinyl_mother.jpg';
 
   const textures = useTexture({
     floor: floorTextureUrl,
-    door: doorTextureUrl,
-    metal: metalTextureUrl,
   });
 
-  // Configure repetitive tiling for floor textures
   const configuredFloor = useMemo(() => {
+    if (isWarmWoodRoom) return warmWoodPlankTex;
     if (!textures.floor) return null;
     const cloned = textures.floor.clone();
     cloned.wrapS = THREE.RepeatWrapping;
@@ -105,111 +207,124 @@ export default function HospitalRoomShell({
     cloned.colorSpace = THREE.SRGBColorSpace;
     cloned.needsUpdate = true;
     return cloned;
-  }, [textures.floor, theme]);
-
-  const configuredDoor = useMemo(() => {
-    if (!textures.door) return null;
-    const cloned = textures.door.clone();
-    cloned.colorSpace = THREE.SRGBColorSpace;
-    cloned.needsUpdate = true;
-    return cloned;
-  }, [textures.door]);
-
-  const configuredMetal = useMemo(() => {
-    if (!textures.metal) return null;
-    const cloned = textures.metal.clone();
-    cloned.wrapS = THREE.RepeatWrapping;
-    cloned.wrapT = THREE.RepeatWrapping;
-    cloned.repeat.set(1, 4);
-    cloned.colorSpace = THREE.SRGBColorSpace;
-    cloned.needsUpdate = true;
-    return cloned;
-  }, [textures.metal]);
+  }, [isWarmWoodRoom, warmWoodPlankTex, textures.floor, theme]);
 
   const halfW = width / 2;
   const halfD = depth / 2;
 
   return (
     <group>
-      {/* ── 1. Authentic Medical Floor with Real Hospital Texture ── */}
+      {/* ── 1. Floor (Warm Oak Wood Planks for Mother & Newborn Rooms, Luxury Terrazzo/Marble for Lobby) ── */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial
           map={configuredFloor}
-          roughness={theme === 'lobby' ? 0.2 : theme === 'quiz' ? 0.22 : 0.45}
-          metalness={theme === 'lobby' ? 0.12 : 0.02}
+          roughness={theme === 'lobby' ? 0.22 : isWarmWoodRoom ? 0.42 : 0.45}
+          metalness={theme === 'lobby' ? 0.1 : 0.03}
         />
       </mesh>
 
-      {/* ── 2. Back Wall Architecture ── */}
+      {/* ── 2. Back (North) Wall Architecture ── */}
       <group position={[0, height / 2, -halfD]}>
-        {/* Upper Wall */}
-        <mesh position={[0, 1.2, 0]} receiveShadow>
-          <boxGeometry args={[width, height - 2.4, 0.4]} />
-          <meshStandardMaterial color={colors.wallUpper} roughness={0.6} />
+        <mesh position={[0, 0, 0]} receiveShadow>
+          <boxGeometry args={[width, height, 0.4]} />
+          <meshStandardMaterial color={colors.wallUpper} roughness={0.65} />
         </mesh>
-        {/* Lower Sanitary Wainscot Wall */}
-        <mesh position={[0, -(height / 2) + 1.2, 0]} receiveShadow>
-          <boxGeometry args={[width, 2.4, 0.44]} />
-          <meshStandardMaterial color={colors.wallLower} roughness={0.3} />
+        {!isWarmWoodRoom && (
+          <>
+            <mesh position={[0, -(height / 2) + 1.2, 0.01]} receiveShadow>
+              <boxGeometry args={[width, 2.4, 0.42]} />
+              <meshStandardMaterial color={colors.wallLower} roughness={0.35} />
+            </mesh>
+            <mesh position={[0, -(height / 2) + 2.4, 0.05]} castShadow>
+              <boxGeometry args={[width, 0.16, 0.06]} />
+              <meshStandardMaterial color={colors.bumperRail} roughness={0.3} />
+            </mesh>
+          </>
+        )}
+        {/* Warm Oak Baseboard Trim */}
+        <mesh position={[0, -(height / 2) + 0.09, 0.05]}>
+          <boxGeometry args={[width, 0.18, 0.06]} />
+          <meshStandardMaterial color={colors.baseboard} roughness={0.45} />
         </mesh>
-        {/* Hospital Bumper Crash Rail */}
-        <mesh position={[0, -(height / 2) + 2.4, 0.05]} castShadow>
-          <boxGeometry args={[width, 0.22, 0.08]} />
-          <meshStandardMaterial color={colors.bumperRail} roughness={0.2} metalness={0.1} />
+        {/* Warm Ceiling Crown Molding & LED Cove Strip */}
+        <mesh position={[0, (height / 2) - 0.1, 0.06]}>
+          <boxGeometry args={[width, 0.18, 0.12]} />
+          <meshStandardMaterial color="#e6ccb2" roughness={0.5} />
         </mesh>
-        {/* Sanitary Baseboard Trim */}
-        <mesh position={[0, -(height / 2) + 0.1, 0.05]}>
-          <boxGeometry args={[width, 0.2, 0.06]} />
-          <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
+        <mesh position={[0, (height / 2) - 0.2, 0.08]}>
+          <boxGeometry args={[width - 0.4, 0.04, 0.04]} />
+          <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.65} />
         </mesh>
       </group>
 
-      {/* ── 3. Left Wall Architecture ── */}
+      {/* ── 3. Left (West) Wall Architecture ── */}
       <group position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]}>
-        <mesh position={[0, 1.2, 0]} receiveShadow>
-          <boxGeometry args={[depth, height - 2.4, 0.4]} />
-          <meshStandardMaterial color={colors.wallUpper} roughness={0.6} />
+        <mesh position={[0, 0, 0]} receiveShadow>
+          <boxGeometry args={[depth, height, 0.4]} />
+          <meshStandardMaterial color={colors.wallUpper} roughness={0.65} />
         </mesh>
-        <mesh position={[0, -(height / 2) + 1.2, 0]} receiveShadow>
-          <boxGeometry args={[depth, 2.4, 0.44]} />
-          <meshStandardMaterial color={colors.wallLower} roughness={0.3} />
+        {!isWarmWoodRoom && (
+          <>
+            <mesh position={[0, -(height / 2) + 1.2, 0.01]} receiveShadow>
+              <boxGeometry args={[depth, 2.4, 0.42]} />
+              <meshStandardMaterial color={colors.wallLower} roughness={0.35} />
+            </mesh>
+            <mesh position={[0, -(height / 2) + 2.4, 0.05]} castShadow>
+              <boxGeometry args={[depth, 0.16, 0.06]} />
+              <meshStandardMaterial color={colors.bumperRail} roughness={0.3} />
+            </mesh>
+          </>
+        )}
+        <mesh position={[0, -(height / 2) + 0.09, 0.05]}>
+          <boxGeometry args={[depth, 0.18, 0.06]} />
+          <meshStandardMaterial color={colors.baseboard} roughness={0.45} />
         </mesh>
-        <mesh position={[0, -(height / 2) + 2.4, 0.05]} castShadow>
-          <boxGeometry args={[depth, 0.22, 0.08]} />
-          <meshStandardMaterial color={colors.bumperRail} roughness={0.2} metalness={0.1} />
+        <mesh position={[0, (height / 2) - 0.1, 0.06]}>
+          <boxGeometry args={[depth, 0.18, 0.12]} />
+          <meshStandardMaterial color="#e6ccb2" roughness={0.5} />
         </mesh>
-        <mesh position={[0, -(height / 2) + 0.1, 0.05]}>
-          <boxGeometry args={[depth, 0.2, 0.06]} />
-          <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
+        <mesh position={[0, (height / 2) - 0.2, 0.08]}>
+          <boxGeometry args={[depth - 0.4, 0.04, 0.04]} />
+          <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.65} />
         </mesh>
       </group>
 
-      {/* ── 4. Right Wall Architecture ── */}
+      {/* ── 4. Right (East) Wall Architecture ── */}
       <group position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh position={[0, 1.2, 0]} receiveShadow>
-          <boxGeometry args={[depth, height - 2.4, 0.4]} />
-          <meshStandardMaterial color={colors.wallUpper} roughness={0.6} />
+        <mesh position={[0, 0, 0]} receiveShadow>
+          <boxGeometry args={[depth, height, 0.4]} />
+          <meshStandardMaterial color={colors.wallUpper} roughness={0.65} />
         </mesh>
-        <mesh position={[0, -(height / 2) + 1.2, 0]} receiveShadow>
-          <boxGeometry args={[depth, 2.4, 0.44]} />
-          <meshStandardMaterial color={colors.wallLower} roughness={0.3} />
+        {!isWarmWoodRoom && (
+          <>
+            <mesh position={[0, -(height / 2) + 1.2, 0.01]} receiveShadow>
+              <boxGeometry args={[depth, 2.4, 0.42]} />
+              <meshStandardMaterial color={colors.wallLower} roughness={0.35} />
+            </mesh>
+            <mesh position={[0, -(height / 2) + 2.4, 0.05]} castShadow>
+              <boxGeometry args={[depth, 0.16, 0.06]} />
+              <meshStandardMaterial color={colors.bumperRail} roughness={0.3} />
+            </mesh>
+          </>
+        )}
+        <mesh position={[0, -(height / 2) + 0.09, 0.05]}>
+          <boxGeometry args={[depth, 0.18, 0.06]} />
+          <meshStandardMaterial color={colors.baseboard} roughness={0.45} />
         </mesh>
-        <mesh position={[0, -(height / 2) + 2.4, 0.05]} castShadow>
-          <boxGeometry args={[depth, 0.22, 0.08]} />
-          <meshStandardMaterial color={colors.bumperRail} roughness={0.2} metalness={0.1} />
+        <mesh position={[0, (height / 2) - 0.1, 0.06]}>
+          <boxGeometry args={[depth, 0.18, 0.12]} />
+          <meshStandardMaterial color="#e6ccb2" roughness={0.5} />
         </mesh>
-        <mesh position={[0, -(height / 2) + 0.1, 0.05]}>
-          <boxGeometry args={[depth, 0.2, 0.06]} />
-          <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
+        <mesh position={[0, (height / 2) - 0.2, 0.08]}>
+          <boxGeometry args={[depth - 0.4, 0.04, 0.04]} />
+          <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.65} />
         </mesh>
       </group>
 
-      {/* ── 4b. Front / South Wall Architecture (Floor-to-Ceiling Panoramic Glass & Outdoor Garden) ── */}
+      {/* ── 4b. Front / South Wall Architecture ── */}
       {theme === 'lobby' ? (
-        // Grand Hospital Entrance Facade (Floor-to-Ceiling Medical Glass & Outside Scenery View)
         <group position={[0, height / 2, halfD]}>
-          {/* Top Architectural Soffit */}
           <mesh position={[0, (height / 2) - 0.5, 0]} receiveShadow>
             <boxGeometry args={[width, 1.0, 0.4]} />
             <meshStandardMaterial color={colors.wallUpper} roughness={0.4} />
@@ -229,59 +344,48 @@ export default function HospitalRoomShell({
             />
           </mesh>
 
-          {/* Stainless Steel Vertical Mullions */}
+          {/* Dark Architectural Window Mullions (Matching heic2.png bottom photo) */}
           {[-8, -5.5, -3, 0, 3, 5.5, 8].map((mx) => (
             <mesh key={`mullion_${mx}`} position={[mx, -0.5, 0.04]} castShadow>
-              <boxGeometry args={[0.10, height - 1.0, 0.14]} />
-              <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.2} />
+              <boxGeometry args={[0.09, height - 1.0, 0.14]} />
+              <meshStandardMaterial color="#334155" metalness={0.7} roughness={0.25} />
             </mesh>
           ))}
 
-          {/* Horizontal Transom Glass Rails */}
           {[-1.2, 1.4].map((ry) => (
             <mesh key={`rail_${ry}`} position={[0, ry, 0.04]}>
               <boxGeometry args={[width, 0.08, 0.12]} />
-              <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.2} />
+              <meshStandardMaterial color="#334155" metalness={0.7} roughness={0.25} />
             </mesh>
           ))}
 
-          {/* Bottom Kickplate Threshold */}
           <mesh position={[0, -(height / 2) + 0.15, 0.05]}>
             <boxGeometry args={[width, 0.3, 0.22]} />
-            <meshStandardMaterial color="#475569" metalness={0.6} roughness={0.3} />
+            <meshStandardMaterial color="#334155" metalness={0.6} roughness={0.3} />
           </mesh>
 
-          {/* ══════════════════════════════════════════════════════════════════════════
-              🌳 OUTDOOR SCENERY & HOSPITAL GARDEN VIEW (มองเห็นภาพวิวภายนอกผ่านกระจก)
-              ══════════════════════════════════════════════════════════════════════════ */}
-          {/* Outdoor Ground / Garden Lawn Terrace */}
+          {/* Outdoor Garden Scenery beyond the glass */}
           <group position={[0, -(height / 2), 5.0]} rotation={[-Math.PI / 2, 0, 0]}>
-            {/* Lush Lawn */}
             <mesh position={[0, 0, -0.05]}>
               <planeGeometry args={[width * 1.5, 14]} />
               <meshStandardMaterial color="#4ade80" roughness={0.9} />
             </mesh>
-            {/* Paved Walkway Pathway */}
             <mesh position={[0, 2, -0.03]}>
               <planeGeometry args={[width * 1.2, 4]} />
               <meshStandardMaterial color="#e2e8f0" roughness={0.5} />
             </mesh>
           </group>
 
-          {/* Garden Planters & Outdoor Trees outside the window */}
           {[-7.5, -3.5, 3.5, 7.5].map((tx) => (
             <group key={`out_tree_${tx}`} position={[tx, -(height / 2), 3.2]}>
-              {/* Planter Box */}
               <mesh position={[0, 0.45, 0]} castShadow>
                 <boxGeometry args={[1.4, 0.9, 1.4]} />
                 <meshStandardMaterial color="#ffffff" roughness={0.3} />
               </mesh>
-              {/* Tree Trunk */}
               <mesh position={[0, 1.8, 0]}>
                 <cylinderGeometry args={[0.12, 0.16, 2.2, 12]} />
                 <meshStandardMaterial color="#78350f" roughness={0.8} />
               </mesh>
-              {/* Lush Tree Foliage */}
               <mesh position={[0, 3.2, 0]}>
                 <sphereGeometry args={[1.2, 16, 16]} />
                 <meshStandardMaterial color="#22c55e" roughness={0.6} />
@@ -293,48 +397,35 @@ export default function HospitalRoomShell({
             </group>
           ))}
 
-          {/* Outdoor Sunny Sky Landscape Backdrop */}
           <mesh position={[0, 2.5, 8.5]}>
             <planeGeometry args={[width * 1.8, height * 1.6]} />
             <meshBasicMaterial color="#7dd3fc" />
           </mesh>
-          {/* Distant Soft Mountain / City Skyline Horizon */}
-          <mesh position={[0, 0.8, 8.4]}>
-            <planeGeometry args={[width * 1.8, 4.2]} />
-            <meshBasicMaterial color="#38bdf8" transparent opacity={0.65} />
-          </mesh>
         </group>
       ) : (
-        // Enclosed clinical interior front wall
         <group position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]}>
-          <mesh position={[0, 1.2, 0]} receiveShadow>
-            <boxGeometry args={[width, height - 2.4, 0.4]} />
-            <meshStandardMaterial color={colors.wallUpper} roughness={0.6} />
+          <mesh position={[0, 0, 0]} receiveShadow>
+            <boxGeometry args={[width, height, 0.4]} />
+            <meshStandardMaterial color={colors.wallUpper} roughness={0.65} />
           </mesh>
-          <mesh position={[0, -(height / 2) + 1.2, 0]} receiveShadow>
-            <boxGeometry args={[width, 2.4, 0.44]} />
-            <meshStandardMaterial color={colors.wallLower} roughness={0.3} />
+          <mesh position={[0, -(height / 2) + 0.09, 0.05]}>
+            <boxGeometry args={[width, 0.18, 0.06]} />
+            <meshStandardMaterial color={colors.baseboard} roughness={0.45} />
           </mesh>
-          <mesh position={[0, -(height / 2) + 2.4, 0.05]} castShadow>
-            <boxGeometry args={[width, 0.22, 0.08]} />
-            <meshStandardMaterial color={colors.bumperRail} roughness={0.2} metalness={0.1} />
-          </mesh>
-          <mesh position={[0, -(height / 2) + 0.1, 0.05]}>
-            <boxGeometry args={[width, 0.2, 0.06]} />
-            <meshStandardMaterial color="#94a3b8" roughness={0.4} metalness={0.2} />
+          <mesh position={[0, (height / 2) - 0.1, 0.06]}>
+            <boxGeometry args={[width, 0.18, 0.12]} />
+            <meshStandardMaterial color="#e6ccb2" roughness={0.5} />
           </mesh>
         </group>
       )}
 
-      {/* ── 5. Panoramic Hospital Window (Daylight & Outdoor View) ── */}
+      {/* ── 5. Optional Panoramic Hospital Window (Only when windowWall === 'back') ── */}
       {windowWall === 'back' && (
         <group position={[0, 4.4, -halfD + 0.2]}>
-          {/* Outer Window Frame */}
           <mesh castShadow>
             <boxGeometry args={[7.2, 3.4, 0.15]} />
             <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.1} />
           </mesh>
-          {/* Inner Recessed Glass Opening */}
           <mesh position={[0, 0, 0.02]}>
             <boxGeometry args={[6.8, 3.0, 0.05]} />
             <meshStandardMaterial
@@ -344,37 +435,10 @@ export default function HospitalRoomShell({
               roughness={0.1}
             />
           </mesh>
-          {/* Outdoor Horizon / Blue Sky Landscape Backplate */}
-          <mesh position={[0, 0, -0.05]}>
-            <planeGeometry args={[6.7, 2.9]} />
-            <meshBasicMaterial color="#b3e5fc" />
-          </mesh>
-          {/* Window Mullions / Cross Grids */}
-          <mesh position={[0, 0, 0.05]} castShadow>
-            <boxGeometry args={[0.08, 3.0, 0.08]} />
-            <meshStandardMaterial color="#cfd8dc" metalness={0.3} />
-          </mesh>
-          <mesh position={[-2.2, 0, 0.05]} castShadow>
-            <boxGeometry args={[0.08, 3.0, 0.08]} />
-            <meshStandardMaterial color="#cfd8dc" metalness={0.3} />
-          </mesh>
-          <mesh position={[2.2, 0, 0.05]} castShadow>
-            <boxGeometry args={[0.08, 3.0, 0.08]} />
-            <meshStandardMaterial color="#cfd8dc" metalness={0.3} />
-          </mesh>
-          <mesh position={[0, 0, 0.05]} castShadow>
-            <boxGeometry args={[6.8, 0.08, 0.08]} />
-            <meshStandardMaterial color="#cfd8dc" metalness={0.3} />
-          </mesh>
-          {/* Window Sill */}
-          <mesh position={[0, -1.6, 0.2]} castShadow receiveShadow>
-            <boxGeometry args={[7.6, 0.16, 0.45]} />
-            <meshStandardMaterial color="#f1f5f9" roughness={0.3} />
-          </mesh>
         </group>
       )}
 
-      {/* ── 6. Authentic Walk-in Hospital Exit Doorway (Returns to Lobby) ── */}
+      {/* ── 6. Walk-in Exit Doorway (Returns to Lobby) ── */}
       {doorWall === 'left' && theme !== 'lobby' && (
         <WalkableRoomPortal
           roomKey="lobby"
@@ -388,89 +452,31 @@ export default function HospitalRoomShell({
         />
       )}
 
-      {/* ── 7. Hospital Ceiling with Recessed LED Light Fixtures ── */}
+      {/* ── 7. Warm Recessed Ceiling with Soft Downlights ── */}
       <group position={[0, height, 0]}>
-        {/* Ceiling Plane */}
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <planeGeometry args={[width, depth]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.8} />
+          <meshStandardMaterial color="#fdfbf7" roughness={0.8} />
         </mesh>
-        {/* 4 Recessed 2x4 LED Hospital Light Panels */}
         {[-width * 0.25, width * 0.25].map((x) =>
           [-depth * 0.25, depth * 0.25].map((z) => (
             <group key={`${x}-${z}`} position={[x, -0.05, z]}>
-              {/* Fixture Rim */}
               <mesh rotation={[Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[2.4, 1.4]} />
-                <meshStandardMaterial color="#cbd5e1" metalness={0.5} roughness={0.3} />
+                <circleGeometry args={[0.45, 24]} />
+                <meshStandardMaterial color="#e6ccb2" roughness={0.4} />
               </mesh>
-              {/* Diffuser Panel Emitting Soft White Hospital Light */}
               <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-                <planeGeometry args={[2.2, 1.2]} />
+                <circleGeometry args={[0.36, 24]} />
                 <meshStandardMaterial
-                  color="#ffffff"
-                  emissive="#ffffff"
-                  emissiveIntensity={1.0}
+                  color="#fffbeb"
+                  emissive="#fde68a"
+                  emissiveIntensity={0.95}
                   roughness={0.1}
                 />
               </mesh>
             </group>
           ))
         )}
-      </group>
-
-      {/* ── 8. Clinical Wall Accessories ── */}
-      {/* Wall Medical Bedhead Unit (Oxygen, Air, Vacuum, Nurse Call) */}
-      <group position={[-4, 2.2, -halfD + 0.25]}>
-        <mesh castShadow>
-          <boxGeometry args={[2.4, 0.35, 0.08]} />
-          <meshStandardMaterial color="#e2e8f0" metalness={0.3} roughness={0.4} />
-        </mesh>
-        {/* Medical Oxygen Outlet (Green) */}
-        <mesh position={[-0.8, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.04, 16]} />
-          <meshStandardMaterial color="#22c55e" metalness={0.5} />
-        </mesh>
-        {/* Medical Air Outlet (Yellow) */}
-        <mesh position={[-0.5, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.04, 16]} />
-          <meshStandardMaterial color="#eab308" metalness={0.5} />
-        </mesh>
-        {/* Medical Suction/Vacuum Outlet (White) */}
-        <mesh position={[-0.2, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.04, 16]} />
-          <meshStandardMaterial color="#f8fafc" metalness={0.5} />
-        </mesh>
-        {/* Nurse Emergency Call Button (Red) */}
-        <mesh position={[0.6, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.05, 0.05, 0.04, 16]} />
-          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.4} />
-        </mesh>
-      </group>
-
-      {/* Wall Hand Hygiene Sanitizer Dispenser */}
-      <group position={[-halfW + 0.25, 2.0, halfD - 5.0]}>
-        <mesh castShadow>
-          <boxGeometry args={[0.08, 0.45, 0.22]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.2} />
-        </mesh>
-        {/* Sanitizer level window */}
-        <mesh position={[0.042, -0.05, 0]}>
-          <boxGeometry args={[0.01, 0.2, 0.08]} />
-          <meshStandardMaterial color="#06b6d4" emissive="#06b6d4" emissiveIntensity={0.2} />
-        </mesh>
-      </group>
-
-      {/* Wall Digital Hospital Clock */}
-      <group position={[halfW - 0.25, 5.0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh castShadow>
-          <boxGeometry args={[1.2, 0.5, 0.06]} />
-          <meshStandardMaterial color="#1e293b" />
-        </mesh>
-        <mesh position={[0, 0, 0.035]}>
-          <planeGeometry args={[1.0, 0.35]} />
-          <meshBasicMaterial color="#0284c7" />
-        </mesh>
       </group>
     </group>
   );

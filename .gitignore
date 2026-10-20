@@ -8,8 +8,10 @@ extracted_docs/
 *.py
 ._*
 รายละเอียด/
+ปรับแก้/
 แบบทดสอบ/
 *.docx
+*.pdf
 test_and_capture.mjs
 *.mjs
 android-app/
@@ -26,3 +28,7 @@ public/models/peasant_girl.glb
 public/models/claire.glb
 public/models/brunette.glb
 public/models/amy.glb
+public/models/josh.glb
+public/models/AnimationLibrary.glb
+public/models/wawa_character.glb
+public/models/animations/Running.fbx

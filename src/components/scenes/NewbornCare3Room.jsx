@@ -2,815 +2,936 @@ import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
-import Washbasin from '../furniture/Washbasin';
-import MedicalCart from '../furniture/MedicalCart';
 import BabyAvatar from '../avatars/BabyAvatar';
+import MotherAvatar from '../avatars/MotherAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
+import InteractiveSeat from '../furniture/InteractiveSeat';
 import RealPlant from '../decorations/RealPlant';
-import MedicineCabinet from '../furniture/MedicineCabinet';
-import DrawerCabinet from '../furniture/DrawerCabinet';
-import CleaningBottle from '../decorations/CleaningBottle';
-import DoctorDesk from '../furniture/DoctorDesk';
-import { getQuestionsByRoomKey } from '../../data/quizData';
+import { WoodFramedBacklitPanel } from '../furniture/CozyRoomFurniture';
 
+/**
+ * NewbornCare3Room — ห้องที่ 3: การดูแลสายสะดือทารกแรกเกิด (Nursery 203)
+ *
+ * Updated 100% per "โน้ตห้อง ทารก 3-4.pdf" (nb34_p1..nb34_p5):
+ * - Room layout matching /images/rev/nb3_room_ref.jpg:
+ *   Inside the room: Nurse + Baby (in diaper on examination bed) + Mother's chair beside the bed.
+ * - Stainless steel dressing trolley beside the bed with 4 clickable equipment items
+ *   ("อุปกรณ์สามารถคลิก ว่านี่คืออะไร"):
+ *     1. สำลีก้อน (Sterile Cotton Balls)
+ *     2. ไม้พันสำลี / สำลีก้าน (Sterile Cotton Swabs)
+ *     3. Alcohol 70% (ขวดแอลกอฮอล์ 70%)
+ *     4. ถังขยะติดเชื้อสีแดง (Red Biohazard Waste Bin)
+ * - 6 Large, Clear Educational Wall Posters flush around the room walls (North, West, East)
+ *   with Previous/Next gallery navigation:
+ *     ภาพที่ 1: /images/rev/nb3_poster1_equip.jpg (อุปกรณ์เช็ดสะดือ)
+ *     ภาพที่ 2: /images/rev/nb3_poster2_fresh.jpg (วิธีการเช็ดสะดือทารก - สะดือสด)
+ *     ภาพที่ 3: /images/rev/nb3_poster3_dry.jpg (วิธีการเช็ดสะดือทารก - สะดือเริ่มแห้ง)
+ *     ภาพที่ 4: /images/rev/nb3_poster4_timeline.jpg (สายสะดือมักหลุดเมื่อไหร่ ?)
+ *     ภาพที่ 5: /images/rev/nb3_poster5_warning.jpg (ข้อควรสังเกต สัญญาณผิดปกติของสะดือทารก)
+ *     ภาพที่ 6: /images/rev/nb3_poster6_diaper.jpg (การใส่แพมเพิสที่ถูกต้อง)
+ * - Mother's Ordering Test Activity ("บททดสอบ ของคุณแม่: ให้เรียงภาพขั้นตอน การเช็ดสะดือ เมื่อเริ่มแห้ง"):
+ *   Uses /images/rev/nb3_card1_base.jpg, /images/rev/nb3_card2_shaft.jpg, /images/rev/nb3_card3_tip.jpg
+ *   and reveals official answer sheet /images/rev/nb3_quiz_answer.jpg.
+ */
 export default function NewbornCare3Room() {
-  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby, openLightbox } = useStore();
-  const [activeTab, setActiveTab] = useState(0); // 0: ขั้นตอนการเช็ดสะดือ, 1: สะดือเปียกน้ำทำอย่างไร, 2: การพับผ้าอ้อม, 3: สังเกตการติดเชื้อ, 4: แบบประเมิน
+  const {
+    completeModule,
+    learningProgress,
+    setShowSuccessModal,
+    openLightbox,
+  } = useStore();
 
-  // ── กิจกรรม 1: ขั้นตอนการเช็ดทำความสะอาดสายสะดือ (เรียงลำดับ 4 ขั้นตอน) ──
-  const [cordSteps, setCordSteps] = useState([
-    { id: 2, text: 'ใช้สำลีก้อน/ไม้พันสำลีสะอาดชุบ 70% แอลกอฮอล์ หรือน้ำต้มสุกสะอาด', correctOrder: 2 },
-    { id: 4, text: 'ปล่อยให้สายสะดือแห้งเองตามธรรมชาติ ห้ามโรยแป้ง ยาผง หรือสมุนไพร', correctOrder: 4 },
-    { id: 1, text: 'ล้างมือให้สะอาดด้วยสบู่และน้ำไหล แล้วเช็ดมือให้แห้ง', correctOrder: 1 },
-    { id: 3, text: 'เช็ดวนรอบโคนสะดือขึ้นไปสู่ปลายสะดือ (เช็ดรอบเดียวแล้วทิ้ง ห้ามเช็ดย้อนกลับ)', correctOrder: 3 },
-  ]);
-  const [act1Feedback, setAct1Feedback] = useState(null);
+  // ── Active Modal State (Only shown when clicked) ──
+  const [activeModal, setActiveModal] = useState(null); // 'equipment' | 'orderingQuiz' | 'nurseDialog'
+  const [selectedEquipId, setSelectedEquipId] = useState(1);
 
-  const moveCordStep = (index, dir) => {
-    const newIdx = index + dir;
-    if (newIdx < 0 || newIdx >= cordSteps.length) return;
-    const updated = [...cordSteps];
-    const temp = updated[index];
-    updated[index] = updated[newIdx];
-    updated[newIdx] = temp;
-    setCordSteps(updated);
-    setAct1Feedback(null);
+  // ── Ordering Quiz State ("ให้เรียงภาพขั้นตอน การเช็ดสะดือ เมื่อเริ่มแห้ง") ──
+  // Scrambled order per nb34_p4.jpg: [Card 2 (shaft), Card 3 (tip), Card 1 (base)]
+  const [selectedSequence, setSelectedSequence] = useState([]); // Array of card IDs clicked in order (correct: [1, 2, 3])
+  const [quizFeedback, setQuizFeedback] = useState(null);
+  const [missionCompleted, setMissionCompleted] = useState(Boolean(learningProgress?.newbornCare3));
+
+  // ── 6 Large Wall Posters around the Room ──
+  const wallPosters = [
+    {
+      src: '/images/rev/nb3_poster1_equip.jpg',
+      title: 'ภาพที่ 1: อุปกรณ์เช็ดสะดือทารก',
+      caption: 'สำลีก้อน, ไม้พันสำลี, Alcohol 70%, และถังขยะติดเชื้อสีแดง',
+      category: 'การดูแลสายสะดือ (Nursery 203)',
+      clinicalDetails: [
+        '1. สำลีก้อนปลอดเชื้อ (Sterile Cotton Balls)',
+        '2. ไม้พันสำลีปลอดเชื้อ (Sterile Cotton Swabs)',
+        '3. แอลกอฮอล์ 70% (70% Alcohol) สำหรับฆ่าเชื้อและช่วยให้สะดือแห้งเร็ว',
+        '4. ถังขยะติดเชื้อสีแดง สำหรับทิ้งสำลีและไม้พันสำลีที่ใช้เช็ดสะดือแล้ว',
+      ],
+    },
+    {
+      src: '/images/rev/nb3_poster2_fresh.jpg',
+      title: 'ภาพที่ 2: วิธีการเช็ดสะดือทารก (สะดือสด) โดยใช้ไม้พันสำลีชุบ 70% Alcohol',
+      caption: '1. เช็ดที่รอยตัดของสะดือ -> 2. เช็ดที่สายสะดือจากบนลงล่างไปที่โคนสะดือ -> 3. เช็ดบริเวณรอบโคนสะดือ',
+      category: 'การดูแลสายสะดือ (Nursery 203)',
+      clinicalDetails: [
+        '1. เช็ดที่รอยตัดของสะดือ (ปลายสายสะดือ)',
+        '2. เช็ดที่สายสะดือจากบนลงล่างไปที่โคนสะดือ',
+        '3. เช็ดบริเวณรอบโคนสะดือให้สะอาด',
+      ],
+    },
+    {
+      src: '/images/rev/nb3_poster3_dry.jpg',
+      title: 'ภาพที่ 3: วิธีการเช็ดสะดือทารก (สะดือเริ่มแห้ง) ใช้ไม้พันสำลีชุบ 70% Alcohol',
+      caption: '1. เช็ดที่รอบโคนสะดือ -> 2. เช็ดที่สายสะดือจากโคนสะดือไปถึงปลายสะดือ -> 3. เช็ดเฉพาะที่ปลายสะดือ (บริเวณรอยตัด)',
+      category: 'การดูแลสายสะดือ (Nursery 203)',
+      clinicalDetails: [
+        '1. เช็ดที่รอบโคนสะดือ (ดึงผิวหนังหน้าท้องเบาๆ ให้เห็นโคนสะดือชัดเจน)',
+        '2. เช็ดที่สายสะดือจากโคนสะดือไปถึงปลายสะดือ',
+        '3. เช็ดเฉพาะที่ปลายสะดือ (บริเวณรอยตัด)',
+      ],
+    },
+    {
+      src: '/images/rev/nb3_poster4_timeline.jpg',
+      title: 'ภาพที่ 4: สายสะดือมักหลุดเมื่อไหร่ ?',
+      caption: 'ระยะการเปลี่ยนแปลงของสายสะดือทารกแรกเกิดจนหลุดแห้งสนิท (ประมาณ 7–14 วันหลังคลอด)',
+      category: 'การดูแลสายสะดือ (Nursery 203)',
+      clinicalDetails: [
+        '• แรกเกิด – 3 วัน: สายสะดือยังสด สีขาวอมเหลือง',
+        '• 4 – 7 วัน: สายสะดือเริ่มแห้งและเปลี่ยนเป็นสีน้ำตาลคล้ำถึงดำ',
+        '• 7 – 14 วัน: สายสะดือแห้งและหลุดออกเองตามธรรมชาติ (ห้ามดึงออกเอง)',
+      ],
+    },
+    {
+      src: '/images/rev/nb3_poster5_warning.jpg',
+      title: 'ภาพที่ 5: ข้อควรสังเกต สัญญาณผิดปกติของสะดือทารก',
+      caption: 'รอบสะดือแดง, บวม, ร้อน, มีหนอง, มีกลิ่นเหม็น หรือมีเลือดออกผิดปกติ ต้องรีบพบแพทย์',
+      category: 'การดูแลสายสะดือ (Nursery 203)',
+      clinicalDetails: [
+        '1. ผิวหนังรอบโคนสะดือแดง บวม หรือร้อน',
+        '2. มีหนองสีเหลือง/เขียวซึมออกมาจากสะดือ',
+        '3. มีกลิ่นเหม็นผิดปกติ หรือมีเลือดสดออกไม่หยุด',
+        '4. หากพบอาการเหล่านี้ ต้องรีบพาทารกไปพบแพทย์ทันที',
+      ],
+    },
+    {
+      src: '/images/rev/nb3_poster6_diaper.jpg',
+      title: 'ภาพที่ 6: การใส่แพมเพิส (ผ้าอ้อมสำเร็จรูป) ที่ถูกต้อง',
+      caption: '✓ พับขอบผ้าอ้อมลงใต้สะดือ ไม่อับชื้น vs ✕ ปิดทับสะดือ ทำให้สะดืออับชื้นติดเชื้อ',
+      category: 'การดูแลสายสะดือ (Nursery 203)',
+      clinicalDetails: [
+        '✓ วิธีที่ถูกต้อง: พับขอบผ้าอ้อมลงให้อยู่ต่ำกว่าสายสะดือเสมอ เพื่อให้อากาศถ่ายเทและไม่เสียดสีสะดือ',
+        '✕ วิธีที่ไม่ถูกต้อง: ดึงผ้าอ้อมขึ้นมาปิดทับสะดือ ทำให้สะดืออับชื้นและเสี่ยงติดเชื้อจากปัสสาวะ',
+      ],
+    },
+  ];
+
+  const openWallPoster = (index) => {
+    openLightbox({
+      ...wallPosters[index],
+      items: wallPosters,
+      currentIndex: index,
+    });
   };
 
-  const checkCordSteps = () => {
-    const isCorrect = cordSteps.every((item, idx) => item.correctOrder === idx + 1);
-    if (isCorrect) {
-      setAct1Feedback({
-        pass: true,
-        msg: '✓ ถูกต้องทั้งหมด! การเช็ดสะดือต้องล้างมือก่อนเสมอ ชุบแอลกอฮอล์ 70% เช็ดจากโคนสะดือวนขึ้นสู่ปลายสะดือรอบเดียวทิ้ง และปล่อยให้แห้ง ห้ามโรยแป้ง'
-      });
-    } else {
-      setAct1Feedback({
-        pass: false,
-        msg: '✕ ลำดับยังไม่ถูกต้อง: ต้องเริ่มจากล้างมือให้สะอาด ชุบสำลี เช็ดจากโคนขึ้นสู่ปลาย และปล่อยให้แห้ง'
-      });
-    }
-  };
+  // ── 4 Clickable Dressing Cart Equipment Items ──
+  const equipmentItems = [
+    {
+      id: 1,
+      name: '1. สำลีก้อนปลอดเชื้อ (Sterile Cotton Balls)',
+      usage: 'ใช้ซับบริเวณสะดือให้แห้งหลังอาบน้ำ หรือชุบ 70% Alcohol เช็ดทำความสะอาดบริเวณรอบสะดือ (ใช้ก้อนเดียวเช็ดแล้วทิ้ง ไม่เช็ดซ้ำ)',
+      icon: '⚪',
+    },
+    {
+      id: 2,
+      name: '2. ไม้พันสำลีปลอดเชื้อ (Sterile Cotton Swabs)',
+      usage: 'ใช้ชุบ 70% Alcohol เช็ดทำความสะอาดร่องลึกบริเวณโคนสะดือ สายสะดือ และรอยตัดของสะดือได้อย่างทั่วถึงและแม่นยำ',
+      icon: '🥢',
+    },
+    {
+      id: 3,
+      name: '3. แอลกอฮอล์ 70% (70% Ethyl Alcohol)',
+      usage: 'น้ำยาฆ่าเชื้อมาตรฐานสำหรับเช็ดทำความสะอาดสายสะดือทารก ช่วยฆ่าเชื้อโรคและทำให้สายสะดือแห้งและหลุดตามธรรมชาติ',
+      icon: '🧴',
+    },
+    {
+      id: 4,
+      name: '4. ถังขยะติดเชื้อสีแดง (Red Biohazard Bin)',
+      usage: 'สำหรับทิ้งไม้พันสำลีและสำลีก้อนที่ใช้เช็ดสะดือทารกแล้ว เพื่อป้องกันการแพร่กระจายเชื้อโรค',
+      icon: '🗑️',
+    },
+  ];
 
-  // ── สถานการณ์จำลองพิเศษ: "สะดือเปียกน้ำ ต้องทำอย่างไร ?" ──
-  const [wetCordAnswer, setWetCordAnswer] = useState(null);
-  const [wetCordFeedback, setWetCordFeedback] = useState(null);
+  // ── 3 Scrambled Cards for the Ordering Test (Per nb34_p4.jpg) ──
+  const scrambledCards = [
+    {
+      correctStep: 2,
+      img: '/images/rev/nb3_card2_shaft.jpg',
+      label: 'เช็ดที่สายสะดือจากโคนสะดือไปถึงปลายสะดือ',
+    },
+    {
+      correctStep: 3,
+      img: '/images/rev/nb3_card3_tip.jpg',
+      label: 'เช็ดเฉพาะที่ปลายสะดือ (บริเวณรอยตัด)',
+    },
+    {
+      correctStep: 1,
+      img: '/images/rev/nb3_card1_base.jpg',
+      label: 'เช็ดที่รอบโคนสะดือ',
+    },
+  ];
 
-  const handleSelectWetCord = (ans) => {
-    setWetCordAnswer(ans);
-    if (ans === 'dry_and_alcohol') {
-      setWetCordFeedback({
-        pass: true,
-        title: '✓ ถูกต้องยอดเยี่ยมตามหลักสุขอนามัยทางการพยาบาล!',
-        msg: 'เมื่อสะดือเปียกน้ำ ต้องรีบใช้สำลีสะอาดซับให้แห้งสนิททันที แล้วใช้สำลีชุบ 70% แอลกอฮอล์เช็ดรอบโคนสะดือวนขึ้นสู่ปลายอีกครั้ง ปล่อยให้แห้งตามธรรมชาติ ห้ามโรยแป้ง ยาผง หรือสมุนไพรใดๆ เด็ดขาด เพื่อป้องกันการสะสมของเชื้อแบคทีเรีย'
-      });
-    } else if (ans === 'powder') {
-      setWetCordFeedback({
-        pass: false,
-        title: '✕ ห้ามโรยแป้งเด็ดขาด!',
-        msg: 'แป้งเด็กจะจับตัวเป็นก้อนหมักหมมความชื้นไว้ใต้โคนสะดือ กลายเป็นแหล่งเพาะเชื้อแบคทีเรียชั้นดี และทำให้สะดืออักเสบติดเชื้อรุนแรงได้'
-      });
-    } else if (ans === 'blow_dry') {
-      setWetCordFeedback({
-        pass: false,
-        title: '✕ ไม่ควรใช้ไดร์เป่าผม!',
-        msg: 'ลมร้อนจากไดร์เป่าผมอาจลวกผิวหนังทารกที่บอบบาง และกระแสลมอาจพัดพาฝุ่นละอองเชื้อโรคเข้าสู่แผลสะดือได้'
-      });
-    } else {
-      setWetCordFeedback({
-        pass: false,
-        title: '✕ ไม่ถูกต้อง!',
-        msg: 'การปล่อยทิ้งไว้ให้สะดือชื้นและใส่ผ้าอ้อมทับ จะทำให้เกิดภาวะอับชื้น เป็นสาเหตุหลักของการติดเชื้อที่สายสะดือ (Omphalitis)'
-      });
-    }
-  };
-
-  // ── กิจกรรม 2: เทคนิคการใส่ผ้าอ้อมและการพับขอบ ──
-  const [diaperFold, setDiaperFold] = useState(null); // 'below' | 'above'
-  const [act2Feedback, setAct2Feedback] = useState(null);
-
-  const handleSelectFold = (fold) => {
-    setDiaperFold(fold);
-    if (fold === 'below') {
-      setAct2Feedback({
-        pass: true,
-        msg: '✓ ถูกต้องยอดเยี่ยม! การพับขอบผ้าอ้อมให้อยู่ "ต่ำกว่าสายสะดือ" ช่วยให้อากาศถ่ายเท สะดือแห้งเร็ว และป้องกันไม่ให้ปัสสาวะหรืออุจจาระเปรอะเปื้อนสะดือ'
-      });
-    } else {
-      setAct2Feedback({
-        pass: false,
-        msg: '✕ ไม่ถูกต้อง: การดึงผ้าอ้อมคลุมทับสายสะดือจะทำให้สะดืออับชื้น และเสี่ยงต่อการถูกน้ำปัสสาวะเปรอะเปื้อนจนติดเชื้อรุนแรง'
-      });
-    }
-  };
-
-  // ── กิจกรรม 3: สังเกตสัญญาณอันตรายสะดือติดเชื้อ (Omphalitis) ──
-  const [infectionSigns, setInfectionSigns] = useState([
-    { id: 's1', text: 'โคนสายสะดือบวม แดง หรือมีรอยแดงลามมาที่ผิวหนังหน้าท้อง', correct: true },
-    { id: 's2', text: 'มีหนองสีเหลือง/เขียว หรือมีกลิ่นเหม็นเน่ารุนแรง', correct: true },
-    { id: 's3', text: 'มีเลือดสดซึมออกจากโคนสะดือไม่หยุด', correct: true },
-    { id: 's4', text: 'ทารกมีไข้ ซึม ไม่ยอมดูดนม หรือร้องกวนเมื่อสัมผัสสะดือ', correct: true },
-    { id: 's5', text: 'สายสะดือแห้งเป็นสีดำคล้ำและค่อยๆ หลุดเองใน 7–14 วัน โดยไม่มีกลิ่น', correct: false },
-  ]);
-  const [selectedSigns, setSelectedSigns] = useState([]);
-  const [act3Feedback, setAct3Feedback] = useState(null);
-
-  const toggleSign = (id) => {
-    setSelectedSigns(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-    setAct3Feedback(null);
-  };
-
-  const checkSigns = () => {
-    const hasNormal = selectedSigns.includes('s5');
-    const dangerCount = selectedSigns.filter(id => id !== 's5').length;
-
-    if (hasNormal) {
-      setAct3Feedback({ pass: false, msg: '✕ ข้อ "สะดือแห้งดำคล้ำและหลุดเองใน 7–14 วัน" เป็นกระบวนการปกติ ไม่ใช่การติดเชื้อ' });
-    } else if (dangerCount === 4) {
-      setAct3Feedback({
-        pass: true,
-        msg: '✓ ถูกต้องครบถ้วน! ทั้ง 4 อาการ (บวมแดง, หนอง/กลิ่นเหม็น, เลือดซึมไม่หยุด, มีไข้ซึม) เป็นสัญญาณสะดืออักเสบติดเชื้อ ต้องรีบพาไปพบแพทย์ทันที'
-      });
-    } else {
-      setAct3Feedback({ pass: false, msg: '✕ กรุณาเลือกสัญญาณอันตรายของการติดเชื้อให้ครบทั้ง 4 ข้อ' });
-    }
-  };
-
-  // ── แบบประเมินความรู้ท้ายห้อง (ข้อ 12 & 19) ──
-  const room3Questions = getQuestionsByRoomKey('newbornCare3');
-  const [quizIndex, setQuizIndex] = useState(0);
-  const [quizUserChoice, setQuizUserChoice] = useState(null);
-  const [quizShowFeedback, setQuizShowFeedback] = useState(false);
-  const [quizScore, setQuizScore] = useState(0);
-  const [quizFinished, setQuizFinished] = useState(false);
-
-  const currentQ = room3Questions[quizIndex] || room3Questions[0];
-
-  const handleQuizAnswer = (choice) => {
-    if (quizShowFeedback) return;
-    setQuizUserChoice(choice);
-    setQuizShowFeedback(true);
-    if (choice === currentQ.answer) {
-      setQuizScore(prev => prev + 1);
-    }
-  };
-
-  const handleNextQuizQuestion = () => {
-    setQuizUserChoice(null);
-    setQuizShowFeedback(false);
-    if (quizIndex < room3Questions.length - 1) {
-      setQuizIndex(prev => prev + 1);
-    } else {
-      setQuizFinished(true);
-      completeModule('newbornCare3');
-      setShowSuccessModal(
-        true,
-        `ยินดีด้วย! คุณผ่านบทเรียนและการประเมินความรู้ห้อง Nursery 203 แล้ว (ได้ ${quizScore + (quizUserChoice === currentQ.answer ? 1 : 0)}/${room3Questions.length} คะแนน)`
-      );
-    }
+  const handleToggleCardStep = (correctStep) => {
+    setQuizFeedback(null);
+    setSelectedSequence((prev) => {
+      if (prev.includes(correctStep)) {
+        return prev.filter((id) => id !== correctStep);
+      }
+      if (prev.length >= 3) return prev;
+      const next = [...prev, correctStep];
+      if (next.length === 3) {
+        const isCorrect = next[0] === 1 && next[1] === 2 && next[2] === 3;
+        if (isCorrect) {
+          setQuizFeedback({
+            pass: true,
+            title: '✓ ถูกต้องยอดเยี่ยม! เรียงลำดับการเช็ดสะดือเมื่อเริ่มแห้งได้ถูกต้องครบทั้ง 3 ขั้นตอน',
+            msg: 'ขั้นตอนที่ 1: เช็ดที่รอบโคนสะดือ -> ขั้นตอนที่ 2: เช็ดที่สายสะดือจากโคนสะดือไปถึงปลายสะดือ -> ขั้นตอนที่ 3: เช็ดเฉพาะที่ปลายสะดือ (บริเวณรอยตัด)',
+          });
+          setMissionCompleted(true);
+          completeModule('newbornCare3');
+        } else {
+          setQuizFeedback({
+            pass: false,
+            title: '✕ ลำดับยังไม่ถูกต้อง กรุณาลองเรียงใหม่อีกครั้ง',
+            msg: 'คำแนะนำสำหรับสะดือเริ่มแห้ง: เริ่มจาก (1) เช็ดที่รอบโคนสะดือ -> (2) เช็ดที่สายสะดือจากโคนไปถึงปลายสะดือ -> (3) เช็ดเฉพาะที่ปลายสะดือ (บริเวณรอยตัด)',
+          });
+        }
+      }
+      return next;
+    });
   };
 
   return (
     <group>
-      {/* ── Realistic 3D Hospital Room Architecture ── */}
+      {/* ── Room Architecture (Warm Oak Wood Plank Floor) ── */}
       <HospitalRoomShell
-        theme="mother"
-        roomTitle="ห้องบริบาลทารก 3: การดูแลสายสะดือทารกแรกเกิด (ภาพจำลอง)"
-        roomNumber="Cord Care Nursery 203"
+        theme="newborn"
+        cozyMode={true}
+        width={14}
+        depth={14}
+        height={5.2}
+        roomTitle="ห้องที่ 3: การดูแลสายสะดือทารกแรกเกิด (Umbilical Cord Care Room)"
+        roomNumber="Nursery 203"
       />
 
-      {/* ── Wall Poster 1 on North Wall: การดูแลสายสะดือและการพับผ้าอ้อม ── */}
-      <group position={[-3.4, 3.2, -7.8]}>
-        <mesh
-          castShadow
-          className="cursor-pointer"
-          onClick={() => openLightbox({
-            src: '/references/room2/img_009.png',
-            title: 'การดูแลสายสะดือทารกแรกเกิดและการพับผ้าอ้อม',
-            caption: 'เช็ดวนรอบโคนสะดือสู่ปลาย ปล่อยให้แห้ง และพับขอบผ้าอ้อมใต้สะดือ',
-            category: 'การดูแลสายสะดือ (Nursery 203)',
-            clinicalDetails: [
-              '1. เช็ดสายสะดือด้วยสำลีชุบ 70% แอลกอฮอล์ จากโคนสะดือวนขึ้นสู่ปลายสะดือ',
-              '2. เช็ดรอบเดียวแล้วทิ้ง ห้ามเช็ดย้อนกลับไปมาเด็ดขาด',
-              '3. ปล่อยให้แห้งเองตามธรรมชาติ ห้ามโรยแป้ง ยาผง หรือสมุนไพรใดๆ',
-              '4. พับขอบผ้าอ้อมลงให้อยู่ใต้สายสะดือเสมอ เพื่อป้องกันการหมักหมมปัสสาวะและการเสียดสี'
-            ]
-          })}
-        >
-          <boxGeometry args={[2.0, 1.4, 0.04]} />
-          <meshStandardMaterial color="#fffbeb" roughness={0.3} />
-        </mesh>
-        <mesh position={[0, 0, 0.025]}>
-          <boxGeometry args={[2.08, 1.48, 0.02]} />
-          <meshStandardMaterial color="#d97706" roughness={0.3} />
-        </mesh>
-        <Html position={[0, 0, 0.05]} center transform scale={0.22}>
-          <div
-            onClick={() => openLightbox({
-              src: '/references/room2/img_009.png',
-              title: 'การดูแลสายสะดือทารกแรกเกิดและการพับผ้าอ้อม',
-              caption: 'เช็ดวนรอบโคนสะดือสู่ปลาย ปล่อยให้แห้ง และพับขอบผ้าอ้อมใต้สะดือ',
-              category: 'การดูแลสายสะดือ (Nursery 203)',
-              clinicalDetails: [
-                '1. เช็ดสายสะดือด้วยสำลีชุบ 70% แอลกอฮอล์ จากโคนสะดือวนขึ้นสู่ปลายสะดือ',
-                '2. เช็ดรอบเดียวแล้วทิ้ง ห้ามเช็ดย้อนกลับไปมาเด็ดขาด',
-                '3. ปล่อยให้แห้งเองตามธรรมชาติ ห้ามโรยแป้ง ยาผง หรือสมุนไพรใดๆ',
-                '4. พับขอบผ้าอ้อมลงให้อยู่ใต้สายสะดือเสมอ เพื่อป้องกันการหมักหมมปัสสาวะและการเสียดสี'
-              ]
-            })}
-            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-amber-500 shadow-xl hover:scale-105 transition overflow-hidden"
-            style={{ width: '360px' }}
-          >
-            <img
-              src="/references/room2/img_009.png"
-              alt="การดูแลสายสะดือ"
-              style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '6px' }}
-            />
-            <div className="text-center py-1 bg-amber-50 rounded mt-1">
-              <span className="text-[11px] font-bold text-amber-900">🩹 การดูแลสายสะดือ & ผ้าอ้อม (คลิกดูภาพขยาย)</span>
-            </div>
-          </div>
-        </Html>
-      </group>
-
-      {/* ── Wall Poster 2 on North Wall: เทคนิคการเช็ดสะดือ (โคนสู่ปลาย) ── */}
-      <group position={[3.4, 3.2, -7.8]}>
-        <mesh
-          castShadow
-          className="cursor-pointer"
-          onClick={() => openLightbox({
-            src: '/references/zone1_2/img_001.png',
-            title: 'เทคนิคการเช็ดทำความสะอาดสายสะดืออย่างถูกวิธี',
-            caption: 'การใช้ 70% แอลกอฮอล์ เช็ดรอบโคนสะดือวนขึ้นสู่ปลาย',
-            category: 'การดูแลสายสะดือ (Nursery 203)',
-            clinicalDetails: [
-              '1. ล้างมือให้สะอาดก่อนสัมผัสสะดือทารกทุกครั้ง',
-              '2. ใช้สำลีชุบ 70% แอลกอฮอล์พอหมาด เช็ดรอบโคนสะดือให้สะอาด',
-              '3. วนขึ้นสู่ปลายสายสะดือ ทิ้งสำลีก้อนเดิมทันที',
-              '4. ห้ามโรยแป้งฝุ่นรอบสะดือเด็ดขาด เพราะทำให้สะดือเปียกชื้นและอักเสบ'
-            ]
-          })}
-        >
-          <boxGeometry args={[2.0, 1.4, 0.04]} />
-          <meshStandardMaterial color="#fffbeb" roughness={0.3} />
-        </mesh>
-        <mesh position={[0, 0, 0.025]}>
-          <boxGeometry args={[2.08, 1.48, 0.02]} />
-          <meshStandardMaterial color="#b45309" roughness={0.3} />
-        </mesh>
-        <Html position={[0, 0, 0.05]} center transform scale={0.22}>
-          <div
-            onClick={() => openLightbox({
-              src: '/references/zone1_2/img_001.png',
-              title: 'เทคนิคการเช็ดทำความสะอาดสายสะดืออย่างถูกวิธี',
-              caption: 'การใช้ 70% แอลกอฮอล์ เช็ดรอบโคนสะดือวนขึ้นสู่ปลาย',
-              category: 'การดูแลสายสะดือ (Nursery 203)',
-              clinicalDetails: [
-                '1. ล้างมือให้สะอาดก่อนสัมผัสสะดือทารกทุกครั้ง',
-                '2. ใช้สำลีชุบ 70% แอลกอฮอล์พอหมาด เช็ดรอบโคนสะดือให้สะอาด',
-                '3. วนขึ้นสู่ปลายสายสะดือ ทิ้งสำลีก้อนเดิมทันที',
-                '4. ห้ามโรยแป้งฝุ่นรอบสะดือเด็ดขาด เพราะทำให้สะดือเปียกชื้นและอักเสบ'
-              ]
-            })}
-            className="cursor-pointer select-none bg-white p-1 rounded-lg border-2 border-amber-600 shadow-xl hover:scale-105 transition overflow-hidden"
-            style={{ width: '360px' }}
-          >
-            <img
-              src="/references/zone1_2/img_001.png"
-              alt="เทคนิคเช็ดสะดือ"
-              style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '6px' }}
-            />
-            <div className="text-center py-1 bg-amber-50 rounded mt-1">
-              <span className="text-[11px] font-bold text-amber-900">✨ เทคนิคเช็ดสะดือโคนสู่ปลาย (คลิกดูภาพขยาย)</span>
-            </div>
-          </div>
-        </Html>
-      </group>
-
-      {/* ── REAL 3D ASSETS ── */}
-      <RealPlant type="potted" position={[7.2, 0, -7.2]} scale={1.1} />
-      <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
-      <MedicineCabinet position={[7.8, 0, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.9} withMedicalBox={true} />
-
-      {/* Cord Care Station Table with Baby (Shifted Left for unobstructed HUD view) */}
-      <group position={[-5.2, 0, -3.2]}>
-        <DrawerCabinet position={[0, 0, 0]} scale={0.9} />
-        {/* Contoured Changing / Cord Care Pad */}
-        <mesh position={[0, 1.72, 0.05]} receiveShadow castShadow>
-          <boxGeometry args={[1.1, 0.08, 0.55]} />
-          <meshStandardMaterial color="#bae6fd" roughness={0.3} />
-        </mesh>
-        <CleaningBottle position={[-0.45, 1.76, 0.15]} scale={0.7} />
-
-        {/* Baby lying on back on changing table */}
-        {!isHoldingBaby && (
-          <BabyAvatar
-            pose="sleeping"
-            position={[0, 1.76, 0.05]}
-            scale={0.92}
-            withBlanket={true}
-          />
-        )}
-        <Html position={[0, 1.25, 0]} center distanceFactor={24}>
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setHoldingBaby(!isHoldingBaby);
-            }}
-            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1.5 transition transform hover:scale-105 active:scale-95 whitespace-nowrap"
-            style={{
-              background: isHoldingBaby ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #d97706, #b45309)',
-              border: '2px solid white'
-            }}
-          >
-            <span>{isHoldingBaby ? '🧸 วางลงเบาะ' : '👶 ตรวจสะดือ (คลิกอุ้ม)'}</span>
-          </div>
-        </Html>
-      </group>
-
-      {/* Sterile Supplies Cart */}
-      <group position={[-6.8, 0, -3.2]}>
-        <MedicalCart position={[0, 0, 0]} scale={1.05} />
-      </group>
-
-      {/* Doctor Consultation Desk & Quiz Kiosk */}
-      <group position={[4.5, 0, -4.5]} rotation={[0, -Math.PI / 4, 0]}>
-        <DoctorDesk position={[0, 0, 0]} scale={0.9} />
-      </group>
-
       {/* ══════════════════════════════════════════════════════════════════════════
-          🔗 INTERACTIVE LEARNING HUD (Nursery 203: Cord Care)
+          TOP-RIGHT TRANSLUCENT MISSION HUD
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html position={[0, 1.85, -7.8]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.98)',
-          padding: '24px',
-          borderRadius: '24px',
-          width: '880px',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
-          border: '3px solid #f59e0b',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          color: '#333'
-        }}>
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fef3c7', paddingBottom: '12px', marginBottom: '16px' }}>
-            <div>
-              <span style={{ background: '#d97706', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
-                NURSERY 203: การดูแลสายสะดือทารกแรกเกิด (ภาพจำลอง)
-              </span>
-              <h2 style={{ margin: '6px 0 0 0', color: '#b45309', fontSize: '22px' }}>
-                {activeTab === 0 && 'ขั้นตอนการเช็ดทำความสะอาดสายสะดือ'}
-                {activeTab === 1 && 'สถานการณ์จำลอง: สะดือเปียกน้ำ ต้องทำอย่างไร ?'}
-                {activeTab === 2 && 'การใส่ผ้าอ้อม: พับขอบต่ำกว่าสายสะดือ'}
-                {activeTab === 3 && 'การสังเกตอาการผิดปกติและสะดือติดเชื้อ'}
-                {activeTab === 4 && 'แบบประเมินความรู้ประจำห้อง Nursery 203 (ข้อ 12 & 19)'}
-              </h2>
-            </div>
+      <Html fullscreen style={{ pointerEvents: 'none' }}>
+        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/85 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-amber-200/90 text-slate-800">
+          <div className="flex items-center justify-between border-b border-amber-200/70 pb-1.5 mb-2">
+            <span className="text-xs font-extrabold text-amber-900 tracking-wide flex items-center gap-1.5">
+              🩹 ภารกิจห้องดูแลสายสะดือ (Nursery 203)
+            </span>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              missionCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+            }`}>
+              {missionCompleted ? 'สำเร็จแล้ว ✓' : 'กำลังปฏิบัติ'}
+            </span>
+          </div>
+
+          <div className="space-y-1.5 text-xs">
             <button
-              onClick={() => setRoom('lobby')}
-              style={{ background: '#f3f4f6', border: '1px solid #ccc', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+              onClick={() => setActiveModal('equipment')}
+              className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-amber-400 text-left font-semibold flex items-center justify-between transition"
             >
-              ⬅ กลับสู่ล็อบบี้
+              <span>🔍 1. คลิกดูอุปกรณ์เช็ดสะดือบนรถเข็น</span>
+              <span className="text-amber-600 font-bold">ดูอุปกรณ์ ▶</span>
+            </button>
+
+            <button
+              onClick={() => openWallPoster(0)}
+              className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-amber-400 text-left font-semibold flex items-center justify-between transition"
+            >
+              <span>🖼️ 2. ศึกษาโปสเตอร์ความรู้รอบห้อง (6 ภาพ)</span>
+              <span className="text-amber-600 font-bold">เปิดดู ▶</span>
+            </button>
+
+            <button
+              onClick={() => setActiveModal('orderingQuiz')}
+              className={`w-full p-2.5 rounded-xl border text-left font-bold flex items-center gap-2 transition ${
+                missionCompleted
+                  ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
+                  : 'bg-amber-50 border-amber-400 text-amber-950 hover:bg-amber-100'
+              }`}
+            >
+              <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                missionCompleted ? 'bg-emerald-600 text-white' : 'border-2 border-amber-600 text-transparent'
+              }`}>
+                ✓
+              </div>
+              <span className="flex-1">
+                3. บททดสอบคุณแม่: เรียงภาพขั้นตอนการเช็ดสะดือเมื่อเริ่มแห้ง
+              </span>
             </button>
           </div>
+        </div>
+      </Html>
 
-          {/* Navigation Tabs (5 Tabs) */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
-            {['1. ขั้นตอนเช็ดสะดือ', '2. สะดือเปียกน้ำทำอย่างไร?', '3. การพับขอบผ้าอ้อม', '4. สังเกตการติดเชื้อ', '5. แบบประเมิน (Quiz)'].map((label, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveTab(idx)}
-                style={{
-                  flex: 1,
-                  padding: '10px 4px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: activeTab === idx ? '#d97706' : '#fef3c7',
-                  color: activeTab === idx ? 'white' : '#92400e',
-                  fontWeight: 'bold',
-                  fontSize: '12.5px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {label}
-              </button>
-            ))}
+      {/* ══════════════════════════════════════════════════════════════════════════
+          1. 6 LARGE EDUCATIONAL WALL POSTERS AROUND THE ROOM (With Oak Backlit Frames)
+             - North Wall (z = -6.84): Posters 1, 2, 3
+             - West Wall (x = -6.84): Posters 4, 5
+             - East Wall (x = 6.84): Poster 6
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* Poster 1 (North Wall Left): อุปกรณ์เช็ดสะดือ */}
+      <WoodFramedBacklitPanel position={[-4.2, 2.75, -6.84]} width={2.55} height={1.8}>
+        <Html position={[0, 0, 0]} center transform scale={0.24}>
+          <div
+            onClick={() => openWallPoster(0)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-amber-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '430px' }}
+          >
+            <img
+              src="/images/rev/nb3_poster1_equip.jpg"
+              alt="อุปกรณ์เช็ดสะดือ"
+              style={{ width: '100%', height: '250px', objectFit: 'contain', backgroundColor: '#fffbeb', borderRadius: '8px' }}
+            />
           </div>
+        </Html>
+      </WoodFramedBacklitPanel>
 
-          {/* ── TAB 0: ขั้นตอนการเช็ดสะดือ (เรียงลำดับ) ── */}
-          {activeTab === 0 && (
-            <div>
-              <div style={{ background: '#fffbeb', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #f59e0b' }}>
-                <strong>เป้าหมาย:</strong> ฝึกเรียงลำดับขั้นตอนการเช็ดสายสะดือที่ถูกต้องตามหลักสุขอนามัย (ใช้ปุ่มขึ้น/ลงเพื่อเรียงลำดับ 1 ถึง 4)
-              </div>
+      {/* Poster 2 (North Wall Center): วิธีการเช็ดสะดือทารก (สะดือสด) */}
+      <WoodFramedBacklitPanel position={[0, 2.75, -6.84]} width={2.75} height={1.8}>
+        <Html position={[0, 0, 0]} center transform scale={0.24}>
+          <div
+            onClick={() => openWallPoster(1)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-sky-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '460px' }}
+          >
+            <img
+              src="/images/rev/nb3_poster2_fresh.jpg"
+              alt="วิธีการเช็ดสะดือสด"
+              style={{ width: '100%', height: '250px', objectFit: 'contain', backgroundColor: '#f0f9ff', borderRadius: '8px' }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                {cordSteps.map((step, idx) => (
-                  <div key={step.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ background: '#d97706', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px' }}>
-                        {idx + 1}
-                      </span>
-                      <span style={{ fontSize: '13.5px', fontWeight: '500' }}>{step.text}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <button
-                        disabled={idx === 0}
-                        onClick={() => moveCordStep(idx, -1)}
-                        style={{ padding: '4px 10px', background: idx === 0 ? '#f1f5f9' : '#fef3c7', color: idx === 0 ? '#cbd5e1' : '#b45309', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: idx === 0 ? 'default' : 'pointer' }}
-                      >
-                        ▲ ขึ้น
-                      </button>
-                      <button
-                        disabled={idx === cordSteps.length - 1}
-                        onClick={() => moveCordStep(idx, 1)}
-                        style={{ padding: '4px 10px', background: idx === cordSteps.length - 1 ? '#f1f5f9' : '#fef3c7', color: idx === cordSteps.length - 1 ? '#cbd5e1' : '#b45309', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: idx === cordSteps.length - 1 ? 'default' : 'pointer' }}
-                      >
-                        ▼ ลง
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+      {/* Poster 3 (North Wall Right): วิธีการเช็ดสะดือทารก (สะดือเริ่มแห้ง) */}
+      <WoodFramedBacklitPanel position={[4.2, 2.75, -6.84]} width={2.75} height={1.8}>
+        <Html position={[0, 0, 0]} center transform scale={0.24}>
+          <div
+            onClick={() => openWallPoster(2)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-teal-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '460px' }}
+          >
+            <img
+              src="/images/rev/nb3_poster3_dry.jpg"
+              alt="วิธีการเช็ดสะดือเริ่มแห้ง"
+              style={{ width: '100%', height: '250px', objectFit: 'contain', backgroundColor: '#f0fdfa', borderRadius: '8px' }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
 
-              {act1Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act1Feedback.pass ? '#dcfce7' : '#fee2e2', color: act1Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act1Feedback.msg}
-                </div>
-              )}
+      {/* Poster 4 (West Wall North): สายสะดือมักหลุดเมื่อไหร่ ? */}
+      <WoodFramedBacklitPanel position={[-6.84, 2.75, -3.1]} rotation={[0, Math.PI / 2, 0]} width={2.85} height={1.85}>
+        <Html position={[0, 0, 0]} center transform scale={0.24}>
+          <div
+            onClick={() => openWallPoster(3)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-amber-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '480px' }}
+          >
+            <img
+              src="/images/rev/nb3_poster4_timeline.jpg"
+              alt="สายสะดือมักหลุดเมื่อไหร่"
+              style={{ width: '100%', height: '260px', objectFit: 'contain', backgroundColor: '#fffbeb', borderRadius: '8px' }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Poster 5 (West Wall South): ข้อควรสังเกต สัญญาณผิดปกติของสะดือทารก */}
+      <WoodFramedBacklitPanel position={[-6.84, 2.75, 2.9]} rotation={[0, Math.PI / 2, 0]} width={2.85} height={1.85}>
+        <Html position={[0, 0, 0]} center transform scale={0.24}>
+          <div
+            onClick={() => openWallPoster(4)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-rose-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '480px' }}
+          >
+            <img
+              src="/images/rev/nb3_poster5_warning.jpg"
+              alt="สัญญาณผิดปกติของสะดือทารก"
+              style={{ width: '100%', height: '260px', objectFit: 'contain', backgroundColor: '#fff1f2', borderRadius: '8px' }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* Poster 6 (East Wall Center): การใส่แพมเพิสที่ถูกต้อง */}
+      <WoodFramedBacklitPanel position={[6.84, 2.75, -0.5]} rotation={[0, -Math.PI / 2, 0]} width={3.05} height={1.9}>
+        <Html position={[0, 0, 0]} center transform scale={0.24}>
+          <div
+            onClick={() => openWallPoster(5)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-xl border-2 border-emerald-500 shadow-lg hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '500px' }}
+          >
+            <img
+              src="/images/rev/nb3_poster6_diaper.jpg"
+              alt="การใส่แพมเพิสที่ถูกต้อง"
+              style={{ width: '100%', height: '265px', objectFit: 'contain', backgroundColor: '#f0fdf4', borderRadius: '8px' }}
+            />
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          1B. BACKGROUND & SIDE ROOM FURNITURE MATCHING /images/rev/nb3_room_ref.jpg:
+              - Left Wall: Wooden Sink Counter + Upper White Glass-Door Cabinet with Rolled Pink/Blue Towels
+              - Left-Back: Pastel Pink Privacy Curtain
+              - Right-Back: Sunny Window with Pastel Pink Curtains + Cozy Beige Sofa with Pink Pillow + Round Oak Table
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* เคาน์เตอร์อ่างล้างมือไม้โอ๊คด้านซ้าย + ตู้แขวนบานกระจกเก็บผ้าขนหนูม้วนสีชมพู/ฟ้า (ตามรูป nb3_room_ref.jpg) */}
+      <group position={[-6.35, 0, -0.1]} rotation={[0, Math.PI / 2, 0]}>
+        {/* ตู้เคาน์เตอร์ไม้โอ๊คด้านล่าง */}
+        <mesh position={[0, 0.44, 0]} castShadow receiveShadow>
+          <boxGeometry args={[2.1, 0.88, 0.62]} />
+          <meshStandardMaterial color="#c69264" roughness={0.5} />
+        </mesh>
+        {/* ท็อปเคาน์เตอร์หินสีขาวครีม */}
+        <mesh position={[0, 0.9, 0]} castShadow receiveShadow>
+          <boxGeometry args={[2.16, 0.05, 0.66]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.25} />
+        </mesh>
+        {/* อ่างล้างมือสแตนเลส + ก๊อกน้ำคอหงส์ */}
+        <mesh position={[-0.45, 0.92, 0.04]}>
+          <boxGeometry args={[0.55, 0.03, 0.38]} />
+          <meshStandardMaterial color="#cbd5e1" metalness={0.75} roughness={0.2} />
+        </mesh>
+        <mesh position={[-0.45, 1.06, -0.14]}>
+          <cylinderGeometry args={[0.016, 0.016, 0.24, 12]} />
+          <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.15} />
+        </mesh>
+        {/* ขวดสบู่ล้างมือ + กล่องทิชชู่สีขาว + กระถางต้นไม้เล็กบนเคาน์เตอร์ */}
+        <mesh position={[0.05, 1.0, -0.1]} castShadow>
+          <cylinderGeometry args={[0.045, 0.05, 0.16, 14]} />
+          <meshStandardMaterial color="#fde68a" roughness={0.35} />
+        </mesh>
+        <mesh position={[0.42, 0.97, 0.02]} castShadow>
+          <boxGeometry args={[0.24, 0.1, 0.14]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+        </mesh>
+        <group position={[0.78, 0.92, -0.06]}>
+          <mesh position={[0, 0.08, 0]} castShadow>
+            <cylinderGeometry args={[0.08, 0.065, 0.16, 12]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+          <mesh position={[0, 0.2, 0]}>
+            <sphereGeometry args={[0.12, 12, 12]} />
+            <meshStandardMaterial color="#4d7c0f" roughness={0.75} />
+          </mesh>
+        </group>
+
+        {/* ตู้แขวนผนังสีขาวบานกระจกใส + ผ้าขนหนูม้วนสีชมพูและสีฟ้าด้านใน (ตามรูป nb3_room_ref.jpg) */}
+        <group position={[0, 2.05, -0.12]}>
+          <mesh castShadow>
+            <boxGeometry args={[1.95, 0.78, 0.36]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.3} />
+          </mesh>
+          <mesh position={[0, 0, 0.185]}>
+            <planeGeometry args={[1.82, 0.66]} />
+            <meshStandardMaterial color="#e0f2fe" transparent opacity={0.32} roughness={0.1} />
+          </mesh>
+          {/* ม้วนผ้าขนหนูสีชมพูและสีฟ้าเรียงในตู้ */}
+          {[-0.65, -0.42, -0.18, 0.18, 0.42, 0.65].map((tx, ti) => (
+            <mesh key={`towel_roll_${ti}`} position={[tx, -0.12, 0.06]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.065, 0.065, 0.22, 14]} />
+              <meshStandardMaterial color={ti < 3 ? '#f9a8d4' : '#93c5fd'} roughness={0.85} />
+            </mesh>
+          ))}
+        </group>
+      </group>
+
+      {/* ม่านกั้นห้องสีชมพูพาสเทลด้านหลังซ้าย (Pastel Pink Privacy Curtain ตามรูป nb3_room_ref.jpg) */}
+      <group position={[-2.95, 0, -4.4]}>
+        <mesh position={[0, 2.95, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.02, 0.02, 2.2, 12]} />
+          <meshStandardMaterial color="#cbd5e1" metalness={0.7} roughness={0.25} />
+        </mesh>
+        {[-0.75, -0.45, -0.15, 0.15, 0.45, 0.75].map((cx, ci) => (
+          <mesh key={`curt_fold_${ci}`} position={[cx, 1.48, (ci % 2) * 0.04]} castShadow>
+            <boxGeometry args={[0.32, 2.85, 0.06]} />
+            <meshStandardMaterial color={ci % 2 === 0 ? '#fbcfe8' : '#f9a8d4'} roughness={0.85} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* โซฟาพักผ่อนสีครีมเบจ + หมอนอิงสีชมพู + โต๊ะกลางไม้กลม ด้านหลังขวา (ตามรูป nb3_room_ref.jpg) */}
+      <InteractiveSeat
+        id="nb3-lounge-sofa"
+        name="โซฟาพักผ่อนมุมห้องดูแลสายสะดือ"
+        type="sofa"
+        position={[3.4, 0, -4.6]}
+        rotation={[0, -0.25, 0]}
+        seatOffset={[0, 0.44, 0.05]}
+      >
+        <group>
+          <mesh position={[0, 0.3, 0]} castShadow receiveShadow>
+            <boxGeometry args={[1.75, 0.34, 0.86]} />
+            <meshStandardMaterial color="#ede0d4" roughness={0.85} />
+          </mesh>
+          <mesh position={[0, 0.72, -0.34]} castShadow>
+            <boxGeometry args={[1.75, 0.58, 0.2]} />
+            <meshStandardMaterial color="#ede0d4" roughness={0.85} />
+          </mesh>
+          {[-0.82, 0.82].map((ax, ai) => (
+            <mesh key={`s_arm_${ai}`} position={[ax, 0.5, 0]} castShadow>
+              <boxGeometry args={[0.16, 0.42, 0.86]} />
+              <meshStandardMaterial color="#e6ccb2" roughness={0.85} />
+            </mesh>
+          ))}
+          {/* หมอนอิงสีชมพูพาสเทลและสีครีม */}
+          <mesh position={[-0.45, 0.58, -0.16]} rotation={[-0.2, 0.15, 0]} castShadow>
+            <boxGeometry args={[0.36, 0.32, 0.12]} />
+            <meshStandardMaterial color="#f9a8d4" roughness={0.85} />
+          </mesh>
+          <mesh position={[0.45, 0.58, -0.16]} rotation={[-0.2, -0.15, 0]} castShadow>
+            <boxGeometry args={[0.36, 0.32, 0.12]} />
+            <meshStandardMaterial color="#fde68a" roughness={0.85} />
+          </mesh>
+        </group>
+      </InteractiveSeat>
+      {/* โต๊ะกลางไม้กลมหน้าโซฟามุมห้อง */}
+      <group position={[3.25, 0, -3.45]}>
+        <mesh position={[0, 0.42, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.48, 0.48, 0.045, 28]} />
+          <meshStandardMaterial color="#c69264" roughness={0.5} />
+        </mesh>
+        {[[-0.24, -0.24], [0.24, -0.24], [0, 0.26]].map(([lx, lz], i) => (
+          <mesh key={`ct_leg_${i}`} position={[lx, 0.21, lz]} castShadow>
+            <cylinderGeometry args={[0.024, 0.018, 0.42, 12]} />
+            <meshStandardMaterial color="#8c5a32" roughness={0.5} />
+          </mesh>
+        ))}
+      </group>
+      <RealPlant type="potted" position={[5.5, 0, -5.2]} scale={1.25} />
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          2. CENTER CLINICAL SCENE (Matching /images/rev/nb3_room_ref.jpg):
+             - Baby Examination Bed with Oak Wooden Base + White Padded Mattress + RealisticNewborn (pose="diaperOn")
+             - Nurse standing behind the bed demonstrating umbilical cord care
+             - Mother's Chair beside the bed (InteractiveSeat)
+             - Stainless Steel Dressing Trolley with 4 Clickable Equipment Items + Red Biohazard Bin
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {/* Baby Examination Bed / Table (Center: x = 0, z = -1.2) */}
+      <group
+        position={[0, 0, -1.2]}
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveModal('orderingQuiz');
+        }}
+      >
+        {/* Warm Oak Wooden Cabinet Base with 2 Drawers (Matching nb3_room_ref.jpg) */}
+        <mesh position={[0, 0.44, 0]} castShadow receiveShadow>
+          <boxGeometry args={[1.68, 0.86, 0.96]} />
+          <meshStandardMaterial color="#c69264" roughness={0.48} />
+        </mesh>
+        {[-0.4, 0.4].map((dx, di) => (
+          <mesh key={`bed_drw_${di}`} position={[dx, 0.56, 0.485]}>
+            <boxGeometry args={[0.72, 0.26, 0.02]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.35} />
+          </mesh>
+        ))}
+        {/* Soft White Padded Examination Mattress with Raised Bolster Edges */}
+        <mesh position={[0, 0.92, 0]} castShadow receiveShadow>
+          <boxGeometry args={[1.74, 0.1, 1.02]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.75} />
+        </mesh>
+        {/* Soft Baby Pillow under Head */}
+        <mesh position={[-0.42, 0.98, 0]} castShadow>
+          <boxGeometry args={[0.38, 0.05, 0.52]} />
+          <meshStandardMaterial color="#e0f2fe" roughness={0.8} />
+        </mesh>
+
+        {/* Realistic Newborn Baby in Diaper lying Supine on Bed (pose="diaperOn", showing umbilical cord!) */}
+        <group position={[0.05, 0.99, 0]} rotation={[0, Math.PI / 2, 0]}>
+          <BabyAvatar
+            pose="diaperOn"
+            position={[0, 0, 0]}
+            scale={1.08}
+          />
+        </group>
+      </group>
+
+      {/* 3D Nurse Standing behind the Examination Bed (Teaching Mother) */}
+      <group
+        position={[0, 0, -2.05]}
+        rotation={[0, 0, 0]}
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveModal('orderingQuiz');
+        }}
+      >
+        <MotherAvatar
+          characterOverride="nurse"
+          outfitOverride="blue"
+          isSittingOverride={false}
+          isHoldingBabyOverride={false}
+          currentAnimation="idle"
+        />
+      </group>
+
+      {/* Mother's Chair right beside the Examination Bed (InteractiveSeat so Mother sits like nb3_room_ref.jpg) */}
+      <InteractiveSeat
+        id="nb3-mother-chair"
+        name="เก้าอี้คุณแม่ข้างเตียงตรวจสะดือ (คลิกเพื่อนั่งเรียนกับพยาบาล)"
+        type="chair"
+        position={[0.85, 0, -0.25]}
+        rotation={[0, -Math.PI * 0.75, 0]}
+        seatOffset={[0, 0.44, 0]}
+      >
+        <group
+          onClick={() => {
+            setTimeout(() => setActiveModal('orderingQuiz'), 200);
+          }}
+        >
+          {/* Chair Seat */}
+          <mesh position={[0, 0.44, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.56, 0.07, 0.54]} />
+            <meshStandardMaterial color="#fde68a" roughness={0.6} />
+          </mesh>
+          {/* Chair Backrest */}
+          <mesh position={[0, 0.78, -0.24]} castShadow>
+            <boxGeometry args={[0.54, 0.62, 0.06]} />
+            <meshStandardMaterial color="#fde68a" roughness={0.6} />
+          </mesh>
+          {/* 4 Wooden Legs */}
+          {[[-0.23, -0.22], [0.23, -0.22], [-0.23, 0.22], [0.23, 0.22]].map(([x, z], i) => (
+            <mesh key={`ch_leg_${i}`} position={[x, 0.22, z]} castShadow>
+              <cylinderGeometry args={[0.025, 0.02, 0.44, 14]} />
+              <meshStandardMaterial color="#b45309" roughness={0.4} />
+            </mesh>
+          ))}
+        </group>
+      </InteractiveSeat>
+
+      {/* ── Stainless Steel Dressing Cart beside Examination Bed (x = -1.65, z = -1.2) ──
+           With 4 Clickable Equipment Items ("อุปกรณ์สามารถคลิก ว่านี่คืออะไร") */}
+      <group position={[-1.65, 0, -1.2]}>
+        {/* Stainless Steel Cart Frame & 2 Trays */}
+        <mesh
+          position={[0, 0.84, 0]}
+          castShadow
+          receiveShadow
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedEquipId(1);
+            setActiveModal('equipment');
+          }}
+        >
+          <boxGeometry args={[0.95, 0.04, 0.62]} />
+          <meshStandardMaterial color="#cbd5e1" metalness={0.8} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 0.36, 0]} castShadow receiveShadow>
+          <boxGeometry args={[0.92, 0.04, 0.58]} />
+          <meshStandardMaterial color="#cbd5e1" metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* 4 Stainless Legs */}
+        {[[-0.44, -0.27], [0.44, -0.27], [-0.44, 0.27], [0.44, 0.27]].map(([x, z], i) => (
+          <mesh key={`cart_leg_${i}`} position={[x, 0.45, z]} castShadow>
+            <cylinderGeometry args={[0.018, 0.018, 0.9, 14]} />
+            <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.15} />
+          </mesh>
+        ))}
+
+        {/* Item 1: สำลีก้อน (Sterile Cotton Balls in Jar/Cup) */}
+        <group
+          position={[-0.28, 0.86, -0.08]}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedEquipId(1);
+            setActiveModal('equipment');
+          }}
+        >
+          <mesh position={[0, 0.07, 0]} castShadow>
+            <cylinderGeometry args={[0.08, 0.08, 0.14, 20]} />
+            <meshStandardMaterial color="#f8fafc" transparent opacity={0.85} roughness={0.1} />
+          </mesh>
+          {/* Cotton balls inside */}
+          {[[-0.02, 0.05, 0], [0.02, 0.06, 0.02], [0, 0.09, -0.01]].map(([cx, cy, cz], idx) => (
+            <mesh key={`cb_${idx}`} position={[cx, cy, cz]}>
+              <sphereGeometry args={[0.028, 12, 12]} />
+              <meshStandardMaterial color="#ffffff" roughness={0.95} />
+            </mesh>
+          ))}
+        </group>
+
+        {/* Item 2: ไม้พันสำลี / สำลีก้าน (Sterile Cotton Swabs Pack/Holder) */}
+        <group
+          position={[0.02, 0.86, -0.08]}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedEquipId(2);
+            setActiveModal('equipment');
+          }}
+        >
+          <mesh position={[0, 0.06, 0]} castShadow>
+            <cylinderGeometry args={[0.065, 0.065, 0.12, 20]} />
+            <meshStandardMaterial color="#e2e8f0" metalness={0.5} roughness={0.2} />
+          </mesh>
+          {/* Cotton swabs sticking up */}
+          {[-0.02, 0, 0.02].map((sx, idx) => (
+            <group key={`swab_${idx}`} position={[sx, 0.14, 0]}>
+              <mesh>
+                <cylinderGeometry args={[0.004, 0.004, 0.1, 8]} />
+                <meshStandardMaterial color="#fde68a" />
+              </mesh>
+              <mesh position={[0, 0.055, 0]}>
+                <sphereGeometry args={[0.012, 10, 10]} />
+                <meshStandardMaterial color="#ffffff" />
+              </mesh>
+            </group>
+          ))}
+        </group>
+
+        {/* Item 3: ขวด 70% Alcohol (Blue Solution Bottle) */}
+        <group
+          position={[0.28, 0.86, -0.05]}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedEquipId(3);
+            setActiveModal('equipment');
+          }}
+        >
+          <mesh position={[0, 0.11, 0]} castShadow>
+            <cylinderGeometry args={[0.065, 0.07, 0.22, 20]} />
+            <meshStandardMaterial color="#38bdf8" transparent opacity={0.88} roughness={0.15} />
+          </mesh>
+          <mesh position={[0, 0.24, 0]}>
+            <cylinderGeometry args={[0.028, 0.032, 0.045, 16]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+          {/* White Label "70% Alcohol" */}
+          <mesh position={[0, 0.11, 0.068]}>
+            <planeGeometry args={[0.09, 0.09]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+        </group>
+
+        {/* Item 4: ถังขยะติดเชื้อสีแดง (Red Biohazard Waste Bin beside Cart) */}
+        <group
+          position={[-0.68, 0, 0.1]}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedEquipId(4);
+            setActiveModal('equipment');
+          }}
+        >
+          <mesh position={[0, 0.28, 0]} castShadow>
+            <cylinderGeometry args={[0.19, 0.16, 0.56, 24]} />
+            <meshStandardMaterial color="#dc2626" roughness={0.35} />
+          </mesh>
+          <mesh position={[0, 0.57, 0]} castShadow>
+            <cylinderGeometry args={[0.2, 0.2, 0.04, 24]} />
+            <meshStandardMaterial color="#b91c1c" roughness={0.3} />
+          </mesh>
+        </group>
+      </group>
+
+      {/* 3D Player Controller */}
+      <PlayerController initialPosition={[0, 0, 2.6]} initialRotation={Math.PI} />
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          2D HTML INTERACTIVE MODALS (Shown ONLY When Clicked)
+          ══════════════════════════════════════════════════════════════════════════ */}
+
+      {/* 1. Equipment Details Modal (Shown when clicking items on the dressing cart) */}
+      {activeModal === 'equipment' && (
+        <Html center>
+          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-4 border-amber-400 max-h-[92vh] overflow-y-auto text-slate-800">
+              <div className="flex items-center justify-between border-b pb-3">
+                <h2 className="text-lg font-bold text-amber-950 flex items-center gap-2">
+                  <span>🩹</span> อุปกรณ์เช็ดทำความสะอาดสายสะดือทารก
+                </h2>
                 <button
-                  onClick={checkCordSteps}
-                  style={{ background: '#d97706', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
+                  onClick={() => setActiveModal(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
                 >
-                  ✓ ตรวจลำดับขั้นตอนเช็ดสะดือ
+                  ✕
                 </button>
-                {act1Feedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(1)}
-                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ไปสถานการณ์สะดือเปียกน้ำ ➜
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 1: สถานการณ์จำลอง "สะดือเปียกน้ำ ต้องทำอย่างไร ?" ── */}
-          {activeTab === 1 && (
-            <div>
-              <div style={{ background: '#ecfeff', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #06b6d4' }}>
-                <strong style={{ color: '#0e7490' }}>💦 สถานการณ์จำลองทางคลินิก:</strong> ระหว่างการอาบน้ำหรือทำความสะอาด หากน้ำกระเด็นใส่สายสะดือของทารกจนเปียกชื้น คุณแม่ควรปฏิบัติตามข้อใดจึงจะถูกต้องที่สุดตามหลักการพยาบาล ?
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginBottom: '16px' }}>
-                {[
-                  {
-                    id: 'dry_and_alcohol',
-                    title: '1. ซับให้แห้งสนิททันทีด้วยสำลีสะอาด แล้วเช็ดด้วย 70% แอลกอฮอล์รอบโคนสะดือวนขึ้นสู่ปลายอีกครั้ง ปล่อยให้แห้งตามธรรมชาติ ห้ามโรยแป้ง',
-                    badge: 'ทางเลือกที่ 1'
-                  },
-                  {
-                    id: 'powder',
-                    title: '2. ใช้แป้งเด็กโรยหนาๆ รอบโคนสะดือทันที เพื่อช่วยดูดซับความชื้นและทำให้สะดือแห้งไว',
-                    badge: 'ทางเลือกที่ 2'
-                  },
-                  {
-                    id: 'blow_dry',
-                    title: '3. ใช้ไดร์เป่าผมลมร้อนเป่าสะดือจนแห้งสนิท แล้วทาครีมกันผื่นเพื่อสมานแผล',
-                    badge: 'ทางเลือกที่ 3'
-                  },
-                  {
-                    id: 'do_nothing',
-                    title: '4. ไม่ต้องทำอะไร ปล่อยทิ้งไว้แล้วรีบดึงขอบผ้าอ้อมคลุมปิดทับไว้ทันที',
-                    badge: 'ทางเลือกที่ 4'
-                  }
-                ].map((opt) => (
-                  <div
-                    key={opt.id}
-                    onClick={() => handleSelectWetCord(opt.id)}
-                    style={{
-                      padding: '14px 16px',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      border: wetCordAnswer === opt.id
-                        ? (opt.id === 'dry_and_alcohol' ? '2px solid #16a34a' : '2px solid #dc2626')
-                        : '1px solid #e2e8f0',
-                      background: wetCordAnswer === opt.id
-                        ? (opt.id === 'dry_and_alcohol' ? '#f0fdf4' : '#fef2f2')
-                        : 'white',
-                      transition: 'all 0.2s',
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{
-                        background: wetCordAnswer === opt.id
-                          ? (opt.id === 'dry_and_alcohol' ? '#16a34a' : '#dc2626')
-                          : '#e2e8f0',
-                        color: wetCordAnswer === opt.id ? 'white' : '#64748b',
-                        padding: '2px 8px',
-                        borderRadius: '8px',
-                        fontSize: '11px',
-                        fontWeight: 'bold'
-                      }}>
-                        {opt.badge}
-                      </span>
-                      <span style={{ fontSize: '13.5px', fontWeight: '500', color: '#1e293b' }}>
-                        {opt.title}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <img
+                src="/images/rev/nb3_poster1_equip.jpg"
+                alt="อุปกรณ์เช็ดสะดือ"
+                className="w-full h-44 object-contain bg-amber-50 rounded-xl p-1.5 mt-3 border border-amber-200"
+              />
 
-              {wetCordFeedback && (
-                <div style={{
-                  padding: '14px',
-                  borderRadius: '12px',
-                  marginBottom: '14px',
-                  background: wetCordFeedback.pass ? '#dcfce7' : '#fee2e2',
-                  border: `1.5px solid ${wetCordFeedback.pass ? '#86efac' : '#fca5a5'}`,
-                  color: wetCordFeedback.pass ? '#166534' : '#991b1b',
-                  fontSize: '13px'
-                }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
-                    {wetCordFeedback.title}
-                  </div>
-                  <div>{wetCordFeedback.msg}</div>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                {wetCordFeedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(2)}
-                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ไปการพับขอบผ้าอ้อม ➜
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 2: การพับขอบผ้าอ้อม ── */}
-          {activeTab === 2 && (
-            <div>
-              <div style={{ background: '#fffbeb', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #f59e0b' }}>
-                <strong>เป้าหมาย:</strong> เรียนรู้วิธีการใส่ผ้าอ้อมที่ปลอดภัยสำหรับทารกแรกเกิดที่สายสะดือยังไม่หลุด
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
-                <div
-                  onClick={() => handleSelectFold('below')}
-                  style={{
-                    padding: '16px',
-                    borderRadius: '14px',
-                    cursor: 'pointer',
-                    border: diaperFold === 'below' ? '2px solid #16a34a' : '1px solid #e2e8f0',
-                    background: diaperFold === 'below' ? '#f0fdf4' : 'white',
-                    transition: 'all 0.2s',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '20px' }}>🟢</span>
-                    <strong style={{ fontSize: '15px', color: '#166534' }}>พับขอบผ้าอ้อมให้ "ต่ำกว่า" สายสะดือ</strong>
-                  </div>
-                  <p style={{ margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: '1.5' }}>
-                    • เปิดให้สายสะดือสัมผัสอากาศ แห้งเร็ว ไม่อับชื้น<br />
-                    • ป้องกันไม่ให้ปัสสาวะหรืออุจจาระซึมเปื้อนสายสะดือ<br />
-                    • ลดการเสียดสีระหว่างขอบผ้าอ้อมกับขั้วสะดือ
-                  </p>
-                </div>
-
-                <div
-                  onClick={() => handleSelectFold('above')}
-                  style={{
-                    padding: '16px',
-                    borderRadius: '14px',
-                    cursor: 'pointer',
-                    border: diaperFold === 'above' ? '2px solid #dc2626' : '1px solid #e2e8f0',
-                    background: diaperFold === 'above' ? '#fef2f2' : 'white',
-                    transition: 'all 0.2s',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '20px' }}>🔴</span>
-                    <strong style={{ fontSize: '15px', color: '#991b1b' }}>ดึงขอบผ้าอ้อมขึ้นมา "คลุมทับ" สายสะดือ</strong>
-                  </div>
-                  <p style={{ margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: '1.5' }}>
-                    • ทำให้สายสะดืออับชื้น แฉะ และหลุดช้า<br />
-                    • เสี่ยงต่อการเปื้อนปัสสาวะ นำไปสู่การติดเชื้อในกระแสเลือด<br />
-                    • เกิดการเสียดสีจนเลือดซึมออกมา
-                  </p>
-                </div>
-              </div>
-
-              {act2Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act2Feedback.pass ? '#dcfce7' : '#fee2e2', color: act2Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act2Feedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                {act2Feedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(3)}
-                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ไปสังเกตการติดเชื้อ ➜
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 3: สังเกตการติดเชื้อสายสะดือ ── */}
-          {activeTab === 3 && (
-            <div>
-              <div style={{ background: '#fffbeb', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #f59e0b' }}>
-                <strong>เป้าหมาย:</strong> แยกแยะสัญญาณอันตรายของภาวะสะดืออักเสบติดเชื้อ (Omphalitis) ที่ต้องรีบพาไปพบแพทย์
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                {infectionSigns.map(s => {
-                  const isChecked = selectedSigns.includes(s.id);
+              <div className="mt-3 space-y-2 text-xs">
+                {equipmentItems.map((item) => {
+                  const isSelected = selectedEquipId === item.id;
                   return (
                     <div
-                      key={s.id}
-                      onClick={() => toggleSign(s.id)}
-                      style={{
-                        padding: '12px 14px',
-                        borderRadius: '10px',
-                        cursor: 'pointer',
-                        border: isChecked ? '2px solid #d97706' : '1px solid #e2e8f0',
-                        background: isChecked ? '#fef3c7' : 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
-                      }}
+                      key={item.id}
+                      onClick={() => setSelectedEquipId(item.id)}
+                      className={`cursor-pointer p-3 rounded-xl border-2 transition flex items-start gap-3 ${
+                        isSelected
+                          ? 'bg-amber-50 border-amber-500 shadow-sm'
+                          : 'bg-slate-50 border-slate-200 hover:bg-white'
+                      }`}
                     >
-                      <span style={{ fontSize: '16px' }}>{isChecked ? '☑' : '☐'}</span>
-                      <span style={{ fontSize: '13.5px', fontWeight: isChecked ? 'bold' : 'normal', color: isChecked ? '#92400e' : '#334155' }}>
-                        {s.text}
-                      </span>
+                      <span className="text-2xl">{item.icon}</span>
+                      <div>
+                        <div className="font-bold text-slate-900">{item.name}</div>
+                        <p className="text-xs text-slate-700 mt-1 leading-relaxed">{item.usage}</p>
+                      </div>
                     </div>
                   );
                 })}
               </div>
 
-              {act3Feedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: act3Feedback.pass ? '#dcfce7' : '#fee2e2', color: act3Feedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {act3Feedback.msg}
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs"
+                >
+                  ปิดหน้าต่าง
+                </button>
+                <button
+                  onClick={() => setActiveModal('orderingQuiz')}
+                  className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs shadow"
+                >
+                  ไปที่บททดสอบของคุณแม่ ▶
+                </button>
+              </div>
+            </div>
+          </div>
+        </Html>
+      )}
+
+      {/* 2. Mother's Ordering Test Modal ("บททดสอบ ของคุณแม่: ให้เรียงภาพขั้นตอน การเช็ดสะดือ เมื่อเริ่มแห้ง" — nb34_p4..5) */}
+      {activeModal === 'orderingQuiz' && (
+        <Html center>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-4 border-amber-500 max-h-[92vh] overflow-y-auto text-slate-800">
+              <div className="flex items-center justify-between border-b pb-3">
+                <div>
+                  <span className="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider">
+                    บททดสอบของคุณแม่ • Nursery 203
+                  </span>
+                  <h2 className="text-lg font-bold text-amber-950">
+                    📝 ให้เรียงภาพขั้นตอน &ldquo;การเช็ดสะดือ เมื่อเริ่มแห้ง&rdquo; (1 ➔ 2 ➔ 3)
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-600 mt-3">
+                คลิกที่ภาพด้านล่างตามลำดับขั้นตอนที่ 1, 2 และ 3 สำหรับการเช็ดสะดือทารกเมื่อสะดือเริ่มแห้ง (คลิกซ้ำเพื่อยกเลิกลำดับ):
+              </p>
+
+              {/* 3 Scrambled Cards to Click in Order 1 -> 2 -> 3 */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3.5">
+                {scrambledCards.map((card, idx) => {
+                  const orderIndex = selectedSequence.indexOf(card.correctStep);
+                  const isPicked = orderIndex !== -1;
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => handleToggleCardStep(card.correctStep)}
+                      className={`cursor-pointer rounded-2xl border-2 p-2.5 flex flex-col items-center text-center transition relative ${
+                        isPicked
+                          ? 'bg-amber-50 border-amber-500 shadow-md ring-2 ring-amber-300'
+                          : 'bg-slate-50 border-slate-200 hover:border-amber-400 hover:bg-white'
+                      }`}
+                    >
+                      {isPicked && (
+                        <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-amber-600 text-white font-extrabold text-sm flex items-center justify-center shadow-lg border-2 border-white">
+                          {orderIndex + 1}
+                        </div>
+                      )}
+                      <img
+                        src={card.img}
+                        alt={card.label}
+                        className="w-full h-44 object-contain rounded-xl bg-white p-1 border border-slate-200"
+                      />
+                      <div className="text-xs font-bold text-slate-900 mt-2 leading-snug">
+                        {card.label}
+                      </div>
+                      <div className="mt-1.5 text-[11px] font-bold text-amber-700">
+                        {isPicked ? `เลือกเป็นลำดับที่ ${orderIndex + 1}` : '👆 คลิกเพื่อเลือกลำดับ'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Feedback & Official Answer Sheet (/images/rev/nb3_quiz_answer.jpg) */}
+              {quizFeedback && (
+                <div
+                  className={`mt-4 p-4 rounded-xl border-2 text-xs ${
+                    quizFeedback.pass
+                      ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
+                      : 'bg-rose-50 border-rose-400 text-rose-950'
+                  }`}
+                >
+                  <div className="font-bold text-sm">{quizFeedback.title}</div>
+                  <p className="mt-1 leading-relaxed">{quizFeedback.msg}</p>
+
+                  {quizFeedback.pass && (
+                    <div className="mt-3 bg-white p-2 rounded-xl border border-emerald-200">
+                      <div className="text-[11px] font-bold text-emerald-800 mb-1 text-center">
+                        เฉลยลำดับขั้นตอนการเช็ดสะดือเมื่อเริ่มแห้ง (1 ➔ 2 ➔ 3)
+                      </div>
+                      <img
+                        src="/images/rev/nb3_quiz_answer.jpg"
+                        alt="เฉลยการเช็ดสะดือเมื่อเริ่มแห้ง"
+                        className="w-full h-48 object-contain rounded-lg"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Footer Buttons */}
+              <div className="mt-4 flex gap-2">
                 <button
-                  onClick={checkSigns}
-                  style={{ background: '#d97706', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
+                  onClick={() => {
+                    setSelectedSequence([]);
+                    setQuizFeedback(null);
+                  }}
+                  className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs"
                 >
-                  ✓ ตรวจสอบสัญญาณอันตราย
+                  🔄 ล้างลำดับเลือกใหม่
                 </button>
-                {act3Feedback?.pass && (
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs"
+                >
+                  ปิดหน้าต่าง
+                </button>
+                {quizFeedback?.pass && (
                   <button
-                    onClick={() => setActiveTab(4)}
-                    style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
+                    onClick={() => {
+                      setActiveModal(null);
+                      setShowSuccessModal(
+                        true,
+                        'ยินดีด้วย! คุณผ่านบททดสอบการเรียงลำดับขั้นตอนการเช็ดสะดือเมื่อเริ่มแห้งอย่างถูกต้อง'
+                      );
+                    }}
+                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow"
                   >
-                    ทำแบบประเมินความรู้ท้ายบท ➜
+                    🎉 บันทึกความสำเร็จภารกิจ
                   </button>
                 )}
               </div>
             </div>
-          )}
-
-          {/* ── TAB 4: แบบประเมินความรู้ประจำห้อง Nursery 203 (ข้อ 12 & 19) ── */}
-          {activeTab === 4 && (
-            <div>
-              {!quizFinished ? (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-                      📋 แบบประเมิน: {currentQ.room}
-                    </span>
-                    <span style={{ fontSize: '13px', color: '#666', fontWeight: 'bold' }}>
-                      ข้อ {quizIndex + 1} / {room3Questions.length} | คะแนนสะสม: {quizScore}
-                    </span>
-                  </div>
-
-                  <h3 style={{ color: '#222', fontSize: '17px', fontWeight: 'bold', lineHeight: '1.45', margin: '0 0 16px 0' }}>
-                    "{currentQ.question}"
-                  </h3>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                    <button
-                      disabled={quizShowFeedback}
-                      onClick={() => handleQuizAnswer(true)}
-                      style={{
-                        padding: '14px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: quizShowFeedback && currentQ.answer === true ? '#16a34a' : (quizUserChoice === true ? '#d97706' : '#d1d5db'),
-                        background: quizShowFeedback && currentQ.answer === true ? '#dcfce7' : (quizUserChoice === true ? '#fef3c7' : '#f9fafb'),
-                        color: quizShowFeedback && currentQ.answer === true ? '#15803d' : '#1f2937',
-                        cursor: quizShowFeedback ? 'default' : 'pointer'
-                      }}
-                    >
-                      ✓ ถูก (True)
-                    </button>
-                    <button
-                      disabled={quizShowFeedback}
-                      onClick={() => handleQuizAnswer(false)}
-                      style={{
-                        padding: '14px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: quizShowFeedback && currentQ.answer === false ? '#16a34a' : (quizUserChoice === false ? '#d97706' : '#d1d5db'),
-                        background: quizShowFeedback && currentQ.answer === false ? '#dcfce7' : (quizUserChoice === false ? '#fef3c7' : '#f9fafb'),
-                        color: quizShowFeedback && currentQ.answer === false ? '#15803d' : '#1f2937',
-                        cursor: quizShowFeedback ? 'default' : 'pointer'
-                      }}
-                    >
-                      ✕ ผิด (False)
-                    </button>
-                  </div>
-
-                  {quizShowFeedback && (
-                    <div style={{
-                      background: quizUserChoice === currentQ.answer ? '#f0fdf4' : '#fffbeb',
-                      border: `1.5px solid ${quizUserChoice === currentQ.answer ? '#86efac' : '#fde68a'}`,
-                      borderRadius: '10px',
-                      padding: '12px',
-                      marginBottom: '10px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '15px', color: quizUserChoice === currentQ.answer ? '#16a34a' : '#d97706' }}>
-                          {quizUserChoice === currentQ.answer ? '🎉 ถูกต้อง! (+1 คะแนน)' : `⚠️ เฉลย: ${currentQ.answerText}`}
-                        </span>
-                        <button
-                          onClick={handleNextQuizQuestion}
-                          style={{
-                            padding: '6px 16px',
-                            background: '#d97706',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: '13px',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {quizIndex < room3Questions.length - 1 ? 'ข้อถัดไป ➜' : 'สำเร็จบทเรียน 🏆'}
-                        </button>
-                      </div>
-                      <div style={{ fontSize: '13px', color: '#444', lineHeight: '1.4' }}>
-                        <strong>💡 เหตุผล:</strong> {currentQ.reason}
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '16px 8px' }}>
-                  <h2 style={{ color: '#2e7d32', fontSize: '24px', margin: '0 0 10px 0' }}>🎉 ผ่านบทเรียนและการประเมินความรู้ Nursery 203 แล้ว!</h2>
-                  <div style={{ fontSize: '16px', color: '#444', marginBottom: '16px' }}>
-                    คะแนนของคุณ: <strong>{quizScore} / {room3Questions.length} คะแนน</strong>
-                  </div>
-                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-                    คุณมีความเข้าใจที่ถูกต้องในการดูแลสายสะดือให้แห้งสะอาด และการพับผ้าอ้อมอย่างปลอดภัย
-                  </p>
-                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => { setQuizIndex(0); setQuizUserChoice(null); setQuizShowFeedback(false); setQuizScore(0); setQuizFinished(false); }}
-                      style={{ padding: '8px 18px', fontSize: '14px', fontWeight: 'bold', background: '#f3f4f6', color: '#333', border: '1px solid #ccc', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      ทำแบบประเมินซ้ำ ↻
-                    </button>
-                    <button
-                      onClick={() => setRoom('lobby')}
-                      style={{ padding: '8px 20px', fontSize: '14px', fontWeight: 'bold', background: '#d97706', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      กลับสู่ล็อบบี้ 🏥
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </Html>
-
-      {/* ── GTA Player Controller ── */}
-      <PlayerController initialPosition={[0, 0, 3]} />
+          </div>
+        </Html>
+      )}
     </group>
   );
 }

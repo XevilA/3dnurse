@@ -73,12 +73,14 @@ export const ROOM_COLLIDERS = {
       { minX: 7.2, maxX: 8.3, minZ: 1.8, maxZ: 3.2, name: 'อ่างล้างมือปลอดเชื้อ' },
       // Medicine Cabinet
       { minX: 7.4, maxX: 8.3, minZ: -3.0, maxZ: -1.4, name: 'ตู้ยาและเวชภัณฑ์' },
+      { minX: 6.4, maxX: 8.5, minZ: 5.4, maxZ: 8.5, name: 'มุมพักผ่อน/ชั้นหนังสือ' },
     ],
     circles: [
       { x: -7.5, z: 3.2, radius: 0.65, name: 'รถเข็นผู้ป่วย', seatId: 'ward101_wheelchair' },
       { x: 7.5, z: -7.5, radius: 0.55, name: 'ต้นไม้ประจำห้อง' },
       { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้ปรับอากาศ' },
       { x: 8.3, z: 0.8, radius: 0.45, name: 'ถังขยะติดเชื้อ' },
+      { x: 1.5, z: 1.5, radius: 1.3, name: 'โต๊ะอาหาร' },
     ]
   },
 
@@ -97,6 +99,8 @@ export const ROOM_COLLIDERS = {
       { minX: 7.2, maxX: 8.3, minZ: 1.8, maxZ: 3.2, name: 'อ่างล้างมือ' },
       // Medicine Cabinet
       { minX: 7.4, maxX: 8.3, minZ: -3.0, maxZ: -1.4, name: 'ตู้ยาและเวชภัณฑ์ทำแผล' },
+      { minX: 6.4, maxX: 8.5, minZ: 5.4, maxZ: 8.5, name: 'มุมพักผ่อน/ชั้นหนังสือ' },
+      { minX: 0.4, maxX: 3.6, minZ: 0.2, maxZ: 1.4, name: 'บูทดูแลแผลฝีเย็บ' },
     ],
     circles: [
       { x: -7.5, z: 3.2, radius: 0.65, name: 'รถเข็นผู้ป่วย', seatId: 'ward102_wheelchair' },

@@ -1,809 +1,871 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
-import HospitalBed from '../furniture/HospitalBed';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
-import RealPlant from '../decorations/RealPlant';
-import ExaminationLamp from '../decorations/ExaminationLamp';
-import HospitalTrashBin from '../decorations/HospitalTrashBin';
-import Pillows from '../decorations/Pillows';
-import HospitalWheelchair from '../furniture/HospitalWheelchair';
-import InteractiveSeat from '../furniture/InteractiveSeat';
-import DoctorDesk from '../furniture/DoctorDesk';
-import HospitalNightstand from '../furniture/HospitalNightstand';
-import MedicineCabinet from '../furniture/MedicineCabinet';
+import { TitleSign, WindowWithCurtains } from '../ward/WardKit';
+import {
+  WoodFramedBacklitPanel,
+  CozySectionalSofaSet,
+  CozyRoomDecorCorners,
+} from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
+// ── ข้อมูลภาพสไลด์ทั้ง 6 ภาพของ Ward 104 (ภาพรวม + รายละเอียด 1–5 ตาม IMG_7526, 7529–7533) ──
+const W104_GALLERY = [
+  {
+    src: '/images/rev/w104_overview.jpg',
+    title: 'ภาพรวม: การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด (5 อาการสำคัญ)',
+    badge: 'ภาพรวม • Ward 104',
+    description: 'อาการสำคัญที่ต้องเฝ้าระวังหลังคลอด หากพบอาการเหล่านี้ ควรรีบไปพบแพทย์ทันที',
+  },
+  {
+    src: '/images/rev/w104_card1_pph.jpg',
+    title: '1. เลือดออกมากหลังคลอด (ตกเลือดหลังคลอด)',
+    badge: 'ผนังที่ 1 • ภาพที่ 1/5',
+    description: 'เลือดออกชุ่มผ้าอนามัย 1 แผ่น ภายใน 1 ชั่วโมง หรือมีก้อนเลือดขนาดใหญ่ไหลออก ร่วมกับเวียนศีรษะ หน้ามืด อ่อนเพลียมาก',
+    details: [
+      'สังเกตปริมาณเลือดและลักษณะก้อนเลือด',
+      'หลีกเลี่ยงการลุกเดินเร็วเมื่อมีอาการหน้ามืด',
+      'ขอความช่วยเหลือและไปพบแพทย์ทันที',
+    ],
+  },
+  {
+    src: '/images/rev/w104_card2_fever_lochia.jpg',
+    title: '2. ไข้ น้ำคาวปลามีกลิ่นเหม็น (การติดเชื้อหลังคลอด)',
+    badge: 'ผนังที่ 1 • ภาพที่ 2/5',
+    description: 'มีไข้ตั้งแต่ 38 °C ขึ้นไป น้ำคาวปลามีกลิ่นเหม็น สีผิดปกติ ปวดท้องน้อยมากขึ้น หรือแผลฝีเย็บ/แผลผ่าตัดบวม แดง มีหนอง',
+    details: [
+      'วัดอุณหภูมิร่างกายและสังเกตลักษณะน้ำคาวปลา',
+      'รักษาความสะอาดของแผลและเปลี่ยนผ้าอนามัยสม่ำเสมอ',
+      'รีบไปพบแพทย์เพื่อรับการตรวจและรักษา',
+    ],
+  },
+  {
+    src: '/images/rev/w104_card3_preeclampsia.jpg',
+    title: '3. ปวดศีรษะรุนแรง ตาพร่ามัว (ภาวะความดันโลหิตสูงหลังคลอด)',
+    badge: 'ผนังที่ 1 • ภาพที่ 3/5',
+    description: 'ปวดศีรษะรุนแรงไม่ทุเลา มองเห็นไม่ชัด ตาพร่ามัว จุกแน่นใต้ลิ้นปี่ หน้า มือ หรือเท้าบวมมากผิดปกติ',
+    details: [
+      'นั่งหรือนอนพักในที่ปลอดภัย ไม่ขับรถเอง',
+      'วัดความดันโลหิตหากมีเครื่องวัด',
+      'รีบไปโรงพยาบาลทันทีเพราะอาจเกิดภาวะชักได้',
+    ],
+  },
+  {
+    src: '/images/rev/w104_card4_dvt.jpg',
+    title: '4. ปวดหรือบวมน่อง (ภาวะลิ่มเลือดอุดตันหลอดเลือดดำ)',
+    badge: 'ผนังที่ 2 • ภาพที่ 4/5',
+    description: 'ปวดตึง บวม แดง หรือร้อนบริเวณน่องหรือขาข้างใดข้างหนึ่ง โดยเฉพาะเวลาเดินหรือกระดกปลายเท้า',
+    details: [
+      'ห้ามนวดหรือบีบบริเวณน่องที่ปวดบวมเด็ดขาด',
+      'พักขาและรีบไปพบแพทย์เพื่อตรวจประเมินทันที',
+    ],
+  },
+  {
+    src: '/images/rev/w104_card5_chest_pain.jpg',
+    title: '5. เจ็บหน้าอก หรือหายใจลำบาก (ภาวะฉุกเฉินระบบหัวใจและปอด)',
+    badge: 'ผนังที่ 2 • ภาพที่ 5/5',
+    description: 'เจ็บแน่นหน้าอก หายใจลำบาก หอบเหนื่อยเฉียบพลัน ใจสั่น หรือหน้ามืดคล้ายจะเป็นลม',
+    details: [
+      'นั่งพักในท่าศีรษะสูงและตั้งสติ',
+      'แจ้งญาติหรือเรียกรถพยาบาลฉุกเฉิน (1669) ไปโรงพยาบาลทันที',
+    ],
+  },
+];
+
+// ── กิจกรรมที่ 1: จำแนกอาการปกติ vs อาการผิดปกติที่ต้องไปโรงพยาบาล (ตาม IMG_7534.JPG) ──
+const SYMPTOM_ITEMS = [
+  {
+    id: 'sym1',
+    text: 'เลือดออกชุ่มผ้าอนามัยเกิน 1 แผ่นภายใน 1 ชั่วโมง หรือมีก้อนเลือดขนาดใหญ่',
+    correct: 'danger',
+    reason: 'เป็นสัญญาณภาวะตกเลือดหลังคลอด ต้องรีบไปโรงพยาบาลทันที',
+  },
+  {
+    id: 'sym2',
+    text: 'น้ำคาวปลาค่อย ๆ จางลงจากสีแดงเป็นสีชมพูและสีขาวเหลือง ไม่มีกลิ่นเหม็น',
+    correct: 'normal',
+    reason: 'เป็นการเปลี่ยนแปลงตามปกติของน้ำคาวปลา (Lochia) หลังคลอด',
+  },
+  {
+    id: 'sym3',
+    text: 'มีไข้ 38.5 °C ร่วมกับน้ำคาวปลามีกลิ่นเหม็นและปวดท้องน้อยรุนแรง',
+    correct: 'danger',
+    reason: 'บ่งชี้การติดเชื้อในโพรงมดลูกหลังคลอด ต้องพบแพทย์ทันที',
+  },
+  {
+    id: 'sym4',
+    text: 'ปวดศีรษะรุนแรง ตาพร่ามัว มองเห็นภาพซ้อน และจุกแน่นลิ้นปี่',
+    correct: 'danger',
+    reason: 'เป็นสัญญาณอันตรายของภาวะครรภ์เป็นพิษหลังคลอด ต้องรีบไปพบแพทย์ทันที',
+  },
+  {
+    id: 'sym5',
+    text: 'ปวดตึง บวม แดง ร้อนที่น่องข้างเดียว หรือเจ็บหน้าอก หายใจหอบเหนื่อย',
+    correct: 'danger',
+    reason: 'เสี่ยงภาวะลิ่มเลือดอุดตันหลอดเลือดดำหรือปอด ต้องไปโรงพยาบาลทันที ห้ามนวดขา',
+  },
+];
+
 export default function MotherCare4Room() {
-  const { setRoom, completeModule, setShowSuccessModal } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, setHoldingBaby, sitDown, seatedTarget } = useStore();
   const openLightbox = useStore((s) => s.openLightbox);
-  const [activeTab, setActiveTab] = useState(0); // 0: 5 สัญญาณอันตราย, 1: ฝึกจำแนกอาการ, 2: การป้องกันภาวะแทรกซ้อน, 3: แบบประเมิน
-  const [showLearningModal, setShowLearningModal] = useState(false);
 
-  // ── กิจกรรม 1: 5 สัญญาณอันตรายสำคัญ (Critical Danger Signs) ──
-  const [selectedDangerIndex, setSelectedDangerIndex] = useState(0);
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('classify'); // 'classify' | 'review' | 'quiz'
+  const [answers, setAnswers] = useState({});
+  const [classifyFeedback, setClassifyFeedback] = useState(null);
+  const [reviewedCards, setReviewedCards] = useState([]);
 
-  const dangerSigns = [
-    {
-      id: 1,
-      title: '1. เลือดออกมากหลังคลอด (ตกเลือด)',
-      icon: '🩸',
-      img: '/references/mother_zone2/danger_bleeding.png',
-      normalText: 'น้ำคาวปลา 2–3 วันแรกสีแดงคล้ายประจำเดือน แล้วค่อยๆ เปลี่ยนเป็นสีชมพู และสีขาวเหลืองในสัปดาห์ที่ 2–6 โดยปริมาณลดลงเรื่อยๆ',
-      dangerText: 'เปียกผ้าอนามัยชุ่มเต็มแผ่น > 1 แผ่น/ชั่วโมง ติดต่อกัน 2 ชั่วโมง, มีลิ่มเลือดขนาดใหญ่กว่าไข่ไก่, เลือดสดไหลพุ่งไม่หยุด, หน้ามืด ใจสั่น ซีด เป็นลม',
-      action: 'ไปโรงพยาบาลทันที! ภาวะตกเลือดหลังคลอดอาจเกิดจากมดลูกหดรัดตัวไม่ดี หรือมีเศษรกค้าง'
-    },
-    {
-      id: 2,
-      title: '2. ไข้สูง และน้ำคาวปลามีกลิ่นเหม็น',
-      icon: '🌡️',
-      img: '/references/mother_zone2/danger_fever.png',
-      normalText: 'อุณหภูมิร่างกายปกติ 36.5–37.4°C น้ำคาวปลามีกลิ่นคาวเลือดจางๆ ไม่มีกลิ่นเหม็นเน่า',
-      dangerText: 'มีไข้ ≥ 38.0°C หรือหนาวสั่น, น้ำคาวปลามีกลิ่นเหม็นผิดปกติ สีเหลือง/เขียว/น้ำตาลเข้ม, ปวดเกร็งท้องน้อยรุนแรง หรือมดลูกกดเจ็บมาก',
-      action: 'พบแพทย์ทันที! เสี่ยงต่อการติดเชื้อในโพรงมดลูก (Endometritis) หรือติดเชื้อทางเดินปัสสาวะ'
-    },
-    {
-      id: 3,
-      title: '3. ปวดศีรษะรุนแรง / ตาพร่ามัว',
-      icon: '⚡',
-      img: '/references/mother_zone2/danger_headache.png',
-      normalText: 'ปวดศีรษะเล็กน้อยจากการอดนอนหรือเหนื่อยล้า และอาการดีขึ้นเมื่อได้นอนหลับพักผ่อน',
-      dangerText: 'ปวดศีรษะรุนแรงไม่ทุเลา, ตาพร่ามัว มองเห็นภาพซ้อน เห็นแสงวาบเหมือนฟ้าแลบ, ปวดจุกแน่นใต้ชายโครงขวา/ลิ้นปี่, ความดันโลหิต ≥ 140/90 mmHg, ชัก หรือหมดสติ',
-      action: 'ฉุกเฉิน! สัญญาณของภาวะความดันโลหิตสูงรุนแรงหลังคลอด / ครรภ์เป็นพิษ (Preeclampsia/Eclampsia) ต้องพบแพทย์ด่วนที่สุด'
-    },
-    {
-      id: 4,
-      title: '4. ปวดหรือบวมน่อง (เสี่ยงลิ่มเลือดอุดตัน)',
-      icon: '🦵',
-      img: '/references/mother_zone2/danger_dvt.png',
-      normalText: 'รู้สึกตึงหรือหนักน่องเล็กน้อยสองข้างในช่วงเย็น และอาการดีขึ้นเมื่อยกขาสูงหรือพักผ่อน',
-      dangerText: 'ปวดน่องรุนแรง โดยเฉพาะขาข้างใดข้างหนึ่ง, น่องบวมโตข้างเดียวอย่างเห็นได้ชัด, ผิวหนังแดง ร้อน และกดเจ็บลึกๆ',
-      action: 'ห้ามนวดขาเด็ดขาด! และรีบไปโรงพยาบาลทันที เสี่ยงภาวะลิ่มเลือดอุดตันในหลอดเลือดดำลึก (DVT)'
-    },
-    {
-      id: 5,
-      title: '5. เจ็บหน้าอก หรือหายใจลำบาก',
-      icon: '🫁',
-      img: '/references/mother_zone2/danger_pe.png',
-      normalText: 'หายใจสะดวก โล่งสบาย ไม่เหนื่อยหอบขณะทำกิจวัตรประจำวันตามปกติ',
-      dangerText: 'เจ็บแน่นหน้าอกรุนแรง, หายใจไม่อิ่ม หอบเหนื่อยฉับพลัน, หายใจเข้าแล้วเจ็บแปลบ, ไอมีเสมหะปนเลือด, หน้ามืด เหงื่อแตก',
-      action: 'รีบไปโรงพยาบาลหรือขอความช่วยเหลือทางการแพทย์ทันที! เสี่ยงภาวะลิ่มเลือดอุดตันในปอด (Pulmonary Embolism: PE)'
-    },
-  ];
+  useEffect(() => {
+    setHoldingBaby(false);
+  }, [setHoldingBaby]);
 
-  // ── 5 Wall Posters Information (2 on Left, 1 in Center, 2 on Right) ──
-  const wallPosters = [
-    {
-      id: 'poster_left_1',
-      title: '1. ตกเลือดหลังคลอด (PPH)',
-      subtitle: 'เลือดออกชุ่มผ้าอนามัยเต็มแผ่นภายใน 1 ชม.',
-      imageSrc: '/references/mother_zone2/danger_bleeding.png',
-      position: [-8.85, 2.7, -3.2],
-      rotation: [0, Math.PI / 2, 0],
-      clinicalDetails: [
-        'ภาวะตกเลือดหลังคลอด (Postpartum Hemorrhage)',
-        'อาการเตือน: ผ้าอนามัยชุ่มเต็มแผ่น > 1 แผ่น/ชม. หรือมีลิ่มเลือดใหญ่กว่าไข่ไก่',
-        'การปฏิบัติ: รีบไปโรงพยาบาลทันที ห้ามนอนรอดูอาการ',
-      ],
-      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
-    },
-    {
-      id: 'poster_left_2',
-      title: '2. ไข้สูง & น้ำคาวปลามีกลิ่นเหม็น',
-      subtitle: 'เสี่ยงติดเชื้อในโพรงมดลูก (Endometritis)',
-      imageSrc: '/references/mother_zone2/danger_fever.png',
-      position: [-8.85, 2.7, 3.2],
-      rotation: [0, Math.PI / 2, 0],
-      clinicalDetails: [
-        'ภาวะติดเชื้อในโพรงมดลูกหลังคลอด',
-        'อาการเตือน: มีไข้ ≥ 38.0°C หนาวสั่น ปวดเกร็งท้องน้อย น้ำคาวปลาสีคล้ำเหม็นเน่า',
-        'การปฏิบัติ: พบแพทย์ทันทีเพื่อรับยาปฏิชีวนะ',
-      ],
-      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
-    },
-    {
-      id: 'poster_center',
-      title: '3. ปวดศีรษะรุนแรง / ตาพร่ามัว',
-      subtitle: 'ครรภ์เป็นพิษหลังคลอด & ความดันโลหิตสูง',
-      imageSrc: '/references/mother_zone2/danger_headache.png',
-      position: [0, 2.8, -8.85],
-      rotation: [0, 0, 0],
-      clinicalDetails: [
-        'ภาวะความดันโลหิตสูงรุนแรงหลังคลอด (Postpartum Preeclampsia)',
-        'อาการเตือน: ปวดศีรษะรุนแรง ตาพร่ามัวเห็นแสงวาบ จุกแน่นใต้ลิ้นปี่ ความดัน ≥ 140/90',
-        'การปฏิบัติ: ฉุกเฉิน! รีบไปพบแพทย์ทันที เสี่ยงต่อภาวะชัก',
-      ],
-      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
-    },
-    {
-      id: 'poster_right_1',
-      title: '4. ปวดหรือบวมน่องข้างเดียว',
-      subtitle: 'เสี่ยงลิ่มเลือดอุดตันหลอดเลือดดำลึก (DVT)',
-      imageSrc: '/references/mother_zone2/danger_dvt.png',
-      position: [8.85, 2.7, -3.2],
-      rotation: [0, -Math.PI / 2, 0],
-      clinicalDetails: [
-        'ภาวะลิ่มเลือดอุดตันในหลอดเลือดดำลึก (Deep Vein Thrombosis: DVT)',
-        'อาการเตือน: ปวดน่องรุนแรง น่องบวมโตข้างเดียว แดง ร้อน และกดเจ็บ',
-        'ข้อห้ามเด็ดขาด: ห้ามนวดขาเด็ดขาด! และรีบไปโรงพยาบาลทันที',
-      ],
-      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
-    },
-    {
-      id: 'poster_right_2',
-      title: '5. เจ็บแน่นหน้าอก / หายใจลำบาก',
-      subtitle: 'เสี่ยงลิ่มเลือดอุดตันในปอด (PE)',
-      imageSrc: '/references/mother_zone2/danger_pe.png',
-      position: [8.85, 2.7, 3.2],
-      rotation: [0, -Math.PI / 2, 0],
-      clinicalDetails: [
-        'ภาวะลิ่มเลือดอุดตันในปอด (Pulmonary Embolism: PE)',
-        'อาการเตือน: เจ็บแน่นหน้าอก หายใจไม่อิ่ม หอบเหนื่อยฉับพลัน ไอเป็นเลือด หน้ามืด',
-        'การปฏิบัติ: ภาวะฉุกเฉินวิกฤต รีบเรียกรถพยาบาล 1669 ทันที',
-      ],
-      category: 'สัญญาณอันตรายหลังคลอด (Ward 104)'
-    }
-  ];
-
-  // ── กิจกรรม 2: ฝึกจำแนกอาการ (เฝ้าสังเกต vs ไปโรงพยาบาลทันที) ──
-  const [triageItems, setTriageItems] = useState([
-    { id: 't1', text: 'ผ้าอนามัยชุ่มเต็มแผ่นภายใน 45 นาที และมีลิ่มเลือดขนาดใหญ่', ans: null, correct: 'er' },
-    { id: 't2', text: 'น้ำคาวปลาสีชมพูจางลงในวันที่ 5 หลังคลอด ไม่มีกลิ่นเหม็น', ans: null, correct: 'obs' },
-    { id: 't3', text: 'มีไข้ 38.6°C หนาวสั่น และปวดเกร็งท้องน้อย', ans: null, correct: 'er' },
-    { id: 't4', text: 'ปวดศีรษะเล็กน้อยจากการเลี้ยงลูก พักผ่อนแล้วดีขึ้น', ans: null, correct: 'obs' },
-    { id: 't5', text: 'ปวดศีรษะรุนแรงร่วมกับตาพร่ามัวเห็นแสงวาบ', ans: null, correct: 'er' },
-    { id: 't6', text: 'น่องข้างขวาบวม แดง ร้อน และกดเจ็บมาก', ans: null, correct: 'er' },
-    { id: 't7', text: 'เจ็บแน่นหน้าอกฉับพลันและหายใจหอบเหนื่อย', ans: null, correct: 'er' },
-  ]);
-  const [triageFeedback, setTriageFeedback] = useState(null);
-
-  const handleTriageSelect = (id, choice) => {
-    setTriageItems(prev => prev.map(item => item.id === id ? { ...item, ans: choice } : item));
-    setTriageFeedback(null);
+  const openGalleryAt = (index) => {
+    openLightbox({
+      ...W104_GALLERY[index],
+      items: W104_GALLERY,
+      currentIndex: index,
+    });
   };
 
-  const checkTriage = () => {
-    const allAnswered = triageItems.every(i => i.ans !== null);
-    if (!allAnswered) {
-      setTriageFeedback({ pass: false, msg: 'กรุณาจำแนกอาการให้ครบทุกข้อก่อนตรวจคำตอบครับ' });
-      return;
-    }
-    const isAllCorrect = triageItems.every(i => i.ans === i.correct);
-    if (isAllCorrect) {
-      setTriageFeedback({
-        pass: true,
-        msg: '✓ ถูกต้อง 100%! คุณแม่สามารถแยกแยะอาการปกติที่เฝ้าสังเกตได้ ออกจากสัญญาณอันตรายที่ต้องไปโรงพยาบาลทันทีได้อย่างแม่นยำ'
-      });
-    } else {
-      setTriageFeedback({
-        pass: false,
-        msg: '✕ ยังมีบางข้อไม่ถูกต้อง: สัญญาณอันตราย เช่น เลือดออกมาก ไข้สูง ตาพร่ามัว ขาบวมข้างเดียว เจ็บหน้าอก ต้องไปโรงพยาบาลทันที ห้ามรอดูอาการ'
-      });
-    }
+  const handleClassify = (id, choice) => {
+    setAnswers((prev) => ({ ...prev, [id]: choice }));
+    setClassifyFeedback(null);
   };
 
-  // ── แบบประเมินความรู้ท้ายห้อง (ข้อ 1, 4 & 7) ──
+  const checkClassification = () => {
+    for (const item of SYMPTOM_ITEMS) {
+      if (!answers[item.id]) {
+        setClassifyFeedback({ pass: false, msg: 'กรุณาจำแนกอาการให้ครบทั้ง 5 ข้อก่อนตรวจคำตอบค่ะ' });
+        return;
+      }
+      if (answers[item.id] !== item.correct) {
+        setClassifyFeedback({
+          pass: false,
+          msg: `✕ ข้อ "${item.text}" ยังไม่ถูกต้อง ลองเลือกใหม่อีกครั้งนะคะ`,
+        });
+        return;
+      }
+    }
+    setClassifyFeedback({
+      pass: true,
+      msg: '✓ ถูกต้องครบทุกข้อค่ะ! คุณแม่สามารถจำแนกอาการปกติและอาการอันตรายที่ต้องรีบไปพบแพทย์ได้อย่างแม่นยำ',
+    });
+    completeModule('motherCare4');
+  };
+
+  // Quiz
   const room4Questions = getQuestionsByRoomKey('motherCare4');
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizUserChoice, setQuizUserChoice] = useState(null);
   const [quizShowFeedback, setQuizShowFeedback] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
-
   const currentQ = room4Questions[quizIndex] || room4Questions[0];
 
   const handleQuizAnswer = (choice) => {
     if (quizShowFeedback) return;
     setQuizUserChoice(choice);
     setQuizShowFeedback(true);
-    if (choice === currentQ.answer) {
-      setQuizScore(prev => prev + 1);
-    }
+    if (choice === currentQ.answer) setQuizScore((prev) => prev + 1);
   };
 
   const handleNextQuizQuestion = () => {
     setQuizUserChoice(null);
     setQuizShowFeedback(false);
     if (quizIndex < room4Questions.length - 1) {
-      setQuizIndex(prev => prev + 1);
+      setQuizIndex((prev) => prev + 1);
     } else {
       setQuizFinished(true);
       completeModule('motherCare4');
       setShowSuccessModal(
         true,
-        `ยินดีด้วย! คุณผ่านบทเรียนและการประเมินความรู้ห้องที่ 4 แล้ว (ได้ ${quizScore + (quizUserChoice === currentQ.answer ? 1 : 0)}/${room4Questions.length} คะแนน)`
+        `ยินดีด้วย! คุณผ่านการเรียนรู้และการประเมินความรู้ห้อง Ward 104 การสังเกตอาการผิดปกติหลังคลอดเรียบร้อยแล้ว`
       );
     }
   };
 
+  const handleSitSofa = () => {
+    sitDown({
+      id: 'room104_sofa',
+      name: 'โซฟาเรียนรู้การสังเกตอาการผิดปกติหลังคลอด',
+      type: 'sofa',
+      position: [0, 0, -0.2],
+      rotationY: 0,
+      seatOffset: [0, 0.44, 0.15],
+      isDrivable: false,
+    });
+    setShowActivityModal(true);
+  };
+
   return (
     <group>
-      {/* ── Realistic 3D Hospital Room Architecture ── */}
       <HospitalRoomShell
         theme="mother"
-        roomTitle="ห้องบริบาลมารดา 4: สังเกตอาการผิดปกติและสัญญาณอันตรายหลังคลอด"
-        roomNumber="Emergency Observation Ward 104"
+        cozyMode={true}
+        roomTitle="ห้องบริบาลมารดา 4: การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด"
+        roomNumber="Ward 104"
       />
 
-      {/* ── REAL 3D CLINICAL ASSETS & ARCHITECTURE ── */}
-      <RealPlant type="potted" position={[7.5, 0, -7.5]} scale={1.1} />
-      <MedicineCabinet position={[8.4, 0, -2.2]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
-      <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
+      <TitleSign
+        position={[0, 4.9, -8.92]}
+        width={6.2}
+        height={1.65}
+        line1="Ward 104"
+        line2="การสังเกตอาการผิดปกติและแทรกซ้อนหลังคลอด"
+      />
 
-      {/* Emergency Wheelchair parked neatly along entrance wall */}
-      <InteractiveSeat
-        id="ward104_wheelchair"
-        name="รถเข็นฉุกเฉิน Ward 104"
-        type="wheelchair"
-        position={[-7.5, 0, 3.2]}
-        rotation={[0, Math.PI / 2, 0]}
-        seatOffset={[0, 0.46, 0.05]}
-        isDrivable={true}
-      >
-        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
-      </InteractiveSeat>
-
-      {/* ── 5 Clinical Complication Posters Across 3 Walls (2 Left, 1 Center, 2 Right) ── */}
-      {wallPosters.map((poster) => (
-        <group key={poster.id} position={poster.position} rotation={poster.rotation}>
-          {/* Outer Timber Bezel Frame */}
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[2.0, 1.45, 0.06]} />
-            <meshStandardMaterial color="#881337" roughness={0.3} metalness={0.2} />
-          </mesh>
-          {/* Inner Matte */}
-          <mesh position={[0, 0, 0.032]}>
-            <boxGeometry args={[1.92, 1.37, 0.01]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
-          </mesh>
-          {/* Poster Surface with HTML Preview & Lightbox Trigger */}
-          <Html position={[0, 0, 0.045]} center transform scale={0.19} distanceFactor={14}>
-            <div
-              onClick={() => openLightbox({
-                src: poster.imageSrc,
-                title: poster.title,
-                caption: poster.subtitle,
-                category: poster.category,
-                clinicalDetails: poster.clinicalDetails
-              })}
-              className="cursor-pointer select-none rounded-xl overflow-hidden shadow-2xl transition-all duration-300 hover:scale-105"
-              style={{
-                width: '420px',
-                height: '290px',
-                background: '#0f172a',
-                border: '3px solid #f43f5e',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}
-            >
-              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-                <img
-                  src={poster.imageSrc}
-                  alt={poster.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </div>
-              <div style={{
-                background: 'rgba(15, 23, 42, 0.95)',
-                padding: '8px 12px',
-                borderTop: '1.5px solid #f43f5e',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-                <div>
-                  <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: 'bold' }}>
-                    {poster.title}
-                  </div>
-                  <div style={{ color: '#fda4af', fontSize: '10.5px' }}>
-                    {poster.subtitle}
-                  </div>
-                </div>
-                <span style={{
-                  background: '#e11d48',
-                  color: 'white',
-                  fontSize: '10.5px',
-                  fontWeight: 'bold',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  whiteSpace: 'nowrap'
-                }}>
-                  🔍 ขยายภาพ
-                </span>
-              </div>
-            </div>
-          </Html>
-        </group>
-      ))}
-
-      {/* ── 1. Patient Observation Bed with Soft Pillows (กิจกรรม 1: สัญญาณอันตราย 5 ข้อ) ── */}
-      <InteractiveSeat
-        id="room104_bed"
-        name="เตียงสังเกตอาการฉุกเฉิน"
-        type="bed"
-        position={[-5.4, 0, -6.0]}
-        rotation={[0, 0, 0]}
-        seatOffset={[0, 0.68, 0]}
-      >
-        <group onClick={() => { setActiveTab(0); setShowLearningModal(true); }}>
-          <HospitalBed position={[0, 0, 0]} />
-          {/* Pillows resting securely on top of mattress headboard */}
-          <Pillows position={[0.05, 0.72, -0.75]} rotation={[0, 0, 0]} scale={0.75} />
-        </group>
-        <Html position={[0, 1.4, 0]} center distanceFactor={14}>
-          <div
-            onClick={(e) => { e.stopPropagation(); setActiveTab(0); setShowLearningModal(true); }}
-            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
-            style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', border: '2px solid white' }}
-          >
-            <span>🛏️ เตียงสังเกตอาการ (คลิกเปิดคู่มือ)</span>
-          </div>
-        </Html>
-      </InteractiveSeat>
-
-      {/* ── Bedside Nightstand with Hydration Water & Emergency Call Button ── */}
-      <group position={[-7.2, 0, -6.8]}>
-        <HospitalNightstand position={[0, 0, 0]} scale={1.05}>
-          {/* Hydration carafe */}
-          <mesh position={[0, 0.74, 0]} castShadow>
-            <cylinderGeometry args={[0.07, 0.08, 0.24, 20]} />
-            <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
-          </mesh>
-        </HospitalNightstand>
-      </group>
-
-      {/* ── 2. Doctor Consultation Desk & Emergency Red Hotline (กิจกรรม 2 & 3) ── */}
-      <group position={[7.8, 0, 2.5]} rotation={[0, -Math.PI / 2, 0]} onClick={() => { setActiveTab(1); setShowLearningModal(true); }}>
-        <DoctorDesk position={[0, 0, 0]} scale={0.85} />
-        {/* Examination desk lamp positioned properly on consultation desk */}
-        <ExaminationLamp position={[-0.3, 0.78, 0]} scale={0.65} />
-        <Html position={[0, 1.35, 0]} center distanceFactor={14}>
-          <div
-            onClick={(e) => { e.stopPropagation(); setActiveTab(1); setShowLearningModal(true); }}
-            className="cursor-pointer select-none px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-xl flex items-center gap-1 transition transform hover:scale-105 whitespace-nowrap"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: '2px solid white' }}
-          >
-            <span>🩺 โต๊ะตรวจ & จำแนกอาการ (คลิก)</span>
-          </div>
-        </Html>
-      </group>
+      <WindowWithCurtains position={[-5.8, 2.8, -8.92]} width={3.4} height={2.8} />
+      <WindowWithCurtains position={[5.8, 2.8, -8.92]} width={3.4} height={2.8} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          🚨 INTERACTIVE LEARNING MODAL (Toggled on click for minimal/compact view)
+          ผนังกลาง (Z = -8.84): ภาพรวม 5 อาการสำคัญ (IMG_7526.JPG) พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น
           ══════════════════════════════════════════════════════════════════════════ */}
-      {showLearningModal && (
-        <Html position={[0, 1.85, -5.5]} center transform scale={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.22 : 0.27}>
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.98)',
-            padding: '24px',
-            borderRadius: '24px',
-            width: '880px',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.35)',
-            border: '3px solid #ef4444',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            color: '#333'
-          }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fee2e2', paddingBottom: '12px', marginBottom: '16px' }}>
-              <div>
-                <span style={{ background: '#dc2626', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold' }}>
-                  ZONE 2: การสังเกตอาการผิดปกติและสัญญาณอันตรายหลังคลอด (Ward 104)
-                </span>
-                <h2 style={{ margin: '6px 0 0 0', color: '#b91c1c', fontSize: '22px' }}>
-                  {activeTab === 0 && '5 สัญญาณอันตรายสำคัญที่ต้องรีบไปโรงพยาบาล'}
-                  {activeTab === 1 && 'กิจกรรมจำแนกอาการ: เฝ้าสังเกต vs ต้องไปโรงพยาบาลทันที'}
-                  {activeTab === 2 && 'การป้องกันภาวะแทรกซ้อนและการดูแลตนเองที่บ้าน'}
-                  {activeTab === 3 && 'แบบประเมินความรู้ประจำห้องที่ 4 (ข้อ 1, 4 & 7)'}
-                </h2>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+      <WoodFramedBacklitPanel position={[0, 2.55, -8.84]} rotation={[0, 0, 0]} width={5.8} height={4.1}>
+        <Html position={[0, 0, 0]} center transform scale={0.28}>
+          <div
+            onClick={() => openGalleryAt(0)}
+            style={{
+              width: '770px',
+              height: '540px',
+              borderRadius: '18px',
+              overflow: 'hidden',
+              border: '5px solid #ffffff',
+              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
+              cursor: 'pointer',
+              background: '#fff1f2',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <img
+              src="/images/rev/w104_overview.jpg"
+              alt="การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด"
+              style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#fff1f2' }}
+            />
+            <div style={{
+              background: '#be185d',
+              color: '#ffffff',
+              padding: '8px 16px',
+              fontWeight: 900,
+              fontSize: '17px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <span>การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด (5 อาการสำคัญ)</span>
+              <span style={{ background: '#ffffff', color: '#be185d', padding: '3px 12px', borderRadius: '999px', fontSize: '14px' }}>
+                🔍 คลิกเพื่อดูภาพขยาย
+              </span>
+            </div>
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          ผนังที่ 1 (ซ้าย X = -8.84): แสดงภาพ 1, 2, 3 (ตามสมุดโน้ตไม่มีชื่อ 2 หน้า 3–4) พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <WoodFramedBacklitPanel position={[-8.84, 2.75, 0]} rotation={[0, Math.PI / 2, 0]} width={10.8} height={4.2}>
+        <Html position={[0, 0, 0]} center transform scale={0.28}>
+          <div
+            style={{
+              width: '1420px',
+              height: '540px',
+              borderRadius: '20px',
+              background: 'linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%)',
+              border: '5px solid #ffffff',
+              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
+              padding: '14px 18px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+            }}
+          >
+            <div style={{
+              background: '#e11d48',
+              color: '#ffffff',
+              padding: '8px 18px',
+              borderRadius: '12px',
+              fontWeight: 900,
+              fontSize: '20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <span>ผนังที่ 1: อาการผิดปกติที่ต้องเฝ้าระวัง (ภาพที่ 1, 2, 3) — คลิกที่ภาพเพื่อขยายอ่านชัดเจน</span>
+              <span style={{ fontSize: '14px', background: 'rgba(255,255,255,0.2)', padding: '3px 12px', borderRadius: '999px' }}>
+                มีปุ่ม ก่อนหน้า / ถัดไป
+              </span>
+            </div>
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+              {[
+                { idx: 1, title: '1. เลือดออกมากหลังคลอด', img: '/images/rev/w104_card1_pph.jpg' },
+                { idx: 2, title: '2. ไข้ น้ำคาวปลามีกลิ่นเหม็น', img: '/images/rev/w104_card2_fever_lochia.jpg' },
+                { idx: 3, title: '3. ปวดศีรษะรุนแรง ตาพร่ามัว', img: '/images/rev/w104_card3_preeclampsia.jpg' },
+              ].map((card) => (
+                <div
+                  key={card.idx}
+                  onClick={() => openGalleryAt(card.idx)}
+                  style={{
+                    background: '#ffffff',
+                    borderRadius: '14px',
+                    border: '2px solid #fecdd3',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <img
+                    src={card.img}
+                    alt={card.title}
+                    style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#fff1f2' }}
+                  />
+                  <div style={{
+                    background: '#ffe4e6',
+                    color: '#9f1239',
+                    fontWeight: 900,
+                    fontSize: '15px',
+                    padding: '8px 12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}>
+                    <span>{card.title}</span>
+                    <span>🔍 ขยาย</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          ผนังที่ 2 (ขวา X = +8.84): แสดงภาพ 4, 5 (ตามสมุดโน้ตไม่มีชื่อ 2 หน้า 4) พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <WoodFramedBacklitPanel position={[8.84, 2.75, 0]} rotation={[0, -Math.PI / 2, 0]} width={8.4} height={4.2}>
+        <Html position={[0, 0, 0]} center transform scale={0.28}>
+          <div
+            style={{
+              width: '1100px',
+              height: '540px',
+              borderRadius: '20px',
+              background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)',
+              border: '5px solid #ffffff',
+              boxShadow: '0 10px 28px rgba(0,0,0,0.22)',
+              padding: '14px 18px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+            }}
+          >
+            <div style={{
+              background: '#d97706',
+              color: '#ffffff',
+              padding: '8px 18px',
+              borderRadius: '12px',
+              fontWeight: 900,
+              fontSize: '20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <span>ผนังที่ 2: อาการผิดปกติที่ต้องเฝ้าระวัง (ภาพที่ 4, 5) — คลิกที่ภาพเพื่อขยายอ่านชัดเจน</span>
+              <span style={{ fontSize: '14px', background: 'rgba(255,255,255,0.2)', padding: '3px 12px', borderRadius: '999px' }}>
+                มีปุ่ม ก่อนหน้า / ถัดไป
+              </span>
+            </div>
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {[
+                { idx: 4, title: '4. ปวดหรือบวมน่อง', img: '/images/rev/w104_card4_dvt.jpg' },
+                { idx: 5, title: '5. เจ็บหน้าอก หรือหายใจลำบาก', img: '/images/rev/w104_card5_chest_pain.jpg' },
+              ].map((card) => (
+                <div
+                  key={card.idx}
+                  onClick={() => openGalleryAt(card.idx)}
+                  style={{
+                    background: '#ffffff',
+                    borderRadius: '14px',
+                    border: '2px solid #fde68a',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <img
+                    src={card.img}
+                    alt={card.title}
+                    style={{ width: '100%', flex: 1, objectFit: 'contain', background: '#fffbeb' }}
+                  />
+                  <div style={{
+                    background: '#fef3c7',
+                    color: '#92400e',
+                    fontWeight: 900,
+                    fontSize: '16px',
+                    padding: '8px 14px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}>
+                    <span>{card.title}</span>
+                    <span>🔍 ขยาย</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Html>
+      </WoodFramedBacklitPanel>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          🛋️ ชุดโซฟาแอลเชปผ้าทอสีเทาเบจ + หมอนรองให้นมรูปตัว U + สตูลพรมถักสีเขียวอ่อน +
+             พรมทอสีครีมเบจ + โต๊ะกลางไม้ขาววางไอแพด/แก้วน้ำ/แจกันดอกเดซี่ + ตู้ไม้โคมไฟอุ่น
+             (ตรงตามภาพตัวอย่าง สมุดโน้ตไม่มีชื่อ 2 หน้า 4 ทุกประการ)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <CozySectionalSofaSet
+        seatId="room104_sofa"
+        seatName="โซฟาเรียนรู้การสังเกตอาการผิดปกติหลังคลอด"
+        position={[0, 0, -0.2]}
+        isSeated={seatedTarget?.id === 'room104_sofa'}
+        onClickSofa={handleSitSofa}
+        onClickTablet={() => setShowActivityModal(true)}
+        buttonTextIdle="🛋️ คลิกนั่งโซฟา / แตะไอแพดบนโต๊ะ เพื่อเริ่มกิจกรรมสังเกตอาการผิดปกติ & ภาวะแทรกซ้อน"
+        buttonTextSeated="🩺 กำลังนั่งบนโซฟา — คลิกเปิดกิจกรรมสังเกตอาการผิดปกติ & ภาวะแทรกซ้อน"
+        accentColor="#e11d48"
+      />
+
+      <CozyRoomDecorCorners />
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          🩺 หน้าต่างกิจกรรม Ward 104:
+          1. สังเกตอาการผิดปกติ (จำแนกอาการปกติ vs อาการผิดปกติที่ต้องพบแพทย์)
+          2. ทบทวนภาวะแทรกซ้อน 5 อาการสำคัญและฝึกดูแลตนเอง
+          3. แบบทดสอบความรู้ประจำห้อง
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {showActivityModal && (
+        <Html fullscreen zIndexRange={[120, 0]}>
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(15, 23, 42, 0.72)',
+              backdropFilter: 'blur(6px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px',
+              zIndex: 200,
+              fontFamily: '"Sarabun", system-ui, -apple-system, sans-serif',
+            }}
+            onClick={() => setShowActivityModal(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: 'min(980px, 96vw)',
+                maxHeight: '90vh',
+                background: '#fffdf9',
+                borderRadius: '26px',
+                border: '4px solid #f43f5e',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Header */}
+              <div
+                style={{
+                  background: 'linear-gradient(90deg, #ffe4e6 0%, #fecdd3 50%, #fef3c7 100%)',
+                  padding: '16px 24px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: '2px solid #fda4af',
+                }}
+              >
+                <div>
+                  <span style={{
+                    background: '#e11d48',
+                    color: '#fff',
+                    padding: '4px 14px',
+                    borderRadius: '999px',
+                    fontSize: '13px',
+                    fontWeight: 900,
+                  }}>
+                    Ward 104 • การสังเกตอาการผิดปกติหลังคลอด
+                  </span>
+                  <h2 style={{ margin: '6px 0 0', fontSize: '23px', fontWeight: 900, color: '#881337' }}>
+                    การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด
+                  </h2>
+                </div>
                 <button
-                  onClick={() => setShowLearningModal(false)}
-                  style={{ background: '#ef4444', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                  type="button"
+                  onClick={() => setShowActivityModal(false)}
+                  style={{
+                    background: '#be185d',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    fontWeight: 900,
+                    fontSize: '15px',
+                    cursor: 'pointer',
+                  }}
                 >
                   ✕ ปิดหน้าต่าง
                 </button>
-                <button
-                  onClick={() => setRoom('lobby')}
-                  style={{ background: '#f3f4f6', border: '1px solid #ccc', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
-                >
-                  ⬅ ล็อบบี้
-                </button>
-              </div>
-            </div>
-
-          {/* Navigation Tabs */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
-            {['1. 5 สัญญาณอันตราย', '2. ฝึกจำแนกอาการ', '3. การป้องกันและดูแลตนเอง', '4. แบบประเมิน (Quiz)'].map((label, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveTab(idx)}
-                style={{
-                  flex: 1,
-                  padding: '10px 6px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: activeTab === idx ? '#dc2626' : '#fee2e2',
-                  color: activeTab === idx ? 'white' : '#991b1b',
-                  fontWeight: 'bold',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* ── TAB 0: 5 สัญญาณอันตรายสำคัญ ── */}
-          {activeTab === 0 && (
-            <div>
-              <div style={{ background: '#fef2f2', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #ef4444' }}>
-                <strong>หลักการสำคัญ:</strong> สื่อนี้ใช้เพื่อการเรียนรู้และฝึกสังเกตอาการ ไม่ใช้แทนการตรวจรักษาจริง หากพบสัญญาณอันตรายข้อใดข้อหนึ่ง ให้ขอความช่วยเหลือทางการแพทย์ทันที
               </div>
 
-              {/* Danger Signs Selection Buttons */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
-                {dangerSigns.map((d, idx) => (
+              {/* Tabs */}
+              <div style={{ display: 'flex', gap: '10px', padding: '14px 24px 0', background: '#fff1f2' }}>
+                {[
+                  { id: 'classify', label: '1. กิจกรรมสังเกตอาการผิดปกติ (จำแนกอาการ)' },
+                  { id: 'review', label: '2. ทบทวนภาวะแทรกซ้อน 5 อาการสำคัญ & ฝึกดูแลตนเอง' },
+                  { id: 'quiz', label: '3. แบบทดสอบท้ายห้อง' },
+                ].map((t) => (
                   <button
-                    key={d.id}
-                    onClick={() => setSelectedDangerIndex(idx)}
+                    key={t.id}
+                    type="button"
+                    onClick={() => setActiveTab(t.id)}
                     style={{
                       flex: 1,
-                      padding: '10px 4px',
-                      borderRadius: '10px',
-                      border: '2px solid',
-                      borderColor: selectedDangerIndex === idx ? '#dc2626' : '#e2e8f0',
-                      background: selectedDangerIndex === idx ? '#fef2f2' : 'white',
-                      color: selectedDangerIndex === idx ? '#991b1b' : '#334155',
-                      fontWeight: 'bold',
-                      fontSize: '12px',
+                      padding: '12px 14px',
+                      borderRadius: '14px 14px 0 0',
+                      border: 'none',
+                      background: activeTab === t.id ? '#e11d48' : '#ffe4e6',
+                      color: activeTab === t.id ? '#ffffff' : '#9f1239',
+                      fontWeight: 900,
+                      fontSize: '15px',
                       cursor: 'pointer',
-                      textAlign: 'center'
                     }}
                   >
-                    <div style={{ fontSize: '18px' }}>{d.icon}</div>
-                    <div style={{ marginTop: '2px' }}>{d.title.split('.')[1]?.trim()}</div>
+                    {t.label}
                   </button>
                 ))}
               </div>
 
-              {/* Active Danger Sign Detail */}
-              {dangerSigns[selectedDangerIndex] && (
-                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <h3 style={{ margin: 0, color: '#b91c1c', fontSize: '16px' }}>
-                      {dangerSigns[selectedDangerIndex].icon} {dangerSigns[selectedDangerIndex].title}
-                    </h3>
-                    <span style={{ fontSize: '11px', color: '#64748b', background: '#f1f5f9', padding: '2px 8px', borderRadius: '6px' }}>
-                      ภาพประกอบอ้างอิงจากคู่มือหลักสูตร
-                    </span>
-                  </div>
+              {/* Body */}
+              <div style={{ padding: '22px 24px', overflowY: 'auto', flex: 1 }}>
+                {activeTab === 'classify' && (
+                  <div>
+                    <div style={{
+                      background: '#fff1f2',
+                      borderLeft: '5px solid #e11d48',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      marginBottom: '16px',
+                      fontSize: '16px',
+                      color: '#881337',
+                      fontWeight: 800,
+                    }}>
+                      คำแนะนำ: พิจารณาอาการต่อไปนี้ แล้วจำแนกว่าเป็น "อาการปกติ" หรือ "อาการผิดปกติที่ต้องรีบไปพบแพทย์ทันที"
+                    </div>
 
-                  <div style={{ display: 'flex', gap: '14px', marginBottom: '12px' }}>
-                    {dangerSigns[selectedDangerIndex].img && (
-                      <div style={{ flexShrink: 0, width: '160px', height: '125px', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid #cbd5e1', background: 'white' }}>
-                        <img
-                          src={dangerSigns[selectedDangerIndex].img}
-                          alt={dangerSigns[selectedDangerIndex].title}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {SYMPTOM_ITEMS.map((item, i) => {
+                        const chosen = answers[item.id];
+                        return (
+                          <div
+                            key={item.id}
+                            style={{
+                              background: '#ffffff',
+                              border: '2px solid #fecdd3',
+                              borderRadius: '16px',
+                              padding: '14px 18px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              gap: '16px',
+                              flexWrap: 'wrap',
+                            }}
+                          >
+                            <div style={{ flex: 1, minWidth: '280px' }}>
+                              <div style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a' }}>
+                                {i + 1}. {item.text}
+                              </div>
+                              {classifyFeedback && (
+                                <div style={{ fontSize: '14px', color: '#475569', marginTop: '4px', fontWeight: 700 }}>
+                                  💡 {item.reason}
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleClassify(item.id, 'normal')}
+                                style={{
+                                  padding: '8px 16px',
+                                  borderRadius: '10px',
+                                  border: chosen === 'normal' ? '2px solid #16a34a' : '1.5px solid #cbd5e1',
+                                  background: chosen === 'normal' ? '#dcfce7' : '#ffffff',
+                                  color: chosen === 'normal' ? '#15803d' : '#334155',
+                                  fontWeight: 900,
+                                  fontSize: '14px',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                ✓ อาการปกติหลังคลอด
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleClassify(item.id, 'danger')}
+                                style={{
+                                  padding: '8px 16px',
+                                  borderRadius: '10px',
+                                  border: chosen === 'danger' ? '2px solid #e11d48' : '1.5px solid #cbd5e1',
+                                  background: chosen === 'danger' ? '#ffe4e6' : '#ffffff',
+                                  color: chosen === 'danger' ? '#be123c' : '#334155',
+                                  fontWeight: 900,
+                                  fontSize: '14px',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                🚨 อาการผิดปกติ (รีบไปพบแพทย์)
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {classifyFeedback && (
+                      <div style={{
+                        marginTop: '14px',
+                        padding: '14px 18px',
+                        borderRadius: '14px',
+                        background: classifyFeedback.pass ? '#dcfce7' : '#fee2e2',
+                        color: classifyFeedback.pass ? '#166534' : '#991b1b',
+                        fontWeight: 900,
+                        fontSize: '16px',
+                      }}>
+                        {classifyFeedback.msg}
                       </div>
                     )}
-                    <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                      <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', padding: '10px', borderRadius: '10px' }}>
-                        <strong style={{ color: '#166534', fontSize: '12.5px' }}>🟢 อาการปกติ (เฝ้าสังเกตได้):</strong>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#14532d', lineHeight: '1.35' }}>
-                          {dangerSigns[selectedDangerIndex].normalText}
-                        </p>
-                      </div>
 
-                      <div style={{ background: '#fef2f2', border: '1.5px solid #fca5a5', padding: '10px', borderRadius: '10px' }}>
-                        <strong style={{ color: '#991b1b', fontSize: '12.5px' }}>🔴 สัญญาณอันตราย (ต้องไป รพ. ทันที):</strong>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#7f1d1d', lineHeight: '1.35' }}>
-                          {dangerSigns[selectedDangerIndex].dangerText}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#fff1f2', borderLeft: '4px solid #e11d48', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#9f1239', fontWeight: 'bold' }}>
-                    🚨 สิ่งที่ต้องปฏิบัติ: {dangerSigns[selectedDangerIndex].action}
-                  </div>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>
-                  คลิกดูรายละเอียดครบทั้ง 5 สัญญาณ เพื่อความเข้าใจที่ถูกต้อง
-                </span>
-                <button
-                  onClick={() => setActiveTab(1)}
-                  style={{ background: '#dc2626', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ไปฝึกจำแนกอาการ ➜
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 1: ฝึกจำแนกอาการ (Triage) ── */}
-          {activeTab === 1 && (
-            <div>
-              <div style={{ background: '#fef2f2', padding: '12px 16px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', borderLeft: '4px solid #ef4444' }}>
-                <strong>เป้าหมาย:</strong> ฝึกวิเคราะห์สถานการณ์จริง และจำแนกว่าควร "เฝ้าสังเกต" หรือ "ต้องไปโรงพยาบาลทันที"
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px', maxHeight: '280px', overflowY: 'auto' }}>
-                {triageItems.map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '500' }}>{item.text}</span>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <button
-                        onClick={() => handleTriageSelect(item.id, 'obs')}
+                        type="button"
+                        onClick={checkClassification}
                         style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          border: '1.5px solid',
-                          borderColor: item.ans === 'obs' ? '#16a34a' : '#cbd5e1',
-                          background: item.ans === 'obs' ? '#dcfce7' : 'white',
-                          color: item.ans === 'obs' ? '#15803d' : '#475569',
-                          fontWeight: 'bold',
-                          fontSize: '12px',
-                          cursor: 'pointer'
+                          background: '#e11d48',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '12px 28px',
+                          borderRadius: '14px',
+                          fontWeight: 900,
+                          fontSize: '17px',
+                          cursor: 'pointer',
                         }}
                       >
-                        เฝ้าสังเกต
+                        ✓ ตรวจคำตอบ
                       </button>
+                      {classifyFeedback?.pass && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('review')}
+                          style={{
+                            background: '#16a34a',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '12px 24px',
+                            borderRadius: '14px',
+                            fontWeight: 900,
+                            fontSize: '17px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ไปกิจกรรมที่ 2: ทบทวนภาวะแทรกซ้อน 5 อาการ ➜
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'review' && (
+                  <div>
+                    <div style={{
+                      background: '#fffbeb',
+                      borderLeft: '5px solid #d97706',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      marginBottom: '16px',
+                      fontSize: '16px',
+                      color: '#92400e',
+                      fontWeight: 800,
+                    }}>
+                      คลิกที่แต่ละการ์ดเพื่อศึกษารายละเอียดอาการและแนวทางการดูแลตนเองเบื้องต้นก่อนไปโรงพยาบาล
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '14px' }}>
+                      {W104_GALLERY.slice(1).map((card, i) => {
+                        const idx = i + 1;
+                        const seen = reviewedCards.includes(idx);
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => {
+                              if (!seen) setReviewedCards((prev) => [...prev, idx]);
+                              openGalleryAt(idx);
+                            }}
+                            style={{
+                              background: '#ffffff',
+                              borderRadius: '16px',
+                              border: seen ? '2.5px solid #16a34a' : '2px solid #fecdd3',
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                            }}
+                          >
+                            <img
+                              src={card.src}
+                              alt={card.title}
+                              style={{ width: '100%', height: '190px', objectFit: 'contain', background: '#fff1f2' }}
+                            />
+                            <div style={{ padding: '10px 14px' }}>
+                              <div style={{ fontWeight: 900, fontSize: '16px', color: '#881337' }}>{card.title}</div>
+                              <div style={{ fontSize: '13px', color: '#475569', marginTop: '4px' }}>{card.description}</div>
+                              <div style={{
+                                marginTop: '8px',
+                                display: 'inline-block',
+                                padding: '3px 10px',
+                                borderRadius: '999px',
+                                background: seen ? '#dcfce7' : '#ffe4e6',
+                                color: seen ? '#166534' : '#be123c',
+                                fontSize: '12px',
+                                fontWeight: 900,
+                              }}>
+                                {seen ? '✓ ศึกษาแล้ว (คลิกเพื่อดูซ้ำ)' : '🔍 คลิกเพื่อดูภาพใหญ่'}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ marginTop: '18px', textAlign: 'right' }}>
                       <button
-                        onClick={() => handleTriageSelect(item.id, 'er')}
+                        type="button"
+                        onClick={() => setActiveTab('quiz')}
                         style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          border: '1.5px solid',
-                          borderColor: item.ans === 'er' ? '#dc2626' : '#cbd5e1',
-                          background: item.ans === 'er' ? '#fee2e2' : 'white',
-                          color: item.ans === 'er' ? '#991b1b' : '#475569',
-                          fontWeight: 'bold',
-                          fontSize: '12px',
-                          cursor: 'pointer'
+                          background: '#7c3aed',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '12px 26px',
+                          borderRadius: '14px',
+                          fontWeight: 900,
+                          fontSize: '17px',
+                          cursor: 'pointer',
                         }}
                       >
-                        ต้องไป รพ. ทันที
+                        ไปทำแบบทดสอบท้ายห้อง ➜
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                )}
 
-              {triageFeedback && (
-                <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '12px', background: triageFeedback.pass ? '#dcfce7' : '#fee2e2', color: triageFeedback.pass ? '#166534' : '#991b1b', fontSize: '13px', fontWeight: 'bold' }}>
-                  {triageFeedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                  onClick={checkTriage}
-                  style={{ background: '#dc2626', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ✓ ตรวจคำตอบการจำแนกอาการ
-                </button>
-                {triageFeedback?.pass && (
-                  <button
-                    onClick={() => setActiveTab(2)}
-                    style={{ background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                  >
-                    ไปดูการป้องกันและดูแลตนเอง ➜
-                  </button>
+                {activeTab === 'quiz' && (
+                  <div>
+                    {!quizFinished ? (
+                      <div style={{ background: '#ffffff', padding: '20px', borderRadius: '18px', border: '2px solid #fecdd3' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 800, color: '#9f1239' }}>
+                          <span>แบบประเมินความรู้ Ward 104</span>
+                          <span>ข้อ {quizIndex + 1} / {room4Questions.length}</span>
+                        </div>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b', marginBottom: '16px' }}>
+                          "{currentQ.question}"
+                        </h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+                          {[
+                            { val: true, label: '✓ ใช่ / ถูกต้อง' },
+                            { val: false, label: '✕ ไม่ใช่ / ไม่ถูกต้อง' },
+                          ].map((btn) => (
+                            <button
+                              key={String(btn.val)}
+                              type="button"
+                              disabled={quizShowFeedback}
+                              onClick={() => handleQuizAnswer(btn.val)}
+                              style={{
+                                padding: '16px',
+                                fontSize: '18px',
+                                fontWeight: 900,
+                                borderRadius: '14px',
+                                border: '2px solid #f43f5e',
+                                background: quizShowFeedback && currentQ.answer === btn.val ? '#dcfce7' : '#fff1f2',
+                                color: '#881337',
+                                cursor: quizShowFeedback ? 'default' : 'pointer',
+                              }}
+                            >
+                              {btn.label}
+                            </button>
+                          ))}
+                        </div>
+                        {quizShowFeedback && (
+                          <div style={{ background: '#f0fdf4', border: '2px solid #86efac', padding: '14px', borderRadius: '14px' }}>
+                            <div style={{ fontWeight: 900, fontSize: '17px', color: '#166534', marginBottom: '6px' }}>
+                              {quizUserChoice === currentQ.answer ? '🎉 ถูกต้องค่ะ!' : `เฉลย: ${currentQ.answerText}`}
+                            </div>
+                            <div style={{ fontSize: '15px', color: '#334155', marginBottom: '12px' }}>
+                              💡 {currentQ.reason}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleNextQuizQuestion}
+                              style={{
+                                background: '#e11d48',
+                                color: '#fff',
+                                border: 'none',
+                                padding: '10px 22px',
+                                borderRadius: '12px',
+                                fontWeight: 900,
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {quizIndex < room4Questions.length - 1 ? 'ข้อถัดไป ➜' : 'เสร็จสิ้นบทเรียน 🏆'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '24px' }}>
+                        <h3 style={{ fontSize: '26px', fontWeight: 900, color: '#15803d' }}>
+                          🎉 ผ่านการเรียนรู้ Ward 104 การสังเกตอาการผิดปกติหลังคลอดเรียบร้อยแล้ว!
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setRoom('lobby')}
+                          style={{
+                            marginTop: '14px',
+                            background: '#e11d48',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '12px 26px',
+                            borderRadius: '14px',
+                            fontWeight: 900,
+                            fontSize: '17px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          กลับสู่ล็อบบี้ 🏥
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
-          )}
-
-          {/* ── TAB 2: การป้องกันภาวะแทรกซ้อนและการดูแลตนเองที่บ้าน (อิงตามคู่มือหลักสูตรวิจัย) ── */}
-          {activeTab === 2 && (
-            <div>
-              <div style={{ background: '#f0fdf4', padding: '14px 18px', borderRadius: '14px', border: '1px solid #bbf7d0', marginBottom: '16px' }}>
-                <h3 style={{ color: '#166534', margin: '0 0 6px 0', fontSize: '18px' }}>
-                  🛡️ การป้องกันภาวะแทรกซ้อนและการดูแลตนเองที่บ้าน
-                </h3>
-                <p style={{ margin: 0, fontSize: '13px', color: '#14532d' }}>
-                  แนวทางการดูแลและฟื้นฟูร่างกายตามหลักวิชาการสำหรับมารดาหลังคลอด เพื่อป้องกันการติดเชื้อและลดความเสี่ยงภาวะแทรกซ้อน
-                </p>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                {/* 1. การป้องกันการติดเชื้อ */}
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#0369a1', fontSize: '14px' }}>
-                    🧼 1. การป้องกันการติดเชื้อหลังคลอด:
-                  </h4>
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
-                    <li><strong>สุขอนามัย:</strong> พักผ่อนให้เพียงพอ รักษาความสะอาดร่างกายและแผลฝีเย็บ</li>
-                    <li><strong>ผ้าอนามัย:</strong> เปลี่ยนผ้าอนามัยบ่อยๆ อย่างน้อยทุก 3–4 ชั่วโมง หรือเมื่อชุ่ม</li>
-                    <li><strong>โภชนาการ:</strong> ดื่มน้ำให้เพียงพอ และรับประทานอาหารครบ 5 หมู่</li>
-                    <li><strong>ข้อควรระวัง:</strong> หลีกเลี่ยงการสวนล้างช่องคลอด หรือใช้ยาสมุนไพรโดยไม่ปรึกษาแพทย์</li>
-                  </ul>
-                </div>
-
-                {/* 2. การป้องกันความดันโลหิตสูง */}
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#b45309', fontSize: '14px' }}>
-                    ⚡ 2. การป้องกันภาวะความดันโลหิตสูงหลังคลอด:
-                  </h4>
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
-                    <li><strong>พักผ่อน:</strong> นอนหลับพักผ่อนให้เพียงพอ ผ่อนคลายและลดความเครียด</li>
-                    <li><strong>การตรวจวัด:</strong> หากมีเครื่องวัดความดัน ควรตรวจวัดตามคำแนะนำ (ปกติ &lt; 140/90 mmHg)</li>
-                    <li><strong>อาหาร:</strong> รับประทานอาหารมีประโยชน์ ลดอาหารเค็มจัด</li>
-                    <li><strong>หลีกเลี่ยง:</strong> งดเครื่องดื่มคาเฟอีนหรือสารกระตุ้น เช่น ชา กาแฟ น้ำอัดลม</li>
-                  </ul>
-                </div>
-
-                {/* 3. การป้องกันลิ่มเลือดอุดตัน */}
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#7c3aed', fontSize: '14px' }}>
-                    🦵 3. การป้องกันภาวะลิ่มเลือดอุดตันหลังคลอด:
-                  </h4>
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
-                    <li><strong>การเคลื่อนไหว:</strong> ขยับร่างกายและเดินบ่อยๆ ไม่อยู่ในท่าเดิมนานๆ</li>
-                    <li><strong>การพักผ่อน:</strong> ยกขาสูงเมื่อนอนหรือพักผ่อน ดื่มน้ำสะอาดให้เพียงพอ</li>
-                    <li><strong>บริหารขา:</strong> กระดกข้อเท้าและขยับขาเพื่อกระตุ้นการไหลเวียนเลือด</li>
-                    <li><strong>ข้อห้าม:</strong> หากมีอาการปวดบวมน่องข้างเดียว ห้ามนวดขาเด็ดขาดและรีบพบแพทย์</li>
-                  </ul>
-                </div>
-
-                {/* 4. การตรวจหลังคลอดตามนัด */}
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#15803d', fontSize: '14px' }}>
-                    🏥 4. การตรวจหลังคลอดและการสังเกตตนเอง:
-                  </h4>
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
-                    <li><strong>สังเกตตนเอง:</strong> สังเกตสี ปริมาณ กลิ่นของน้ำคาวปลา และร่างกายทุกวัน</li>
-                    <li><strong>มาตามนัด:</strong> ไปตรวจหลังคลอดตามนัดหมายของแพทย์เพื่อตรวจค้นหาภาวะแทรกซ้อน</li>
-                    <li><strong>ปรึกษาแพทย์:</strong> รับคำแนะนำการคุมกำเนิดและการดูแลสุขภาพจิตหลังคลอด</li>
-                    <li><strong>Safety Note:</strong> หากมีสัญญาณอันตราย ให้รีบไปโรงพยาบาลทันที ไม่ต้องรอวันนัด</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  onClick={() => setActiveTab(3)}
-                  style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  ทำแบบประเมินความรู้ท้ายบท ➜
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ── TAB 3: แบบประเมินความรู้ประจำห้องที่ 4 (ข้อ 1, 4 & 7) ── */}
-          {activeTab === 3 && (
-            <div>
-              {!quizFinished ? (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ background: '#fce4ec', color: '#c2185b', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-                      📋 แบบประเมิน: {currentQ.room}
-                    </span>
-                    <span style={{ fontSize: '13px', color: '#666', fontWeight: 'bold' }}>
-                      ข้อ {quizIndex + 1} / {room4Questions.length} | คะแนนสะสม: {quizScore}
-                    </span>
-                  </div>
-
-                  <h3 style={{ color: '#222', fontSize: '17px', fontWeight: 'bold', lineHeight: '1.45', margin: '0 0 16px 0' }}>
-                    "{currentQ.question}"
-                  </h3>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                    <button
-                      disabled={quizShowFeedback}
-                      onClick={() => handleQuizAnswer(true)}
-                      style={{
-                        padding: '14px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: quizShowFeedback && currentQ.answer === true ? '#16a34a' : (quizUserChoice === true ? '#dc2626' : '#d1d5db'),
-                        background: quizShowFeedback && currentQ.answer === true ? '#dcfce7' : (quizUserChoice === true ? '#fee2e2' : '#f9fafb'),
-                        color: quizShowFeedback && currentQ.answer === true ? '#15803d' : '#1f2937',
-                        cursor: quizShowFeedback ? 'default' : 'pointer'
-                      }}
-                    >
-                      ✓ ถูก (True)
-                    </button>
-                    <button
-                      disabled={quizShowFeedback}
-                      onClick={() => handleQuizAnswer(false)}
-                      style={{
-                        padding: '14px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        borderRadius: '10px',
-                        border: '2px solid',
-                        borderColor: quizShowFeedback && currentQ.answer === false ? '#16a34a' : (quizUserChoice === false ? '#dc2626' : '#d1d5db'),
-                        background: quizShowFeedback && currentQ.answer === false ? '#dcfce7' : (quizUserChoice === false ? '#fee2e2' : '#f9fafb'),
-                        color: quizShowFeedback && currentQ.answer === false ? '#15803d' : '#1f2937',
-                        cursor: quizShowFeedback ? 'default' : 'pointer'
-                      }}
-                    >
-                      ✕ ผิด (False)
-                    </button>
-                  </div>
-
-                  {quizShowFeedback && (
-                    <div style={{
-                      background: quizUserChoice === currentQ.answer ? '#f0fdf4' : '#fffbeb',
-                      border: `1.5px solid ${quizUserChoice === currentQ.answer ? '#86efac' : '#fde68a'}`,
-                      borderRadius: '10px',
-                      padding: '12px',
-                      marginBottom: '10px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '15px', color: quizUserChoice === currentQ.answer ? '#16a34a' : '#d97706' }}>
-                          {quizUserChoice === currentQ.answer ? '🎉 ถูกต้อง! (+1 คะแนน)' : `⚠️ เฉลย: ${currentQ.answerText}`}
-                        </span>
-                        <button
-                          onClick={handleNextQuizQuestion}
-                          style={{
-                            padding: '6px 16px',
-                            background: '#dc2626',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: '13px',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {quizIndex < room4Questions.length - 1 ? 'ข้อถัดไป ➜' : 'สำเร็จบทเรียน 🏆'}
-                        </button>
-                      </div>
-                      <div style={{ fontSize: '13px', color: '#444', lineHeight: '1.4' }}>
-                        <strong>💡 เหตุผล:</strong> {currentQ.reason}
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '16px 8px' }}>
-                  <h2 style={{ color: '#2e7d32', fontSize: '24px', margin: '0 0 10px 0' }}>🎉 ผ่านบทเรียนและการประเมินความรู้ห้องที่ 4 แล้ว!</h2>
-                  <div style={{ fontSize: '16px', color: '#444', marginBottom: '16px' }}>
-                    คะแนนของคุณ: <strong>{quizScore} / {room4Questions.length} คะแนน</strong>
-                  </div>
-                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-                    คุณมีความเข้าใจที่ถูกต้องเกี่ยวกับ 5 สัญญาณอันตรายหลังคลอด และพร้อมขอความช่วยเหลือทางการแพทย์ได้อย่างทันท่วงที
-                  </p>
-                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => { setQuizIndex(0); setQuizUserChoice(null); setQuizShowFeedback(false); setQuizScore(0); setQuizFinished(false); }}
-                      style={{ padding: '8px 18px', fontSize: '14px', fontWeight: 'bold', background: '#f3f4f6', color: '#333', border: '1px solid #ccc', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      ทำแบบประเมินซ้ำ ↻
-                    </button>
-                    <button
-                      onClick={() => setRoom('lobby')}
-                      style={{ padding: '8px 20px', fontSize: '14px', fontWeight: 'bold', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-                    >
-                      กลับสู่ล็อบบี้ 🏥
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </Html>
+          </div>
+        </Html>
       )}
 
-      {/* ── GTA Player Controller ── */}
-      <PlayerController initialPosition={[0, 0, 3]} />
+      <PlayerController initialPosition={[0, 0, 4.2]} />
     </group>
   );
 }

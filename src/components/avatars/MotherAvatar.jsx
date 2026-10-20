@@ -1,5 +1,5 @@
 import React, { useRef, useImperativeHandle, forwardRef, useEffect, useMemo } from 'react';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import { useGLTF, useAnimations, useFBX } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { SkeletonUtils } from 'three-stdlib';
 import useStore from '../../store/useStore';
@@ -20,31 +20,42 @@ if (typeof window !== 'undefined') {
  *  3. 👩‍⚕️ พยาบาลวิชาชีพสาว (Registered Nurse & Midwife — Megan)
  *     - สวมชุดสครับพยาบาล หูฟังตรวจ (Stethoscope) และป้ายประจำตัว
  *
- * Seated Posture:
- *  - 100% Symmetrical, anatomically realistic sitting posture on wheelchairs, sofas, chairs, and beds.
- *  - Parallel thighs, 90° knees, flat feet on footrests, relaxed upright spine with breathing animation.
+ * Locomotion & Sitting:
+ *  - 100% Native Mixamo rig matching Megan & Amy skeletons.
+ *  - Authentic Standing Idle, In-Place Walking, Sprinting, and Seated posture.
  */
 const MotherAvatar = forwardRef(({
   currentAnimation = 'idle',
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   scale = [1, 1, 1],
+  characterOverride = null,
+  outfitOverride = null,
+  isSittingOverride = null,
+  isHoldingBabyOverride = null,
 }, ref) => {
   const group = useRef();
   const avatarRigRef = useRef();
 
-  const selectedCharacter = useStore((state) => state.selectedCharacter) || 'postpartum_mother';
-  const selectedOutfit = useStore((state) => state.selectedOutfit) || 'pink';
-  const isHoldingBaby = useStore((state) => state.isHoldingBaby);
-  const isSitting = useStore((state) => state.isSitting);
+  const storeCharacter = useStore((state) => state.selectedCharacter) || 'postpartum_mother';
+  const storeOutfit = useStore((state) => state.selectedOutfit) || 'pink';
+  const storeHoldingBaby = useStore((state) => state.isHoldingBaby);
+  const storeSitting = useStore((state) => state.isSitting);
   const seatedTarget = useStore((state) => state.seatedTarget);
+
+  const selectedCharacter = characterOverride !== null ? characterOverride : storeCharacter;
+  const selectedOutfit = outfitOverride !== null ? outfitOverride : storeOutfit;
+  const isHoldingBaby = isHoldingBabyOverride !== null ? isHoldingBabyOverride : storeHoldingBaby;
+  const isSitting = isSittingOverride !== null ? isSittingOverride : storeSitting;
 
   // Load optimized female character models
   const { scene: meganScene } = useGLTF('/models/megan_opt.glb');
   const { scene: amyScene } = useGLTF('/models/amy_opt.glb');
   
-  // Load animations from soldier (matching identical glTF armature axes)
-  const { animations: soldierAnimations } = useGLTF('/models/soldier.glb');
+  // Load authentic Mixamo female animations (100% matching bone bind axes)
+  const idleFbx = useFBX('/models/animations/Standing_Idle.fbx');
+  const walkFbx = useFBX('/models/animations/walking.fbx');
+  const sittingFbx = useFBX('/models/animations/Sitting_Idle.fbx');
 
   // Authentic hospital & maternity color schemes
   const OUTFIT_COLOR_SCHEMES = useMemo(() => ({
@@ -88,10 +99,11 @@ const MotherAvatar = forwardRef(({
         child.receiveShadow = true;
         if (child.material) {
           child.material = child.material.clone();
-          child.material.roughness = 0.88;
+          child.material.roughness = 0.92;
           child.material.metalness = 0.0;
+          child.material.roughnessMap = null;
+          child.material.metalnessMap = null;
           if (child.material.specularColorTexture) child.material.specularColorTexture = null;
-          if (child.material.metalnessMap) child.material.metalnessMap = null;
           child.material.needsUpdate = true;
         }
       }
@@ -196,37 +208,42 @@ const MotherAvatar = forwardRef(({
       // ── Maternity Long Dress (Amy) ──
       if (child.name === 'Ch46') {
         child.material.color.set(scheme.primary);
-        child.material.roughness = 0.88;
+        child.material.roughness = 0.92;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
       }
 
       // ── Postpartum Recovery / Nurse Suit (Megan) ──
       if (child.name === 'Ch22_Shirt') {
+        child.material.map = null; // Clean fabric texture so colors are vivid and accurate
         if (selectedCharacter === 'nurse') {
           child.material.color.set('#ffffff'); // Registered Nurse clean white scrub top
         } else {
           child.material.color.set(scheme.primary);
         }
-        child.material.roughness = 0.88;
+        child.material.roughness = 0.92;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_Pants') {
+        child.material.map = null; // Clean fabric texture so colors are vivid and accurate
         if (selectedCharacter === 'nurse') {
           child.material.color.set('#0284c7'); // Nurse professional navy blue slacks
         } else {
           child.material.color.set(scheme.primary);
         }
-        child.material.roughness = 0.88;
+        child.material.roughness = 0.92;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_Sneakers') {
+        child.material.map = null;
         child.material.color.set('#f8fafc'); // Sanitary white hospital footwear
-        child.material.roughness = 0.5;
+        child.material.roughness = 0.6;
+        child.material.metalness = 0.0;
         child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_Body') {
+        // Preserves authentic face and natural human skin texture map
         child.material.color.set('#ffffff');
-        child.material.roughness = 0.65;
+        child.material.roughness = 0.75;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_Hair') {
@@ -237,24 +254,106 @@ const MotherAvatar = forwardRef(({
     });
   }, [clonedScene, selectedOutfit, selectedCharacter, OUTFIT_COLOR_SCHEMES]);
 
-  // Normalize clip names from soldier
+  // Authentic Mixamo Animation Clips for Megan & Amy (Idle, Walk, Run, Sitting)
   const animClips = useMemo(() => {
     const list = [];
-    if (soldierAnimations && soldierAnimations.length > 0) {
-      soldierAnimations.forEach((origClip) => {
-        const clip = origClip.clone();
-        clip.name = clip.name.toLowerCase();
-        clip.tracks = clip.tracks.filter((track) => {
-          if (track.name.endsWith('.scale')) return false;
-          if (track.name.endsWith('.position')) return false;
-          if (track.name.toLowerCase().includes('hips')) return false;
-          return true;
-        });
-        list.push(clip);
+
+    // ── Hips retargeting (FBX → GLB) ──
+    // The Mixamo FBX files and the exported GLB use different parent frames / units
+    // (Z-up vs Y-up, metres vs centimetres). Re-express the Hips tracks in the GLB
+    // parent frame so the body stands upright at the right height:
+    //   q_new = inv(P_glb) * P_fbx * q_track      v_new = inv(P_glb) * P_fbx * (v * S_fbx)
+    const glbHips = clonedScene ? clonedScene.getObjectByName('mixamorigHips') : null;
+    const fixHips = (clip, fbxRoot) => {
+      const fbxHips = fbxRoot ? (fbxRoot.getObjectByName('mixamorigHips') || fbxRoot.getObjectByName('Hips')) : null;
+      if (!glbHips || !fbxHips || !fbxHips.parent || !glbHips.parent) return;
+      fbxRoot.updateWorldMatrix(true, true);
+      glbHips.parent.updateWorldMatrix(true, false);
+      const pF = new THREE.Quaternion();
+      const pG = new THREE.Quaternion();
+      fbxHips.parent.getWorldQuaternion(pF);
+      glbHips.parent.getWorldQuaternion(pG);
+      const corr = pG.clone().invert().multiply(pF);
+      const sF = new THREE.Vector3();
+      fbxHips.parent.getWorldScale(sF);
+      // FBX world units are centimetres-like (×1) ; GLB local units are centimetres (armature ×0.01)
+      const posScale = sF.x;
+      clip.tracks.forEach((t) => {
+        if (t.name === 'mixamorigHips.quaternion') {
+          const q = new THREE.Quaternion();
+          for (let i = 0; i < t.values.length; i += 4) {
+            q.set(t.values[i], t.values[i + 1], t.values[i + 2], t.values[i + 3]);
+            q.premultiply(corr);
+            t.values[i] = q.x; t.values[i + 1] = q.y; t.values[i + 2] = q.z; t.values[i + 3] = q.w;
+          }
+        } else if (t.name === 'mixamorigHips.position') {
+          const v = new THREE.Vector3();
+          for (let i = 0; i < t.values.length; i += 3) {
+            v.set(t.values[i], t.values[i + 1], t.values[i + 2]).multiplyScalar(posScale).applyQuaternion(corr);
+            t.values[i] = v.x; t.values[i + 1] = v.y; t.values[i + 2] = v.z;
+          }
+        }
       });
+    };
+
+    // 1. Standing Idle (Smooth natural standing & calm breathing loop)
+    if (idleFbx && idleFbx.animations && idleFbx.animations[0]) {
+      const c = idleFbx.animations[0].clone();
+      c.name = 'idle';
+      c.tracks.forEach((t) => {
+        if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
+      });
+      c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye'));
+      fixHips(c, idleFbx);
+      list.push(c);
     }
+
+    // 2. In-Place Walk & Sprint Cycle
+    if (walkFbx && walkFbx.animations && walkFbx.animations[0]) {
+      const c = walkFbx.animations[0].clone();
+      c.name = 'walk';
+      c.tracks.forEach((t) => {
+        if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
+      });
+      c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale'));
+      fixHips(c, walkFbx);
+      // In-place walk: zero out horizontal hip displacement (after axis re-basing)
+      c.tracks.forEach((t) => {
+        if (t.name === 'mixamorigHips.position') {
+          for (let i = 0; i < t.values.length; i += 3) {
+            t.values[i] = 0;     // X = 0
+            t.values[i + 2] = 0; // Z = 0
+          }
+        }
+      });
+      list.push(c);
+
+      // Create 'run' by speeding up walk cycle 1.55x
+      const run = c.clone();
+      run.name = 'run';
+      run.tracks.forEach((t) => {
+        for (let i = 0; i < t.times.length; i++) {
+          t.times[i] /= 1.55;
+        }
+      });
+      run.duration /= 1.55;
+      list.push(run);
+    }
+
+    // 3. Realistic Seated Posture (Full-body sitting animation)
+    if (sittingFbx && sittingFbx.animations && sittingFbx.animations[0]) {
+      const c = sittingFbx.animations[0].clone();
+      c.name = 'sitting';
+      c.tracks.forEach((t) => {
+        if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
+      });
+      c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale'));
+      fixHips(c, sittingFbx);
+      list.push(c);
+    }
+
     return list;
-  }, [soldierAnimations]);
+  }, [idleFbx, walkFbx, sittingFbx, clonedScene]);
 
   // Bind animations directly to character rig
   const { actions } = useAnimations(animClips, clonedScene);
@@ -298,19 +397,21 @@ const MotherAvatar = forwardRef(({
     group: group.current,
   }));
 
-  // Play locomotion animations when standing
+  // Play locomotion animations when standing vs sitting
   useEffect(() => {
     if (!actions) return;
 
     if (isSitting) {
-      // Fade out leg locomotion animations when seated
       const walk = actions['walk'];
       const run = actions['run'];
       if (walk) walk.fadeOut(0.2);
       if (run) run.fadeOut(0.2);
-      const idle = actions['idle'];
-      if (idle) idle.reset().fadeIn(0.2).play();
+      const sitting = actions['sitting'] || actions['idle'];
+      if (sitting) sitting.reset().fadeIn(0.25).play();
     } else {
+      const sitting = actions['sitting'];
+      if (sitting) sitting.fadeOut(0.2);
+
       let animName = currentAnimation.toLowerCase();
       const act = actions[animName] || actions['idle'] || Object.values(actions)[0];
       if (act) {
@@ -322,51 +423,24 @@ const MotherAvatar = forwardRef(({
     }
   }, [currentAnimation, isSitting, actions]);
 
-  // 100% Anatomically Correct Seated Posture & Dynamic Rig Positioning (Priority 1 guarantees execution AFTER mixer update)
-  useFrame((state) => {
+  // 100% Anatomically Correct Posture & Dynamic Rig Positioning
+  useFrame(() => {
     if (!clonedScene || !avatarRigRef.current) return;
     const {
-      leftArm, rightArm, leftForeArm, rightForeArm,
-      leftUpLeg, rightUpLeg, leftLeg, rightLeg,
-      leftFoot, rightFoot, spine
+      leftArm, rightArm, leftForeArm, rightForeArm
     } = bones.current;
 
     if (isSitting) {
-      // ── Precise Seated Posture ("ท่านั่งสมจริง ไม่บิดเบี้ยว") ──
-      // Seat cushion height (default 0.46m for wheelchair / sofa)
+      // ── Precise Seated Alignment with Seat Cushion ──
       const seatHeight = seatedTarget?.seatOffset?.[1] ?? 0.46;
-      // Hip joint at 1.00m, buttocks at 0.92m; lowering by (0.92 - seatHeight) places hips flush on cushion
+      // Hip joint height lowering to place buttocks flush on cushion
       const targetY = -(0.92 - seatHeight);
       const targetZ = 0.08;
 
       avatarRigRef.current.position.set(0, targetY, targetZ);
       avatarRigRef.current.rotation.set(0, 0, 0);
 
-      // Thighs parallel, resting horizontally forward on seat (+90° forward along +Z)
-      if (leftUpLeg && rightUpLeg) {
-        leftUpLeg.rotation.set(0.016 - Math.PI / 2, 0, -3.07);
-        rightUpLeg.rotation.set(0.013 - Math.PI / 2, 0, 3.07);
-      }
-
-      // Knees bent 90° vertically down over seat edge (-90° down along -Y)
-      if (leftLeg && rightLeg) {
-        leftLeg.rotation.set(-0.079 - Math.PI / 2, 0.001, -0.011);
-        rightLeg.rotation.set(-0.081 - Math.PI / 2, -0.001, 0.011);
-      }
-
-      // Feet resting flat and forward on wheelchair footrests
-      if (leftFoot && rightFoot) {
-        leftFoot.rotation.set(1.094, 0.005, -0.009);
-        rightFoot.rotation.set(1.094, -0.005, 0.009);
-      }
-
-      // Spine upright with subtle calm breathing motion
-      if (spine) {
-        const breath = Math.sin(state.clock.elapsedTime * 2.2) * 0.012;
-        spine.rotation.set(-0.032 + 0.03 + breath, 0, 0);
-      }
-
-      // Arms resting politely on lap / armrests or cradling baby on lap
+      // Arms resting politely on lap or cradling baby while seated
       if (isHoldingBaby) {
         if (leftArm && rightArm) {
           leftArm.rotation.set(0.1, 0.2, 1.15);
@@ -375,15 +449,6 @@ const MotherAvatar = forwardRef(({
         if (leftForeArm && rightForeArm) {
           leftForeArm.rotation.set(1.1, 0.4, 0.1);
           rightForeArm.rotation.set(1.1, -0.4, -0.1);
-        }
-      } else {
-        if (leftArm && rightArm) {
-          leftArm.rotation.set(0.2, 0.1, 1.25);
-          rightArm.rotation.set(0.2, -0.1, -1.25);
-        }
-        if (leftForeArm && rightForeArm) {
-          leftForeArm.rotation.set(0.8, 0.2, 0);
-          rightForeArm.rotation.set(0.8, -0.2, 0);
         }
       }
     } else {
@@ -399,15 +464,6 @@ const MotherAvatar = forwardRef(({
         if (leftForeArm && rightForeArm) {
           leftForeArm.rotation.set(-1.2, 0.3, 0.2);
           rightForeArm.rotation.set(1.2, -0.3, -0.2);
-        }
-      } else if (currentAnimation === 'idle') {
-        if (leftArm && rightArm) {
-          leftArm.rotation.set(0.08, 0.05, 1.25);
-          rightArm.rotation.set(0.08, -0.05, 1.25);
-        }
-        if (leftForeArm && rightForeArm) {
-          leftForeArm.rotation.set(0.0, 0.0, 0.15);
-          rightForeArm.rotation.set(0.0, 0.0, 0.15);
         }
       }
     }
@@ -429,4 +485,6 @@ export default MotherAvatar;
 
 useGLTF.preload('/models/megan_opt.glb');
 useGLTF.preload('/models/amy_opt.glb');
-useGLTF.preload('/models/soldier.glb');
+useFBX.preload('/models/animations/Standing_Idle.fbx');
+useFBX.preload('/models/animations/walking.fbx');
+useFBX.preload('/models/animations/Sitting_Idle.fbx');

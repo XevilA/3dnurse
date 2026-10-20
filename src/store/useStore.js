@@ -115,6 +115,16 @@ const useStore = create((set, get) => ({
   requestRoomEntry: (info) => set({ pendingRoomConfirmation: info }),
   cancelRoomEntry: () => set({ pendingRoomConfirmation: null }),
 
+  // ── Ward 101/102 learning flow (สไลด์ Zone → กิจกรรม → แบบประเมิน) ──
+  wardModal: null, // { kind: 'slide' | 'food' | 'booth' | 'quiz', room }
+  wardFlow: {}, // { motherCare1: { slide, activity, quiz } }
+  openWardModal: (kind, room) => set({ wardModal: { kind, room } }),
+  closeWardModal: () => set({ wardModal: null }),
+  setWardFlow: (room, key, val) =>
+    set((state) => ({
+      wardFlow: { ...state.wardFlow, [room]: { ...(state.wardFlow[room] || {}), [key]: val } },
+    })),
+
   // ── UI state ──
   showSuccessModal: false,
   successMessage: '',
@@ -176,6 +186,7 @@ const useStore = create((set, get) => ({
         playerRotationY: spawnRotY,
         showSuccessModal: false,
         successMessage: '',
+        wardModal: null,
       };
     }),
   setStep: (step) => set({ currentStep: step }),
@@ -257,6 +268,14 @@ const useStore = create((set, get) => ({
     }),
 
   sitDown: (seat) => {
+    if (!seat) return;
+    set({
+      isSitting: true,
+      seatedTarget: seat,
+      playerAnimation: 'sit',
+    });
+  },
+  sitOnSeat: (seat) => {
     if (!seat) return;
     set({
       isSitting: true,

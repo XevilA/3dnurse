@@ -181,10 +181,31 @@ export default function GTAControlsHUD() {
   const hasCompletedPretest = useStore((s) => s.hasCompletedPretest);
   const playTimeSeconds = useStore((s) => s.playTimeSeconds);
 
-  // Controls UI state
+  // Controls UI state & Device Mode Separation (PC vs Mobile)
   const [isSprintLocked, setIsSprintLocked] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isStatusExpanded, setIsStatusExpanded] = useState(false);
+
+  // Device detection: screen resolution (< 1024px) or primary touch pointer
+  const [deviceMode, setDeviceMode] = useState(() => {
+    if (typeof window === 'undefined') return 'pc';
+    const isMobileRes = window.innerWidth < 1024;
+    const isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    return isMobileRes || isTouch ? 'mobile' : 'pc';
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobileRes = window.innerWidth < 1024;
+      const isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      // Auto-update device mode based on viewport
+      setDeviceMode(isMobileRes || isTouch ? 'mobile' : 'pc');
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = deviceMode === 'mobile';
 
   const handleSprintToggle = () => {
     const next = !isSprintLocked;
@@ -320,30 +341,62 @@ export default function GTAControlsHUD() {
           <span>{seatedTarget?.type === 'wheelchair' ? '♿' : '🛋️'}</span>
           <span>
             {seatedTarget?.isDrivable
-              ? 'โหมดขับรถเข็น: ใช้จอยสติ๊กซ้ายเพื่อขับเคลื่อนรอบห้อง'
-              : `กำลังนั่งพักบน ${seatedTarget?.name || 'เก้าอี้'}`}
+              ? (isMobile
+                  ? 'โหมดขับรถเข็น: ใช้จอยสติ๊กซ้ายเพื่อขับเคลื่อนรอบห้อง | แตะ [ลุกขึ้นยืน] เมื่อต้องการลุก'
+                  : 'โหมดขับรถเข็น: กดปุ่ม [W A S D] เพื่อขับเคลื่อนรอบห้อง | กด [F] เพื่อลุกขึ้นยืน')
+              : (isMobile
+                  ? `กำลังนั่งพักบน ${seatedTarget?.name || 'เก้าอี้'} (ฟื้นฟูพลังงาน) | แตะ [ลุกขึ้นยืน] เมื่อต้องการลุก`
+                  : `กำลังนั่งพักบน ${seatedTarget?.name || 'เก้าอี้'} (ฟื้นฟูพลังงาน) | กด [F] เพื่อลุกขึ้นยืน`)}
           </span>
         </div>
       )}
 
-      {/* ── Toggle Controls Visibility Button (Bottom Edge Hint) ── */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+      {/* ── Dedicated Device Mode Switcher (PC vs Mobile Toggle) ── */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs shadow-2xl">
+        <button
+          type="button"
+          onClick={() => setDeviceMode('pc')}
+          className={`px-2.5 py-0.5 rounded-full font-bold transition text-[11px] flex items-center gap-1 cursor-pointer ${
+            !isMobile
+              ? 'bg-cyan-500 text-white shadow-md ring-1 ring-cyan-300'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          <span>🖥️</span>
+          <span>โหมด PC</span>
+        </button>
+        <div className="w-px h-3.5 bg-white/25" />
+        <button
+          type="button"
+          onClick={() => setDeviceMode('mobile')}
+          className={`px-2.5 py-0.5 rounded-full font-bold transition text-[11px] flex items-center gap-1 cursor-pointer ${
+            isMobile
+              ? 'bg-pink-500 text-white shadow-md ring-1 ring-pink-300'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          <span>📱</span>
+          <span>โหมด มือถือ</span>
+        </button>
+        <div className="w-px h-3.5 bg-white/25" />
         <button
           type="button"
           onClick={() => setControlsVisible(!controlsVisible)}
-          className="px-2.5 py-0.5 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-sm border border-white/20 text-white/70 hover:text-white text-[10px] font-medium transition cursor-pointer"
+          className="text-white/70 hover:text-white px-1.5 py-0.5 text-[11px] font-medium transition cursor-pointer flex items-center gap-1"
+          title={controlsVisible ? 'ซ่อนปุ่มควบคุม' : 'แสดงปุ่มควบคุม'}
         >
-          {controlsVisible ? '🎮 ซ่อนปุ่มควบคุม' : '🎮 แสดงปุ่มควบคุม'}
+          <span>{controlsVisible ? '👁️' : '🚫'}</span>
+          <span className="hidden sm:inline">{controlsVisible ? 'ซ่อน' : 'แสดง'}</span>
         </button>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          📱 MOBILE & TOUCH CONTROLS (Ergonomically Separated Left & Right Zones)
+          📱 1. MOBILE ONLY CONTROLS (Only visible in Mobile resolution / Touch mode)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {controlsVisible && (
+      {isMobile && controlsVisible && (
         <>
           {/* ── Left Thumb Zone: Virtual Analog Joystick + Sprint Toggle ── */}
-          <div className="absolute bottom-5 left-3 sm:left-6 z-30 pointer-events-auto flex flex-col items-center gap-2">
+          <div className="absolute bottom-10 left-3 sm:left-6 z-30 pointer-events-auto flex flex-col items-center gap-2">
             {/* Quick Sprint Toggle */}
             <button
               type="button"
@@ -363,8 +416,8 @@ export default function GTAControlsHUD() {
           </div>
 
           {/* ── Right Thumb Zone: Action Button Cluster ── */}
-          <div className="absolute bottom-5 right-3 sm:right-6 z-30 pointer-events-auto flex flex-col items-end gap-2.5">
-            {/* Camera Perspective Toggle Button (Mobile & Tablet) */}
+          <div className="absolute bottom-10 right-3 sm:right-6 z-30 pointer-events-auto flex flex-col items-end gap-2.5">
+            {/* Camera Perspective Toggle Button */}
             <button
               type="button"
               onClick={toggleCameraMode}
@@ -374,8 +427,8 @@ export default function GTAControlsHUD() {
               <span>{cameraMode === '3rdPerson' ? '1st Person' : '3rd Person'}</span>
             </button>
 
-            {/* Mother & Baby Action (Clinical Care Rooms) */}
-            {currentRoom !== 'lobby' && currentRoom !== 'quiz' && !isSitting && (
+            {/* Mother & Baby Action (Clinical Care Rooms that allow holding baby) */}
+            {!['lobby', 'quiz', 'motherCare3', 'motherCare4', 'newbornCare3', 'newbornCare4'].includes(currentRoom) && !isSitting && (
               <button
                 type="button"
                 onClick={() => setHoldingBaby(!isHoldingBaby)}
@@ -415,64 +468,121 @@ export default function GTAControlsHUD() {
         </>
       )}
 
-      {/* ── Desktop Controls Guide (Desktop Only >= 1024px) ── */}
-      <div className="hidden lg:block absolute bottom-10 left-4 z-20 pointer-events-auto bg-black/75 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 shadow-2xl text-white max-w-xs">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🎮</span>
-            <span className="text-xs font-bold uppercase tracking-wider text-pink-300">
-              การควบคุมตัวละคร (GTA Style)
-            </span>
-          </div>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/30 border border-cyan-400 text-cyan-200">
-            {cameraMode === '1stPerson' ? '1st Person' : '3rd Person'}
-          </span>
-        </div>
+      {/* ══════════════════════════════════════════════════════════════════════════
+          🖥️ 2. PC ONLY CONTROLS (Only visible in Desktop PC Mode - Zero Mobile Joystick)
+          ══════════════════════════════════════════════════════════════════════════ */}
+      {!isMobile && controlsVisible && (
+        <>
+          {/* ── Contextual Interactive Action Prompts for PC (Center-Bottom) ── */}
+          {(nearbySeat || isSitting || (currentRoom !== 'lobby' && currentRoom !== 'quiz')) && (
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-3">
+              {/* PC Sit / Stand Action Prompt */}
+              {(nearbySeat || isSitting) && (
+                <button
+                  type="button"
+                  onClick={handleSitToggle}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs shadow-2xl border transition transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md ${
+                    isSitting
+                      ? 'bg-amber-600/90 hover:bg-amber-600 text-white border-amber-300 ring-2 ring-amber-400/50'
+                      : 'bg-blue-600/90 hover:bg-blue-600 text-white border-blue-300 ring-2 ring-blue-400/50 animate-bounce'
+                  }`}
+                >
+                  <kbd className="px-2 py-0.5 bg-black/40 rounded font-mono font-black text-amber-200 border border-white/30 text-xs">
+                    F
+                  </kbd>
+                  <span>
+                    {isSitting
+                      ? 'ลุกขึ้นยืน (กด F หรือคลิก)'
+                      : `นั่ง${nearbySeat?.name || 'ที่นั่ง'} (กด F หรือคลิก)`}
+                  </span>
+                </button>
+              )}
 
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-white/20 border border-white/30 rounded font-mono font-bold text-yellow-300">
-              W A S D
-            </kbd>
-            <span className="text-gray-200">เดิน / ขับรถเข็น</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-white/20 border border-white/30 rounded font-mono font-bold text-green-300">
-              ⇧ Shift
-            </kbd>
-            <span className="text-gray-200">วิ่งเร็ว</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-blue-500/40 border border-blue-400 rounded font-mono font-bold text-blue-200">
-              F
-            </kbd>
-            <span className="text-blue-200 font-medium">นั่ง / ลุกขึ้น</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-cyan-500/30 border border-cyan-400 rounded font-mono font-bold text-cyan-200">
-              V
-            </kbd>
-            <span className="text-cyan-200">สลับ 1st/3rd</span>
-          </div>
-
-          {currentRoom !== 'lobby' && (
-            <div className="flex items-center gap-1.5 col-span-2">
-              <kbd className="px-2 py-0.5 bg-pink-500/40 border border-pink-400 rounded font-mono font-bold text-pink-200">
-                E / Space
-              </kbd>
-              <span className="text-pink-200 font-medium">🤱 อุ้ม/วางลูก</span>
+              {/* PC Hold / Release Baby Action Prompt */}
+              {!['lobby', 'quiz', 'motherCare3', 'motherCare4', 'newbornCare3', 'newbornCare4'].includes(currentRoom) && !isSitting && (
+                <button
+                  type="button"
+                  onClick={() => setHoldingBaby(!isHoldingBaby)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs shadow-2xl border transition transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md ${
+                    isHoldingBaby
+                      ? 'bg-emerald-600/90 hover:bg-emerald-600 text-white border-emerald-300'
+                      : 'bg-pink-600/90 hover:bg-pink-600 text-white border-pink-300'
+                  }`}
+                >
+                  <kbd className="px-2 py-0.5 bg-black/40 rounded font-mono font-black text-pink-200 border border-white/30 text-xs">
+                    E / Space
+                  </kbd>
+                  <span>
+                    {isHoldingBaby ? 'วางลูกน้อยในเปล' : 'อุ้มลูกน้อยแนบอก'}
+                  </span>
+                </button>
+              )}
             </div>
           )}
-        </div>
 
-        <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-300">
-          <span>คลิกลากเพื่อหมุนมุมกล้อง 360°</span>
-          <span className="text-pink-300 font-medium">แม่ & ลูก</span>
-        </div>
-      </div>
+          {/* ── PC Keyboard & Mouse Guide Card (Bottom-Left) ── */}
+          <div className="absolute bottom-10 left-4 z-20 pointer-events-auto bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 shadow-2xl text-white max-w-xs transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">⌨️</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-pink-300">
+                  การควบคุมบนคอมพิวเตอร์ (PC)
+                </span>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/30 border border-cyan-400 text-cyan-200">
+                {cameraMode === '1stPerson' ? '1st Person' : '3rd Person'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center gap-1.5">
+                <kbd className="px-2 py-0.5 bg-white/20 border border-white/30 rounded font-mono font-bold text-yellow-300">
+                  W A S D
+                </kbd>
+                <span className="text-gray-200">เดิน / ขับรถเข็น</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <kbd className="px-2 py-0.5 bg-white/20 border border-white/30 rounded font-mono font-bold text-green-300">
+                  ⇧ Shift
+                </kbd>
+                <span className="text-gray-200">วิ่งเร็ว</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <kbd className="px-2 py-0.5 bg-blue-500/40 border border-blue-400 rounded font-mono font-bold text-blue-200">
+                  F
+                </kbd>
+                <span className="text-blue-200 font-medium">นั่ง / ลุกขึ้น</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <kbd className="px-2 py-0.5 bg-cyan-500/30 border border-cyan-400 rounded font-mono font-bold text-cyan-200">
+                  V
+                </kbd>
+                <span className="text-cyan-200">สลับ 1st/3rd</span>
+              </div>
+
+              {!['lobby', 'quiz', 'motherCare3', 'motherCare4', 'newbornCare3', 'newbornCare4'].includes(currentRoom) && (
+                <div className="flex items-center gap-1.5 col-span-2">
+                  <kbd className="px-2 py-0.5 bg-pink-500/40 border border-pink-400 rounded font-mono font-bold text-pink-200">
+                    E / Space
+                  </kbd>
+                  <span className="text-pink-200 font-medium">🤱 อุ้ม / วางลูกน้อย</span>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-300">
+              <span className="flex items-center gap-1">
+                <span>🖱️</span>
+                <span>คลิกซ้ายลากหมุนมุมกล้อง 360°</span>
+              </span>
+              <span className="text-pink-300 font-medium text-[10px]">แม่ & ลูก</span>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
