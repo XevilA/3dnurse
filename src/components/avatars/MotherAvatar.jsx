@@ -55,7 +55,6 @@ const MotherAvatar = forwardRef(({
   // Load authentic Mixamo female animations (100% matching bone bind axes)
   const idleFbx = useFBX('/models/animations/Standing_Idle.fbx');
   const walkFbx = useFBX('/models/animations/walking.fbx');
-  const sittingFbx = useFBX('/models/animations/Sitting_Idle.fbx');
 
   // Authentic hospital & maternity color schemes
   const OUTFIT_COLOR_SCHEMES = useMemo(() => ({
@@ -264,6 +263,7 @@ const MotherAvatar = forwardRef(({
     // parent frame so the body stands upright at the right height:
     //   q_new = inv(P_glb) * P_fbx * q_track      v_new = inv(P_glb) * P_fbx * (v * S_fbx)
     const glbHips = clonedScene ? clonedScene.getObjectByName('mixamorigHips') : null;
+    const restHipZ = glbHips && glbHips.position.z ? glbHips.position.z : -100.08;
     const fixHips = (clip, fbxRoot) => {
       const fbxHips = fbxRoot ? (fbxRoot.getObjectByName('mixamorigHips') || fbxRoot.getObjectByName('Hips')) : null;
       if (!glbHips || !fbxHips || !fbxHips.parent || !glbHips.parent) return;
@@ -287,10 +287,19 @@ const MotherAvatar = forwardRef(({
             t.values[i] = q.x; t.values[i + 1] = q.y; t.values[i + 2] = q.z; t.values[i + 3] = q.w;
           }
         } else if (t.name === 'mixamorigHips.position') {
+          // NOTE: In GLB Armature local space (+90° X rotation):
+          //   v.x = Horizontal Left/Right
+          //   v.y = Horizontal Forward/Backward root motion
+          //   v.z = Vertical Hip Height above the floor (-100.08 for Megan, -69.77 for Amy)
           const v = new THREE.Vector3();
+          v.set(t.values[0], t.values[1], t.values[2]).multiplyScalar(posScale).applyQuaternion(corr);
+          const baseZ = v.z || -100.08;
+          const heightRatio = restHipZ / baseZ;
           for (let i = 0; i < t.values.length; i += 3) {
             v.set(t.values[i], t.values[i + 1], t.values[i + 2]).multiplyScalar(posScale).applyQuaternion(corr);
-            t.values[i] = v.x; t.values[i + 1] = v.y; t.values[i + 2] = v.z;
+            t.values[i] = 0;                    // X = 0 (keep centered horizontally)
+            t.values[i + 1] = 0;                // Y = 0 (in-place walk: zero out forward/backward root motion)
+            t.values[i + 2] = v.z * heightRatio; // Z = exact vertical height above floor (NEVER zero this out!)
           }
         }
       });
@@ -306,6 +315,34 @@ const MotherAvatar = forwardRef(({
       c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye'));
       fixHips(c, idleFbx);
       list.push(c);
+
+      // 3. Realistic 90° Chair/Sofa/Wheelchair Seated Posture (Derived from idle upper-body + 90° seated legs)
+      const sit = c.clone();
+      sit.name = 'sitting';
+      const seatedOverrides = {
+        'mixamorigLeftUpLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.016 - Math.PI / 2, 0, -3.07)),
+        'mixamorigRightUpLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.013 - Math.PI / 2, 0, 3.07)),
+        'mixamorigLeftLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.079 - Math.PI / 2, 0.001, -0.011)),
+        'mixamorigRightLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.081 - Math.PI / 2, -0.001, 0.011)),
+        'mixamorigLeftFoot.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.094, 0.005, -0.009)),
+        'mixamorigRightFoot.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.094, -0.005, 0.009)),
+        'mixamorigLeftArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.2, 0.1, 1.25)),
+        'mixamorigRightArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.2, -0.1, -1.25)),
+        'mixamorigLeftForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.8, 0.2, 0)),
+        'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.8, -0.2, 0)),
+      };
+      sit.tracks.forEach((t) => {
+        const q = seatedOverrides[t.name];
+        if (q) {
+          for (let i = 0; i < t.values.length; i += 4) {
+            t.values[i] = q.x;
+            t.values[i + 1] = q.y;
+            t.values[i + 2] = q.z;
+            t.values[i + 3] = q.w;
+          }
+        }
+      });
+      list.push(sit);
     }
 
     // 2. In-Place Walk & Sprint Cycle
@@ -315,17 +352,8 @@ const MotherAvatar = forwardRef(({
       c.tracks.forEach((t) => {
         if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
       });
-      c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale'));
+      c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye'));
       fixHips(c, walkFbx);
-      // In-place walk: zero out horizontal hip displacement (after axis re-basing)
-      c.tracks.forEach((t) => {
-        if (t.name === 'mixamorigHips.position') {
-          for (let i = 0; i < t.values.length; i += 3) {
-            t.values[i] = 0;     // X = 0
-            t.values[i + 2] = 0; // Z = 0
-          }
-        }
-      });
       list.push(c);
 
       // Create 'run' by speeding up walk cycle 1.55x
@@ -340,20 +368,8 @@ const MotherAvatar = forwardRef(({
       list.push(run);
     }
 
-    // 3. Realistic Seated Posture (Full-body sitting animation)
-    if (sittingFbx && sittingFbx.animations && sittingFbx.animations[0]) {
-      const c = sittingFbx.animations[0].clone();
-      c.name = 'sitting';
-      c.tracks.forEach((t) => {
-        if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
-      });
-      c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale'));
-      fixHips(c, sittingFbx);
-      list.push(c);
-    }
-
     return list;
-  }, [idleFbx, walkFbx, sittingFbx, clonedScene]);
+  }, [idleFbx, walkFbx, clonedScene]);
 
   // Bind animations directly to character rig
   const { actions } = useAnimations(animClips, clonedScene);
@@ -487,4 +503,3 @@ useGLTF.preload('/models/megan_opt.glb');
 useGLTF.preload('/models/amy_opt.glb');
 useFBX.preload('/models/animations/Standing_Idle.fbx');
 useFBX.preload('/models/animations/walking.fbx');
-useFBX.preload('/models/animations/Sitting_Idle.fbx');
