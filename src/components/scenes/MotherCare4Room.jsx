@@ -3,6 +3,8 @@ import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
+import RealPlant from '../decorations/RealPlant';
+import InteractiveSeat from '../furniture/InteractiveSeat';
 import { TitleSign, WindowWithCurtains } from '../ward/WardKit';
 import {
   WoodFramedBacklitPanel,
@@ -188,11 +190,12 @@ export default function MotherCare4Room() {
   };
 
   const handleSitSofa = () => {
+    setHoldingBaby(false);
     sitDown({
       id: 'room104_sofa',
       name: 'โซฟาเรียนรู้การสังเกตอาการผิดปกติหลังคลอด',
       type: 'sofa',
-      position: [0, 0, -0.2],
+      position: [0.5, 0, -0.2],
       rotationY: 0,
       seatOffset: [0, 0.44, 0.15],
       isDrivable: false,
@@ -428,19 +431,51 @@ export default function MotherCare4Room() {
              พรมทอสีครีมเบจ + โต๊ะกลางไม้ขาววางไอแพด/แก้วน้ำ/แจกันดอกเดซี่ + ตู้ไม้โคมไฟอุ่น
              (ตรงตามภาพตัวอย่าง สมุดโน้ตไม่มีชื่อ 2 หน้า 4 ทุกประการ)
           ══════════════════════════════════════════════════════════════════════════ */}
+      <InteractiveSeat
+        id="room104_sofa"
+        name="โซฟาเรียนรู้การสังเกตอาการผิดปกติหลังคลอด"
+        type="sofa"
+        position={[0.5, 0, -0.2]}
+        rotation={[0, 0, 0]}
+        seatOffset={[0, 0.44, 0.15]}
+      >
+        <Html position={[0, 1.38, 0]} center distanceFactor={12} zIndexRange={[20, 0]}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSitSofa();
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #e11d48, #be185d)',
+              color: '#ffffff',
+              border: '2px solid #ffffff',
+              borderRadius: '999px',
+              padding: '8px 20px',
+              fontWeight: 900,
+              fontSize: '15px',
+              cursor: 'pointer',
+              boxShadow: '0 6px 18px rgba(190,24,93,0.4)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {seatedTarget?.id === 'room104_sofa'
+              ? '🩺 กำลังนั่งบนโซฟา — คลิกเปิดกิจกรรมสังเกตอาการผิดปกติ & ภาวะแทรกซ้อน'
+              : '🛋️ คลิกนั่งโซฟาเพื่อเรียนรู้การสังเกตอาการผิดปกติ & จำแนกอาการหลังคลอด'}
+          </button>
+        </Html>
+      </InteractiveSeat>
+
       <CozySectionalSofaSet
-        seatId="room104_sofa"
-        seatName="โซฟาเรียนรู้การสังเกตอาการผิดปกติหลังคลอด"
-        position={[0, 0, -0.2]}
-        isSeated={seatedTarget?.id === 'room104_sofa'}
         onClickSofa={handleSitSofa}
         onClickTablet={() => setShowActivityModal(true)}
-        buttonTextIdle="🛋️ คลิกนั่งโซฟา / แตะไอแพดบนโต๊ะ เพื่อเริ่มกิจกรรมสังเกตอาการผิดปกติ & ภาวะแทรกซ้อน"
-        buttonTextSeated="🩺 กำลังนั่งบนโซฟา — คลิกเปิดกิจกรรมสังเกตอาการผิดปกติ & ภาวะแทรกซ้อน"
-        accentColor="#e11d48"
+        tabletLabel="📋 คลิกแท็บเล็ตบนโต๊ะ: จำแนกอาการปกติและอาการที่ต้องไปโรงพยาบาล"
       />
 
       <CozyRoomDecorCorners />
+      <RealPlant type="potted" position={[-7.6, 0, -7.2]} scale={1.2} />
+      <RealPlant type="potted" position={[7.6, 0, -7.2]} scale={1.2} />
+      <RealPlant type="succulent" position={[7.5, 0, 6.8]} scale={1.25} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
           🩺 หน้าต่างกิจกรรม Ward 104:

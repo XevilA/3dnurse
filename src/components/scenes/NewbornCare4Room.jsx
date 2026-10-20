@@ -867,15 +867,7 @@ export default function NewbornCare4Room() {
           </mesh>
         </group>
 
-        {/* ป้ายแสดงหลักการ Room-Sharing */}
-        <Html position={[0, 1.75, -0.6]} center distanceFactor={13} zIndexRange={[10, 0]}>
-          <div
-            onClick={() => openWallPoster(3)}
-            className="cursor-pointer select-none bg-amber-900/90 text-amber-50 border border-amber-300/70 px-3 py-1 rounded-full text-xs font-bold shadow-lg whitespace-nowrap hover:scale-105 transition"
-          >
-            🛌 เตียงคุณแม่ (นอนแยกเตียงจากทารก แต่ตั้งอยู่ข้างกัน ✓)
-          </div>
-        </Html>
+        {/* คลิกที่เตียงผู้ปกครองเพื่อดูคำแนะนำการแยกเตียงทารกให้อยู่ข้างเตียงผู้ปกครอง */}
       </group>
 
       {/* ── 4.2 เตียงทารกขอบขาวโครงไม้โอ๊คตาข่ายโปร่ง ตั้งอยู่ข้างเตียงผู้ปกครอง (ตามภาพ nb4_room_ref.jpg) ── */}
@@ -900,7 +892,14 @@ export default function NewbornCare4Room() {
         </mesh>
 
         {/* แผ่นที่นอนทารกเรียบตึงภายในเตียงไม้ */}
-        <mesh position={[0, 0.66, 0]} receiveShadow>
+        <mesh
+          position={[0, 0.66, 0]}
+          receiveShadow
+          onClick={(e) => {
+            e.stopPropagation();
+            setActiveModal('practice');
+          }}
+        >
           <boxGeometry args={[0.88, 0.08, 1.28]} />
           <meshStandardMaterial color="#fffbeb" roughness={0.7} />
         </mesh>
@@ -937,18 +936,6 @@ export default function NewbornCare4Room() {
               <boxGeometry args={[0.52, 0.09, 0.32]} />
               <meshStandardMaterial color="#fde68a" roughness={0.75} />
             </mesh>
-            <Html position={[0, 0.18, 0]} center distanceFactor={10} zIndexRange={[15, 0]}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveSingleItem('pillow');
-                }}
-                className="cursor-pointer bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow border border-white whitespace-nowrap"
-              >
-                ✕ หยิบหมอนออก
-              </button>
-            </Html>
           </group>
         )}
 
@@ -966,18 +953,6 @@ export default function NewbornCare4Room() {
               <cylinderGeometry args={[0.085, 0.085, 0.62, 16]} />
               <meshStandardMaterial color="#fbcfe8" roughness={0.75} />
             </mesh>
-            <Html position={[0, 0, -0.22]} center distanceFactor={10} zIndexRange={[15, 0]}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveSingleItem('bolster');
-                }}
-                className="cursor-pointer bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow border border-white whitespace-nowrap"
-              >
-                ✕ หยิบหมอนข้างออก
-              </button>
-            </Html>
           </group>
         )}
 
@@ -1007,18 +982,6 @@ export default function NewbornCare4Room() {
               <sphereGeometry args={[0.03, 10, 10]} />
               <meshStandardMaterial color="#8c5a3c" />
             </mesh>
-            <Html position={[0, 0.34, 0]} center distanceFactor={10} zIndexRange={[15, 0]}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveSingleItem('doll');
-                }}
-                className="cursor-pointer bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow border border-white whitespace-nowrap"
-              >
-                ✕ หยิบตุ๊กตาออก
-              </button>
-            </Html>
           </group>
         )}
 
@@ -1035,55 +998,29 @@ export default function NewbornCare4Room() {
               <boxGeometry args={[0.68, 0.07, 0.55]} />
               <meshStandardMaterial color="#bae6fd" roughness={0.85} />
             </mesh>
-            <Html position={[0, 0.18, 0]} center distanceFactor={10} zIndexRange={[15, 0]}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveSingleItem('blanket');
-                }}
-                className="cursor-pointer bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow border border-white whitespace-nowrap"
-              >
-                ✕ หยิบผ้าห่มออก
-              </button>
-            </Html>
           </group>
         )}
 
-        {/* ปุ่มลอยเหนือเตียงทารกสำหรับกดพลิกตัวทารก หรือเปิดหน้าต่างแบบทดลองปฏิบัติ */}
-        <Html position={[0, 1.55, 0]} center distanceFactor={11} zIndexRange={[20, 0]}>
-          <div className="flex flex-col items-center gap-1.5">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveModal('practice');
-              }}
-              className={`cursor-pointer px-4 py-2 rounded-full font-black text-xs sm:text-sm shadow-2xl border-2 border-white whitespace-nowrap transition hover:scale-105 ${
-                isPracticeComplete
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'
-                  : 'bg-gradient-to-r from-rose-600 via-amber-600 to-orange-600 text-white animate-pulse'
-              }`}
-            >
-              {isPracticeComplete
-                ? '✓ เตียงทารกปลอดภัยแล้ว (ลูกนอนหงาย & ไม่มีของนุ่มในเตียง)'
-                : `⚠️ แบบทดลองปฏิบัติ: ${
-                    !allItemsRemoved ? `หยิบของนุ่มออก (${removedCount}/4)` : ''
-                  } ${!isBabySupine ? '• พลิกตัวลูกให้นอนหงาย!' : ''}`}
-            </button>
-            {!isBabySupine && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSleepPose('supine');
-                }}
-                className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-3.5 py-1 rounded-full shadow-lg border border-white whitespace-nowrap"
-              >
-                🔄 คลิกจับลูกพลิกตัวเป็น &ldquo;นอนหงาย&rdquo; (✓ ปลอดภัย)
-              </button>
-            )}
-          </div>
+        {/* ปุ่มเดียวที่สะอาดตาเหนือเตียงทารกสำหรับเปิดหน้าต่างแบบทดลองปฏิบัติ (ไม่บดบังบรรยากาศห้องนอน) */}
+        <Html position={[0, 1.42, 0]} center distanceFactor={12} zIndexRange={[20, 0]}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveModal('practice');
+            }}
+            className={`cursor-pointer px-4 py-1.5 rounded-full font-bold text-xs shadow-lg border border-white/90 whitespace-nowrap transition hover:scale-105 ${
+              isPracticeComplete
+                ? 'bg-emerald-700/95 text-white'
+                : 'bg-amber-800/95 text-amber-50'
+            }`}
+          >
+            {isPracticeComplete
+              ? '✓ จัดเตียงทารกปลอดภัยแล้ว (ลูกนอนหงาย & ไม่มีของนุ่มในเตียง)'
+              : `🛏️ คลิกเตียงทารก: แบบทดลองปฏิบัติ (หยิบของออก ${removedCount}/4 • ${
+                  isBabySupine ? 'ลูกนอนหงายแล้ว ✓' : 'จับลูกพลิกนอนหงาย'
+                })`}
+          </button>
         </Html>
       </group>
 

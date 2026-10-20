@@ -1057,36 +1057,88 @@ export default function NewbornCare1Room() {
           </mesh>
         </group>
 
-        {/* (2) ภาพดอกไม้สวยงาม & แผนที่ Nursery Land (Mounted on North Wall above dresser) */}
+        {/* (2) ภาพดอกไม้สวยงาม (Mounted on North Wall above dresser — ปรับแก้ห้องให้นมทารก หน้า 3 ภาพที่ 6) */}
         <group position={[-0.35, 2.25, -1.78]}>
-          {/* Nursery Land Map Poster */}
+          {/* กรอบภาพดอกไม้สวยงาม */}
           <mesh castShadow>
             <boxGeometry args={[1.15, 0.85, 0.03]} />
             <meshStandardMaterial color="#d4a373" roughness={0.4} />
           </mesh>
           <Html position={[0, 0, 0.02]} center transform scale={0.16}>
             <div
-              onClick={() =>
-                openLightbox({
-                  src: '/images/rev/bf_corner_decor_ref.jpg',
-                  title: 'มุมของใช้และของตกแต่งห้องทารก (Nursery Land Corner)',
-                  caption: '1. โต๊ะของใช้ทารก พร้อมของ | 2. ภาพดอกไม้สวยงาม & แผนที่ Nursery Land | 3. ชั้นประดับห้อง | 4. ที่แขวนของ',
-                  category: 'การให้นมบุตร (Nursery 201)',
-                })
-              }
-              className="cursor-pointer select-none bg-amber-50 p-1.5 rounded border-2 border-amber-400 shadow text-center"
+              onClick={() => setActiveModal('cornerDecor')}
+              className="cursor-pointer select-none bg-gradient-to-br from-rose-50 via-amber-50/70 to-pink-50 p-2 rounded border-2 border-rose-300 shadow text-center"
               style={{ width: '260px' }}
             >
-              <img
-                src="/images/rev/bf_corner_decor_ref.jpg"
-                alt="Nursery Land"
-                style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px' }}
-              />
-              <div className="text-[10px] font-bold text-amber-900 mt-0.5">🗺️ Nursery Land & ดอกไม้</div>
+              <svg viewBox="0 0 280 150" className="w-full h-36 rounded bg-white/80 border border-rose-100">
+                <path
+                  d="M25 132 Q95 78 145 72 T255 36"
+                  fill="none"
+                  stroke="#84a98c"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M70 125 Q120 100 175 94 T245 80"
+                  fill="none"
+                  stroke="#a3b18a"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                <ellipse cx="82" cy="90" rx="16" ry="7" transform="rotate(-28 82 90)" fill="#a3b18a" />
+                <ellipse cx="132" cy="58" rx="17" ry="7" transform="rotate(-18 132 58)" fill="#84a98c" />
+                <ellipse cx="195" cy="82" rx="16" ry="7" transform="rotate(20 195 82)" fill="#a3b18a" />
+                <g transform="translate(142, 68)">
+                  {[0, 60, 120, 180, 240, 300].map((deg) => (
+                    <ellipse
+                      key={deg}
+                      cx="0"
+                      cy="-16"
+                      rx="10.5"
+                      ry="16"
+                      transform={`rotate(${deg})`}
+                      fill="#f4acb7"
+                      opacity="0.95"
+                    />
+                  ))}
+                  <circle cx="0" cy="0" r="8.5" fill="#fcbf49" />
+                </g>
+                <g transform="translate(75, 106)">
+                  {[0, 72, 144, 216, 288].map((deg) => (
+                    <ellipse
+                      key={deg}
+                      cx="0"
+                      cy="-12"
+                      rx="8"
+                      ry="12.5"
+                      transform={`rotate(${deg})`}
+                      fill="#ffcad4"
+                      opacity="0.95"
+                    />
+                  ))}
+                  <circle cx="0" cy="0" r="6.5" fill="#f77f00" />
+                </g>
+                <g transform="translate(208, 62)">
+                  {[0, 60, 120, 180, 240, 300].map((deg) => (
+                    <ellipse
+                      key={deg}
+                      cx="0"
+                      cy="-12.5"
+                      rx="8.5"
+                      ry="13"
+                      transform={`rotate(${deg})`}
+                      fill="#fde68a"
+                      opacity="0.95"
+                    />
+                  ))}
+                  <circle cx="0" cy="0" r="7" fill="#fb8500" />
+                </g>
+              </svg>
+              <div className="text-[10px] font-bold text-rose-900 mt-1">🌸 2. ภาพดอกไม้สวยงาม</div>
             </div>
           </Html>
         </group>
-        {/* Framed Floral Art beside Nursery Land */}
+        {/* Framed Botanical Art beside main floral frame */}
         <group position={[0.62, 2.25, -1.78]}>
           <mesh castShadow>
             <boxGeometry args={[0.6, 0.78, 0.03]} />
@@ -1348,7 +1400,7 @@ export default function NewbornCare1Room() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border-4 border-pink-400 text-slate-800">
               <div className="flex items-center justify-between border-b pb-2.5">
-                <h3 className="text-base font-bold text-pink-900">🧸 มุมของใช้และของตกแต่งห้องทารก</h3>
+                <h3 className="text-base font-bold text-pink-900">🧸 มุมของใช้และของตกแต่งห้องทารก (จุดที่ 4)</h3>
                 <button
                   onClick={() => setActiveModal(null)}
                   className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
@@ -1356,16 +1408,80 @@ export default function NewbornCare1Room() {
                   ✕
                 </button>
               </div>
-              <img
-                src="/images/rev/bf_corner_decor_ref.jpg"
-                alt="มุมตกแต่งห้องทารก"
-                className="w-full h-56 object-contain bg-pink-50 rounded-xl p-1.5 mt-3 border border-pink-200"
-              />
-              <ul className="mt-3 space-y-1 text-xs text-slate-700">
-                <li><strong>1. โต๊ะของใช้ทารก พร้อมของ:</strong> หมอนรองให้นม ผ้าอ้อม และชุดเสื้อผ้าทารก</li>
-                <li><strong>2. ภาพดอกไม้สวยงาม & แผนที่ Nursery Land:</strong> สร้างบรรยากาศอบอุ่นผ่อนคลาย</li>
+              <div className="w-full bg-gradient-to-br from-rose-50 via-amber-50/70 to-pink-50 rounded-xl p-3 mt-3 border border-pink-200 flex flex-col items-center">
+                <svg viewBox="0 0 320 155" className="w-full h-40 rounded-lg bg-white/90 border border-rose-100 p-2">
+                  <path
+                    d="M30 135 Q105 82 160 74 T285 38"
+                    fill="none"
+                    stroke="#84a98c"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M78 128 Q135 102 195 96 T270 82"
+                    fill="none"
+                    stroke="#a3b18a"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                  <ellipse cx="92" cy="92" rx="17" ry="7.5" transform="rotate(-28 92 92)" fill="#a3b18a" />
+                  <ellipse cx="145" cy="60" rx="18" ry="7.5" transform="rotate(-18 145 60)" fill="#84a98c" />
+                  <ellipse cx="215" cy="84" rx="17" ry="7.5" transform="rotate(20 215 84)" fill="#a3b18a" />
+                  <g transform="translate(160, 72)">
+                    {[0, 60, 120, 180, 240, 300].map((deg) => (
+                      <ellipse
+                        key={deg}
+                        cx="0"
+                        cy="-17"
+                        rx="11"
+                        ry="17"
+                        transform={`rotate(${deg})`}
+                        fill="#f4acb7"
+                        opacity="0.95"
+                      />
+                    ))}
+                    <circle cx="0" cy="0" r="9" fill="#fcbf49" />
+                  </g>
+                  <g transform="translate(88, 110)">
+                    {[0, 72, 144, 216, 288].map((deg) => (
+                      <ellipse
+                        key={deg}
+                        cx="0"
+                        cy="-13"
+                        rx="8.5"
+                        ry="13"
+                        transform={`rotate(${deg})`}
+                        fill="#ffcad4"
+                        opacity="0.95"
+                      />
+                    ))}
+                    <circle cx="0" cy="0" r="7" fill="#f77f00" />
+                  </g>
+                  <g transform="translate(232, 64)">
+                    {[0, 60, 120, 180, 240, 300].map((deg) => (
+                      <ellipse
+                        key={deg}
+                        cx="0"
+                        cy="-13"
+                        rx="9"
+                        ry="13.5"
+                        transform={`rotate(${deg})`}
+                        fill="#fde68a"
+                        opacity="0.95"
+                      />
+                    ))}
+                    <circle cx="0" cy="0" r="7.5" fill="#fb8500" />
+                  </g>
+                </svg>
+                <span className="text-xs font-bold text-rose-800 mt-1.5">
+                  🌸 ภาพดอกไม้สวยงามประดับผนังสีชมพูพาสเทล
+                </span>
+              </div>
+              <ul className="mt-3 space-y-1.5 text-xs text-slate-700 bg-pink-50/60 p-3 rounded-xl border border-pink-100">
+                <li><strong>1. โต๊ะของใช้ทารก พร้อมของ:</strong> ตู้ลิ้นชักวางหมอนรองให้นม ผ้าอ้อม ชุดเสื้อผ้าทารก และกระบอกน้ำ</li>
+                <li><strong>2. ภาพดอกไม้สวยงาม:</strong> กรอบภาพดอกไม้โทนพาสเทลติดผนัง สร้างบรรยากาศอบอุ่นผ่อนคลาย</li>
                 <li><strong>3. ชั้นประดับห้อง:</strong> ชั้นไม้ติดผนังวางตุ๊กตาหมีและกรอบรูป</li>
-                <li><strong>4. ที่แขวนของ:</strong> แขวนถุงเท้าเด็ก ของเล่นเขย่ามือ และผ้าซับน้ำลาย</li>
+                <li><strong>4. ที่แขวนของ:</strong> ราวไม้แขวนถุงเท้าเด็ก ของเล่นเขย่ามือ และผ้าซับน้ำลาย</li>
               </ul>
               <button
                 onClick={() => setActiveModal(null)}

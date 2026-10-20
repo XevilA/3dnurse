@@ -102,24 +102,6 @@ export default function LobbyRoom() {
                   badge: 'โปสเตอร์ต้อนรับหน้าเคาน์เตอร์พยาบาล',
                   description:
                     'ปกป้องดูแลคุณแม่หลังคลอดและทารกแรกเกิดด้วยความรัก ความอบอุ่น และมาตรฐานทางการพยาบาลครบวงจร',
-                  items: [
-                    {
-                      src: '/images/rev/lobby_mother_baby_poster.jpg',
-                      title: 'โปสเตอร์ต้อนรับ: การดูแลคุณแม่และทารกแรกเกิดด้วยหัวใจ',
-                      badge: 'Main Lobby Poster',
-                    },
-                    {
-                      src: '/images/rev/lobby_reception_ref.jpg',
-                      title: 'บรรยากาศเคาน์เตอร์ต้อนรับและจุดบริการพยาบาล (Reception Station)',
-                      badge: 'Main Lobby Reference',
-                    },
-                    {
-                      src: '/images/rev/lobby_garden_ref.jpg',
-                      title: 'โซนต้อนรับวิวสวนธรรมชาติและป้ายบอกทาง (Garden Welcome Zone)',
-                      badge: 'Garden View Reference',
-                    },
-                  ],
-                  currentIndex: 0,
                 })
               }
               style={{
@@ -373,7 +355,7 @@ export default function LobbyRoom() {
           <div
             onClick={() =>
               openLightbox({
-                src: '/images/rev/lobby_garden_ref.jpg',
+                src: '/images/rev/lobby_garden_window.jpg',
                 title: 'โซนต้อนรับและสวนธรรมชาติบำบัด (Welcome & Healing Garden Zone)',
                 badge: 'โซนต้อนรับ',
                 description: 'บรรยากาศโซนต้อนรับอบอุ่น ผ่อนคลาย มองเห็นสวนสีเขียวธรรมชาติ พร้อมป้ายบอกทางไปห้องดูแลคุณแม่และห้องดูแลทารก',
@@ -464,15 +446,15 @@ export default function LobbyRoom() {
             <div
               onClick={() => setRoom('newbornCare1')}
               style={{
-                background: 'linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%)',
-                border: '3px solid #f59e0b',
+                background: 'linear-gradient(90deg, #f0f9ff 0%, #e0f2fe 100%)',
+                border: '3px solid #38bdf8',
                 borderRadius: '18px',
                 padding: '14px 28px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: '24px',
-                boxShadow: '0 6px 18px rgba(245,158,11,0.22)',
+                boxShadow: '0 6px 18px rgba(56,189,248,0.22)',
                 cursor: 'pointer',
                 minWidth: '380px',
               }}
@@ -480,11 +462,11 @@ export default function LobbyRoom() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '32px' }}>👶</span>
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '900', color: '#92400e' }}>ห้องดูแลทารก</div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#b45309' }}>Newborn Care Room (Nursery 201–204)</div>
+                  <div style={{ fontSize: '24px', fontWeight: '900', color: '#0369a1' }}>ห้องดูแลทารก</div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#0284c7' }}>Newborn Care Room (Nursery 201–204)</div>
                 </div>
               </div>
-              <span style={{ fontSize: '28px', fontWeight: '900', color: '#d97706' }}>➔</span>
+              <span style={{ fontSize: '28px', fontWeight: '900', color: '#0284c7' }}>➔</span>
             </div>
           </div>
         </Html>
