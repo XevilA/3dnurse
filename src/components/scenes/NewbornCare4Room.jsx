@@ -568,7 +568,7 @@ export default function NewbornCare4Room() {
                 <span className="text-emerald-700 text-base">ให้ปลอดภัยและสบายตัว (Safe Sleep)</span>
               </div>
               <img
-                src="/images/rev/nb4_room_ref.jpg"
+                src="/images/rev/nb4_poster1_env.jpg"
                 alt="ห้องนอนทารกที่ปลอดภัย"
                 style={{ width: '100%', height: '145px', objectFit: 'cover', borderRadius: '8px' }}
               />

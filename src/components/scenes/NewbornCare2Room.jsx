@@ -1609,11 +1609,40 @@ export default function NewbornCare2Room() {
                   <h3 className="font-bold text-base text-amber-950">
                     ขั้นที่ 6 (1.6): วางทารกบนผ้าข้างอ่าง ถอดเสื้อผ้า และตรวจสอบผ้าอ้อม
                   </h3>
-                  <img
-                    src="/images/rev/bath_step6_undress_check.jpg"
-                    alt="ถอดเสื้อผ้าและเปิดผ้าอ้อม"
-                    className="w-full h-44 object-contain bg-white rounded-xl p-1 border border-amber-200"
-                  />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="bg-white rounded-xl p-1.5 border border-amber-200 text-center">
+                      <img
+                        src="/images/rev/bath_step6_1_placed.jpg"
+                        alt="วางทารกบนเบาะผ้า"
+                        className="w-full h-28 object-contain rounded"
+                      />
+                      <div className="text-[11px] font-bold text-amber-950 mt-1">วางทารกบนเบาะผ้า</div>
+                    </div>
+                    <div className="bg-white rounded-xl p-1.5 border border-amber-200 text-center">
+                      <img
+                        src="/images/rev/bath_step6_2_pajamas.jpg"
+                        alt="คลิกถอดเสื้อผ้าทารก"
+                        className="w-full h-28 object-contain rounded"
+                      />
+                      <div className="text-[11px] font-bold text-amber-950 mt-1">1. ถอดเสื้อผ้าทารก</div>
+                    </div>
+                    <div className="bg-white rounded-xl p-1.5 border border-amber-200 text-center">
+                      <img
+                        src="/images/rev/bath_step6_3_diaper.jpg"
+                        alt="คลิกเปิดผ้าอ้อมตรวจการขับถ่าย"
+                        className="w-full h-28 object-contain rounded"
+                      />
+                      <div className="text-[11px] font-bold text-amber-950 mt-1">2. เปิดผ้าอ้อมตรวจสอบ</div>
+                    </div>
+                    <div className="bg-white rounded-xl p-1.5 border border-amber-200 text-center">
+                      <img
+                        src="/images/rev/bath_step6_undress_check.jpg"
+                        alt="1.6 ตรวจสอบการขับถ่าย"
+                        className="w-full h-28 object-contain rounded"
+                      />
+                      <div className="text-[11px] font-bold text-amber-950 mt-1">ทำความสะอาดก่อนอาบน้ำ</div>
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <button
                       onClick={() => {
