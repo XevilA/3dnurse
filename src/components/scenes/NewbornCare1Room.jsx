@@ -8,7 +8,6 @@ import FlowerVase from '../decorations/FlowerVase';
 import Pillows from '../decorations/Pillows';
 import HospitalNightstand from '../furniture/HospitalNightstand';
 import InteractiveSeat from '../furniture/InteractiveSeat';
-import { FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
 
 /**
  * NewbornCare1Room — ห้องที่ 1: การให้นมและการอุ้มจัดท่าทารก (Nursery 201)
@@ -348,48 +347,93 @@ export default function NewbornCare1Room() {
       </Html>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. NORTH WALL (BACK — FLUSH AGAINST INNER WALL z = -6.78):
-             - 3 Framed Educational Wall Posters (3D WebGL Mesh, never floats!)
+          1. NORTH WALL (BACK — FLUSH AGAINST WALL z = -6.92):
+             - 3 Framed Educational Wall Posters (with Previous/Next in Lightbox)
              - Baby Crib with sleeping baby (NO floating label; click to interact)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Wall Poster 1: "4 Key Signs" — 3D Mesh Flush against North Wall (z = -6.78) */}
-      <FramedImagePoster3D
-        imgSrc="/references/room1/img_006.png"
-        width={2.15}
-        height={1.55}
-        position={[-4.2, 2.75, -6.78]}
-        title="4 สัญญาณสำคัญของการอมหัวนมถูกวิธี"
-        badge="ป้ายที่ 1"
-        frameColor="#b45309"
-        accentColor="#d97706"
-        onClick={() => openWallPoster(0)}
-      />
+      {/* Wall Poster 1: "4 Key Signs" — Flush against North Wall */}
+      <group position={[-4.2, 2.75, -6.92]} rotation={[0, 0, 0]}>
+        <mesh
+          castShadow
+          receiveShadow
+          onClick={(e) => {
+            e.stopPropagation();
+            openWallPoster(0);
+          }}
+        >
+          <boxGeometry args={[2.15, 1.5, 0.03]} />
+          <meshStandardMaterial color="#b45309" roughness={0.35} />
+        </mesh>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+          <div
+            onClick={() => openWallPoster(0)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-amber-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '400px' }}
+          >
+            <img
+              src="/references/room1/img_006.png"
+              alt="4 Key Signs"
+              style={{ width: '100%', height: '215px', objectFit: 'contain', backgroundColor: '#fffbeb', borderRadius: '6px' }}
+            />
+          </div>
+        </Html>
+      </group>
 
-      {/* Wall Poster 2: "4 Key Points" — 3D Mesh Flush against North Wall (z = -6.78) */}
-      <FramedImagePoster3D
-        imgSrc="/references/room1/img_010.jpeg"
-        width={2.15}
-        height={1.55}
-        position={[-1.7, 2.75, -6.78]}
-        title="4 จุดสำคัญในการอุ้มทารกเข้าเต้า"
-        badge="ป้ายที่ 2"
-        frameColor="#0284c7"
-        accentColor="#0ea5e9"
-        onClick={() => openWallPoster(1)}
-      />
+      {/* Wall Poster 2: "4 Key Points" — Flush against North Wall */}
+      <group position={[-1.7, 2.75, -6.92]} rotation={[0, 0, 0]}>
+        <mesh
+          castShadow
+          receiveShadow
+          onClick={(e) => {
+            e.stopPropagation();
+            openWallPoster(1);
+          }}
+        >
+          <boxGeometry args={[2.15, 1.5, 0.03]} />
+          <meshStandardMaterial color="#0284c7" roughness={0.35} />
+        </mesh>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+          <div
+            onClick={() => openWallPoster(1)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-sky-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '400px' }}
+          >
+            <img
+              src="/references/room1/img_010.jpeg"
+              alt="4 Key Points"
+              style={{ width: '100%', height: '215px', objectFit: 'contain', backgroundColor: '#f0f9ff', borderRadius: '6px' }}
+            />
+          </div>
+        </Html>
+      </group>
 
-      {/* Wall Poster 3: "ท่าให้นมทารก 4 ท่า" — 3D Mesh Flush against North Wall (z = -6.78) */}
-      <FramedImagePoster3D
-        imgSrc="/images/rev/bf_4holds.jpg"
-        width={2.65}
-        height={1.6}
-        position={[1.1, 2.75, -6.78]}
-        title="ท่าอุ้มให้นมทารก 4 ท่ามาตรฐาน"
-        badge="ป้ายที่ 3"
-        frameColor="#be185d"
-        accentColor="#ec4899"
-        onClick={() => openWallPoster(2)}
-      />
+      {/* Wall Poster 3: "ท่าให้นมทารก 4 ท่า" (/images/rev/bf_4holds.jpg sized cleanly with object-contain) */}
+      <group position={[1.1, 2.75, -6.92]} rotation={[0, 0, 0]}>
+        <mesh
+          castShadow
+          receiveShadow
+          onClick={(e) => {
+            e.stopPropagation();
+            openWallPoster(2);
+          }}
+        >
+          <boxGeometry args={[2.65, 1.55, 0.03]} />
+          <meshStandardMaterial color="#be185d" roughness={0.35} />
+        </mesh>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+          <div
+            onClick={() => openWallPoster(2)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-pink-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '490px' }}
+          >
+            <img
+              src="/images/rev/bf_4holds.jpg"
+              alt="ท่าให้นมทารก 4 ท่า"
+              style={{ width: '100%', height: '220px', objectFit: 'contain', backgroundColor: '#fdf2f8', borderRadius: '6px' }}
+            />
+          </div>
+        </Html>
+      </group>
 
       {/* ── Classic Wooden Baby Crib against North Wall (Click to pick up / place baby; NO permanent floating badge) ── */}
       <group
@@ -481,79 +525,125 @@ export default function NewbornCare1Room() {
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          2. WEST WALL (LEFT — FLUSH AGAINST INNER WALL x = -6.78):
+          2. WEST WALL (LEFT):
              - Large Wall-Mounted TV (z = -1.6) with 8 Slides (8/8 is Video)
              - Flush along middle-left of West Wall (x = -6.48):
                  (a) Realistic Handwashing Sink (z = 1.0)
                  (b) Realistic Utility Table with Hot Water Thermos & Cup (z = 2.4)
                  (c) Realistic 2-Door Breastmilk Refrigerator (z = 3.85)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <FramedImagePoster3D
-        imgSrc={currentSlide.isVideo ? '/images/rev/bf_4holds.jpg' : currentSlide.img}
-        width={3.5}
-        height={2.1}
-        position={[-6.78, 2.55, -1.6]}
-        rotation={[0, Math.PI / 2, 0]}
-        title={currentSlide.title}
-        subtitle={
-          tvSlide === 7
-            ? 'ที่มา: กรมอนามัย (https://www.youtube.com/watch?v=G1muyuyuD60)'
-            : `สื่อให้ความรู้การให้นมบุตร (สไลด์แผ่นที่ ${tvSlide + 1}/8) • คลิกเพื่อขยายใหญ่`
-        }
-        badge={`📺 สไลด์ ${tvSlide + 1}/8`}
-        frameColor="#0f172a"
-        accentColor="#0284c7"
-        onClick={() => openTvLightbox(tvSlide)}
-      >
-        {/* ปุ่มควบคุมทีวีด้านล่างกรอบจอ (ไม่ใช้ Html transform จึงไม่ลอย) */}
-        <Html position={[0, -1.28, 0.05]} center distanceFactor={10} zIndexRange={[15, 0]}>
-          <div className="flex items-center gap-1.5 bg-slate-950/95 text-white px-3 py-1 rounded-full border border-sky-400 shadow-lg whitespace-nowrap">
-            <button
-              type="button"
-              disabled={tvSlide === 0}
-              onClick={(e) => {
-                e.stopPropagation();
-                setTvSlide((s) => Math.max(0, s - 1));
-              }}
-              className="px-2.5 py-0.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-[11px] rounded-full font-bold cursor-pointer"
-            >
-              ◀ ก่อนหน้า
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                openTvLightbox(tvSlide);
-              }}
-              className="px-2.5 py-0.5 bg-sky-600 hover:bg-sky-500 text-[11px] rounded-full font-bold cursor-pointer"
-            >
-              🔍 ขยายเต็มจอ ({tvSlide + 1}/8)
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setTvSlide(7);
-                openTvLightbox(7);
-              }}
-              className="px-2.5 py-0.5 bg-rose-600 hover:bg-rose-500 text-[11px] rounded-full font-bold cursor-pointer"
-            >
-              ▶ หน้า 8/8 วีดีโอ
-            </button>
-            <button
-              type="button"
-              disabled={tvSlide === tvSlidesData.length - 1}
-              onClick={(e) => {
-                e.stopPropagation();
-                setTvSlide((s) => Math.min(tvSlidesData.length - 1, s + 1));
-              }}
-              className="px-2.5 py-0.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-[11px] rounded-full font-bold cursor-pointer"
-            >
-              ถัดไป ▶
-            </button>
+      <group position={[-6.88, 2.55, -1.6]} rotation={[0, Math.PI / 2, 0]}>
+        {/* TV Frame */}
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={[3.7, 2.2, 0.06]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 0, 0.035]}>
+          <planeGeometry args={[3.55, 2.05]} />
+          <meshStandardMaterial color="#0f172a" roughness={0.1} />
+        </mesh>
+
+        {/* TV Interactive Display (1/8 to 8/8) */}
+        <Html position={[0, 0, 0.045]} center transform scale={0.24}>
+          <div
+            className="select-none bg-slate-950 text-white rounded-lg p-3 shadow-2xl flex flex-col justify-between"
+            style={{ width: '570px', height: '345px', border: '3px solid #38bdf8' }}
+          >
+            {/* Top Bar */}
+            <div className="flex items-center justify-between border-b border-slate-700 pb-1.5 px-1">
+              <span className="font-bold text-sky-400 text-xs flex items-center gap-1.5">
+                📺 สื่อให้ความรู้การให้นมบุตร ({tvSlide + 1}/{tvSlidesData.length})
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openTvLightbox(tvSlide)}
+                  className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-0.5 rounded text-[11px] font-semibold shadow"
+                >
+                  🔍 ขยายเต็มจอ
+                </button>
+                <button
+                  onClick={() => setTvSlide(7)}
+                  className={`px-2.5 py-0.5 rounded text-[11px] font-bold shadow flex items-center gap-1 ${
+                    tvSlide === 7 ? 'bg-amber-500 text-slate-950' : 'bg-rose-600 hover:bg-rose-500 text-white'
+                  }`}
+                >
+                  ▶ หน้า 8/8 วีดีโอ
+                </button>
+              </div>
+            </div>
+
+            {/* Slide Content Preview (Slides 1..7 = Image, Slide 8/8 = Playable YouTube Video) */}
+            {currentSlide.isVideo ? (
+              <div className="my-1.5 flex-1 bg-slate-900 rounded-lg overflow-hidden border border-slate-700 flex flex-col">
+                <div className="flex-1 relative">
+                  <iframe
+                    className="w-full h-full"
+                    src="https://www.youtube.com/embed/G1muyuyuD60"
+                    title="ท่าอุ้มและการดูดนมที่ถูกวิธี"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+                <div className="bg-slate-950/95 px-2.5 py-1 flex items-center justify-between text-[10px] border-t border-slate-800">
+                  <span className="text-amber-300 font-semibold truncate">
+                    “ใช้เพื่อการเรียนการศึกษาสำหรับให้ความรู้แก่มารดาหลังคลอด”
+                  </span>
+                  <a
+                    href="https://www.youtube.com/watch?v=G1muyuyuD60"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-rose-600 hover:bg-rose-500 text-white px-2 py-0.5 rounded font-bold shrink-0 ml-2"
+                  >
+                    🔗 เปิดดูบน YouTube
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="my-1.5 flex-1 relative bg-slate-900 rounded-lg overflow-hidden border border-slate-800 cursor-pointer flex items-center justify-center group"
+                onClick={() => openTvLightbox(tvSlide)}
+              >
+                <img
+                  src={currentSlide.img}
+                  alt={currentSlide.title}
+                  className="w-full h-full object-contain p-1 group-hover:scale-105 transition"
+                />
+                <div className="absolute bottom-1 inset-x-2 bg-black/65 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-sky-200 text-center truncate">
+                  {currentSlide.title} (คลิกเพื่อขยายใหญ่)
+                </div>
+              </div>
+            )}
+
+            {/* Bottom Controls — Citation ONLY displayed on Slide 8/8 per requirement */}
+            <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between text-[10px] px-1">
+              <button
+                disabled={tvSlide === 0}
+                onClick={() => setTvSlide((s) => Math.max(0, s - 1))}
+                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 rounded font-bold"
+              >
+                ◀ ก่อนหน้า
+              </button>
+              <div className="text-slate-300 text-[10px] text-center truncate px-2 font-medium">
+                {tvSlide === 7 ? (
+                  <span className="text-amber-300">
+                    ที่มา: กรมอนามัย (https://www.youtube.com/watch?v=G1muyuyuD60)
+                  </span>
+                ) : (
+                  <span className="text-slate-400">สไลด์แผ่นที่ {tvSlide + 1} จาก 8</span>
+                )}
+              </div>
+              <button
+                disabled={tvSlide === tvSlidesData.length - 1}
+                onClick={() => setTvSlide((s) => Math.min(tvSlidesData.length - 1, s + 1))}
+                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 disabled:opacity-30 rounded font-bold"
+              >
+                ถัดไป ▶
+              </button>
+            </div>
           </div>
         </Html>
-      </FramedImagePoster3D>
+      </group>
 
       {/* ── (a) Realistic Handwashing Sink (Left Wall middle, flush against wall x = -6.48, z = 1.0) ── */}
       <group
@@ -621,12 +711,12 @@ export default function NewbornCare1Room() {
             <meshStandardMaterial color="#f8fafc" />
           </mesh>
         </group>
-        {/* Wall Mirror above Sink (Flush against West Wall) */}
-        <mesh position={[0, 1.5, -0.28]} castShadow>
-          <boxGeometry args={[0.85, 0.95, 0.04]} />
+        {/* Wall Mirror above Sink */}
+        <mesh position={[0, 1.5, -0.31]} castShadow>
+          <boxGeometry args={[0.85, 0.95, 0.03]} />
           <meshStandardMaterial color="#cbd5e1" metalness={0.4} roughness={0.3} />
         </mesh>
-        <mesh position={[0, 1.5, -0.258]}>
+        <mesh position={[0, 1.5, -0.29]}>
           <planeGeometry args={[0.76, 0.86]} />
           <meshStandardMaterial color="#e0f2fe" metalness={0.9} roughness={0.05} />
         </mesh>
@@ -711,9 +801,9 @@ export default function NewbornCare1Room() {
         </group>
       </group>
 
-      {/* ── (c) Realistic 2-Door Breastmilk Refrigerator (Left Wall middle-south, flush against wall x = -6.38, z = 3.85) ── */}
+      {/* ── (c) Realistic 2-Door Breastmilk Refrigerator (Left Wall middle-south, flush against wall x = -6.42, z = 3.85) ── */}
       <group
-        position={[-6.38, 0, 3.85]}
+        position={[-6.42, 0, 3.85]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -754,7 +844,7 @@ export default function NewbornCare1Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           3. CENTER AREA (ALIGNED DIRECTLY IN FRONT OF TV AT z = -1.6):
              - Nursing Sofa wrapped in InteractiveSeat (x = -1.1, z = -1.6)
-             - Low Wooden Coffee Table with Clearly Visible Items & Diapers (x = -2.8, z = -1.6)
+             - Low Wooden Coffee Table with 3 Clickable Items (x = -2.8, z = -1.6)
           ══════════════════════════════════════════════════════════════════════════ */}
       <InteractiveSeat
         id="nb1-nursing-sofa"
@@ -824,7 +914,7 @@ export default function NewbornCare1Room() {
       <group position={[-2.8, 0, -1.6]} rotation={[0, -Math.PI / 2, 0]}>
         {/* Table Top */}
         <mesh
-          position={[0, 0.42, 0]}
+          position={[0, 0.38, 0]}
           castShadow
           receiveShadow
           onClick={(e) => {
@@ -833,162 +923,87 @@ export default function NewbornCare1Room() {
             setActiveModal('tableItems');
           }}
         >
-          <boxGeometry args={[1.65, 0.06, 0.96]} />
+          <boxGeometry args={[1.55, 0.06, 0.92]} />
           <meshStandardMaterial color="#c29b68" roughness={0.35} />
         </mesh>
         {/* Table Legs */}
-        {[[-0.72, -0.4], [0.72, -0.4], [-0.72, 0.4], [0.72, 0.4]].map(([x, z], i) => (
-          <mesh key={`tbl_leg_${i}`} position={[x, 0.21, z]} castShadow>
-            <cylinderGeometry args={[0.032, 0.026, 0.42, 16]} />
+        {[[-0.68, -0.38], [0.68, -0.38], [-0.68, 0.38], [0.68, 0.38]].map(([x, z], i) => (
+          <mesh key={`tbl_leg_${i}`} position={[x, 0.19, z]} castShadow>
+            <cylinderGeometry args={[0.028, 0.025, 0.38, 16]} />
             <meshStandardMaterial color="#8c6239" roughness={0.4} />
           </mesh>
         ))}
 
-        {/* ถาดรองอุปกรณ์ให้นมสีขาวสะอาดบนโต๊ะกลาง */}
-        <mesh position={[-0.14, 0.46, 0]} receiveShadow>
-          <boxGeometry args={[1.08, 0.02, 0.56]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.25} />
-        </mesh>
-
-        {/* Item 1: แก้วเล็กสำหรับเก็บนมแม่ (Breastmilk Collection Cup — ขนาดใหญ่เห็นชัดเจน) */}
+        {/* Item 1: แก้วเล็กสำหรับเก็บนมแม่ (Click to view details) */}
         <group
-          position={[-0.48, 0.47, 0]}
+          position={[-0.42, 0.42, 0]}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedTableItem(1);
             setActiveModal('tableItems');
           }}
         >
-          {/* แก้วใส */}
-          <mesh position={[0, 0.09, 0]} castShadow>
-            <cylinderGeometry args={[0.075, 0.062, 0.18, 24]} />
-            <meshStandardMaterial color="#ffffff" transparent opacity={0.82} roughness={0.1} />
+          <mesh castShadow>
+            <cylinderGeometry args={[0.055, 0.048, 0.11, 20]} />
+            <meshStandardMaterial color="#ffffff" transparent opacity={0.85} roughness={0.1} />
           </mesh>
-          {/* น้ำนมแม่สีเหลืองนวลด้านใน */}
-          <mesh position={[0, 0.065, 0]}>
-            <cylinderGeometry args={[0.065, 0.056, 0.11, 20]} />
-            <meshStandardMaterial color="#fef3c7" roughness={0.3} />
-          </mesh>
-          {/* ฝาปิดสีชมพู */}
-          <mesh position={[0, 0.185, 0]} castShadow>
-            <cylinderGeometry args={[0.08, 0.08, 0.025, 24]} />
+          <mesh position={[0, 0.06, 0]}>
+            <cylinderGeometry args={[0.06, 0.06, 0.018, 20]} />
             <meshStandardMaterial color="#ec4899" roughness={0.3} />
           </mesh>
         </group>
 
-        {/* Item 2: ถ้วย/แก้วสำหรับป้อนนมทารก (Cup Feeding — ขนาดใหญ่พร้อมขอบปากถ้วยป้อนนม) */}
+        {/* Item 2: ถ้วย/แก้วสำหรับป้อนนมทารก (Click to view details) */}
         <group
-          position={[-0.14, 0.47, 0]}
+          position={[0, 0.42, 0]}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedTableItem(2);
             setActiveModal('tableItems');
           }}
         >
-          <mesh position={[0, 0.075, 0]} castShadow>
-            <cylinderGeometry args={[0.068, 0.05, 0.15, 24]} />
-            <meshStandardMaterial color="#e0f2fe" transparent opacity={0.88} roughness={0.1} />
+          <mesh castShadow>
+            <cylinderGeometry args={[0.05, 0.038, 0.095, 20]} />
+            <meshStandardMaterial color="#e0f2fe" transparent opacity={0.9} roughness={0.1} />
           </mesh>
-          {/* น้ำนมด้านในถ้วยป้อน */}
-          <mesh position={[0, 0.05, 0]}>
-            <cylinderGeometry args={[0.056, 0.045, 0.08, 20]} />
-            <meshStandardMaterial color="#fffbeb" roughness={0.3} />
-          </mesh>
-          {/* ขอบถ้วยสีฟ้าสำหรับป้อนนมทารก */}
-          <mesh position={[0, 0.152, 0]}>
-            <torusGeometry args={[0.068, 0.01, 12, 24]} />
+          <mesh position={[0, 0.052, 0]}>
+            <cylinderGeometry args={[0.054, 0.054, 0.015, 20]} />
             <meshStandardMaterial color="#0284c7" roughness={0.3} />
           </mesh>
         </group>
 
-        {/* Item 3: ไซริงค์สำหรับเก็บน้ำนม + ถุงซิปเก็บน้ำนมแม่ตั้งเรียงชัดเจน */}
+        {/* Item 3: ไซริงค์สำหรับเก็บน้ำนม + ถุงซิป (Click to view details) */}
         <group
-          position={[0.22, 0.47, 0]}
+          position={[0.42, 0.42, 0]}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedTableItem(3);
             setActiveModal('tableItems');
           }}
         >
-          {/* ไซริงค์ป้อนนม (Syringe) */}
-          <mesh rotation={[0, 0, Math.PI / 2]} position={[-0.02, 0.03, 0.14]} castShadow>
-            <cylinderGeometry args={[0.026, 0.026, 0.22, 16]} />
-            <meshStandardMaterial color="#f8fafc" transparent opacity={0.88} />
+          {/* Syringe */}
+          <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0.02, -0.1]} castShadow>
+            <cylinderGeometry args={[0.018, 0.018, 0.16, 16]} />
+            <meshStandardMaterial color="#f8fafc" transparent opacity={0.85} />
           </mesh>
-          <mesh rotation={[0, 0, Math.PI / 2]} position={[0.11, 0.03, 0.14]}>
-            <cylinderGeometry args={[0.018, 0.018, 0.09, 12]} />
-            <meshStandardMaterial color="#9333ea" />
+          <mesh rotation={[0, 0, Math.PI / 2]} position={[0.09, 0.02, -0.1]}>
+            <cylinderGeometry args={[0.012, 0.012, 0.06, 12]} />
+            <meshStandardMaterial color="#a855f7" />
           </mesh>
-          {/* ถุงซิปเก็บน้ำนมแม่ 2 ถุงตั้งวางคู่กัน (Breastmilk Storage Zip Bags) */}
-          {[-0.06, 0.08].map((bx, idx) => (
-            <group key={`zipbag_${idx}`} position={[bx, 0.11, -0.06]} rotation={[-0.12, idx * 0.2, 0]}>
-              <mesh castShadow>
-                <boxGeometry args={[0.12, 0.2, 0.045]} />
-                <meshStandardMaterial color="#fdf4ff" transparent opacity={0.88} roughness={0.15} />
-              </mesh>
-              {/* น้ำนมแม่ในถุงซิป */}
-              <mesh position={[0, -0.03, 0]}>
-                <boxGeometry args={[0.105, 0.11, 0.038]} />
-                <meshStandardMaterial color="#fef08a" roughness={0.3} />
-              </mesh>
-              {/* แถบซิปล็อกสีม่วง/ชมพูด้านบน */}
-              <mesh position={[0, 0.09, 0]}>
-                <boxGeometry args={[0.122, 0.018, 0.048]} />
-                <meshStandardMaterial color={idx === 0 ? '#a855f7' : '#ec4899'} />
-              </mesh>
-            </group>
-          ))}
+          {/* Pre-sterilized Milk Zip Bags */}
+          <mesh position={[0, 0.015, 0.1]} rotation={[-0.05, 0.15, 0]} castShadow>
+            <boxGeometry args={[0.2, 0.025, 0.24]} />
+            <meshStandardMaterial color="#e9d5ff" transparent opacity={0.85} />
+          </mesh>
         </group>
-
-        {/* กองผ้าอ้อมผ้าสาลูพับ 3 ผืนวางบนมุมโต๊ะกลาง (เห็นชัดเจนทันที) */}
-        <group
-          position={[0.58, 0.46, 0]}
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedTableItem(1);
-            setActiveModal('tableItems');
-          }}
-        >
-          {[
-            [0.02, '#ffffff', '#f472b6'],
-            [0.055, '#fce7f3', '#ec4899'],
-            [0.09, '#ffffff', '#38bdf8'],
-          ].map(([py, col, trim], i) => (
-            <group key={`ct_diaper_${i}`} position={[0, py, 0]}>
-              <mesh castShadow>
-                <boxGeometry args={[0.26, 0.032, 0.32]} />
-                <meshStandardMaterial color={col} roughness={0.8} />
-              </mesh>
-              <mesh position={[0, 0.002, 0.15]}>
-                <boxGeometry args={[0.262, 0.033, 0.025]} />
-                <meshStandardMaterial color={trim} />
-              </mesh>
-            </group>
-          ))}
-        </group>
-
-        {/* ป้ายคลิกดูอุปกรณ์บนโต๊ะกลาง */}
-        <Html position={[0, 0.92, 0]} center distanceFactor={10} zIndexRange={[15, 0]}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedTableItem(1);
-              setActiveModal('tableItems');
-            }}
-            className="cursor-pointer bg-white/95 hover:bg-pink-50 text-pink-900 border-2 border-pink-400 px-3.5 py-1 rounded-full text-xs font-extrabold shadow-md whitespace-nowrap transition hover:scale-105"
-          >
-            🥛 อุปกรณ์บนโต๊ะ: แก้วเก็บนม • ถ้วยป้อนนม • ไซริงค์ & ถุงซิป • ผ้าอ้อม
-          </button>
-        </Html>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           4. NORTH-EAST CORNER NURSERY DECORATION (Per Reference Image 6: /images/rev/bf_corner_decor_ref.jpg)
-             (1) โต๊ะของใช้ทารก พร้อมของ (Dresser table, nursing pillow, clothes/diapers stack, Pampers pack, rug)
-             (2) ภาพดอกไม้สวยงาม, แผนที่ Nursery Land (3D Mesh flush with North Wall z = -6.78)
-             (3) ชั้นประดับห้อง (Floating shelves flush with East Wall x = 6.78)
-             (4) ที่แขวนของ (Wall pegboard flush with East Wall x = 6.78)
+             (1) โต๊ะของใช้ทารก พร้อมของ (Dresser table, nursing pillow, clothes/diapers stack, rug)
+             (2) ภาพดอกไม้สวยงาม, แผนที่ Nursery Land
+             (3) ชั้นประดับห้อง (Floating shelves with teddy bears & frames)
+             (4) ที่แขวนของ (Wall pegboard with hanging baby items)
           ══════════════════════════════════════════════════════════════════════════ */}
       <group
         position={[5.3, 0, -5.1]}
@@ -1007,101 +1022,136 @@ export default function NewbornCare1Room() {
           <meshStandardMaterial color="#e3d5ca" roughness={0.9} />
         </mesh>
 
-        {/* (1) โต๊ะของใช้ทารก พร้อมของ (Birch Wood Baby Care Dresser Table — มีหมอนให้นม ผ้าอ้อมพับ แพมเพิส ขวดนม ครบตามบรีฟ) */}
+        {/* (1) โต๊ะของใช้ทารก พร้อมของ (Birch Wood Baby Care Dresser Table) */}
         <group position={[0, 0, -0.4]}>
           <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
-            <boxGeometry args={[1.65, 0.88, 0.72]} />
+            <boxGeometry args={[1.55, 0.88, 0.68]} />
             <meshStandardMaterial color="#f3e5d8" roughness={0.4} />
           </mesh>
           <mesh position={[0, 0.91, 0]} castShadow>
-            <boxGeometry args={[1.72, 0.05, 0.78]} />
+            <boxGeometry args={[1.62, 0.05, 0.74]} />
             <meshStandardMaterial color="#d4a373" roughness={0.35} />
           </mesh>
-          {/* U-Shaped Nursing Pillow on Table (หมอนรองให้นม) */}
-          <mesh position={[-0.5, 1.0, 0.04]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-            <torusGeometry args={[0.19, 0.08, 16, 28, Math.PI * 1.45]} />
+          {/* U-Shaped Nursing Pillow on Table */}
+          <mesh position={[-0.42, 1.0, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+            <torusGeometry args={[0.18, 0.075, 16, 28, Math.PI * 1.45]} />
             <meshStandardMaterial color="#fbcfe8" roughness={0.8} />
           </mesh>
-          {/* กองผ้าอ้อมผ้าสาลูพับ 4 ผืน & เสื้อผ้าทารก (Folded Stack of Diapers & Baby Clothes) */}
-          {[
-            [0.96, '#ffffff', '#38bdf8'],
-            [1.01, '#fef08a', '#f59e0b'],
-            [1.06, '#bae6fd', '#0284c7'],
-            [1.11, '#fbcfe8', '#ec4899'],
-          ].map(([py, col, trim], idx) => (
-            <group key={`dr_diaper_${idx}`} position={[-0.02, py, 0]}>
-              <mesh castShadow>
-                <boxGeometry args={[0.34, 0.045, 0.28]} />
-                <meshStandardMaterial color={col} roughness={0.75} />
-              </mesh>
-              <mesh position={[0, 0.002, 0.13]}>
-                <boxGeometry args={[0.342, 0.046, 0.025]} />
-                <meshStandardMaterial color={trim} />
-              </mesh>
-            </group>
-          ))}
-          {/* ห่อแพมเพิส (Disposable Diaper Pack) + ผ้าอ้อมสำเร็จรูปวางเตรียมพร้อมใช้ */}
-          <group position={[0.36, 0.94, -0.05]}>
-            <mesh position={[0, 0.12, 0]} castShadow>
-              <boxGeometry args={[0.22, 0.24, 0.18]} />
-              <meshStandardMaterial color="#0d9488" roughness={0.35} />
-            </mesh>
-            <mesh position={[0, 0.12, 0.092]}>
-              <planeGeometry args={[0.18, 0.16]} />
-              <meshBasicMaterial color="#fef08a" />
-            </mesh>
-            {/* แพมเพิสพับวางข้างห่อ */}
-            <mesh position={[0.22, 0.03, 0.06]} castShadow>
-              <boxGeometry args={[0.16, 0.05, 0.22]} />
-              <meshStandardMaterial color="#ffffff" roughness={0.75} />
-            </mesh>
-            <mesh position={[0.22, 0.056, 0.12]}>
-              <boxGeometry args={[0.162, 0.008, 0.04]} />
-              <meshStandardMaterial color="#38bdf8" />
-            </mesh>
-          </group>
-          {/* ขวดนมและกระปุกสำลีบนโต๊ะของใช้ทารก */}
-          <group position={[0.58, 0.94, -0.14]}>
-            <mesh position={[0, 0.08, 0]} castShadow>
-              <cylinderGeometry args={[0.035, 0.038, 0.16, 16]} />
-              <meshStandardMaterial color="#fffbeb" roughness={0.2} />
-            </mesh>
-            <mesh position={[0, 0.17, 0]}>
-              <cylinderGeometry args={[0.032, 0.035, 0.03, 16]} />
-              <meshStandardMaterial color="#ec4899" />
-            </mesh>
-          </group>
-
-          {/* ป้ายคลิกดูโต๊ะของใช้ทารกและผ้าอ้อม */}
-          <Html position={[0, 1.38, 0]} center distanceFactor={11} zIndexRange={[15, 0]}>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveModal('cornerDecor');
-              }}
-              className="cursor-pointer bg-white/95 hover:bg-amber-50 text-amber-900 border-2 border-amber-400 px-3 py-1 rounded-full text-xs font-extrabold shadow-md whitespace-nowrap"
-            >
-              🧷 โต๊ะของใช้ทารก (ผ้าอ้อม • แพมเพิส • หมอนให้นม • เสื้อผ้า)
-            </button>
-          </Html>
+          {/* Folded Stack of Pastel Baby Clothes & Diapers */}
+          <mesh position={[0.08, 0.97, 0]} castShadow>
+            <boxGeometry args={[0.32, 0.07, 0.26]} />
+            <meshStandardMaterial color="#fef08a" roughness={0.75} />
+          </mesh>
+          <mesh position={[0.08, 1.04, 0]} castShadow>
+            <boxGeometry args={[0.3, 0.06, 0.24]} />
+            <meshStandardMaterial color="#bae6fd" roughness={0.75} />
+          </mesh>
+          <mesh position={[0.08, 1.1, 0]} castShadow>
+            <boxGeometry args={[0.28, 0.06, 0.22]} />
+            <meshStandardMaterial color="#fbcfe8" roughness={0.75} />
+          </mesh>
+          {/* Wipes Box & Baby Care Basket */}
+          <mesh position={[0.5, 1.0, 0]} castShadow>
+            <boxGeometry args={[0.28, 0.14, 0.22]} />
+            <meshStandardMaterial color="#e6ccb2" roughness={0.6} />
+          </mesh>
         </group>
 
-        {/* (2) ภาพดอกไม้สวยงาม & แผนที่ Nursery Land (3D Mesh ติดผนังด้านเหนือ z = -5.1 - 1.68 = -6.78 แนบสนิท 100%) */}
-        <FramedImagePoster3D
-          imgSrc="/images/rev/bf_corner_decor_ref.jpg"
-          width={1.55}
-          height={1.15}
-          position={[0.05, 2.25, -1.68]}
-          title="มุมของใช้ทารกและภาพประดับห้อง"
-          badge="🌸 มุมทารก"
-          frameColor="#d4a373"
-          accentColor="#ec4899"
-          onClick={() => setActiveModal('cornerDecor')}
-        />
+        {/* (2) ภาพดอกไม้สวยงาม (Mounted on North Wall above dresser — ปรับแก้ห้องให้นมทารก หน้า 3 ภาพที่ 6) */}
+        <group position={[-0.35, 2.25, -1.78]}>
+          {/* กรอบภาพดอกไม้สวยงาม */}
+          <mesh castShadow>
+            <boxGeometry args={[1.15, 0.85, 0.03]} />
+            <meshStandardMaterial color="#d4a373" roughness={0.4} />
+          </mesh>
+          <Html position={[0, 0, 0.02]} center transform scale={0.16}>
+            <div
+              onClick={() => setActiveModal('cornerDecor')}
+              className="cursor-pointer select-none bg-gradient-to-br from-rose-50 via-amber-50/70 to-pink-50 p-2 rounded border-2 border-rose-300 shadow text-center"
+              style={{ width: '260px' }}
+            >
+              <svg viewBox="0 0 280 150" className="w-full h-36 rounded bg-white/80 border border-rose-100">
+                <path
+                  d="M25 132 Q95 78 145 72 T255 36"
+                  fill="none"
+                  stroke="#84a98c"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M70 125 Q120 100 175 94 T245 80"
+                  fill="none"
+                  stroke="#a3b18a"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                <ellipse cx="82" cy="90" rx="16" ry="7" transform="rotate(-28 82 90)" fill="#a3b18a" />
+                <ellipse cx="132" cy="58" rx="17" ry="7" transform="rotate(-18 132 58)" fill="#84a98c" />
+                <ellipse cx="195" cy="82" rx="16" ry="7" transform="rotate(20 195 82)" fill="#a3b18a" />
+                <g transform="translate(142, 68)">
+                  {[0, 60, 120, 180, 240, 300].map((deg) => (
+                    <ellipse
+                      key={deg}
+                      cx="0"
+                      cy="-16"
+                      rx="10.5"
+                      ry="16"
+                      transform={`rotate(${deg})`}
+                      fill="#f4acb7"
+                      opacity="0.95"
+                    />
+                  ))}
+                  <circle cx="0" cy="0" r="8.5" fill="#fcbf49" />
+                </g>
+                <g transform="translate(75, 106)">
+                  {[0, 72, 144, 216, 288].map((deg) => (
+                    <ellipse
+                      key={deg}
+                      cx="0"
+                      cy="-12"
+                      rx="8"
+                      ry="12.5"
+                      transform={`rotate(${deg})`}
+                      fill="#ffcad4"
+                      opacity="0.95"
+                    />
+                  ))}
+                  <circle cx="0" cy="0" r="6.5" fill="#f77f00" />
+                </g>
+                <g transform="translate(208, 62)">
+                  {[0, 60, 120, 180, 240, 300].map((deg) => (
+                    <ellipse
+                      key={deg}
+                      cx="0"
+                      cy="-12.5"
+                      rx="8.5"
+                      ry="13"
+                      transform={`rotate(${deg})`}
+                      fill="#fde68a"
+                      opacity="0.95"
+                    />
+                  ))}
+                  <circle cx="0" cy="0" r="7" fill="#fb8500" />
+                </g>
+              </svg>
+              <div className="text-[10px] font-bold text-rose-900 mt-1">🌸 2. ภาพดอกไม้สวยงาม</div>
+            </div>
+          </Html>
+        </group>
+        {/* Framed Botanical Art beside main floral frame */}
+        <group position={[0.62, 2.25, -1.78]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.6, 0.78, 0.03]} />
+            <meshStandardMaterial color="#f5ebe0" roughness={0.4} />
+          </mesh>
+          <mesh position={[0, 0, 0.018]}>
+            <planeGeometry args={[0.48, 0.66]} />
+            <meshStandardMaterial color="#fbcfe8" />
+          </mesh>
+        </group>
 
-        {/* (3) ชั้นประดับห้อง (Floating Wooden Shelves Flush on East Wall: x = 5.3 + 1.38 = 6.68, back touches 6.80) */}
-        <group position={[1.38, 2.2, 0.2]} rotation={[0, -Math.PI / 2, 0]}>
+        {/* (3) ชั้นประดับห้อง (Floating Wooden Shelves on East Wall with Teddy Bear & Frames) */}
+        <group position={[1.55, 2.2, 0.2]} rotation={[0, -Math.PI / 2, 0]}>
           {/* Top Shelf */}
           <mesh position={[0, 0.35, 0]} castShadow>
             <boxGeometry args={[1.2, 0.04, 0.24]} />
@@ -1127,6 +1177,7 @@ export default function NewbornCare1Room() {
           {/* Lower Shelf */}
           <mesh position={[0, -0.15, 0]} castShadow>
             <boxGeometry args={[1.2, 0.04, 0.24]} />
+            <meshStandardMaterial color="#d4a373" roughness={0.4} />
           </mesh>
           {/* Pastel Yarn / Decor Ornaments on Lower Shelf */}
           <mesh position={[-0.25, -0.06, 0]} castShadow>
@@ -1143,10 +1194,10 @@ export default function NewbornCare1Room() {
           </mesh>
         </group>
 
-        {/* (4) ที่แขวนของ (Wooden Pegboard / Wall Hanger Flush on East Wall: x = 5.3 + 1.48 = 6.78) */}
-        <group position={[1.48, 1.45, 1.35]} rotation={[0, -Math.PI / 2, 0]}>
-          <mesh position={[0, 0, -0.01]} castShadow>
-            <boxGeometry args={[0.85, 0.55, 0.05]} />
+        {/* (4) ที่แขวนของ (Wooden Pegboard / Wall Hanger with Hanging Baby Items on East Wall) */}
+        <group position={[1.55, 1.45, 1.35]} rotation={[0, -Math.PI / 2, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.85, 0.55, 0.03]} />
             <meshStandardMaterial color="#e6ccb2" roughness={0.45} />
           </mesh>
           {/* Pegs & Hanging Items (Baby Booties, Rattle, Bib) */}

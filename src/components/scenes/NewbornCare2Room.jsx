@@ -7,7 +7,6 @@ import BabyBathtub from '../furniture/BabyBathtub';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import Pillows from '../decorations/Pillows';
 import InteractiveSeat from '../furniture/InteractiveSeat';
-import { FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
 
 /**
  * NewbornCare2Room — ห้องที่ 2: การอาบน้ำและการดูแลความสะอาดทารก การเปลี่ยนผ้าอ้อม (Nursery 202)
@@ -368,38 +367,66 @@ export default function NewbornCare2Room() {
       </Html>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. NORTH WALL (FLUSH AGAINST INNER WALL z = -6.28):
+          1. NORTH WALL (FLUSH AGAINST WALL z = -6.42):
              - Wall Poster 1 (/images/rev/bath_equip_poster.jpg — 37–38 °C)
              - Wall Poster 2 (ขั้นตอนการอาบน้ำ)
              - Sittable Sofa (InteractiveSeat — sittable alone OR holding baby)
              - Baby Crib
              - Top-Right Mission Desk (โต๊ะกับกระดาษ เขียนว่า ภารกิจ — ไม่มีเก้าอี้)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Wall Poster 1 — 3D Mesh Flush against North Wall (z = -6.28) */}
-      <FramedImagePoster3D
-        imgSrc="/images/rev/bath_equip_poster.jpg"
-        width={2.2}
-        height={1.6}
-        position={[-1.1, 2.75, -6.28]}
-        title="อุปกรณ์อาบน้ำทารก (น้ำอุ่น 37–38 °C)"
-        badge="ป้ายที่ 1"
-        frameColor="#0f766e"
-        accentColor="#0d9488"
-        onClick={() => openWallPoster(0)}
-      />
+      {/* Wall Poster 1 — Flush against North Wall */}
+      <group position={[-1.1, 2.75, -6.42]}>
+        <mesh
+          castShadow
+          onClick={(e) => {
+            e.stopPropagation();
+            openWallPoster(0);
+          }}
+        >
+          <boxGeometry args={[2.1, 1.45, 0.03]} />
+          <meshStandardMaterial color="#0f766e" roughness={0.35} />
+        </mesh>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+          <div
+            onClick={() => openWallPoster(0)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-teal-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '380px' }}
+          >
+            <img
+              src="/images/rev/bath_equip_poster.jpg"
+              alt="อุปกรณ์อาบน้ำ 37-38 C"
+              style={{ width: '100%', height: '205px', objectFit: 'contain', backgroundColor: '#f0fdfa', borderRadius: '6px' }}
+            />
+          </div>
+        </Html>
+      </group>
 
-      {/* Wall Poster 2 — 3D Mesh Flush against North Wall (z = -6.28) */}
-      <FramedImagePoster3D
-        imgSrc="/references/room2/img_007.png"
-        width={2.2}
-        height={1.6}
-        position={[1.8, 2.75, -6.28]}
-        title="ขั้นตอนการอาบน้ำและสระผมทารก"
-        badge="ป้ายที่ 2"
-        frameColor="#0d9488"
-        accentColor="#14b8a6"
-        onClick={() => openWallPoster(1)}
-      />
+      {/* Wall Poster 2 — Flush against North Wall */}
+      <group position={[1.8, 2.75, -6.42]}>
+        <mesh
+          castShadow
+          onClick={(e) => {
+            e.stopPropagation();
+            openWallPoster(1);
+          }}
+        >
+          <boxGeometry args={[2.1, 1.45, 0.03]} />
+          <meshStandardMaterial color="#0d9488" roughness={0.35} />
+        </mesh>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+          <div
+            onClick={() => openWallPoster(1)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-teal-600 shadow-md hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '380px' }}
+          >
+            <img
+              src="/references/room2/img_007.png"
+              alt="ขั้นตอนการอาบน้ำ"
+              style={{ width: '100%', height: '205px', objectFit: 'contain', backgroundColor: '#f0fdfa', borderRadius: '6px' }}
+            />
+          </div>
+        </Html>
+      </group>
 
       {/* ── Sittable Mother's Sofa facing TV (Sittable both alone and while holding baby) ── */}
       <InteractiveSeat
@@ -497,50 +524,33 @@ export default function NewbornCare2Room() {
             <meshStandardMaterial color="#8c6239" roughness={0.4} />
           </mesh>
         ))}
-        {/* White Paper Sheet on Table with "ภารกิจ" written on it + Folded Diaper Stack beside it */}
-        <mesh position={[-0.18, 0.8, 0]} receiveShadow>
-          <boxGeometry args={[0.52, 0.015, 0.38]} />
-          <meshStandardMaterial color="#fffbeb" roughness={0.5} />
+        {/* White Paper Sheet on Table with "ภารกิจ" written on it */}
+        <mesh position={[0, 0.8, 0]} receiveShadow>
+          <boxGeometry args={[0.52, 0.01, 0.38]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.5} />
         </mesh>
-        <mesh position={[-0.18, 0.81, -0.12]}>
-          <boxGeometry args={[0.42, 0.008, 0.06]} />
-          <meshStandardMaterial color="#0d9488" />
-        </mesh>
-        {/* กองผ้าอ้อมพับวางบนโต๊ะภารกิจ */}
-        <group position={[0.32, 0.8, 0]}>
-          <mesh position={[0, 0.02, 0]} castShadow>
-            <boxGeometry args={[0.28, 0.035, 0.24]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.8} />
-          </mesh>
-          <mesh position={[0, 0.055, 0]} castShadow>
-            <boxGeometry args={[0.26, 0.035, 0.22]} />
-            <meshStandardMaterial color="#fbcfe8" roughness={0.8} />
-          </mesh>
-        </group>
-        <Html position={[0, 1.12, 0]} center distanceFactor={10} zIndexRange={[15, 0]}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveModal('missionDesk');
-            }}
-            className="cursor-pointer select-none bg-amber-50 hover:bg-amber-100 border-2 border-teal-700 rounded-full px-3.5 py-1 shadow-md text-center whitespace-nowrap transition hover:scale-105"
+        <Html position={[0, 0.82, 0]} rotation={[-Math.PI / 2, 0, 0]} center transform scale={0.18}>
+          <div
+            onClick={() => setActiveModal('missionDesk')}
+            className="cursor-pointer select-none bg-amber-50 border-2 border-teal-700 rounded-lg px-4 py-2 shadow text-center"
+            style={{ width: '160px' }}
           >
-            <span className="text-xs font-extrabold text-teal-900">📋 ภารกิจ (คลิกดูรายละเอียด)</span>
-          </button>
+            <div className="text-base font-extrabold text-teal-900">📋 ภารกิจ</div>
+            <div className="text-[10px] font-semibold text-slate-600">คลิกเพื่อดูรายละเอียด</div>
+          </div>
         </Html>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          2. WEST WALL (LEFT — FLUSH AGAINST INNER WALL x = -6.28):
+          2. WEST WALL (LEFT):
              - Air Conditioner above TV ("เพิ่มแอร์")
-             - Wall-mounted TV Screen (3D Mesh flush with West Wall)
+             - Wall-mounted TV Screen
              - AC Switch Button next to TV ("ตรงเลข 6 ปุ่มปิด/เปิดแอร์ เอากรอบเขียวออก")
              - 2-Section Nursery Cabinet ("ชุดอุปกรณ์ของใช้และของตกแต่งทารก")
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Air Conditioner Unit above TV (Flush against West Wall x = -6.13 so back touches -6.30) */}
+      {/* Air Conditioner Unit above TV */}
       <group
-        position={[-6.13, 4.15, -2.8]}
+        position={[-6.28, 4.15, -2.8]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -563,9 +573,9 @@ export default function NewbornCare2Room() {
         </mesh>
       </group>
 
-      {/* Wall Switch for Air Conditioner next to TV (Location #6, flush on West Wall x = -6.28) */}
+      {/* Wall Switch for Air Conditioner next to TV (Location #6, flush on West Wall, no green border) */}
       <group
-        position={[-6.28, 1.55, -0.85]}
+        position={[-6.42, 1.55, -0.85]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -573,71 +583,96 @@ export default function NewbornCare2Room() {
         }}
       >
         <mesh castShadow>
-          <boxGeometry args={[0.24, 0.32, 0.04]} />
+          <boxGeometry args={[0.24, 0.32, 0.03]} />
           <meshStandardMaterial color="#ffffff" roughness={0.2} />
         </mesh>
-        <mesh position={[0, 0.03, 0.025]}>
+        <mesh position={[0, 0.03, 0.02]}>
           <boxGeometry args={[0.16, 0.1, 0.015]} />
           <meshStandardMaterial color={isAcOn ? '#0284c7' : '#64748b'} />
         </mesh>
-        <mesh position={[0, -0.07, 0.025]}>
+        <mesh position={[0, -0.07, 0.02]}>
           <boxGeometry args={[0.1, 0.06, 0.015]} />
           <meshStandardMaterial color="#e2e8f0" />
         </mesh>
       </group>
 
-      {/* Wall-Mounted TV Screen — 3D Mesh Flush against West Wall (x = -6.28) */}
-      <FramedImagePoster3D
-        imgSrc={tvSlidesData[tvSlide].img}
-        width={3.0}
-        height={1.85}
-        position={[-6.28, 2.65, -2.8]}
-        rotation={[0, Math.PI / 2, 0]}
-        title={tvSlidesData[tvSlide].title}
-        subtitle={`เรียนรู้แล้ว ${viewedSlides.size}/8 หน้า • คลิกที่จอทีวีเพื่อดูสไลด์เต็มจอ`}
-        badge={`📺 สไลด์ ${tvSlide + 1}/8`}
-        frameColor="#0f172a"
-        accentColor="#0d9488"
-        onClick={() => openTvGallery(tvSlide)}
-      >
-        {/* ปุ่มควบคุมเปลี่ยนหน้าสไลด์ทีวีด้านล่างกรอบจอ */}
-        <Html position={[0, -1.16, 0.05]} center distanceFactor={10} zIndexRange={[15, 0]}>
-          <div className="flex items-center gap-1.5 bg-slate-900/95 text-white px-3 py-1 rounded-full border border-teal-400 shadow-lg whitespace-nowrap">
-            <button
-              type="button"
-              disabled={tvSlide === 0}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectSlide(tvSlide - 1);
-              }}
-              className="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-[11px] rounded-full font-bold cursor-pointer"
+      {/* Wall-Mounted TV Screen */}
+      <group position={[-6.4, 2.65, -2.8]} rotation={[0, Math.PI / 2, 0]}>
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={[3.2, 1.9, 0.06]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 0, 0.035]}>
+          <planeGeometry args={[3.05, 1.75]} />
+          <meshStandardMaterial color="#0f172a" roughness={0.1} />
+        </mesh>
+        <Html position={[0, 0, 0.045]} center transform scale={0.24}>
+          <div
+            className="select-none bg-slate-900 text-white rounded-lg p-3 shadow-2xl flex flex-col justify-between"
+            style={{ width: '540px', height: '320px', border: '3px solid #00897b' }}
+          >
+            <div className="flex items-center justify-between border-b border-slate-700 pb-1.5">
+              <span className="font-bold text-teal-300 text-xs flex items-center gap-1">
+                📺 สื่อให้ความรู้การอาบน้ำทารก ({tvSlide + 1}/8)
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => openTvGallery(tvSlide)}
+                  className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow"
+                >
+                  🔍 ขยายภาพ
+                </button>
+                <button
+                  onClick={() => setShowTvModal(true)}
+                  className="bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow"
+                >
+                  📖 ดูเต็มจอ
+                </button>
+              </div>
+            </div>
+
+            <div
+              className="my-1.5 flex-1 bg-slate-800 p-2 rounded border border-slate-700 flex gap-2.5 items-center cursor-pointer hover:bg-slate-750 transition"
+              onClick={() => openTvGallery(tvSlide)}
             >
-              ◀ ก่อนหน้า
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowTvModal(true);
-              }}
-              className="px-2.5 py-0.5 bg-teal-600 hover:bg-teal-500 text-[11px] rounded-full font-bold cursor-pointer"
-            >
-              📖 ดูเต็มจอ ({tvSlide + 1}/8)
-            </button>
-            <button
-              type="button"
-              disabled={tvSlide === tvSlidesData.length - 1}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectSlide(tvSlide + 1);
-              }}
-              className="px-2 py-0.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-[11px] rounded-full font-bold cursor-pointer"
-            >
-              ถัดไป ▶
-            </button>
+              <img
+                src={tvSlidesData[tvSlide].img}
+                alt={tvSlidesData[tvSlide].title}
+                className="w-36 h-28 object-contain rounded bg-white p-1 border border-slate-600"
+              />
+              <div className="flex-1 text-left">
+                <h4 className="font-bold text-amber-300 text-xs">{tvSlidesData[tvSlide].title}</h4>
+                <p className="text-[10px] text-slate-200 mt-1 line-clamp-3 leading-relaxed">
+                  {tvSlidesData[tvSlide].bullets[0]}
+                </p>
+                <span className="text-[9px] text-sky-400 font-semibold underline mt-1 inline-block">
+                  🔍 คลิกเพื่อดูภาพขยายใหญ่ (พร้อมปุ่ม ก่อนหน้า/ถัดไป)
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+              <button
+                disabled={tvSlide === 0}
+                onClick={() => handleSelectSlide(tvSlide - 1)}
+                className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-xs rounded font-bold"
+              >
+                ◀ ก่อนหน้า
+              </button>
+              <span className="text-[11px] text-slate-400">
+                เรียนรู้แล้ว: {viewedSlides.size}/8 หน้า {viewedSlides.size >= 8 && '✓'}
+              </span>
+              <button
+                disabled={tvSlide === tvSlidesData.length - 1}
+                onClick={() => handleSelectSlide(tvSlide + 1)}
+                className="px-2.5 py-1 bg-teal-600 hover:bg-teal-500 disabled:opacity-40 text-xs rounded font-bold"
+              >
+                ถัดไป ▶
+              </button>
+            </div>
           </div>
         </Html>
-      </FramedImagePoster3D>
+      </group>
 
       {/* ── 2-Section Nursery Cabinet ("ชุดอุปกรณ์ของใช้และของตกแต่งทารก" per /images/rev/bath_cabinet_ref.jpg) ──
            Left section: ตกแต่ง (Teddy bears, frames, yarn balls, baskets)
@@ -747,20 +782,6 @@ export default function NewbornCare2Room() {
             <meshStandardMaterial color="#fef08a" roughness={0.85} />
           </mesh>
         </group>
-
-        {/* ป้ายชื่อตู้ของใช้ทารก */}
-        <Html position={[0, 2.42, 0.1]} center distanceFactor={11} zIndexRange={[15, 0]}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveModal('cabinet');
-            }}
-            className="cursor-pointer bg-white/95 hover:bg-teal-50 text-teal-900 border-2 border-teal-500 px-3 py-1 rounded-full text-xs font-extrabold shadow-md whitespace-nowrap"
-          >
-            🧺 ตู้ของใช้ทารก (ผ้าอ้อม • สบู่ • ผ้าเช็ดตัว • เสื้อผ้า)
-          </button>
-        </Html>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -774,20 +795,6 @@ export default function NewbornCare2Room() {
           onTubClick={() => setActiveModal('bathingWizard')}
           onMatClick={() => setActiveModal('bathingWizard')}
         />
-
-        {/* ป้ายคลิกบนโต๊ะอาบน้ำและชุดผ้าอ้อม */}
-        <Html position={[0.85, 1.38, 0]} center distanceFactor={11} zIndexRange={[15, 0]}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveModal('bathingWizard');
-            }}
-            className="cursor-pointer bg-teal-600 hover:bg-teal-500 text-white border-2 border-white px-4 py-1.5 rounded-full text-xs font-extrabold shadow-lg whitespace-nowrap transition hover:scale-105"
-          >
-            🛁 โต๊ะอาบน้ำ & เปลี่ยนผ้าอ้อมทารก (คลิกทำกิจกรรม)
-          </button>
-        </Html>
 
         {/* 3D Baby inside Blue Tub #1 (Step 7–9) */}
         {babyLocation === 'tub1' && (
@@ -812,14 +819,14 @@ export default function NewbornCare2Room() {
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          4. SOUTH WALL & SOUTH-WEST CORNER (Inner wall z = 6.30):
+          4. SOUTH WALL & SOUTH-WEST CORNER:
              - Corner Trash Bins: 2 small bins (Green / Red) in South-West Corner
              - Realistic Handwashing Sink (with "ล้างมือ" button on click)
-             - Adjacent Small Table with Cotton ball pack / Warm water / 0.9% NSS bottle / Diapers
+             - Adjacent Small Table with Cotton ball pack / Warm water / 0.9% NSS bottle
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* 2 Small Trash Bins (Green / Red) in the South-West Corner */}
+      {/* 2 Small Trash Bins (Green / Red) in the South-West Corner ("เปลี่ยนเป็นถังขยะใบเล็ก 2 ใบ สีเขียว / แดง มาทางนี้มุมห้อง") */}
       <group
-        position={[-5.55, 0, 5.75]}
+        position={[-5.55, 0, 5.45]}
         onClick={(e) => {
           e.stopPropagation();
           setActiveModal('trash');
@@ -850,9 +857,9 @@ export default function NewbornCare2Room() {
         </group>
       </group>
 
-      {/* Realistic Handwashing Sink Counter (South Wall, X: -3.6, Z: 5.88 flush with 6.30 wall) */}
+      {/* Realistic Handwashing Sink Counter (South Wall, X: -3.6, Z: 5.5) */}
       <group
-        position={[-3.6, 0, 5.88]}
+        position={[-3.6, 0, 5.5]}
         rotation={[0, Math.PI, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -888,9 +895,9 @@ export default function NewbornCare2Room() {
         </mesh>
       </group>
 
-      {/* Small Table beside Sink with Cotton Ball Pack, Warm Boiled Water, 0.9% NSS Bottle & Folded Diapers */}
+      {/* Small Table beside Sink with Cotton Ball Pack, Warm Boiled Water & 0.9% NSS Bottle */}
       <group
-        position={[-1.95, 0, 5.88]}
+        position={[-1.95, 0, 5.5]}
         rotation={[0, Math.PI, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -899,10 +906,10 @@ export default function NewbornCare2Room() {
       >
         {/* Table Top & Legs */}
         <mesh position={[0, 0.76, 0]} castShadow receiveShadow>
-          <boxGeometry args={[1.35, 0.06, 0.68]} />
+          <boxGeometry args={[1.15, 0.06, 0.65]} />
           <meshStandardMaterial color="#d4a373" roughness={0.35} />
         </mesh>
-        {[[-0.58, -0.26], [0.58, -0.26], [-0.58, 0.26], [0.58, 0.26]].map(([x, z], i) => (
+        {[[-0.5, -0.26], [0.5, -0.26], [-0.5, 0.26], [0.5, 0.26]].map(([x, z], i) => (
           <mesh key={`ct_leg_${i}`} position={[x, 0.38, z]} castShadow>
             <cylinderGeometry args={[0.028, 0.024, 0.76, 16]} />
             <meshStandardMaterial color="#8c6239" roughness={0.4} />
@@ -910,88 +917,76 @@ export default function NewbornCare2Room() {
         ))}
 
         {/* 1. สำลีซอง (Sterile Cotton Ball Pack) */}
-        <mesh position={[-0.42, 0.89, 0]} castShadow>
-          <boxGeometry args={[0.26, 0.2, 0.18]} />
+        <mesh position={[-0.32, 0.88, 0]} castShadow>
+          <boxGeometry args={[0.24, 0.18, 0.16]} />
           <meshStandardMaterial color="#ffffff" roughness={0.6} />
         </mesh>
-        <mesh position={[-0.42, 0.89, 0.092]}>
-          <planeGeometry args={[0.2, 0.12]} />
+        <mesh position={[-0.32, 0.88, 0.082]}>
+          <planeGeometry args={[0.18, 0.1]} />
           <meshStandardMaterial color="#38bdf8" />
         </mesh>
 
         {/* 2. ขวดน้ำต้มสุกอุ่น (Warm Boiled Water Flask) */}
-        <mesh position={[-0.1, 0.92, 0]} castShadow>
-          <cylinderGeometry args={[0.075, 0.08, 0.26, 20]} />
+        <mesh position={[0, 0.91, 0]} castShadow>
+          <cylinderGeometry args={[0.075, 0.08, 0.24, 20]} />
           <meshStandardMaterial color="#fef08a" roughness={0.25} />
         </mesh>
 
         {/* 3. ขวดน้ำเกลือ 0.9% NSS (Normal Saline Bottle with Green Cap) */}
-        <group position={[0.18, 0.92, 0]}>
+        <group position={[0.3, 0.91, 0]}>
           <mesh castShadow>
-            <cylinderGeometry args={[0.065, 0.065, 0.26, 20]} />
-            <meshStandardMaterial color="#e0f2fe" transparent opacity={0.88} roughness={0.1} />
+            <cylinderGeometry args={[0.065, 0.065, 0.24, 20]} />
+            <meshStandardMaterial color="#e0f2fe" transparent opacity={0.85} roughness={0.1} />
           </mesh>
-          <mesh position={[0, 0.15, 0]}>
+          <mesh position={[0, 0.14, 0]}>
             <cylinderGeometry args={[0.03, 0.035, 0.05, 16]} />
             <meshStandardMaterial color="#10b981" />
           </mesh>
         </group>
-
-        {/* 4. กองผ้าอ้อมพับสำรอง (Folded Cloth Diapers Stack) */}
-        <group position={[0.45, 0.82, 0]}>
-          <mesh position={[0, 0.02, 0]} castShadow>
-            <boxGeometry args={[0.24, 0.035, 0.24]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.8} />
-          </mesh>
-          <mesh position={[0, 0.055, 0]} castShadow>
-            <boxGeometry args={[0.22, 0.035, 0.22]} />
-            <meshStandardMaterial color="#bae6fd" roughness={0.8} />
-          </mesh>
-        </group>
-
-        <Html position={[0, 1.25, 0]} center distanceFactor={11} zIndexRange={[15, 0]}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveModal('cottonTable');
-            }}
-            className="cursor-pointer bg-white/95 hover:bg-sky-50 text-sky-900 border-2 border-sky-400 px-3 py-1 rounded-full text-xs font-extrabold shadow-md whitespace-nowrap"
-          >
-            🧴 โต๊ะสำลีซอง • น้ำต้มสุก • 0.9% NSS
-          </button>
-        </Html>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          5. EAST WALL (RIGHT — FLUSH AGAINST INNER WALL x = 6.28):
+          5. EAST WALL (RIGHT — FLUSH AGAINST WALL x = 6.42):
              - Window with Roman Blinds
              - Wall Poster 3 (การเช็ดตา & ซับตัว) flush against East Wall
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[6.28, 2.7, 0.4]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh position={[0, 0, -0.015]} castShadow>
-          <boxGeometry args={[3.2, 2.3, 0.08]} />
+      <group position={[6.42, 2.7, 0.4]} rotation={[0, -Math.PI / 2, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[3.2, 2.3, 0.06]} />
           <meshStandardMaterial color="#ffffff" roughness={0.3} />
         </mesh>
-        <mesh position={[0, 0, 0.03]}>
+        <mesh position={[0, 0, -0.01]}>
           <planeGeometry args={[3.0, 2.1]} />
-          <meshStandardMaterial color="#bae6fd" transparent opacity={0.65} roughness={0.1} />
+          <meshStandardMaterial color="#bae6fd" transparent opacity={0.45} roughness={0.1} />
         </mesh>
       </group>
 
-      {/* Wall Poster 3 — 3D Mesh Flush against East Wall (x = 6.28) */}
-      <FramedImagePoster3D
-        imgSrc="/references/room2/img_008.jpeg"
-        width={2.1}
-        height={1.55}
-        position={[6.28, 2.75, -2.6]}
-        rotation={[0, -Math.PI / 2, 0]}
-        title="การเช็ดตา การดูแลสะดือ และการใส่ผ้าอ้อม"
-        badge="ป้ายที่ 3"
-        frameColor="#0f766e"
-        accentColor="#0d9488"
-        onClick={() => openWallPoster(2)}
-      />
+      {/* Wall Poster 3 — Flush against East Wall */}
+      <group position={[6.42, 2.75, -2.6]} rotation={[0, -Math.PI / 2, 0]}>
+        <mesh
+          castShadow
+          onClick={(e) => {
+            e.stopPropagation();
+            openWallPoster(2);
+          }}
+        >
+          <boxGeometry args={[2.0, 1.4, 0.03]} />
+          <meshStandardMaterial color="#0f766e" roughness={0.35} />
+        </mesh>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+          <div
+            onClick={() => openWallPoster(2)}
+            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-teal-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
+            style={{ width: '360px' }}
+          >
+            <img
+              src="/references/room2/img_008.jpeg"
+              alt="การเช็ดตา"
+              style={{ width: '100%', height: '195px', objectFit: 'contain', backgroundColor: '#f0fdfa', borderRadius: '6px' }}
+            />
+          </div>
+        </Html>
+      </group>
 
       {/* 3D Player Controller */}
       <PlayerController initialPosition={[-4.2, 0, 3.2]} initialRotation={Math.PI} />
