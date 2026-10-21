@@ -4,6 +4,7 @@ import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyAvatar from '../avatars/BabyAvatar';
 import BabyBathtub from '../furniture/BabyBathtub';
+import { DiaperStack, BabyBottle, BabyTowel, BathThermometer, CottonJar } from '../furniture/BabyProps';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import Pillows from '../decorations/Pillows';
 import InteractiveSeat from '../furniture/InteractiveSeat';
@@ -435,7 +436,7 @@ export default function NewbornCare2Room() {
         type="sofa"
         position={[-3.3, 0, -2.8]}
         rotation={[0, -Math.PI / 2, 0]}
-        seatOffset={[0, 0.44, 0.05]}
+        seatOffset={[0, 0.46, 0.05]}
       >
         <group>
           <mesh position={[0, 0.32, 0]} castShadow receiveShadow>
@@ -795,6 +796,13 @@ export default function NewbornCare2Room() {
           onTubClick={() => setActiveModal('bathingWizard')}
           onMatClick={() => setActiveModal('bathingWizard')}
         />
+
+        {/* ── Baby Bath Props — ผ้าเช็ดตัว, เทอร์โมมิเตอร์, สำลี, ผ้าอ้อม บนโต๊ะข้างอ่าง ── */}
+        {/* BabyBathtub group is at [0.2, 0, -0.4]; table surface Y ≈ 0.93; right edge X ≈ 1.75 */}
+        <BabyTowel position={[1.75, 0.97, -0.4]} rotation={[0, 0.3, 0]} />
+        <BathThermometer position={[2.05, 1.04, -0.52]} />
+        <CottonJar position={[2.05, 1.00, -0.28]} />
+        <DiaperStack position={[2.30, 0.95, -0.4]} count={6} />
 
         {/* 3D Baby inside Blue Tub #1 (Step 7–9) */}
         {babyLocation === 'tub1' && (

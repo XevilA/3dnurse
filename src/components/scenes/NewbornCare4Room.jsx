@@ -10,6 +10,7 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
 import RealPlant from '../decorations/RealPlant';
 import { useWovenRugTexture, FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
+import { DiaperStack, BabyBottle } from '../furniture/BabyProps';
 
 /**
  * NewbornCare4Room — ห้องที่ 4: การจัดสิ่งแวดล้อมการนอนหลับที่ปลอดภัย (Nursery 204)
@@ -618,7 +619,7 @@ export default function NewbornCare4Room() {
         type="chair"
         position={[-4.65, 0, -4.45]}
         rotation={[0, Math.PI / 4, 0]}
-        seatOffset={[0, 0.45, 0]}
+        seatOffset={[0, 0.46, 0]}
       >
         <group>
           {/* ขาไม้ 4 ขา */}
@@ -1335,6 +1336,10 @@ export default function NewbornCare4Room() {
 
       {/* ── Player Controller ── */}
       <PlayerController />
+
+      {/* ── Baby care supplies on the console cabinet beside the TV ── */}
+      <DiaperStack position={[-6.5, 0.72, 0.55]} count={3} rotation={[0, -Math.PI / 2, 0]} />
+      <BabyBottle position={[-6.5, 0.72, -0.35]} rotation={[0, Math.PI / 4, 0]} />
     </group>
   );
 }

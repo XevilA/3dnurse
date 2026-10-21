@@ -8,6 +8,7 @@ import HospitalRoomShell from '../environment/HospitalRoomShell';
 import InteractiveSeat from '../furniture/InteractiveSeat';
 import RealPlant from '../decorations/RealPlant';
 import { FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
+import { DiaperStack, BabyTowel, CottonJar } from '../furniture/BabyProps';
 
 /**
  * NewbornCare3Room — ห้องที่ 3: การดูแลสายสะดือทารกแรกเกิด (Nursery 203)
@@ -449,7 +450,7 @@ export default function NewbornCare3Room() {
         type="sofa"
         position={[3.4, 0, -4.6]}
         rotation={[0, -0.25, 0]}
-        seatOffset={[0, 0.44, 0.05]}
+        seatOffset={[0, 0.46, 0.05]}
       >
         <group>
           <mesh position={[0, 0.3, 0]} castShadow receiveShadow>
@@ -628,7 +629,7 @@ export default function NewbornCare3Room() {
         type="chair"
         position={[0.85, 0, -0.25]}
         rotation={[0, -Math.PI * 0.75, 0]}
-        seatOffset={[0, 0.44, 0]}
+        seatOffset={[0, 0.46, 0]}
       >
         <group
           onClick={() => {
@@ -822,6 +823,11 @@ export default function NewbornCare3Room() {
 
       {/* 3D Player Controller */}
       <PlayerController initialPosition={[0, 0, 2.6]} initialRotation={Math.PI} />
+
+      {/* ── Baby care supplies near the umbilical cord examination bed ── */}
+      <DiaperStack position={[1.1, 1.02, -1.2]} count={3} />
+      <CottonJar position={[-1.65, 0.92, -0.44]} />
+      <BabyTowel position={[-1.65, 0.42, -0.55]} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
           2D HTML INTERACTIVE MODALS (Shown ONLY When Clicked)

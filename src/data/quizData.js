@@ -224,6 +224,16 @@ export const ROOM_QUIZ_MAPPING = {
   "newbornCare4": [
     13,
     15
+  ],
+  "newbornCare5": [
+    10,
+    11,
+    12,
+    13,
+    15,
+    18,
+    19,
+    20
   ]
 };
 

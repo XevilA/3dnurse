@@ -65,6 +65,7 @@ export default function HUD() {
     <>
       {/* ── Top bar ── */}
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-2.5 sm:px-4 py-1.5 sm:py-2 pointer-events-auto"
+        style={{ paddingTop: 'max(0.375rem, env(safe-area-inset-top, 0px))' }}
         style={{ background: 'linear-gradient(180deg, rgba(173,216,255,0.95) 0%, rgba(173,216,255,0) 100%)' }}>
 
         {/* Left: Back button if inside a room, or App branding if in lobby */}

@@ -132,7 +132,7 @@ export default function QuizRoom() {
         type="sofa"
         position={[-9.2, 0, 0]}
         rotation={[0, Math.PI / 2, 0]}
-        seatOffset={[0, 0.42, 0.15]}
+        seatOffset={[0, 0.44, 0.15]}
       >
         <HospitalSofa position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
       </InteractiveSeat>
@@ -143,7 +143,7 @@ export default function QuizRoom() {
         type="sofa"
         position={[9.2, 0, 0]}
         rotation={[0, -Math.PI / 2, 0]}
-        seatOffset={[0, 0.42, 0.15]}
+        seatOffset={[0, 0.44, 0.15]}
       >
         <HospitalSofa position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
       </InteractiveSeat>

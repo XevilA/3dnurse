@@ -181,7 +181,7 @@ export default function LobbyRoom() {
         type="sofa"
         position={[3.4, 0, 0.2]}
         rotation={[0, -Math.PI * 0.45, 0]}
-        seatOffset={[0, 0.44, 0.05]}
+        seatOffset={[0, 0.46, 0.05]}
       >
         <RealisticHospitalSofa position={[0, 0, 0]} scale={1.05} layout="right" />
       </InteractiveSeat>
@@ -193,7 +193,7 @@ export default function LobbyRoom() {
         type="sofa"
         position={[-3.8, 0, 0.4]}
         rotation={[0, Math.PI * 0.45, 0]}
-        seatOffset={[0, 0.44, 0.05]}
+        seatOffset={[0, 0.46, 0.05]}
       >
         <RealisticHospitalSofa position={[0, 0, 0]} scale={1.05} layout="left" />
       </InteractiveSeat>
@@ -470,7 +470,7 @@ export default function LobbyRoom() {
         type="sofa"
         position={[3.2, 0, 7.6]}
         rotation={[0, Math.PI, 0]}
-        seatOffset={[0, 0.44, 0.05]}
+        seatOffset={[0, 0.46, 0.05]}
       >
         <RealisticHospitalSofa position={[0, 0, 0]} scale={0.98} layout="right" />
       </InteractiveSeat>

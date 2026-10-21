@@ -396,7 +396,7 @@ export default function GTAControlsHUD() {
       {isMobile && controlsVisible && (
         <>
           {/* ── Left Thumb Zone: Virtual Analog Joystick + Sprint Toggle ── */}
-          <div className="absolute bottom-10 left-3 sm:left-6 z-30 pointer-events-auto flex flex-col items-center gap-2">
+          <div className="absolute left-3 sm:left-6 z-30 pointer-events-auto flex flex-col items-center gap-2" style={{ bottom: 'max(2.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.5rem))' }}>
             {/* Quick Sprint Toggle */}
             <button
               type="button"
@@ -416,7 +416,7 @@ export default function GTAControlsHUD() {
           </div>
 
           {/* ── Right Thumb Zone: Action Button Cluster ── */}
-          <div className="absolute bottom-10 right-3 sm:right-6 z-30 pointer-events-auto flex flex-col items-end gap-2.5">
+          <div className="absolute right-3 sm:right-6 z-30 pointer-events-auto flex flex-col items-end gap-2.5" style={{ bottom: 'max(2.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.5rem))' }}>
             {/* Camera Perspective Toggle Button */}
             <button
               type="button"

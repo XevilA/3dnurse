@@ -13,6 +13,7 @@ import {
   CozyRoomDecorCorners,
 } from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
+import { DiaperStack, BabyBottle, CottonJar } from '../furniture/BabyProps';
 
 // ── ข้อมูลโปสเตอร์ผนังทั้ง 3 ด้าน (ตามไฟล์สมุดโน้ตไม่มีชื่อ 2.pdf และ IMG_7528.JPG) ──
 const W103_GALLERY = [
@@ -166,9 +167,16 @@ export default function MotherCare3Room() {
   }, [setHoldingBaby]);
 
   const openGalleryAt = (index) => {
+    const item = W103_GALLERY[index];
     openLightbox({
-      ...W103_GALLERY[index],
-      items: W103_GALLERY,
+      ...item,
+      caption: item.description,
+      category: 'การดูแลเต้านม (Ward 103)',
+      items: W103_GALLERY.map((g) => ({
+        ...g,
+        caption: g.description,
+        category: 'การดูแลเต้านม (Ward 103)',
+      })),
       currentIndex: index,
     });
   };
@@ -245,7 +253,7 @@ export default function MotherCare3Room() {
       type: 'sofa',
       position: [0, 0, -0.2],
       rotationY: 0,
-      seatOffset: [0, 0.44, 0.15],
+      seatOffset: [0, 0.46, 0.15],
       isDrivable: false,
     });
     setActiveHint('sofa');
@@ -359,7 +367,7 @@ export default function MotherCare3Room() {
         type="sofa"
         position={[0.5, 0, -0.2]}
         rotation={[0, 0, 0]}
-        seatOffset={[0, 0.44, 0.15]}
+        seatOffset={[0, 0.46, 0.15]}
       >
         <Html position={[0, 1.38, 0]} center distanceFactor={12} zIndexRange={[20, 0]}>
           <button
@@ -402,6 +410,11 @@ export default function MotherCare3Room() {
       <RealPlant type="potted" position={[-7.6, 0, -7.2]} scale={1.2} />
       <RealPlant type="potted" position={[7.6, 0, -7.2]} scale={1.2} />
       <RealPlant type="succulent" position={[7.5, 0, 6.8]} scale={1.25} />
+
+      {/* ── Baby nursing supplies on side table beside the sofa ── */}
+      <DiaperStack position={[-1.2, 0.56, 1.4]} count={2} />
+      <CottonJar position={[-1.6, 0.56, 0.9]} />
+      <BabyBottle position={[-1.0, 0.56, 0.8]} rotation={[0, -0.5, 0]} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
           📋 หน้าต่างกิจกรรมฝึกนวดเต้านมบนโซฟา & สถานการณ์จำลอง 4 สถานการณ์ (IMG_7527.JPG)

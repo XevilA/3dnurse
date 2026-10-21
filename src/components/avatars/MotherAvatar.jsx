@@ -70,12 +70,14 @@ const MotherAvatar = forwardRef(({
   const isSitting = isSittingOverride !== null ? isSittingOverride : storeSitting;
 
   // Load optimized female character models
+  // pregnant_megan_opt.glb = realistic Megan with natural belly bump (สมจริง ท้องนิดๆ)
   const { scene: meganScene } = useGLTF('/models/megan_opt.glb');
-  const { scene: amyScene } = useGLTF('/models/amy_opt.glb');
+  const { scene: pregnantScene } = useGLTF('/models/pregnant_megan_opt.glb');
 
-  // Load authentic Mixamo female animations (100% matching bone bind axes)
+  // Load authentic Mixamo female animations
   const idleFbx = useFBX('/models/animations/Standing_Idle.fbx');
   const walkFbx = useFBX('/models/animations/walking.fbx');
+  const sitIdleFbx = useFBX('/models/animations/Sitting_Idle.fbx');
 
   // Authentic hospital & maternity color schemes
   const OUTFIT_COLOR_SCHEMES = useMemo(() => ({
@@ -106,18 +108,18 @@ const MotherAvatar = forwardRef(({
   }), []);
 
   // Determine active model based on character selection
-  const isMaternityDress = selectedCharacter === 'pregnant_mother';
-  const activeBaseScene = isMaternityDress ? (amyScene || meganScene) : meganScene;
+  // pregnant_mother → pregnant_megan_opt (Megan rig + belly bump mesh, same skeleton as megan_opt)
+  // nurse / postpartum_mother → megan_opt (standard Megan)
+  const isPregnant = selectedCharacter === 'pregnant_mother';
+  // pregnant_megan_opt uses the SAME Megan skeleton (hipZ ≈ -100.08) — NOT Amy's hipZ of -69.77
+  const isMaternityDress = false; // Always false now — pregnant_megan uses Megan rig, not Amy
+  const activeBaseScene = isPregnant ? (pregnantScene || meganScene) : meganScene;
 
-  // Clone active scene cleanly and normalize Amy's Armature scale so both characters are 1.65m tall
+  // Clone active scene cleanly
+  // pregnant_megan_opt uses the same Megan rig scale (0.01) — no separate Amy scale needed
   const clonedScene = useMemo(() => {
     if (!activeBaseScene) return null;
     const clone = SkeletonUtils.clone(activeBaseScene);
-    const armature = clone.getObjectByName('Armature');
-    if (armature && isMaternityDress) {
-      // Amy's restHipZ is -69.77 vs Megan's -100.08; scale by 1.42 so Amy stands at full 1.64m adult height
-      armature.scale.set(0.0142, 0.0142, 0.0142);
-    }
     clone.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
@@ -134,7 +136,8 @@ const MotherAvatar = forwardRef(({
       }
     });
     return clone;
-  }, [activeBaseScene, isMaternityDress]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBaseScene, isPregnant]);
 
   // ── Professional Nurse Accessories (Stethoscope & Nurse ID Badge) ──
   const nurseAccessories = useMemo(() => {
@@ -223,59 +226,71 @@ const MotherAvatar = forwardRef(({
   }, [clonedScene, selectedCharacter, nurseAccessories]);
 
   // Seamless outfit changing across all 6 maternity & hospital recovery colorways
+  // Covers: megan_opt (postpartum/nurse) + pregnant_megan_opt (pregnant — same Ch22_* mesh names)
   useEffect(() => {
     if (!clonedScene) return;
     const scheme = OUTFIT_COLOR_SCHEMES[selectedOutfit] || OUTFIT_COLOR_SCHEMES.pink;
+    const isNurse = selectedCharacter === 'nurse';
 
+    let changed = false;
     clonedScene.traverse((child) => {
       if (!child.isMesh || !child.material) return;
 
-      // ── Maternity Long Dress (Amy) ──
-      if (child.name === 'Ch46') {
-        child.material.color.set(scheme.primary);
-        child.material.roughness = 0.92;
-        child.material.metalness = 0.0;
-        child.material.needsUpdate = true;
-      }
-
-      // ── Postpartum Recovery / Nurse Suit (Megan) ──
+      // ── All Megan variants (postpartum, pregnant, nurse) share Ch22_* mesh names ──
       if (child.name === 'Ch22_Shirt') {
         child.material.map = null;
-        if (selectedCharacter === 'nurse') {
-          child.material.color.set('#ffffff');
-        } else {
-          child.material.color.set(scheme.primary);
-        }
+        child.material.color.set(isNurse ? '#ffffff' : scheme.primary);
         child.material.roughness = 0.92;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
+        changed = true;
       } else if (child.name === 'Ch22_Pants') {
         child.material.map = null;
-        if (selectedCharacter === 'nurse') {
-          child.material.color.set('#0284c7');
-        } else {
-          child.material.color.set(scheme.primary);
-        }
+        child.material.color.set(isNurse ? '#0284c7' : scheme.primary);
         child.material.roughness = 0.92;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
+        changed = true;
       } else if (child.name === 'Ch22_Sneakers') {
         child.material.map = null;
         child.material.color.set('#f8fafc');
         child.material.roughness = 0.6;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
+        changed = true;
       } else if (child.name === 'Ch22_Body') {
-        child.material.color.set('#ffffff');
+        child.material.color.set('#f5d0a9'); // warm skin tone
         child.material.roughness = 0.75;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
+        changed = true;
       } else if (child.name === 'Ch22_Hair') {
         child.material.color.set('#2d1a10');
         child.material.roughness = 0.85;
         child.material.needsUpdate = true;
+        changed = true;
       }
     });
+
+    // Retry after 120ms if GLB meshes haven't resolved yet
+    if (!changed) {
+      const timer = setTimeout(() => {
+        clonedScene.traverse((child) => {
+          if (!child.isMesh || !child.material) return;
+          if (child.name === 'Ch22_Shirt') {
+            child.material.map = null;
+            child.material.color.set(isNurse ? '#ffffff' : scheme.primary);
+            child.material.needsUpdate = true;
+          }
+          if (child.name === 'Ch22_Pants') {
+            child.material.map = null;
+            child.material.color.set(isNurse ? '#0284c7' : scheme.primary);
+            child.material.needsUpdate = true;
+          }
+        });
+      }, 120);
+      return () => clearTimeout(timer);
+    }
   }, [clonedScene, selectedOutfit, selectedCharacter, OUTFIT_COLOR_SCHEMES]);
 
   // Authentic Mixamo Animation Clips for Megan & Amy (Idle, Walk, Run, Sitting + Baby-Holding Variants)
@@ -359,7 +374,7 @@ const MotherAvatar = forwardRef(({
       return cloned;
     };
 
-    // 1. Standing Idle & Seated Postures
+    // 1. Standing Idle & Baby-Cradling Idle
     if (idleFbx && idleFbx.animations && idleFbx.animations[0]) {
       const c = idleFbx.animations[0].clone();
       c.name = 'idle';
@@ -373,24 +388,48 @@ const MotherAvatar = forwardRef(({
       // 1b. Standing Idle while Cradling Baby
       const idleHold = applyBoneOverrides(c, 'idle_hold', CRADLE_STANDING_OVERRIDES);
       list.push(idleHold);
+    }
 
-      // 2. Realistic 90° Chair/Sofa/Wheelchair Seated Posture (Proper Mixamo female arm & leg axes)
+    // 2. Authentic Sitting_Idle.fbx — proper female seated pose (no mesh clipping)
+    if (sitIdleFbx && sitIdleFbx.animations && sitIdleFbx.animations[0]) {
+      const s = sitIdleFbx.animations[0].clone();
+      s.name = 'sitting';
+      s.tracks.forEach((t) => {
+        if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
+      });
+      s.tracks = s.tracks.filter((t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye'));
+      fixHips(s, sitIdleFbx);
+      list.push(s);
+
+      // 2b. Seated while holding baby
+      const sitHold = applyBoneOverrides(s, 'sitting_hold', CRADLE_STANDING_OVERRIDES);
+      list.push(sitHold);
+    } else if (idleFbx && idleFbx.animations && idleFbx.animations[0]) {
+      // Fallback: derive sitting from idle with bone overrides if Sitting_Idle fails to load
+      const c = idleFbx.animations[0].clone();
+      c.name = 'idle_base_for_sit';
+      c.tracks.forEach((t) => {
+        if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
+      });
+      c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye'));
+      fixHips(c, idleFbx);
+
       const seatedOverrides = {
-        'mixamorigLeftUpLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.016 - Math.PI / 2, 0, -3.07)),
-        'mixamorigRightUpLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.013 - Math.PI / 2, 0, 3.07)),
-        'mixamorigLeftLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.079 - Math.PI / 2, 0.001, -0.011)),
-        'mixamorigRightLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.081 - Math.PI / 2, -0.001, 0.011)),
-        'mixamorigLeftFoot.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.094, 0.005, -0.009)),
-        'mixamorigRightFoot.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.094, -0.005, 0.009)),
-        'mixamorigLeftArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.12, 0.35, 0.12)),
-        'mixamorigRightArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.15, -0.38, -0.12)),
-        'mixamorigLeftForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.05, 0.15, 1.05)),
-        'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.05, -0.15, -1.05)),
+        'mixamorigLeftUpLeg.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.10,  0.02,  -0.04)),
+        'mixamorigRightUpLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.10, -0.02,   0.04)),
+        'mixamorigLeftLeg.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler( Math.PI / 2 - 0.15,  0.00,  -0.01)),
+        'mixamorigRightLeg.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler( Math.PI / 2 - 0.15,  0.00,   0.01)),
+        'mixamorigLeftFoot.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.20,  0.00,  -0.01)),
+        'mixamorigRightFoot.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.20,  0.00,   0.01)),
+        'mixamorigLeftFoot.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.28,  0.00,  -0.01)),
+        'mixamorigRightFoot.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.28,  0.00,   0.01)),
+        'mixamorigLeftArm.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.10,  0.30,   0.10)),
+        'mixamorigRightArm.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.10, -0.30,  -0.10)),
+        'mixamorigLeftForeArm.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(0.04,  0.10,  1.00)),
+        'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.04, -0.10, -1.00)),
       };
       const sit = applyBoneOverrides(c, 'sitting', seatedOverrides);
       list.push(sit);
-
-      // 2b. Seated Posture while Cradling Baby
       const sitHold = applyBoneOverrides(sit, 'sitting_hold', CRADLE_STANDING_OVERRIDES);
       list.push(sitHold);
     }
@@ -426,7 +465,7 @@ const MotherAvatar = forwardRef(({
     }
 
     return list;
-  }, [idleFbx, walkFbx, clonedScene]);
+  }, [idleFbx, walkFbx, sitIdleFbx, clonedScene]);
 
   // Bind animations directly to character rig
   const { actions } = useAnimations(animClips, clonedScene);
@@ -527,10 +566,14 @@ const MotherAvatar = forwardRef(({
     }
 
     // 2. Seated vs Standing Rig Elevation
+    // seatOffset[1] = seat surface height above floor (e.g. 0.46m for hospital sofa)
+    // avatarRig Y must be pulled down so the hip bone lands exactly at seat height
+    // Megan hip bone sits at ~0.92m in T-pose → lower rig by (0.92 - seatHeight)
     if (isSitting) {
       const seatHeight = seatedTarget?.seatOffset?.[1] ?? 0.46;
-      const targetY = -(0.92 - seatHeight);
-      const targetZ = 0.08;
+      const hipBoneHeight = 0.87; // Megan Mixamo hip bone at T-pose
+      const targetY = Math.max(-(hipBoneHeight - seatHeight), -0.50);
+      const targetZ = seatedTarget?.type === 'bed' ? 0.08 : 0.05;
       avatarRigRef.current.position.set(0, targetY, targetZ);
       avatarRigRef.current.rotation.set(0, 0, 0);
     } else {
@@ -612,6 +655,7 @@ MotherAvatar.displayName = 'MotherAvatar';
 export default MotherAvatar;
 
 useGLTF.preload('/models/megan_opt.glb');
-useGLTF.preload('/models/amy_opt.glb');
+useGLTF.preload('/models/pregnant_megan_opt.glb');
 useFBX.preload('/models/animations/Standing_Idle.fbx');
 useFBX.preload('/models/animations/walking.fbx');
+useFBX.preload('/models/animations/Sitting_Idle.fbx');

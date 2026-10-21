@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment, Loader, Stars, Html, useGLTF, useTexture } from '@react-three/drei';
 import useStore from './store/useStore';
@@ -8,20 +8,22 @@ import SuccessModal from './components/ui/SuccessModal';
 import GTAControlsHUD from './components/ui/GTAControlsHUD';
 import ImageViewerModal from './components/ui/ImageViewerModal';
 import RoomConfirmationModal from './components/ui/RoomConfirmationModal';
+import DressingRoomOverlay from './components/ui/DressingRoomOverlay';
 
-// ── Room scenes ──
-import LobbyRoom from './components/scenes/LobbyRoom';
-import MotherCare1Room from './components/scenes/MotherCare1Room';
-import MotherCare2Room from './components/scenes/MotherCare2Room';
-import MotherCare3Room from './components/scenes/MotherCare3Room';
-import MotherCare4Room from './components/scenes/MotherCare4Room';
-import NewbornCare1Room from './components/scenes/NewbornCare1Room';
-import NewbornCare2Room from './components/scenes/NewbornCare2Room';
-import NewbornCare3Room from './components/scenes/NewbornCare3Room';
-import NewbornCare4Room from './components/scenes/NewbornCare4Room';
-import NewbornCare5Room from './components/scenes/NewbornCare5Room';
-import QuizRoom from './components/scenes/QuizRoom';
-import DressingRoom from './components/scenes/DressingRoom';
+// ── Room scenes — lazy-loaded so each room's JS only downloads when first visited ──
+// This is the #1 perf win: initial JS bundle shrinks dramatically
+const LobbyRoom       = lazy(() => import('./components/scenes/LobbyRoom'));
+const DressingRoom    = lazy(() => import('./components/scenes/DressingRoom'));
+const MotherCare1Room = lazy(() => import('./components/scenes/MotherCare1Room'));
+const MotherCare2Room = lazy(() => import('./components/scenes/MotherCare2Room'));
+const MotherCare3Room = lazy(() => import('./components/scenes/MotherCare3Room'));
+const MotherCare4Room = lazy(() => import('./components/scenes/MotherCare4Room'));
+const NewbornCare1Room = lazy(() => import('./components/scenes/NewbornCare1Room'));
+const NewbornCare2Room = lazy(() => import('./components/scenes/NewbornCare2Room'));
+const NewbornCare3Room = lazy(() => import('./components/scenes/NewbornCare3Room'));
+const NewbornCare4Room = lazy(() => import('./components/scenes/NewbornCare4Room'));
+const NewbornCare5Room = lazy(() => import('./components/scenes/NewbornCare5Room'));
+const QuizRoom        = lazy(() => import('./components/scenes/QuizRoom'));
 
 /** Maps room key → scene component */
 const ROOM_MAP = {
@@ -40,61 +42,60 @@ const ROOM_MAP = {
   quiz: QuizRoom,
 };
 
-// ── Preload all 28 authentic 3D hospital models to prevent freeze/lag on room entrance ──
-const ALL_MODELS = [
-  '/models/megan_opt.glb',
-  '/models/soldier.glb',
-  '/models/baby_real.glb',
-  '/models/ceiling_fan.glb',
-  '/models/desk_lamp_arm_01.glb',
-  '/models/drawer_cabinet.glb',
-  '/models/flowers_vase.glb',
-  '/models/hospital_bed_opt.glb',
-  '/models/industrial_storage_cart.glb',
-  '/models/kira.glb',
-  '/models/medical_box.glb',
-  '/models/medical_tape.glb',
-  '/models/metal_office_desk.glb',
-  '/models/metal_trash_can.glb',
-  '/models/multi_cleaner_bottle.glb',
-  '/models/nursing_chair.glb',
-  '/models/plant_house.glb',
-  '/models/potted_plant_01.glb',
-  '/models/potted_plant_02.glb',
-  '/models/side_table_01.glb',
-  '/models/sofa_velvet.glb',
-  '/models/steel_frame_shelves_01.glb',
-  '/models/throw_pillows_01.glb',
-  '/models/tree_small_02.glb',
-  '/models/water_bottle.glb',
-  '/models/wheelchair_01.glb',
-  '/models/wicker_basket_01.glb',
-  '/models/robot.glb',
+// ── Preload only Lobby-essential 3D models (loads on startup).
+//    Remaining room-specific models load lazily on first room visit. ──
+const LOBBY_MODELS = [
+  '/models/megan_opt.glb',   // Player avatar (needed immediately)
+  '/models/soldier.glb',     // Father avatar (needed immediately)
+  '/models/flowers_vase.glb', // Lobby decoration
+  '/models/robot.glb',       // Lobby guide robot
 ];
 
-ALL_MODELS.forEach((path) => {
+LOBBY_MODELS.forEach((path) => {
   useGLTF.preload(path);
 });
 
-// ── Preload authentic hospital floor & door textures ──
-const ALL_TEXTURES = [
+// ── Prefetch remaining room models in the background after lobby loads ──
+// Uses requestIdleCallback so it never blocks the first paint
+if (typeof window !== 'undefined') {
+  const DEFERRED_MODELS = [
+    '/models/baby_real.glb',
+    '/models/hospital_bed_opt.glb',
+    '/models/nursing_chair.glb',
+    '/models/ceiling_fan.glb',
+    '/models/desk_lamp_arm_01.glb',
+    '/models/drawer_cabinet.glb',
+    '/models/industrial_storage_cart.glb',
+    '/models/kira.glb',
+    '/models/medical_box.glb',
+    '/models/medical_tape.glb',
+    '/models/metal_office_desk.glb',
+    '/models/metal_trash_can.glb',
+    '/models/multi_cleaner_bottle.glb',
+    '/models/plant_house.glb',
+    '/models/potted_plant_01.glb',
+    '/models/potted_plant_02.glb',
+    '/models/side_table_01.glb',
+    '/models/sofa_velvet.glb',
+    '/models/steel_frame_shelves_01.glb',
+    '/models/throw_pillows_01.glb',
+    '/models/tree_small_02.glb',
+    '/models/water_bottle.glb',
+    '/models/wheelchair_01.glb',
+    '/models/wicker_basket_01.glb',
+  ];
+  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 2000));
+  idle(() => {
+    DEFERRED_MODELS.forEach((path) => useGLTF.preload(path));
+  });
+}
+
+// ── Preload only lobby-critical textures at startup; defer room textures ──
+const LOBBY_TEXTURES = [
   '/textures/floor_marble_lobby.jpg',
-  '/textures/floor_vinyl_mother.jpg',
-  '/textures/floor_vinyl_nursery.jpg',
-  '/textures/floor_hall_quiz.jpg',
-  '/textures/door_mother.jpg',
-  '/textures/door_nursery.jpg',
-  '/textures/door_quiz.jpg',
-  '/textures/door_frame_metal.jpg',
-  '/textures/mother_diffuse_pink.jpg',
-  '/textures/mother_diffuse_blue.jpg',
-  '/textures/mother_diffuse_lavender.jpg',
-  '/textures/mother_diffuse_mint.jpg',
-  '/textures/mother_diffuse_white.jpg',
-  '/textures/mother_diffuse_peach.jpg',
 ];
 
-ALL_TEXTURES.forEach((path) => {
+LOBBY_TEXTURES.forEach((path) => {
   useTexture.preload(path);
 });
 
@@ -212,7 +213,13 @@ export default function App() {
       <div className="w-full h-full absolute inset-0 z-0 isolate" style={{ touchAction: 'none' }}>
         <Canvas
           shadows
-          gl={{ preserveDrawingBuffer: true, antialias: true, powerPreference: 'high-performance' }}
+          gl={{
+            antialias: true,
+            powerPreference: 'high-performance',
+            // preserveDrawingBuffer removed — halves GPU memory bandwidth
+            stencil: false,
+            depth: true,
+          }}
           camera={{ position: [0, 3, 8], fov: 55 }}
           style={{ background: 'linear-gradient(180deg, #dbeafe 0%, #f0fdf4 100%)', touchAction: 'none' }}
         >
@@ -222,7 +229,7 @@ export default function App() {
             position={[8, 12, 6]}
             intensity={1.1}
             castShadow
-            shadow-mapSize={[1024, 1024]}
+            shadow-mapSize={[512, 512]}
             shadow-bias={-0.0001}
           />
           <hemisphereLight
@@ -253,6 +260,7 @@ export default function App() {
         {showSuccessModal && <SuccessModal />}
         <RoomConfirmationModal />
         <ImageViewerModal />
+        <DressingRoomOverlay />
       </GlobalUIErrorBoundary>
 
       {/* ── Visual Asset Loader ── */}

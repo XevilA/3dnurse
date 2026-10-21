@@ -7,6 +7,7 @@ import HospitalRoomShell from '../environment/HospitalRoomShell';
 import FlowerVase from '../decorations/FlowerVase';
 import Pillows from '../decorations/Pillows';
 import HospitalNightstand from '../furniture/HospitalNightstand';
+import { DiaperStack, BabyBottle, CottonJar } from '../furniture/BabyProps';
 import InteractiveSeat from '../furniture/InteractiveSeat';
 
 /**
@@ -277,7 +278,7 @@ export default function NewbornCare1Room() {
       type: 'sofa',
       position: [-1.1, 0, -1.6],
       rotationY: -Math.PI / 2,
-      seatOffset: [0, 0.44, 0.05],
+      seatOffset: [0, 0.46, 0.05],
       isDrivable: false,
     });
     if (isHoldingBaby) {
@@ -852,7 +853,7 @@ export default function NewbornCare1Room() {
         type="sofa"
         position={[-1.1, 0, -1.6]}
         rotation={[0, -Math.PI / 2, 0]}
-        seatOffset={[0, 0.44, 0.05]}
+        seatOffset={[0, 0.46, 0.05]}
       >
         <group
           onClick={() => {
@@ -1055,6 +1056,12 @@ export default function NewbornCare1Room() {
             <boxGeometry args={[0.28, 0.14, 0.22]} />
             <meshStandardMaterial color="#e6ccb2" roughness={0.6} />
           </mesh>
+          {/* ── Feeding Props on Dresser — ขวดนม, ผ้าอ้อม, สำลี ── */}
+          {/* Dresser local coords: tabletop Y≈0.94; props float just above it */}
+          <BabyBottle position={[-0.55, 1.03, 0.08]} rotation={[0, 0.5, 0]} />
+          <BabyBottle position={[-0.55, 1.03, -0.10]} rotation={[0, -0.3, 0]} color="#bbf7d0" />
+          <DiaperStack position={[-0.28, 0.97, 0]} count={4} />
+          <CottonJar position={[0.72, 1.01, 0]} />
         </group>
 
         {/* (2) ภาพดอกไม้สวยงาม (Mounted on North Wall above dresser — ปรับแก้ห้องให้นมทารก หน้า 3 ภาพที่ 6) */}

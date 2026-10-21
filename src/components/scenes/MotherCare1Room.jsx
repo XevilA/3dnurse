@@ -17,6 +17,7 @@ import BabyAvatar from '../avatars/BabyAvatar';
 import BabyCrib from '../furniture/BabyCrib';
 import DoctorDesk from '../furniture/DoctorDesk';
 import NursingChair from '../furniture/NursingChair';
+import { InfantBathTub } from '../furniture/BabyProps';
 
 import { WallBoard, TitleSign, WallScreen, WindowWithCurtains, DiningTable, CareBooth, LoungeCorner, useEnterToActivate } from '../ward/WardKit';
 import { WARD101_BOARDS } from '../ward/wardData';
@@ -139,6 +140,10 @@ export default function MotherCare1Room() {
         <Washbasin position={[0, 0, 0]} />
       </group>
       <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
+
+      {/* ── อ่างอาบน้ำเด็กขนาดเล็กบนโต๊ะ (Dining/Care Table at [1.5, 0, 1.5]) ── */}
+      {/* DiningTable top surface ≈ Y 0.78; InfantBathTub height 0.22 → centre at Y 0.89 */}
+      <InfantBathTub position={[1.5, 0.89, 1.5]} rotation={[0, Math.PI / 4, 0]} />
 
       {/* ── 5. Maternal Recovery & Gentle Mobilization Lounge (กิจกรรม 4: การเคลื่อนไหวอย่างเหมาะสม) ── */}
       <group position={[5.4, 0, -6.5]} rotation={[0, -Math.PI / 6, 0]} >

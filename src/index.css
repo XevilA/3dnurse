@@ -1,14 +1,30 @@
 @import "tailwindcss";
 
+:root {
+  /* expose safe-area insets as CSS vars for use in JS style props */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
 body {
   margin: 0;
   overflow: hidden;
   width: 100vw;
   height: 100vh;
+  /* Fill iPhone notch area with app background instead of white */
+  background-color: #0f172a;
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  /* Prevent iOS Safari bounce scroll */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 #root {
   width: 100%;
@@ -17,4 +33,9 @@ body {
 }
 canvas {
   touch-action: none !important;
+}
+
+/* Prevent double-tap zoom on interactive elements on iOS */
+button, a {
+  touch-action: manipulation;
 }
