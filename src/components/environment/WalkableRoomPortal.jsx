@@ -152,15 +152,15 @@ export default function WalkableRoomPortal({
 
   const headerSignTex = useMemo(() => {
     const canvas = document.createElement('canvas');
-    canvas.width = 1050;
-    canvas.height = 240;
+    canvas.width = 1400;
+    canvas.height = 320;
     const ctx = canvas.getContext('2d');
 
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = isLocked ? '#ef4444' : themeConfig.primary;
-    ctx.lineWidth = 10;
-    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+    ctx.lineWidth = 14;
+    ctx.strokeRect(7, 7, canvas.width - 14, canvas.height - 14);
 
     // Top badge pill
     const badgeColor = isLocked
@@ -169,35 +169,38 @@ export default function WalkableRoomPortal({
       ? '#d97706'
       : themeConfig.primary;
     ctx.fillStyle = badgeColor;
-    ctx.fillRect(24, 18, canvas.width - 48, 66);
+    ctx.fillRect(30, 20, canvas.width - 60, 80);
 
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '900 34px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.font = '900 42px "Sarabun", system-ui, -apple-system, sans-serif';
     const badgeLabel = isLocked
       ? `🔒 ${roomNumber} (ล็อค — ทำ Pre-test ที่ Hall 301 ก่อน)`
       : roomKey === 'quiz' && !hasCompletedPretest
       ? `⭐ จุดเริ่มต้น: ${roomNumber} • ทำ Pre-test 20 ข้อ`
       : `${icon || ''} ${roomNumber}${isCompleted ? '  ✅ ผ่านแล้ว' : ''}`;
-    ctx.fillText(badgeLabel, canvas.width / 2, 51);
+    ctx.fillText(badgeLabel, canvas.width / 2, 60);
 
-    // Room title
+    // Room title (Enlarged & Bold for High Visibility from Distance)
     ctx.fillStyle = '#0f172a';
-    ctx.font = '900 44px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText(roomTitle || '', canvas.width / 2, 136);
+    ctx.font = '900 60px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText(roomTitle || '', canvas.width / 2, 175);
 
     // Subtitle action hint
     ctx.fillStyle = isLocked ? '#dc2626' : themeConfig.text;
-    ctx.font = '800 26px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.font = '800 32px "Sarabun", system-ui, -apple-system, sans-serif';
     const subLabel = isLocked
       ? '⚠️ กรุณาทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน'
       : '🚪 เดินเข้าใกล้เพื่อให้ประตูเปิดอัตโนมัติ หรือคลิกที่ป้ายเพื่อเข้าห้อง ➜';
-    ctx.fillText(subLabel, canvas.width / 2, 198);
+    ctx.fillText(subLabel, canvas.width / 2, 260);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
+    tex.anisotropy = 16;
+    tex.generateMipmaps = true;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
     tex.needsUpdate = true;
     return tex;
   }, [isLocked, roomKey, hasCompletedPretest, roomNumber, roomTitle, icon, isCompleted, themeConfig.primary, themeConfig.text]);

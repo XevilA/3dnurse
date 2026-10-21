@@ -419,8 +419,6 @@ const MotherAvatar = forwardRef(({
         'mixamorigRightUpLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.10, -0.02,   0.04)),
         'mixamorigLeftLeg.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler( Math.PI / 2 - 0.15,  0.00,  -0.01)),
         'mixamorigRightLeg.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler( Math.PI / 2 - 0.15,  0.00,   0.01)),
-        'mixamorigLeftFoot.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.20,  0.00,  -0.01)),
-        'mixamorigRightFoot.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.20,  0.00,   0.01)),
         'mixamorigLeftFoot.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.28,  0.00,  -0.01)),
         'mixamorigRightFoot.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.28,  0.00,   0.01)),
         'mixamorigLeftArm.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.10,  0.30,   0.10)),

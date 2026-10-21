@@ -3,18 +3,18 @@ import { create } from 'zustand';
 /**
  * Central Zustand store for the Postpartum & Newborn Care Learning Metaverse.
  *
- * Rooms:
- *   lobby           — ห้องต้อนรับ (Welcome)
- *   motherCare1     — การดูแลร่างกายและการฟื้นตัวหลังคลอด
- *   motherCare2     — การดูแลแผลหลังคลอด
- *   motherCare3     — การดูแลเต้านม
- *   motherCare4     — การสังเกตอาการผิดปกติและการป้องกันภาวะแทรกซ้อน
- *   newbornCare1    — การให้นมทารก
- *   newbornCare2    — การอาบน้ำทารก
- *   newbornCare3    — การเปลี่ยนผ้าอ้อม
- *   newbornCare4    — การดูแลสายสะดือ
- *   newbornCare5    — การจัดสภาพแวดล้อมที่ปลอดภัยให้แก่ทารก
- *   quiz            — ห้องแบบทดสอบหลังเรียน
+ * Clinical Learning Modules (8 Specialized Rooms + Hubs):
+ *   lobby           — ห้องต้อนรับและปฐมนิเทศ (Grand Hospital Lobby)
+ *   dressingRoom    — ห้องแต่งตัว & ปรับสรีระคุณแม่ (Maternity Studio Suite 001)
+ *   motherCare1     — การดูแลร่างกายและการฟื้นตัวหลังคลอด (Mother Ward 101)
+ *   motherCare2     — การดูแลแผลหลังคลอดและสุขอนามัย (Mother Ward 102)
+ *   motherCare3     — การดูแลเต้านมและท่าให้นมบุตร (Mother Ward 103)
+ *   motherCare4     — การสังเกตอาการผิดปกติและภาวะแทรกซ้อน (Mother Ward 104)
+ *   newbornCare1    — การให้นมทารกแรกเกิด (Newborn Nursery 201)
+ *   newbornCare2    — การอาบน้ำและการเปลี่ยนผ้าอ้อม 14 ขั้นตอน (Newborn Nursery 202)
+ *   newbornCare3    — การดูแลสายสะดือทารกแรกเกิด (Newborn Nursery 203)
+ *   newbornCare4    — สภาพแวดล้อมที่ปลอดภัยสำหรับทารกและการนอนหลับ (Newborn Nursery 204)
+ *   quiz            — ห้องแบบทดสอบประเมินความรู้ 20 ข้อ (Grand Quiz Hall 301)
  */
 const useStore = create((set, get) => ({
   // ── Navigation ──
