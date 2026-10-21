@@ -22,7 +22,6 @@ const NewbornCare1Room = lazy(() => import('./components/scenes/NewbornCare1Room
 const NewbornCare2Room = lazy(() => import('./components/scenes/NewbornCare2Room'));
 const NewbornCare3Room = lazy(() => import('./components/scenes/NewbornCare3Room'));
 const NewbornCare4Room = lazy(() => import('./components/scenes/NewbornCare4Room'));
-const NewbornCare5Room = lazy(() => import('./components/scenes/NewbornCare5Room'));
 const QuizRoom        = lazy(() => import('./components/scenes/QuizRoom'));
 
 /** Maps room key → scene component */
@@ -38,7 +37,6 @@ const ROOM_MAP = {
   newbornCare2: NewbornCare2Room,
   newbornCare3: NewbornCare3Room,
   newbornCare4: NewbornCare4Room,
-  newbornCare5: NewbornCare5Room,
   quiz: QuizRoom,
 };
 

@@ -218,8 +218,8 @@ export default function LobbyRoom() {
         id="lobby_wheelchair_2"
         name="รถเข็นโรงพยาบาล ฝั่งปีกทารก (East)"
         type="wheelchair"
-        position={[3.8, 0, 4.2]}
-        rotation={[0, -0.25, 0]}
+        position={[4.5, 0, 4.0]}
+        rotation={[0, -Math.PI / 2, 0]}
         seatOffset={[0, 0.46, 0.05]}
         isDrivable={true}
       >
