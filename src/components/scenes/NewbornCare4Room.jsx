@@ -421,12 +421,12 @@ export default function NewbornCare4Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           2. 5 โปสเตอร์ความรู้ 3D Mesh ติดผนังแนบสนิท 100% พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น (คลิกขยายได้)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* ภาพที่ 1 (North Wall Left, z = -6.78): การจัดสภาพแวดล้อมในห้องนอน */}
+      {/* ภาพที่ 1 (North Wall Left, z = -6.78): การจัดสภาพแวดล้อมในห้องนอน — ขนาดใหญ่ */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster1_env.jpg"
-        width={2.85}
-        height={1.9}
-        position={[-4.3, 2.7, -6.78]}
+        width={3.8}
+        height={2.5}
+        position={[-4.2, 2.9, -6.78]}
         title="การจัดสภาพแวดล้อมในห้องนอนทารก"
         badge="ภาพที่ 1"
         frameColor="#8c5a32"
@@ -437,9 +437,9 @@ export default function NewbornCare4Room() {
       {/* ภาพที่ 2 (North Wall Right, z = -6.78): ✓ นอนหงาย vs ✕ นอนคว่ำ */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster2_back_vs_prone.jpg"
-        width={2.75}
-        height={1.9}
-        position={[4.7, 2.7, -6.78]}
+        width={3.6}
+        height={2.5}
+        position={[4.9, 2.9, -6.78]}
         title="ท่านอนทารก (✓ นอนหงาย vs ✕ นอนคว่ำ)"
         badge="ภาพที่ 2"
         frameColor="#8c5a32"
@@ -450,9 +450,9 @@ export default function NewbornCare4Room() {
       {/* ภาพที่ 3 (East Wall North, x = 6.78): ✓ ที่นอนทารกที่ปลอดภัย vs ✕ ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster3_safe_mattress.jpg"
-        width={2.95}
-        height={1.95}
-        position={[6.78, 2.75, -3.6]}
+        width={4.5}
+        height={2.8}
+        position={[6.78, 2.9, -3.5]}
         rotation={[0, -Math.PI / 2, 0]}
         title="ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ"
         badge="ภาพที่ 3"
@@ -464,9 +464,9 @@ export default function NewbornCare4Room() {
       {/* ภาพที่ 4 (East Wall Center, x = 6.78): ✓ แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster4_separate_bed.jpg"
-        width={2.85}
-        height={1.95}
-        position={[6.78, 2.75, 0.2]}
+        width={4.5}
+        height={2.8}
+        position={[6.78, 2.9, 0.6]}
         rotation={[0, -Math.PI / 2, 0]}
         title="แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน"
         badge="ภาพที่ 4"
@@ -478,9 +478,9 @@ export default function NewbornCare4Room() {
       {/* ภาพที่ 5 (East Wall South, x = 6.78): สังเกตอาการอันตรายระหว่างการนอนของทารก */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster5_danger_signs.jpg"
-        width={2.85}
-        height={1.95}
-        position={[6.78, 2.75, 3.9]}
+        width={4.5}
+        height={2.8}
+        position={[6.78, 2.9, 4.5]}
         rotation={[0, -Math.PI / 2, 0]}
         title="สังเกตอาการอันตรายระหว่างการนอนของทารก"
         badge="ภาพที่ 5"

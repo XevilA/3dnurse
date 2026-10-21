@@ -280,12 +280,12 @@ export default function NewbornCare3Room() {
              - West Wall (x = -6.78): Posters 4, 5
              - East Wall (x = 6.78): Poster 6
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Poster 1 (North Wall Left): อุปกรณ์เช็ดสะดือ */}
+      {/* Poster 1 (North Wall Left): อุปกรณ์เช็ดสะดือ — ขนาดใหญ่ขึ้น อ่านชัดเจน */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster1_equip.jpg"
-        width={2.5}
-        height={1.75}
-        position={[-4.2, 2.75, -6.78]}
+        width={3.4}
+        height={2.3}
+        position={[-3.5, 2.95, -6.78]}
         title="อุปกรณ์เช็ดสะดือทารกแรกเกิด"
         badge="ภาพที่ 1"
         frameColor="#8c5a32"
@@ -296,9 +296,9 @@ export default function NewbornCare3Room() {
       {/* Poster 2 (North Wall Center): วิธีการเช็ดสะดือทารก (สะดือสด) */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster2_fresh.jpg"
-        width={2.7}
-        height={1.75}
-        position={[0, 2.75, -6.78]}
+        width={3.6}
+        height={2.4}
+        position={[0.6, 2.95, -6.78]}
         title="วิธีการเช็ดสะดือทารก (สะดือสด)"
         badge="ภาพที่ 2"
         frameColor="#8c5a32"
@@ -309,9 +309,9 @@ export default function NewbornCare3Room() {
       {/* Poster 3 (North Wall Right): วิธีการเช็ดสะดือทารก (สะดือเริ่มแห้ง) */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster3_dry.jpg"
-        width={2.7}
-        height={1.75}
-        position={[4.2, 2.75, -6.78]}
+        width={3.6}
+        height={2.4}
+        position={[4.9, 2.95, -6.78]}
         title="วิธีการเช็ดสะดือทารก (สะดือเริ่มแห้ง)"
         badge="ภาพที่ 3"
         frameColor="#8c5a32"
@@ -319,12 +319,12 @@ export default function NewbornCare3Room() {
         onClick={() => openWallPoster(2)}
       />
 
-      {/* Poster 4 (West Wall North): สายสะดือมักหลุดเมื่อไหร่ ? */}
+      {/* Poster 4 (West Wall): สายสะดือมักหลุดเมื่อไหร่ ? — ขนาดใหญ่ */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster4_timeline.jpg"
-        width={2.8}
-        height={1.8}
-        position={[-6.78, 2.75, -3.1]}
+        width={4.8}
+        height={2.8}
+        position={[-6.78, 2.95, -2.0]}
         rotation={[0, Math.PI / 2, 0]}
         title="สายสะดือทารกมักหลุดเมื่อไหร่ ?"
         badge="ภาพที่ 4"
@@ -336,9 +336,9 @@ export default function NewbornCare3Room() {
       {/* Poster 5 (West Wall South): ข้อควรสังเกต สัญญาณผิดปกติของสะดือทารก */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster5_warning.jpg"
-        width={2.8}
-        height={1.8}
-        position={[-6.78, 2.75, 2.9]}
+        width={4.8}
+        height={2.8}
+        position={[-6.78, 2.95, 3.6]}
         rotation={[0, Math.PI / 2, 0]}
         title="ข้อควรสังเกต สัญญาณผิดปกติของสะดือทารก"
         badge="ภาพที่ 5"
@@ -347,12 +347,12 @@ export default function NewbornCare3Room() {
         onClick={() => openWallPoster(4)}
       />
 
-      {/* Poster 6 (East Wall Center): การใส่แพมเพิสที่ถูกต้อง */}
+      {/* Poster 6 (East Wall Center): การใส่แพมเพิสที่ถูกต้อง — ภาพใหญ่ */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster6_diaper.jpg"
-        width={3.0}
-        height={1.85}
-        position={[6.78, 2.75, -0.5]}
+        width={4.5}
+        height={2.8}
+        position={[6.78, 2.95, -0.5]}
         rotation={[0, -Math.PI / 2, 0]}
         title="การใส่แพมเพิส (ผ้าอ้อมสำเร็จรูป) ที่ถูกต้อง"
         badge="ภาพที่ 6"
