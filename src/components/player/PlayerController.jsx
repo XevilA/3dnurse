@@ -271,7 +271,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         case 'Space':
           if (store.isSitting && !store.seatedTarget?.isDrivable) {
             store.standUp();
-          } else if (store.currentRoom !== 'lobby') {
+          } else if (store.currentRoom !== 'quiz') {
             setHoldingBaby(!store.isHoldingBaby);
           }
           break;
@@ -574,27 +574,12 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     <group ref={playerRef} name="PlayerCharacter" position={initialPosition}>
       {/* Avatar Group */}
       <group ref={avatarGroupRef} visible={cameraMode === '3rdPerson'}>
-        {/* 100% Authentic Female Character Suite (Pregnant Mother / Postpartum Mother / Nurse) */}
+        {/* 100% Authentic Female Character Suite (Pregnant Mother / Postpartum Mother / Nurse) + Hand-Locked 3D Baby */}
         <MotherAvatar
           position={[0, 0, 0]}
           rotation={[0, 0, 0]}
           currentAnimation={currentAnim}
         />
-
-        {/* Infant nestled in Mother's loving arms (Standing or Sitting on lap) */}
-        {isHoldingBaby && currentRoom !== 'lobby' && (
-          <group
-            position={isSitting ? [0.02, 0.64, 0.35] : [0.04, 1.08, 0.26]}
-            rotation={isSitting ? [-0.25, 0.15, 0.10] : [-0.15, 0.18, 0.12]}
-          >
-            <BabyAvatar
-              pose="carried"
-              position={[0, 0, 0]}
-              rotation={[0, 0, 0]}
-              scale={0.85}
-            />
-          </group>
-        )}
       </group>
 
       {/* GTA Character Indicator Ring on Floor (Visible in 3rd Person) */}

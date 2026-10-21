@@ -191,6 +191,7 @@ export function WoodFramedBacklitPanel({
  */
 export function FramedImagePoster3D({
   imgSrc,
+  src,
   width = 2.6,
   height = 3.0,
   position = [0, 0, 0],
@@ -198,13 +199,18 @@ export function FramedImagePoster3D({
   title = '',
   subtitle = '',
   badge = '',
+  badgeText = '',
   frameColor = '#8c5a32',
   accentColor = '#d97706',
+  headerColor = '',
   backlit = true,
   onClick,
   children,
 }) {
-  const tex = useTexture(imgSrc);
+  const resolvedSrc = imgSrc || src || '/images/rev/lobby_mother_baby_poster.jpg';
+  const resolvedBadge = badge || badgeText || '';
+  const resolvedAccent = headerColor || accentColor || '#d97706';
+  const tex = useTexture(resolvedSrc);
   useMemo(() => {
     if (tex) {
       tex.colorSpace = THREE.SRGBColorSpace;
@@ -213,7 +219,7 @@ export function FramedImagePoster3D({
     }
   }, [tex]);
 
-  const hasHeader = Boolean(title || badge);
+  const hasHeader = Boolean(title || resolvedBadge);
   const headerH = hasHeader ? Math.min(0.46, height * 0.17) : 0;
   const imgH = hasHeader ? height - headerH - 0.08 : height - 0.08;
   const imgY = hasHeader ? -headerH / 2 - 0.01 : 0;
@@ -222,8 +228,8 @@ export function FramedImagePoster3D({
   const headerTex = usePosterTitleTexture({
     title,
     subtitle: subtitle || (onClick ? '🔍 คลิกที่ป้ายเพื่อดูภาพขยาย' : ''),
-    badge,
-    accentColor,
+    badge: resolvedBadge,
+    accentColor: resolvedAccent,
     bgColor: '#fffdf9',
     textColor: '#1e293b',
   });

@@ -154,20 +154,13 @@ export default function DressingRoom() {
             <meshStandardMaterial color="#fdf2f8" roughness={0.2} metalness={0.15} />
           </mesh>
 
-          {/* Model Display on Turntable: 100% Female Character Suite */}
+          {/* Model Display on Turntable: 100% Female Character Suite + Hand-Locked 3D Baby */}
           <group position={[0, 0.04, 0]}>
             <MotherAvatar
               position={[0, 0, 0]}
               rotation={[0, 0, 0]}
               currentAnimation="idle"
             />
-
-            {/* Optional Baby Preview when holding baby (for postpartum mother) */}
-            {isHoldingBaby && selectedCharacter !== 'pregnant_mother' && (
-              <group position={[0.04, 1.08, 0.26]} rotation={[-0.15, 0.18, 0.12]}>
-                <BabyAvatar pose="carried" position={[0, 0, 0]} scale={0.85} />
-              </group>
-            )}
           </group>
         </group>
       </group>

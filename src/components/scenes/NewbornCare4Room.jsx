@@ -781,13 +781,16 @@ export default function NewbornCare4Room() {
           <meshStandardMaterial color="#ffffff" roughness={0.7} />
         </mesh>
 
-        {/* คุณแม่นอนหลับพักผ่อนอยู่บนเตียงผู้ปกครอง ("คุณแม่, ทารก นอนหลับอยู่") */}
-        <group position={[-0.55, 0.72, -0.95]} rotation={[-Math.PI / 2, 0, 0]}>
+        {/* คุณแม่นอนหลับพักผ่อนอยู่บนเตียงผู้ปกครอง (นอนหงาย ศีรษะหนุนหมอนที่ z = -0.95 ปลายเท้าไปทาง +z) */}
+        <group position={[-0.6, 0.78, 0.52]} rotation={[-Math.PI / 2, 0, 0]}>
           <MotherAvatar
             position={[0, 0, 0]}
             scale={0.94}
-            clothing="pajamas"
-            bellyState="postpartum"
+            characterOverride="postpartum_mother"
+            outfitOverride="pink"
+            isSittingOverride={false}
+            isHoldingBabyOverride={false}
+            currentAnimation="idle"
           />
         </group>
 

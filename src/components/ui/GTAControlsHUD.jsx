@@ -427,8 +427,8 @@ export default function GTAControlsHUD() {
               <span>{cameraMode === '3rdPerson' ? '1st Person' : '3rd Person'}</span>
             </button>
 
-            {/* Mother & Baby Action (Clinical Care Rooms that allow holding baby) */}
-            {!['lobby', 'quiz', 'motherCare3', 'motherCare4', 'newbornCare3', 'newbornCare4'].includes(currentRoom) && !isSitting && (
+            {/* Mother & Baby Action (Allow holding/cradling baby in any room except quiz) */}
+            {currentRoom !== 'quiz' && (
               <button
                 type="button"
                 onClick={() => setHoldingBaby(!isHoldingBaby)}
@@ -474,7 +474,7 @@ export default function GTAControlsHUD() {
       {!isMobile && controlsVisible && (
         <>
           {/* ── Contextual Interactive Action Prompts for PC (Center-Bottom) ── */}
-          {(nearbySeat || isSitting || (currentRoom !== 'lobby' && currentRoom !== 'quiz')) && (
+          {currentRoom !== 'quiz' && (
             <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-3">
               {/* PC Sit / Stand Action Prompt */}
               {(nearbySeat || isSitting) && (
@@ -499,24 +499,22 @@ export default function GTAControlsHUD() {
               )}
 
               {/* PC Hold / Release Baby Action Prompt */}
-              {!['lobby', 'quiz', 'motherCare3', 'motherCare4', 'newbornCare3', 'newbornCare4'].includes(currentRoom) && !isSitting && (
-                <button
-                  type="button"
-                  onClick={() => setHoldingBaby(!isHoldingBaby)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs shadow-2xl border transition transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md ${
-                    isHoldingBaby
-                      ? 'bg-emerald-600/90 hover:bg-emerald-600 text-white border-emerald-300'
-                      : 'bg-pink-600/90 hover:bg-pink-600 text-white border-pink-300'
-                  }`}
-                >
-                  <kbd className="px-2 py-0.5 bg-black/40 rounded font-mono font-black text-pink-200 border border-white/30 text-xs">
-                    E / Space
-                  </kbd>
-                  <span>
-                    {isHoldingBaby ? 'วางลูกน้อยในเปล' : 'อุ้มลูกน้อยแนบอก'}
-                  </span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setHoldingBaby(!isHoldingBaby)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs shadow-2xl border transition transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md ${
+                  isHoldingBaby
+                    ? 'bg-emerald-600/90 hover:bg-emerald-600 text-white border-emerald-300'
+                    : 'bg-pink-600/90 hover:bg-pink-600 text-white border-pink-300'
+                }`}
+              >
+                <kbd className="px-2 py-0.5 bg-black/40 rounded font-mono font-black text-pink-200 border border-white/30 text-xs">
+                  E / Space
+                </kbd>
+                <span>
+                  {isHoldingBaby ? 'วางลูกน้อยในเปล' : 'อุ้มลูกน้อยแนบอก'}
+                </span>
+              </button>
             </div>
           )}
 
@@ -563,7 +561,7 @@ export default function GTAControlsHUD() {
                 <span className="text-cyan-200">สลับ 1st/3rd</span>
               </div>
 
-              {!['lobby', 'quiz', 'motherCare3', 'motherCare4', 'newbornCare3', 'newbornCare4'].includes(currentRoom) && (
+              {currentRoom !== 'quiz' && (
                 <div className="flex items-center gap-1.5 col-span-2">
                   <kbd className="px-2 py-0.5 bg-pink-500/40 border border-pink-400 rounded font-mono font-bold text-pink-200">
                     E / Space

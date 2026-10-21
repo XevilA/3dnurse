@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import { useGLTF, useAnimations } from '@react-three/drei';
+import { useGLTF, useAnimations, useFBX } from '@react-three/drei';
 import { SkeletonUtils } from 'three-stdlib';
 import * as THREE from 'three';
 
@@ -28,8 +28,8 @@ export default function RealisticNurse({
 
   // Load realistic female model (4.1MB, rigged human female)
   const { scene: meganScene } = useGLTF('/models/megan_opt.glb');
-  // Load animations for realistic breathing
-  const { animations: soldierAnimations } = useGLTF('/models/soldier.glb');
+  // Load authentic female standing idle animation
+  const idleFbx = useFBX('/models/animations/Standing_Idle.fbx');
 
   // Clone scene with SkeletonUtils to support independent instances
   const clonedScene = useMemo(() => {
@@ -94,24 +94,93 @@ export default function RealisticNurse({
     });
   }, [clonedScene, uniformColor]);
 
-  // Filter animation tracks to keep character upright & stable
+  // Build authentic Mixamo female idle animation with natural reception desk arm poses
   const animClips = useMemo(() => {
     const list = [];
-    if (soldierAnimations && soldierAnimations.length > 0) {
-      soldierAnimations.forEach((origClip) => {
-        const clip = origClip.clone();
-        clip.name = clip.name.toLowerCase();
-        clip.tracks = clip.tracks.filter((track) => {
-          if (track.name.endsWith('.scale')) return false;
-          if (track.name.endsWith('.position')) return false;
-          if (track.name.toLowerCase().includes('hips')) return false;
-          return true;
-        });
-        list.push(clip);
+    if (idleFbx && idleFbx.animations && idleFbx.animations[0] && clonedScene) {
+      const clip = idleFbx.animations[0].clone();
+      clip.name = 'idle';
+      clip.tracks.forEach((t) => {
+        if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
       });
+      clip.tracks = clip.tracks.filter(
+        (t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye')
+      );
+
+      const glbHips = clonedScene.getObjectByName('mixamorigHips');
+      const fbxHips = idleFbx.getObjectByName('mixamorigHips') || idleFbx.getObjectByName('Hips');
+      if (glbHips && fbxHips && glbHips.parent && fbxHips.parent) {
+        const pF = fbxHips.parent.quaternion.clone();
+        const pG = glbHips.parent.quaternion.clone();
+        const corr = pG.clone().invert().multiply(pF);
+        const posScale = fbxHips.parent.scale.x || 1;
+        const restHipZ = glbHips.position.z || -100.08;
+
+        clip.tracks.forEach((t) => {
+          if (t.name === 'mixamorigHips.quaternion') {
+            const q = new THREE.Quaternion();
+            for (let i = 0; i < t.values.length; i += 4) {
+              q.set(t.values[i], t.values[i + 1], t.values[i + 2], t.values[i + 3]);
+              q.premultiply(corr);
+              t.values[i] = q.x;
+              t.values[i + 1] = q.y;
+              t.values[i + 2] = q.z;
+              t.values[i + 3] = q.w;
+            }
+          } else if (t.name === 'mixamorigHips.position') {
+            const v = new THREE.Vector3();
+            v.set(t.values[0], t.values[1], t.values[2]).multiplyScalar(posScale).applyQuaternion(corr);
+            const baseZ = v.z || -100.08;
+            const heightRatio = restHipZ / baseZ;
+            for (let i = 0; i < t.values.length; i += 3) {
+              v.set(t.values[i], t.values[i + 1], t.values[i + 2]).multiplyScalar(posScale).applyQuaternion(corr);
+              t.values[i] = 0;
+              t.values[i + 1] = 0;
+              t.values[i + 2] = v.z * heightRatio;
+            }
+          }
+        });
+      }
+
+      // Apply Mixamo female arm pose for reception desk / typing / welcoming
+      const armOverrides =
+        armPose === 'typing'
+          ? {
+              'mixamorigLeftArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.05, 0.35, 0.15)),
+              'mixamorigRightArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.08, -0.35, -0.15)),
+              'mixamorigLeftForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.08, 0.15, 1.15)),
+              'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.08, -0.15, -1.15)),
+            }
+          : armPose === 'welcoming'
+            ? {
+                'mixamorigLeftArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.12, 0.42, 0.22)),
+                'mixamorigRightArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.15, -0.42, -0.22)),
+                'mixamorigLeftForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.1, 0.2, 1.25)),
+                'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.1, -0.2, -1.25)),
+              }
+            : {
+                'mixamorigLeftArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.18, 0.38, 0.1)),
+                'mixamorigRightArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(1.2, -0.38, -0.1)),
+                'mixamorigLeftForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.05, 0.12, 0.85)),
+                'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.05, -0.12, -0.85)),
+              };
+
+      clip.tracks.forEach((t) => {
+        const q = armOverrides[t.name];
+        if (q) {
+          for (let i = 0; i < t.values.length; i += 4) {
+            t.values[i] = q.x;
+            t.values[i + 1] = q.y;
+            t.values[i + 2] = q.z;
+            t.values[i + 3] = q.w;
+          }
+        }
+      });
+
+      list.push(clip);
     }
     return list;
-  }, [soldierAnimations]);
+  }, [idleFbx, clonedScene, armPose]);
 
   const { actions } = useAnimations(animClips, clonedScene);
 
@@ -122,42 +191,6 @@ export default function RealisticNurse({
       action.time = timeOffset;
     }
   }, [actions, timeOffset]);
-
-  // Natural arm posing for behind reception desk
-  useEffect(() => {
-    if (!clonedScene) return;
-
-    let leftArm = null;
-    let rightArm = null;
-    let leftForeArm = null;
-    let rightForeArm = null;
-
-    clonedScene.traverse((child) => {
-      if (child.isBone) {
-        if (child.name.includes('LeftArm') && !child.name.includes('Fore')) leftArm = child;
-        if (child.name.includes('RightArm') && !child.name.includes('Fore')) rightArm = child;
-        if (child.name.includes('LeftForeArm')) leftForeArm = child;
-        if (child.name.includes('RightForeArm')) rightForeArm = child;
-      }
-    });
-
-    if (armPose === 'typing') {
-      if (leftArm) leftArm.rotation.set(0.48, 0.15, 0.65);
-      if (rightArm) rightArm.rotation.set(0.48, -0.15, -0.65);
-      if (leftForeArm) leftForeArm.rotation.set(0.25, 0.35, 0.45);
-      if (rightForeArm) rightForeArm.rotation.set(0.25, -0.35, -0.45);
-    } else if (armPose === 'welcoming') {
-      if (leftArm) leftArm.rotation.set(0.38, 0.1, 0.78);
-      if (rightArm) rightArm.rotation.set(0.38, -0.1, -0.78);
-      if (leftForeArm) leftForeArm.rotation.set(0.45, 0.25, 0.55);
-      if (rightForeArm) rightForeArm.rotation.set(0.45, -0.25, -0.55);
-    } else {
-      if (leftArm) leftArm.rotation.set(0.28, 0.08, 0.88);
-      if (rightArm) rightArm.rotation.set(0.28, -0.08, -0.88);
-      if (leftForeArm) leftForeArm.rotation.set(0.35, 0.18, 0.38);
-      if (rightForeArm) rightForeArm.rotation.set(0.35, -0.18, -0.38);
-    }
-  }, [clonedScene, armPose]);
 
   if (!clonedScene) return null;
 
@@ -268,4 +301,4 @@ export default function RealisticNurse({
 }
 
 useGLTF.preload('/models/megan_opt.glb');
-useGLTF.preload('/models/soldier.glb');
+useFBX.preload('/models/animations/Standing_Idle.fbx');
