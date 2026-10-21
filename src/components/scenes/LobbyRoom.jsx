@@ -263,15 +263,25 @@ export default function LobbyRoom() {
         rotation={[0, Math.PI / 2, 0]}
       />
 
-      {/* Simple decorative wall panel — no canvas/texture overhead */}
-      <mesh position={[-10.74, 2.35, -4.4]} rotation={[0, Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.5, 1.9, 0.04]} />
-        <meshStandardMaterial color="#fce7f3" roughness={0.3} />
-      </mesh>
-      <mesh position={[-10.71, 2.40, -4.4]} rotation={[0, Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.3, 1.6, 0.02]} />
-        <meshStandardMaterial color="#f9a8d4" roughness={0.4} />
-      </mesh>
+      {/* Hallway Wall Artwork: Between Ward 101 & 102 */}
+      <FramedImagePoster3D
+        position={[-10.74, 2.35, -4.4]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={1.5}
+        height={1.9}
+        src="/images/ward/ward101_bg.jpg"
+        title="การฟื้นฟูสุขภาพและโภชนาการมารดา"
+        badgeText="🌸 แผนกการดูแลมารดา"
+        headerColor="#ec4899"
+        onClick={() =>
+          openLightbox({
+            src: '/images/ward/ward101_bg.jpg',
+            title: 'การฟื้นฟูสุขภาพและโภชนาการมารดาหลังคลอด (Mother Recovery & Nutrition)',
+            badge: 'แผนกการดูแลมารดา (Mother Ward)',
+            description: 'แนวทางการบริโภคอาหารที่ถูกต้องเพื่อเสริมสร้างน้ำนมและฟื้นฟูร่างกายของคุณแม่หลังคลอดอย่างสมบูรณ์',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="motherCare2"
@@ -283,15 +293,25 @@ export default function LobbyRoom() {
         rotation={[0, Math.PI / 2, 0]}
       />
 
-      {/* Simple decorative wall panel — no canvas/texture overhead */}
-      <mesh position={[-10.74, 2.35, 0.0]} rotation={[0, Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.5, 1.9, 0.04]} />
-        <meshStandardMaterial color="#fce7f3" roughness={0.3} />
-      </mesh>
-      <mesh position={[-10.71, 2.40, 0.0]} rotation={[0, Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.3, 1.6, 0.02]} />
-        <meshStandardMaterial color="#f9a8d4" roughness={0.4} />
-      </mesh>
+      {/* Hallway Wall Artwork: Between Ward 102 & 103 */}
+      <FramedImagePoster3D
+        position={[-10.74, 2.35, 0.0]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={1.5}
+        height={1.9}
+        src="/images/rev/lobby_mother_baby_poster.jpg"
+        title="สายสัมพันธ์แม่และลูก: สุขภาพดีเริ่มต้นที่ครอบครัว"
+        badgeText="🌸 สายใยรักแม่ลูก"
+        headerColor="#e11d48"
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_mother_baby_poster.jpg',
+            title: 'สายสัมพันธ์แม่และลูก (Mother & Infant Bonding)',
+            badge: 'แผนกการดูแลมารดา (Mother Ward)',
+            description: 'การโอบกอดและส่งเสริมความผูกพันผ่านการเลี้ยงลูกด้วยนมแม่ สร้างภูมิคุ้มกันและพัฒนาการที่ดีแก่ลูกน้อย',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="motherCare3"
@@ -303,15 +323,25 @@ export default function LobbyRoom() {
         rotation={[0, Math.PI / 2, 0]}
       />
 
-      {/* Simple decorative wall panel — no canvas/texture overhead */}
-      <mesh position={[-10.74, 2.35, 4.4]} rotation={[0, Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.5, 1.9, 0.04]} />
-        <meshStandardMaterial color="#fce7f3" roughness={0.3} />
-      </mesh>
-      <mesh position={[-10.71, 2.40, 4.4]} rotation={[0, Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.3, 1.6, 0.02]} />
-        <meshStandardMaterial color="#f9a8d4" roughness={0.4} />
-      </mesh>
+      {/* Hallway Wall Artwork: Between Ward 103 & 104 */}
+      <FramedImagePoster3D
+        position={[-10.74, 2.35, 4.4]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={1.5}
+        height={1.9}
+        src="/images/rev/w104_overview.jpg"
+        title="การเฝ้าระวังและสังเกตอาการผิดปกติ"
+        badgeText="🩺 ความปลอดภัยมารดา"
+        headerColor="#ec4899"
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/w104_overview.jpg',
+            title: 'การสังเกตอาการผิดปกติและภาวะแทรกซ้อนหลังคลอด',
+            badge: 'แผนกการดูแลมารดา (Mother Ward)',
+            description: 'อาการเตือนสำคัญ เช่น ไข้สูง แผลบวมแดง น้ำคาวปลาผิดปกติ หรือภาวะตกเลือดหลังคลอดที่ต้องรีบพบแพทย์',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="motherCare4"
@@ -337,15 +367,25 @@ export default function LobbyRoom() {
         rotation={[0, -Math.PI / 2, 0]}
       />
 
-      {/* Simple decorative wall panel — no canvas/texture overhead */}
-      <mesh position={[10.74, 2.35, -4.4]} rotation={[0, -Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.5, 1.9, 0.04]} />
-        <meshStandardMaterial color="#fce7f3" roughness={0.3} />
-      </mesh>
-      <mesh position={[10.71, 2.40, -4.4]} rotation={[0, -Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.3, 1.6, 0.02]} />
-        <meshStandardMaterial color="#f9a8d4" roughness={0.4} />
-      </mesh>
+      {/* Hallway Wall Artwork: Between Nursery 201 & 202 */}
+      <FramedImagePoster3D
+        position={[10.74, 2.35, -4.4]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={1.5}
+        height={1.9}
+        src="/images/rev/bf_corner_decor_ref.jpg"
+        title="ท่าทางการให้นมทารกและการส่งเสริมพัฒนาการ"
+        badgeText="👶 แผนกบริบาลทารกแรกเกิด"
+        headerColor="#0284c7"
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/bf_corner_decor_ref.jpg',
+            title: 'ท่าทางการให้นมทารกแรกเกิดอย่างถูกวิธี',
+            badge: 'แผนกบริบาลทารกแรกเกิด (Newborn Nursery)',
+            description: 'การจัดท่า Cradle, Cross-cradle, Football hold และ Side-lying เพื่อให้ทารกดูดนมได้อย่างมีประสิทธิภาพ',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="newbornCare2"
@@ -357,15 +397,25 @@ export default function LobbyRoom() {
         rotation={[0, -Math.PI / 2, 0]}
       />
 
-      {/* Simple decorative wall panel — no canvas/texture overhead */}
-      <mesh position={[10.74, 2.35, 0.0]} rotation={[0, -Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.5, 1.9, 0.04]} />
-        <meshStandardMaterial color="#fce7f3" roughness={0.3} />
-      </mesh>
-      <mesh position={[10.71, 2.40, 0.0]} rotation={[0, -Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.3, 1.6, 0.02]} />
-        <meshStandardMaterial color="#f9a8d4" roughness={0.4} />
-      </mesh>
+      {/* Hallway Wall Artwork: Between Nursery 202 & 203 */}
+      <FramedImagePoster3D
+        position={[10.74, 2.35, 0.0]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={1.5}
+        height={1.9}
+        src="/images/rev/bath_room_overview_ref.jpg"
+        title="การอาบน้ำและสุขอนามัยของทารกแรกเกิด"
+        badgeText="🛁 สุขอนามัยทารก"
+        headerColor="#0284c7"
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/bath_room_overview_ref.jpg',
+            title: 'การอาบน้ำและการเปลี่ยนผ้าอ้อมทารกแรกเกิดอย่างอ่อนโยน',
+            badge: 'แผนกบริบาลทารกแรกเกิด (Newborn Nursery)',
+            description: 'ขั้นตอนการเตรียมน้ำอุ่น 37-38°C การอุ้มทารกท่าฟุตบอล และการเช็ดตาจากหัวตาไปหางตาอย่างปลอดภัย',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="newbornCare3"
@@ -377,15 +427,25 @@ export default function LobbyRoom() {
         rotation={[0, -Math.PI / 2, 0]}
       />
 
-      {/* Simple decorative wall panel — no canvas/texture overhead */}
-      <mesh position={[10.74, 2.35, 4.4]} rotation={[0, -Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.5, 1.9, 0.04]} />
-        <meshStandardMaterial color="#fce7f3" roughness={0.3} />
-      </mesh>
-      <mesh position={[10.71, 2.40, 4.4]} rotation={[0, -Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[1.3, 1.6, 0.02]} />
-        <meshStandardMaterial color="#f9a8d4" roughness={0.4} />
-      </mesh>
+      {/* Hallway Wall Artwork: Between Nursery 203 & 204 */}
+      <FramedImagePoster3D
+        position={[10.74, 2.35, 4.4]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={1.5}
+        height={1.9}
+        src="/images/rev/nb4_poster1_env.jpg"
+        title="สภาพแวดล้อมที่ปลอดภัยและการนอนหลับ"
+        badgeText="🌙 นิทราปลอดภัย"
+        headerColor="#0284c7"
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/nb4_poster1_env.jpg',
+            title: 'การจัดสภาพแวดล้อมที่ปลอดภัยสำหรับทารกแรกเกิด (Safe Sleep)',
+            badge: 'แผนกบริบาลทารกแรกเกิด (Newborn Nursery)',
+            description: 'ท่านอนหงายเท่านั้น ที่นอนราบแน่นพอดี ไม่ใส่หมอน ตุ๊กตา หรือผ้าห่มหนาในเปลเพื่อป้องกัน SUID/SIDS',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="newbornCare4"

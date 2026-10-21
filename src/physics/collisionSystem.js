@@ -239,29 +239,7 @@ export const ROOM_COLLIDERS = {
     ]
   },
 
-  // ── 10. Newborn Room 5: Safe Sleep & Nursery Environment (18x18m) ──
-  newbornCare5: {
-    bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
-    doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
-    boxes: [
-      // Safe Nursery Crib (Firm mattress, no loose pillows)
-      { minX: -1.6, maxX: 1.6, minZ: -4.5, maxZ: -2.5, name: 'เตียงนอนปลอดภัยทารก' },
-      // Nursing Chair
-      { minX: -5.8, maxX: -4.2, minZ: -0.8, maxZ: 0.8, name: 'เก้าอี้คุณแม่' },
-      // Bedside Table
-      { minX: -5.8, maxX: -4.2, minZ: 1.7, maxZ: 3.3, name: 'โต๊ะข้างเตียง' },
-      // Steel Shelves (Child safety locks)
-      { minX: 6.8, maxX: 8.3, minZ: -3.0, maxZ: -0.6, name: 'ชั้นวางของความปลอดภัย' },
-    ],
-    circles: [
-      { x: 6.0, z: 2.8, radius: 0.55, name: 'ตะกร้าผ้า' },
-      { x: -5.8, z: 3.2, radius: 0.45, name: 'ถังขยะ' },
-      { x: 7.2, z: -7.2, radius: 0.55, name: 'ต้นไม้' },
-      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
-    ]
-  },
-
-  // ── 11. Final Examination & Certification Room (Quiz Room 26x26m) ──
+  // ── 10. Final Examination & Certification Room (Quiz Room 26x26m) ──
   quiz: {
     bounds: { minX: -12.55, maxX: 12.55, minZ: -12.55, maxZ: 12.55 },
     doorways: [{ wall: 'minX', minSpan: 8.4, maxSpan: 11.2, thresholdLimit: -12.88, name: 'ประตูทางออกสู่โถงกลาง' }],

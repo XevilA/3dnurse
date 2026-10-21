@@ -109,7 +109,7 @@ class RoomErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Room render error caught:', error, errorInfo);
+    console.error('🔴 Room render error caught:', error, errorInfo);
   }
 
   componentDidUpdate(prevProps) {
@@ -120,13 +120,16 @@ class RoomErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      const errMsg = this.state.error?.message || String(this.state.error);
       return (
         <group position={[0, 1.5, 0]}>
           <Html center>
             <div className="p-6 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-rose-400 text-center max-w-sm pointer-events-auto">
               <div className="text-3xl mb-2">⚠️</div>
               <div className="text-rose-700 font-bold text-base mb-1">เกิดข้อผิดพลาดในการโหลดห้อง</div>
-              <p className="text-gray-600 text-xs mb-4">ระบบรักษาความปลอดภัยพร้อมพาท่านกลับสู่ล็อบบี้หลัก</p>
+              <p className="text-gray-600 text-xs mb-2">ระบบรักษาความปลอดภัยพร้อมพาท่านกลับสู่ล็อบบี้หลัก</p>
+              {/* Debug: show actual error for diagnosis */}
+              <p className="text-red-500 text-xs font-mono mb-3 break-all">{errMsg}</p>
               <button
                 type="button"
                 onClick={() => this.props.onReset()}

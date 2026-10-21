@@ -17,7 +17,6 @@ test_and_capture.mjs
 android-app/
 public/models/megan.glb
 public/models/pregnant_megan.glb
-public/models/pregnant_megan_opt.glb
 public/models/jennifer.glb
 public/models/kate.glb
 public/models/martha.glb
