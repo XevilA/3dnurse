@@ -17,7 +17,7 @@ import BabyAvatar from '../avatars/BabyAvatar';
 import BabyCrib from '../furniture/BabyCrib';
 import DoctorDesk from '../furniture/DoctorDesk';
 import NursingChair from '../furniture/NursingChair';
-import { InfantBathTub } from '../furniture/BabyProps';
+import { InfantBathTub, FoodTray, WaterJug } from '../furniture/BabyProps';
 
 import { WallBoard, TitleSign, WallScreen, WindowWithCurtains, DiningTable, CareBooth, LoungeCorner, useEnterToActivate } from '../ward/WardKit';
 import { WARD101_BOARDS } from '../ward/wardData';
@@ -173,6 +173,10 @@ export default function MotherCare1Room() {
       </group>
 
       <PlayerController initialPosition={[0, 0, 3]} />
+
+      {/* ── โภชนาการ: ถาดอาหาร + กระบอกน้ำ (Zone 1 ref) ── */}
+      <FoodTray position={[4.0, 0.80, -6.8]} rotation={[0, 0.3, 0]} />
+      <WaterJug position={[4.25, 0.80, -7.05]} />
     </group>
   );
 }

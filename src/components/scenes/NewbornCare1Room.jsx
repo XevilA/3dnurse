@@ -7,7 +7,7 @@ import HospitalRoomShell from '../environment/HospitalRoomShell';
 import FlowerVase from '../decorations/FlowerVase';
 import Pillows from '../decorations/Pillows';
 import HospitalNightstand from '../furniture/HospitalNightstand';
-import { DiaperStack, BabyBottle, CottonJar } from '../furniture/BabyProps';
+import { DiaperStack, BabyBottle, CottonJar, HospitalBin, BabyShelf } from '../furniture/BabyProps';
 import InteractiveSeat from '../furniture/InteractiveSeat';
 
 /**
@@ -1687,6 +1687,12 @@ export default function NewbornCare1Room() {
           </div>
         </Html>
       )}
+
+      {/* ── ชั้นวางของใช้ทารก (Baby supply shelf near entrance, per room1 ref) ── */}
+      <BabyShelf position={[-7.0, 0, 1.0]} rotation={[0, Math.PI / 2, 0]} />
+
+      {/* ── ถังขยะ (Hospital waste bin near entrance) ── */}
+      <HospitalBin position={[-5.2, 0, 3.8]} color="#eab308" />
     </group>
   );
 }

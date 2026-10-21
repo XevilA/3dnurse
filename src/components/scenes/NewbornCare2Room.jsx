@@ -4,7 +4,7 @@ import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyAvatar from '../avatars/BabyAvatar';
 import BabyBathtub from '../furniture/BabyBathtub';
-import { DiaperStack, BabyBottle, BabyTowel, BathThermometer, CottonJar } from '../furniture/BabyProps';
+import { DiaperStack, BabyBottle, BabyTowel, BathThermometer, CottonJar, BabyShelf, HospitalBin } from '../furniture/BabyProps';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import Pillows from '../decorations/Pillows';
 import InteractiveSeat from '../furniture/InteractiveSeat';
@@ -2168,6 +2168,13 @@ export default function NewbornCare2Room() {
           </div>
         </Html>
       )}
+
+      {/* ── ชั้นวางของใช้ทารก (Diaper/supply shelf per room2 ref) ── */}
+      <BabyShelf position={[-7.2, 0, 0.5]} rotation={[0, Math.PI / 2, 0]} />
+
+      {/* ── ถังขยะ 2 ใบ (yellow = general, red = infectious waste) ── */}
+      <HospitalBin position={[-5.0, 0, 3.5]} color="#eab308" />
+      <HospitalBin position={[-4.6, 0, 3.5]} color="#ef4444" />
     </group>
   );
 }

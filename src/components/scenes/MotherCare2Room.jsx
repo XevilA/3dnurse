@@ -14,7 +14,7 @@ import Pillows from '../decorations/Pillows';
 import HospitalWheelchair from '../furniture/HospitalWheelchair';
 import InteractiveSeat from '../furniture/InteractiveSeat';
 import DoctorDesk from '../furniture/DoctorDesk';
-import { DiaperStack, BabyBottle, CottonJar } from '../furniture/BabyProps';
+import { DiaperStack, BabyBottle, CottonJar, IcePack } from '../furniture/BabyProps';
 
 import { WallBoard, TitleSign, WallScreen, WindowWithCurtains, DiningTable, CareBooth, LoungeCorner, useEnterToActivate } from '../ward/WardKit';
 import { WARD102_BOARDS } from '../ward/wardData';
@@ -114,6 +114,10 @@ export default function MotherCare2Room() {
       <DiaperStack position={[5.8, 0.82, -6.2]} count={4} />
       <CottonJar position={[5.0, 0.82, -6.7]} />
       <BabyBottle position={[4.7, 0.82, -6.3]} rotation={[0, 0.8, 0]} />
+
+      {/* ── ประคบเย็น (Zone 2 ref: cold compress/ice pack) ── */}
+      <IcePack position={[-6.8, 0.88, -6.2]} rotation={[0, 0.5, 0]} />
+      <IcePack position={[-7.0, 0.88, -6.8]} rotation={[0, -0.3, 0]} />
 
       <PlayerController initialPosition={[0, 0, 3]} />
     </group>
