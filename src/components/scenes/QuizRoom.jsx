@@ -73,18 +73,10 @@ export default function QuizRoom() {
       if (!hasCompletedPretest) {
         setCompletedPretest(score);
         completeModule('pretest');
-        setShowSuccessModal(
-          true,
-          `ยินดีด้วย! คุณทำแบบทดสอบก่อนเรียน (Pre-test) สำเร็จแล้ว ได้ ${score}/20 คะแนน — ระบบได้ปลดล็อคห้องเรียนรู้ทั้ง 8 ห้องเรียบร้อยแล้ว!`
-        );
       } else {
         setCompletedPosttest(score);
         if (score >= 16) {
           completeModule('quiz');
-          setShowSuccessModal(
-            true,
-            `ยอดเยี่ยมมาก! คุณผ่านแบบประเมินความรู้หลังเรียน (Post-test) แล้ว ได้ ${score}/20 คะแนน (เกณฑ์ผ่าน 80%)`
-          );
         }
       }
     }

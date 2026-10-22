@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
+import ScreenPortal from '../ui/ScreenPortal';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyAvatar from '../avatars/BabyAvatar';
@@ -298,7 +299,7 @@ export default function NewbornCare2Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           TOP-RIGHT TRANSLUCENT MISSION HUD (Per bath_p5.jpg)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html fullscreen style={{ pointerEvents: 'none' }}>
+      <ScreenPortal>
         <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/80 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-teal-200/90 text-slate-800">
           <div className="flex items-center justify-between border-b border-teal-200/70 pb-1.5 mb-2">
             <span className="text-xs font-extrabold text-teal-900 tracking-wide flex items-center gap-1.5">
@@ -365,7 +366,7 @@ export default function NewbornCare2Room() {
             </div>
           </div>
         </div>
-      </Html>
+      </ScreenPortal>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           1. NORTH WALL (FLUSH AGAINST WALL z = -6.42):
@@ -1005,8 +1006,8 @@ export default function NewbornCare2Room() {
 
       {/* A. AC Wall Switch Modal (Step 1) */}
       {activeModal === 'acSwitch' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
               <div className="text-4xl mb-2">❄️</div>
               <h3 className="text-lg font-bold text-sky-950">สวิตช์ควบคุมเครื่องปรับอากาศ (แอร์)</h3>
@@ -1041,13 +1042,13 @@ export default function NewbornCare2Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* B. Handwashing Sink Modal (Step 2) */}
       {activeModal === 'sink' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border-4 border-teal-400 text-slate-800 text-center">
               <div className="text-4xl mb-2">🚰</div>
               <h3 className="text-lg font-bold text-teal-950">อ่างล้างมือทำความสะอาด</h3>
@@ -1078,13 +1079,13 @@ export default function NewbornCare2Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* C. Cotton Ball / Warm Water / 0.9% NSS Table Modal */}
       {activeModal === 'cottonTable' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-4 border-amber-400 text-slate-800">
               <div className="flex items-center justify-between border-b pb-2.5">
                 <h3 className="text-base font-bold text-amber-950">
@@ -1113,13 +1114,13 @@ export default function NewbornCare2Room() {
               </button>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* D. 2-Section Nursery Cabinet Modal ("ชุดอุปกรณ์ของใช้และของตกแต่งทารก") */}
       {activeModal === 'cabinet' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl border-4 border-amber-400 max-h-[92vh] overflow-y-auto text-slate-800">
               <div className="flex items-center justify-between border-b pb-2.5">
                 <div>
@@ -1219,13 +1220,13 @@ export default function NewbornCare2Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* E. Trash Bins Modal */}
       {activeModal === 'trash' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border-4 border-emerald-500 text-slate-800 text-center">
               <div className="text-3xl mb-1">🗑️</div>
               <h3 className="text-base font-bold text-slate-900">ถังขยะแยกประเภท 2 ใบ (สีเขียว / สีแดง)</h3>
@@ -1241,13 +1242,13 @@ export default function NewbornCare2Room() {
               </button>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* F. Baby Crib Modal */}
       {activeModal === 'crib' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
               <div className="text-3xl mb-1">👶</div>
               <h3 className="text-base font-bold text-sky-950">เตียงทารก (Baby Crib)</h3>
@@ -1281,13 +1282,13 @@ export default function NewbornCare2Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* G. Mission Desk Modal */}
       {activeModal === 'missionDesk' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-4 border-teal-600 text-slate-800">
               <div className="flex items-center justify-between border-b pb-3">
                 <h2 className="text-lg font-bold text-teal-950">📋 ใบภารกิจประจำห้องอาบน้ำและเปลี่ยนผ้าอ้อมทารก</h2>
@@ -1328,7 +1329,7 @@ export default function NewbornCare2Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -1336,8 +1337,8 @@ export default function NewbornCare2Room() {
              (100% per "อธิบายเพิ่มเติมการให้ทารกอาบน้ำเปลี่ยนผ้าอ้อม.pdf" bath_extra_p1..9)
           ══════════════════════════════════════════════════════════════════════════ */}
       {activeModal === 'bathingWizard' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-4 border-teal-500 max-h-[92vh] overflow-y-auto text-slate-800">
               {/* Header */}
               <div className="flex items-center justify-between border-b pb-3">
@@ -2104,13 +2105,13 @@ export default function NewbornCare2Room() {
               )}
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* I. Fullscreen TV Modal */}
       {showTvModal && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-slate-900 text-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border-4 border-teal-400 max-h-[92vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-700 pb-3">
                 <div className="flex items-center gap-2">
@@ -2166,7 +2167,7 @@ export default function NewbornCare2Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* ── ชั้นวางของใช้ทารก (Diaper/supply shelf per room2 ref) ── */}

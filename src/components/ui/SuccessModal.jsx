@@ -8,8 +8,8 @@ export default function SuccessModal() {
   const completedCount = Object.keys(useStore((s) => s.learningProgress) || {}).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md mx-4 text-center animate-bounce-in">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 text-center animate-bounce-in border-4 border-emerald-400">
         {/* Celebration emoji */}
         <div className="text-6xl mb-4">🎉</div>
 
@@ -21,25 +21,25 @@ export default function SuccessModal() {
           {successMessage || 'คุณเรียนรู้บทเรียนนี้สำเร็จแล้ว!'}
         </p>
 
-        <p className="text-sm text-blue-600 mb-6">
-          📚 ผ่านแล้ว {completedCount}/9 บทเรียน
+        <p className="text-sm text-blue-600 font-semibold mb-6">
+          📚 ผ่านแล้ว {completedCount} บทเรียน
         </p>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => setShowSuccessModal(false)}
+            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-bold transition shadow-lg cursor-pointer"
+          >
+            🚶 อยู่ในห้อง 3D ต่อ (เดินสำรวจ)
+          </button>
           <button
             onClick={() => {
               setShowSuccessModal(false);
               setRoom('lobby');
             }}
-            className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition shadow-lg"
+            className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold transition cursor-pointer"
           >
-            🌐 กลับหน้าหลัก
-          </button>
-          <button
-            onClick={() => setShowSuccessModal(false)}
-            className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition"
-          >
-            ทบทวนอีกครั้ง
+            🏥 กลับสู่โถงล็อบบี้
           </button>
         </div>
       </div>

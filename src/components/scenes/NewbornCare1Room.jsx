@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
+import ScreenPortal from '../ui/ScreenPortal';
 import PlayerController from '../player/PlayerController';
 import BabyAvatar from '../avatars/BabyAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
@@ -303,8 +304,8 @@ export default function NewbornCare1Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           MISSION HUD (Top-Right Translucent Box per bf_p6.jpg)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html fullscreen style={{ pointerEvents: 'none' }}>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-72 bg-white/80 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-pink-200/90 text-slate-800">
+      <ScreenPortal>
+        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-72 bg-white/85 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-pink-200/90 text-slate-800">
           <div className="flex items-center justify-between border-b border-pink-200/70 pb-1.5 mb-2">
             <span className="text-xs font-extrabold text-pink-800 tracking-wide flex items-center gap-1.5">
               🎯 Mission ภารกิจประจำห้อง
@@ -334,18 +335,37 @@ export default function NewbornCare1Room() {
               ✓
             </div>
             <div className="text-xs leading-snug">
-              <div className="font-bold">ให้นมทารกให้ถูกต้องเหมาะสม</div>
+              <div className="font-bold">1. ให้นมและจัดท่าอุ้มทารกให้ถูกต้อง</div>
               <div className="text-[11px] text-slate-500 mt-0.5">
                 {!isHoldingBaby
-                  ? 'ขั้นที่ 1: คลิกที่เตียงทารกเพื่ออุ้มทารก'
+                  ? 'คลิกเพื่ออุ้มทารกและเลือกท่าให้นม 4 ท่า ▶'
                   : !isMotherSeatedOnSofa
-                  ? 'ขั้นที่ 2: คลิกที่เก้าอี้โซฟาหน้า TV เพื่อนั่งให้นม'
-                  : 'ขั้นที่ 3: เลือกท่าให้นมทารกบนโซฟาให้ถูกต้อง'}
+                  ? 'คลิกที่เก้าอี้โซฟาหน้า TV เพื่อนั่งให้นม ▶'
+                  : 'คลิกเพื่อเลือกท่าให้นมทารกบนโซฟา ▶'}
               </div>
             </div>
           </div>
+
+          <div className="mt-1.5 space-y-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setShowTvModal(true)}
+              className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-pink-400 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+            >
+              <span>📺 2. เรียนรู้ผ่านจอ TV ({tvSlide + 1}/7)</span>
+              <span className="text-pink-600 font-bold">เปิดดู ▶</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveModal('tableItems')}
+              className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-pink-400 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+            >
+              <span>🍼 3. ดูอุปกรณ์เก็บน้ำนมแม่บนโต๊ะ</span>
+              <span className="text-pink-600 font-bold">ดูอุปกรณ์ ▶</span>
+            </button>
+          </div>
         </div>
-      </Html>
+      </ScreenPortal>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           1. NORTH WALL (BACK — FLUSH AGAINST WALL z = -6.92):
@@ -490,7 +510,7 @@ export default function NewbornCare1Room() {
 
         {/* Crib Action Popup — ONLY shown when Crib is clicked */}
         {activeModal === 'cribPrompt' && (
-          <Html position={[0, 1.35, 0]} center distanceFactor={10}>
+          <Html position={[0, 1.35, 0]} center zIndexRange={[20, 0]}>
             <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-2xl border-2 border-pink-400 w-60 text-center">
               <div className="text-xs font-extrabold text-pink-900 mb-2">
                 👶 เตียงนอนทารก (Baby Crib)
@@ -884,7 +904,7 @@ export default function NewbornCare1Room() {
 
           {/* When Mother is Seated with Baby, show subtle button to open 4-holds selector if closed */}
           {isMotherSeatedOnSofa && activeModal !== 'postureSelector' && (
-            <Html position={[0, 1.45, 0]} center distanceFactor={10}>
+            <Html position={[0, 1.45, 0]} center zIndexRange={[20, 0]}>
               <div className="flex flex-col items-center gap-1.5 bg-white/95 backdrop-blur-md p-2.5 rounded-2xl shadow-xl border-2 border-pink-400">
                 <button
                   onClick={(e) => {
@@ -1265,8 +1285,8 @@ export default function NewbornCare1Room() {
 
       {/* 1. Coffee Table Equipment Modal (Shown ONLY when table or items on table are clicked) */}
       {activeModal === 'tableItems' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-4 border-indigo-400">
               <div className="flex items-center justify-between border-b pb-3">
                 <h2 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
@@ -1312,13 +1332,13 @@ export default function NewbornCare1Room() {
               </button>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* 2. Breastmilk Refrigerator Modal (Shown ONLY when refrigerator is clicked) */}
       {activeModal === 'fridge' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-4 border-amber-400 text-slate-800">
               <div className="flex items-center justify-between border-b pb-3">
                 <h2 className="text-lg font-bold text-amber-900 flex items-center gap-2">
@@ -1356,13 +1376,13 @@ export default function NewbornCare1Room() {
               </button>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* 3. Handwashing Sink Modal (Shown ONLY when sink is clicked) */}
       {activeModal === 'sink' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
               <div className="text-3xl mb-1">🚰</div>
               <h3 className="text-base font-bold text-sky-900">อ่างล้างมือสำหรับคุณแม่</h3>
@@ -1377,13 +1397,13 @@ export default function NewbornCare1Room() {
               </button>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* 4. Hot Water Thermos & Cup Table Modal (Shown ONLY when clicked) */}
       {activeModal === 'kettleTable' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border-4 border-amber-400 text-slate-800 text-center">
               <div className="text-3xl mb-1">☕</div>
               <h3 className="text-base font-bold text-amber-900">โต๊ะวางของ กระติกน้ำร้อน และแก้วน้ำ</h3>
@@ -1398,13 +1418,13 @@ export default function NewbornCare1Room() {
               </button>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* 5. Nursery Corner Decor Modal (Shown ONLY when corner #4 is clicked) */}
       {activeModal === 'cornerDecor' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border-4 border-pink-400 text-slate-800">
               <div className="flex items-center justify-between border-b pb-2.5">
                 <h3 className="text-base font-bold text-pink-900">🧸 มุมของใช้และของตกแต่งห้องทารก (จุดที่ 4)</h3>
@@ -1498,13 +1518,13 @@ export default function NewbornCare1Room() {
               </button>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* 6. 4 Breastfeeding Holds Activity Modal (Per bf_p5.jpg) */}
       {activeModal === 'postureSelector' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl border-4 border-pink-400 max-h-[92vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b pb-2.5">
                 <div>
@@ -1618,7 +1638,7 @@ export default function NewbornCare1Room() {
                   onClick={() => setActiveModal(null)}
                   className="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs"
                 >
-                  ปิดหน้าต่าง
+                  ปิดหน้าต่าง (อยู่ในห้อง 3D ต่อ)
                 </button>
                 {holdFeedback?.isCorrect && (
                   <button
@@ -1634,13 +1654,13 @@ export default function NewbornCare1Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* 7. Fullscreen TV Video Modal (for Slide 8/8) */}
       {showTvModal && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-slate-900 text-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border-4 border-sky-400 max-h-[92vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-700 pb-3">
                 <div className="flex items-center gap-2">
@@ -1685,7 +1705,7 @@ export default function NewbornCare1Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* ── ชั้นวางของใช้ทารก (Baby supply shelf near entrance, per room1 ref) ── */}

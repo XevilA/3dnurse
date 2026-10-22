@@ -98,6 +98,9 @@ function SlideLightbox({ room }) {
           />
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => finish(false)} style={btn('#0284c7', '#fff')}>
+            🚶 ปิดหน้าต่าง (เดินสำรวจในห้อง 3D)
+          </button>
           <button type="button" onClick={() => finish(true)} style={btn(PINK)}>
             {activityDone ? '🔁 เล่นกิจกรรมอีกครั้ง ➜' : (room === 'motherCare1' ? '🍽️ เริ่มกิจกรรมโต๊ะอาหาร ➜' : '🩹 เริ่มกิจกรรมบูทดูแลแผล ➜')}
           </button>
@@ -112,6 +115,7 @@ function FoodActivity({ room }) {
   const close = useStore((s) => s.closeWardModal);
   const open = useStore((s) => s.openWardModal);
   const setWardFlow = useStore((s) => s.setWardFlow);
+  const completeModule = useStore((s) => s.completeModule);
   const [picked, setPicked] = useState([]); // ids ที่เลือกถูก (วางป้ายแล้ว)
   const [wrong, setWrong] = useState({}); // id → true (เลือกผิดแล้ว)
   const [tries, setTries] = useState(0);
@@ -127,7 +131,11 @@ function FoodActivity({ room }) {
       const next = [...picked, food.id];
       setPicked(next);
       setToast({ ok: true, text: `✓ ถูกต้อง! ${food.short}: ${food.why}` });
-      if (next.length === 3) setTimeout(() => setPhase('review'), 900);
+      if (next.length === 3) {
+        setWardFlow(room, 'activity', true);
+        completeModule(room);
+        setTimeout(() => setPhase('review'), 900);
+      }
     } else {
       setWrong((w) => ({ ...w, [food.id]: true }));
       setToast({ ok: false, text: `✕ ยังไม่ใช่ — ${food.short}: ${food.why} • เลือกต่อจนกว่าจะถูกครบ 3 รายการ` });
@@ -135,7 +143,7 @@ function FoodActivity({ room }) {
   };
 
   const reset = () => { setPicked([]); setWrong({}); setTries(0); setToast(null); setPhase('play'); };
-  const confirm = () => { setWardFlow(room, 'activity', true); open('quiz', room); };
+  const confirm = () => { setWardFlow(room, 'activity', true); completeModule(room); open('quiz', room); };
 
   if (phase === 'review') {
     return (
@@ -143,10 +151,13 @@ function FoodActivity({ room }) {
         footer={
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <button type="button" onClick={reset} style={btn('#fff', '#ad1457')}>↻ เล่นใหม่</button>
-            <div style={{ fontSize: 'clamp(13px,1.7vw,16px)', color: '#6b2145', fontWeight: 700 }}>
-              ลองเลือกทั้งหมด {tries} ครั้ง
+            <div style={{ fontSize: 'clamp(13px,1.7vw,16px)', color: '#166534', fontWeight: 800 }}>
+              🎉 ผ่านกิจกรรมโต๊ะอาหารแล้ว! (ลองเลือกทั้งหมด {tries} ครั้ง)
             </div>
-            <button type="button" onClick={confirm} style={btn(PINK)}>ยืนยันคำตอบ ›</button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="button" onClick={close} style={btn('#16a34a', '#fff')}>🚶 อยู่ในห้อง 3D ต่อ (ปิดหน้าต่าง)</button>
+              <button type="button" onClick={confirm} style={btn(PINK)}>📝 ทำแบบทดสอบทบทวน (3 ข้อ) ›</button>
+            </div>
           </div>
         }>
         <div style={{ padding: 'clamp(10px,2vw,18px)' }}>
@@ -267,6 +278,7 @@ function BoothActivity({ room }) {
   const close = useStore((s) => s.closeWardModal);
   const open = useStore((s) => s.openWardModal);
   const setWardFlow = useStore((s) => s.setWardFlow);
+  const completeModule = useStore((s) => s.completeModule);
   const [step, setStep] = useState(1); // 1 เลือก, 2 เรียง, 3 ตรวจ
   const [picked, setPicked] = useState([]);
   const [wrong, setWrong] = useState({});
@@ -299,7 +311,11 @@ function BoothActivity({ room }) {
       setHolding(null);
       setOrderMsg(`✓ ถูกต้อง! ขั้นที่ ${slotIdx + 1} ${CARE_STEPS[slotIdx].label}`);
       const filled = slots.filter(Boolean).length + 1;
-      if (filled === 3) setTimeout(() => { setStep(3); setOrderMsg(null); }, 900);
+      if (filled === 3) {
+        setWardFlow(room, 'activity', true);
+        completeModule(room);
+        setTimeout(() => { setStep(3); setOrderMsg(null); }, 900);
+      }
     } else {
       setOrderMsg(`✕ ยังไม่ถูกลำดับ — ลองใหม่: ขั้นที่ ${slotIdx + 1} คือ "${CARE_STEPS[slotIdx].label}"`);
       setHolding(null);
@@ -307,7 +323,7 @@ function BoothActivity({ room }) {
   };
 
   const reset = () => { setStep(1); setPicked([]); setWrong({}); setToast(null); setSlots([null, null, null]); setHolding(null); setOrderMsg(null); };
-  const finish = () => { setWardFlow(room, 'activity', true); open('quiz', room); };
+  const finish = () => { setWardFlow(room, 'activity', true); completeModule(room); open('quiz', room); };
 
   const stepper = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -327,9 +343,14 @@ function BoothActivity({ room }) {
       footer={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {stepper}
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button type="button" onClick={reset} style={btn('#fff', '#ad1457')}>↻ เริ่มใหม่</button>
-            {step === 3 && <button type="button" onClick={finish} style={btn(PINK)}>ไปแบบประเมิน ›</button>}
+            {step === 3 && (
+              <>
+                <button type="button" onClick={close} style={btn('#16a34a', '#fff')}>🚶 อยู่ในห้อง 3D ต่อ (ปิดหน้าต่าง)</button>
+                <button type="button" onClick={finish} style={btn(PINK)}>📝 ทำแบบทดสอบทบทวน (3 ข้อ) ›</button>
+              </>
+            )}
           </div>
         </div>
       }>
@@ -483,7 +504,6 @@ function WardQuiz({ room }) {
       setDone(true);
       completeModule(room);
       setWardFlow(room, 'quiz', true);
-      setShowSuccessModal(true, `ยินดีด้วย! คุณผ่านบทเรียนและแบบประเมินความรู้แล้ว (ได้ ${score}/${questions.length} คะแนน)`);
     }
   };
 
@@ -513,7 +533,7 @@ function WardQuiz({ room }) {
                 </div>
                 <div style={{ fontSize: 'clamp(14px,1.9vw,18px)', color: '#444', lineHeight: 1.55 }}><strong>💡 เหตุผล:</strong> {q.reason}</div>
                 <div style={{ textAlign: 'right', marginTop: 10 }}>
-                  <button type="button" onClick={next} style={btn(PINK)}>{idx < questions.length - 1 ? 'ข้อถัดไป ➜' : 'สำเร็จบทเรียน 🏆'}</button>
+                  <button type="button" onClick={next} style={btn(PINK)}>{idx < questions.length - 1 ? 'ข้อถัดไป ➜' : 'สรุปผลคะแนน 🏆'}</button>
                 </div>
               </div>
             )}
@@ -523,8 +543,9 @@ function WardQuiz({ room }) {
             <div style={{ fontSize: 'clamp(22px,3.4vw,32px)', fontWeight: 900, color: '#2e7d32', marginBottom: 8 }}>🎉 ผ่านบทเรียนและการประเมินความรู้แล้ว!</div>
             <div style={{ fontSize: 'clamp(16px,2.2vw,21px)', color: '#444', marginBottom: 18 }}>คะแนนของคุณ: <strong>{score} / {questions.length}</strong></div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button type="button" onClick={close} style={btn('#16a34a', '#fff')}>🚶 อยู่ในห้อง 3D ต่อ (เดินสำรวจห้อง)</button>
               <button type="button" onClick={() => { setIdx(0); setChoice(null); setFb(false); setScore(0); setDone(false); }} style={btn('#fff', '#ad1457')}>ทำแบบประเมินซ้ำ ↻</button>
-              <button type="button" onClick={() => setRoom('lobby')} style={btn(PINK)}>กลับสู่ล็อบบี้ 🏥</button>
+              <button type="button" onClick={() => { close(); setRoom('lobby'); }} style={btn(PINK)}>🏥 กลับสู่โถงล็อบบี้</button>
             </div>
           </div>
         )}

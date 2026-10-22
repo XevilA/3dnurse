@@ -592,7 +592,7 @@ export function CozySectionalSofaSet({
 
         {/* ป้ายคลิกแท็บเล็ตบนโต๊ะ */}
         {onClickTablet && (
-          <Html position={[-0.1, 0.95, 0]} center distanceFactor={11} zIndexRange={[15, 0]}>
+          <Html position={[-0.1, 0.95, 0]} center zIndexRange={[15, 0]}>
             <button
               type="button"
               onClick={(e) => {

@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
+import ScreenPortal from '../ui/ScreenPortal';
 import PlayerController from '../player/PlayerController';
 import HospitalBed from '../furniture/HospitalBed';
 import HospitalNightstand from '../furniture/HospitalNightstand';
@@ -17,31 +18,23 @@ import BabyAvatar from '../avatars/BabyAvatar';
 import BabyCrib from '../furniture/BabyCrib';
 import DoctorDesk from '../furniture/DoctorDesk';
 import NursingChair from '../furniture/NursingChair';
-import { InfantBathTub, FoodTray, WaterJug } from '../furniture/BabyProps';
+import { FoodTray, WaterJug } from '../furniture/BabyProps';
 
-import { WallBoard, TitleSign, WallScreen, WindowWithCurtains, DiningTable, CareBooth, LoungeCorner, useEnterToActivate } from '../ward/WardKit';
+import { WallBoard, TitleSign, WallScreen, WindowWithCurtains, DiningTable, LoungeCorner, useEnterToActivate } from '../ward/WardKit';
 import { WARD101_BOARDS } from '../ward/wardData';
 export default function MotherCare1Room() {
-  const { isHoldingBaby, setHoldingBaby, openWardModal, wardFlow } = useStore();
+  const { isHoldingBaby, setHoldingBaby, openWardModal, wardFlow, learningProgress } = useStore();
   const ROOM = 'motherCare1';
-  const slideSeen = !!(wardFlow[ROOM] && wardFlow[ROOM].slide);
+  const flow = wardFlow[ROOM] || {};
+  const slideSeen = !!flow.slide;
+  const activityDone = !!flow.activity;
+  const isCompleted = !!(learningProgress && learningProgress[ROOM]) || activityDone;
   const B = WARD101_BOARDS;
 
-  // เปิดสไลด์ความรู้ Zone 1 ก่อนเริ่มกิจกรรม
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const f = useStore.getState().wardFlow[ROOM];
-      if (!(f && f.slide)) openWardModal('slide', ROOM);
-    }, 600);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const startActivity = () => {
-    const f = useStore.getState().wardFlow[ROOM];
-    openWardModal(f && f.slide ? 'food' : 'slide', ROOM);
+    openWardModal('food', ROOM);
   };
-  useEnterToActivate([1.5, 1.5], 3.2, startActivity);
+  useEnterToActivate([1.5, 1.5], 2.2, startActivity);
 
   return (
     <group>
@@ -50,6 +43,60 @@ export default function MotherCare1Room() {
         roomTitle="ห้องบริบาลมารดา 1: การดูแลร่างกายและการฟื้นตัวหลังคลอด"
         roomNumber="Ward 101"
       />
+
+      {/* ── Top-Right Mission HUD (Portaled to document.body so user can explore 3D room freely) ── */}
+      <ScreenPortal>
+        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border-2 border-pink-400 text-slate-800">
+          <div className="flex items-center justify-between border-b border-pink-100 pb-2 mb-2">
+            <span className="text-xs font-extrabold text-pink-900">
+              🏥 ภารกิจห้องดูแลร่างกาย (Ward 101)
+            </span>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-pink-100 text-pink-700'
+              }`}
+            >
+              {isCompleted ? 'สำเร็จแล้ว ✓' : 'กำลังเรียนรู้'}
+            </span>
+          </div>
+          <div className="space-y-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => openWardModal('slide', ROOM)}
+              className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
+                slideSeen
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                  : 'bg-pink-50 border-pink-200 hover:bg-pink-100 text-pink-950'
+              }`}
+            >
+              <span>📖 1. อ่านสไลด์ความรู้ Zone 1</span>
+              <span className="font-bold">{slideSeen ? '☑ อ่านแล้ว' : 'เปิดอ่าน ▶'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openWardModal('food', ROOM)}
+              className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
+                activityDone
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                  : 'bg-gradient-to-r from-pink-500 to-rose-600 border-pink-300 text-white shadow'
+              }`}
+            >
+              <span>🍽️ 2. กิจกรรมโต๊ะอาหาร (เลือก 3 เมนู)</span>
+              <span className="font-bold">{activityDone ? '☑ สำเร็จ' : 'เริ่มทำ ▶'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openWardModal('quiz', ROOM)}
+              className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+            >
+              <span>📝 3. แบบประเมินทบทวนประจำห้อง</span>
+              <span className="font-bold text-pink-700">{flow.quiz ? '☑ ทำแล้ว' : 'ทำข้อสอบ ▶'}</span>
+            </button>
+          </div>
+        </div>
+      </ScreenPortal>
 
       {/* ── ป้ายและบอร์ดผนัง (ติดผนังด้านใน z = -8.80, x = -8.80 อย่างแนบสนิท) ── */}
       <TitleSign position={[-6.3, 4.9, -8.78]} width={4.4} height={2.0} line1={B.title.line1} line2={B.title.line2} />
@@ -60,7 +107,7 @@ export default function MotherCare1Room() {
       <WindowWithCurtains position={[-8.78, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
 
       <LoungeCorner position={[7.4, 0, 6.2]} rotation={[0, -Math.PI / 2, 0]} />
-      <DiningTable position={[1.5, 0, 1.5]} locked={!slideSeen} onActivate={startActivity} />
+      <DiningTable position={[1.5, 0, 1.5]} locked={false} onActivate={startActivity} />
 
       {/* ── REAL 3D CLINICAL ASSETS & ARCHITECTURE ── */}
       <RealPlant type="potted" position={[7.5, 0, -7.5]} scale={1.1} />
@@ -140,10 +187,6 @@ export default function MotherCare1Room() {
         <Washbasin position={[0, 0, 0]} />
       </group>
       <HospitalTrashBin position={[8.3, 0, 0.8]} scale={0.85} />
-
-      {/* ── อ่างอาบน้ำเด็กขนาดเล็กบนโต๊ะ (Dining/Care Table at [1.5, 0, 1.5]) ── */}
-      {/* DiningTable top surface ≈ Y 0.78; InfantBathTub height 0.22 → centre at Y 0.89 */}
-      <InfantBathTub position={[1.5, 0.89, 1.5]} rotation={[0, Math.PI / 4, 0]} />
 
       {/* ── 5. Maternal Recovery & Gentle Mobilization Lounge (กิจกรรม 4: การเคลื่อนไหวอย่างเหมาะสม) ── */}
       <group position={[5.4, 0, -6.5]} rotation={[0, -Math.PI / 6, 0]} >

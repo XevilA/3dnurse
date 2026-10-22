@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Html } from '@react-three/drei';
+import ScreenPortal from '../ui/ScreenPortal';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyCrib from '../furniture/BabyCrib';
@@ -41,6 +42,7 @@ export default function NewbornCare4Room() {
     setShowSuccessModal,
     setHoldingBaby,
     openLightbox,
+    setRoom,
   } = useStore();
 
   // Ensure baby remains in the crib in Nursery 204
@@ -217,10 +219,6 @@ export default function NewbornCare4Room() {
     } else {
       setQuizFinished(true);
       completeModule('newbornCare4');
-      setShowSuccessModal(
-        true,
-        'ยินดีด้วย! คุณผ่านการฝึกจัดเตียงนอนทารกที่ปลอดภัยและทำแบบประเมินห้อง Nursery 204 เรียบร้อยแล้ว'
-      );
     }
   };
 
@@ -258,7 +256,7 @@ export default function NewbornCare4Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           TOP-RIGHT TRANSLUCENT MISSION HUD (ภารกิจห้องการนอนหลับที่ปลอดภัย)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html fullscreen style={{ pointerEvents: 'none' }}>
+      <ScreenPortal>
         <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-amber-950/85 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border border-amber-400/50 text-amber-50">
           <div className="flex items-center justify-between border-b border-amber-400/30 pb-1.5 mb-2">
             <span className="text-xs font-extrabold text-amber-200 tracking-wide flex items-center gap-1.5">
@@ -336,7 +334,7 @@ export default function NewbornCare4Room() {
             </button>
           </div>
         </div>
-      </Html>
+      </ScreenPortal>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           1. ผนังด้านเหนือ (North Wall, Flush against inner wall z = -6.78):
@@ -409,7 +407,7 @@ export default function NewbornCare4Room() {
         </mesh>
 
         {/* ป้ายกำกับหน้าต่างเปิดแง้มระบายอากาศ */}
-        <Html position={[1.4, -0.9, 0.15]} center distanceFactor={12} zIndexRange={[10, 0]}>
+        <Html position={[1.4, -0.9, 0.15]} center zIndexRange={[10, 0]}>
           <div
             onClick={() => openWallPoster(0)}
             className="cursor-pointer select-none bg-amber-950/90 text-amber-100 border border-amber-400/70 px-3 py-1 rounded-full text-[11px] font-bold shadow-lg whitespace-nowrap hover:scale-105 transition"
@@ -966,7 +964,7 @@ export default function NewbornCare4Room() {
         )}
 
         {/* ปุ่มเดียวที่สะอาดตาเหนือเตียงทารกสำหรับเปิดหน้าต่างแบบทดลองปฏิบัติ (ไม่บดบังบรรยากาศห้องนอน) */}
-        <Html position={[0, 1.42, 0]} center distanceFactor={12} zIndexRange={[20, 0]}>
+        <Html position={[0, 1.42, 0]} center zIndexRange={[20, 0]}>
           <button
             type="button"
             onClick={(e) => {
@@ -995,9 +993,9 @@ export default function NewbornCare4Room() {
           2) จับลูกพลิกตัวจาก "นอนคว่ำ" เป็น "นอนหงาย"
           ══════════════════════════════════════════════════════════════════════════ */}
       {activeModal === 'practice' && (
-        <Html fullscreen style={{ pointerEvents: 'none' }}>
+        <ScreenPortal>
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-5 pointer-events-auto"
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-5 pointer-events-auto"
             onClick={() => setActiveModal(null)}
           >
             <div
@@ -1219,16 +1217,16 @@ export default function NewbornCare4Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════════
           MODAL 2: แบบประเมินความรู้ท้ายห้อง (Quiz Modal)
           ══════════════════════════════════════════════════════════════════════════ */}
       {activeModal === 'quiz' && currentQ && (
-        <Html fullscreen style={{ pointerEvents: 'none' }}>
+        <ScreenPortal>
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 pointer-events-auto"
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 pointer-events-auto"
             onClick={() => setActiveModal(null)}
           >
             <div
@@ -1316,22 +1314,50 @@ export default function NewbornCare4Room() {
                 </div>
               ) : (
                 <div className="text-center space-y-3 py-2">
-                  <div className="text-3xl">🎉</div>
+                  <div className="text-4xl">🎉</div>
                   <div className="text-base font-black text-slate-900">
                     คุณได้คะแนน {quizScore} / {room4Questions.length} คะแนน
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveModal(null)}
-                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs cursor-pointer"
-                  >
-                    เสร็จสิ้น
-                  </button>
+                  <p className="text-xs text-slate-600">
+                    ผ่านการประเมินความรู้เรื่องการนอนหลับที่ปลอดภัยของทารกเรียบร้อยแล้วค่ะ
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal(null)}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow"
+                    >
+                      🚶 อยู่ในห้อง 3D ต่อ (เดินสำรวจห้อง)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuizIndex(0);
+                        setQuizScore(0);
+                        setQuizUserChoice(null);
+                        setQuizShowFeedback(false);
+                        setQuizFinished(false);
+                      }}
+                      className="px-4 py-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-xl text-xs cursor-pointer"
+                    >
+                      🔄 ทำแบบประเมินซ้ำ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveModal(null);
+                        setRoom('lobby');
+                      }}
+                      className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer"
+                    >
+                      🏥 กลับสู่โถงล็อบบี้
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* ── Player Controller ── */}

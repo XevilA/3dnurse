@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
+import ScreenPortal from '../ui/ScreenPortal';
 import PlayerController from '../player/PlayerController';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
@@ -162,7 +163,7 @@ const SYMPTOM_ITEMS = [
 ];
 
 export default function MotherCare4Room() {
-  const { setRoom, completeModule, setShowSuccessModal, setHoldingBaby, sitDown, seatedTarget } = useStore();
+  const { setRoom, completeModule, learningProgress, setHoldingBaby, sitDown, seatedTarget } = useStore();
   const openLightbox = useStore((s) => s.openLightbox);
 
   const [showActivityModal, setShowActivityModal] = useState(false);
@@ -242,10 +243,6 @@ export default function MotherCare4Room() {
     } else {
       setQuizFinished(true);
       completeModule('motherCare4');
-      setShowSuccessModal(
-        true,
-        `ยินดีด้วย! คุณผ่านการเรียนรู้และการประเมินความรู้ห้อง Ward 104 การสังเกตอาการผิดปกติหลังคลอดเรียบร้อยแล้ว`
-      );
     }
   };
 
@@ -271,6 +268,64 @@ export default function MotherCare4Room() {
         roomTitle="ห้องบริบาลมารดา 4: การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด"
         roomNumber="Ward 104"
       />
+
+      {/* ── Top-Right Mission HUD (Portaled to document.body) ── */}
+      <ScreenPortal>
+        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border-2 border-rose-400 text-slate-800">
+          <div className="flex items-center justify-between border-b border-rose-100 pb-2 mb-2">
+            <span className="text-xs font-extrabold text-rose-900">
+              🩺 ภารกิจห้องสังเกตอาการ (Ward 104)
+            </span>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                classifyFeedback?.pass || learningProgress?.motherCare4
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-rose-100 text-rose-700'
+              }`}
+            >
+              {classifyFeedback?.pass || learningProgress?.motherCare4 ? 'สำเร็จแล้ว ✓' : 'กำลังเรียนรู้'}
+            </span>
+          </div>
+          <div className="space-y-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => openGalleryAt(0)}
+              className="w-full p-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+            >
+              <span>🖼️ 1. ดูโปสเตอร์ 5 อาการสำคัญ (6 ภาพ)</span>
+              <span className="font-bold text-rose-700">เปิดดู ▶</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('classify');
+                handleSitSofa();
+              }}
+              className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
+                classifyFeedback?.pass
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                  : 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-300 text-white shadow'
+              }`}
+            >
+              <span>🚨 2. จำแนกอาการปกติ vs ผิดปกติ</span>
+              <span className="font-bold">{classifyFeedback?.pass ? '☑ สำเร็จ' : 'เริ่มทำ ▶'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('review');
+                setShowActivityModal(true);
+              }}
+              className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+            >
+              <span>📋 3. ทบทวนภาวะแทรกซ้อน & แบบทดสอบ</span>
+              <span className="font-bold text-rose-700">เปิดดู ▶</span>
+            </button>
+          </div>
+        </div>
+      </ScreenPortal>
 
       {/* ป้ายชื่อห้องและหน้าต่าง ติดผนังด้านใน z = -8.78 อย่างแนบสนิท */}
       <TitleSign
@@ -357,7 +412,7 @@ export default function MotherCare4Room() {
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.46, 0.15]}
       >
-        <Html position={[0, 1.38, 0]} center distanceFactor={12} zIndexRange={[20, 0]}>
+        <Html position={[0, 1.38, 0]} center zIndexRange={[20, 0]}>
           <button
             type="button"
             onClick={(e) => {
@@ -369,11 +424,11 @@ export default function MotherCare4Room() {
               color: '#ffffff',
               border: '2px solid #ffffff',
               borderRadius: '999px',
-              padding: '8px 20px',
-              fontWeight: 900,
-              fontSize: '15px',
+              padding: '6px 14px',
+              fontWeight: 800,
+              fontSize: '12px',
               cursor: 'pointer',
-              boxShadow: '0 6px 18px rgba(190,24,93,0.4)',
+              boxShadow: '0 4px 12px rgba(190,24,93,0.35)',
               whiteSpace: 'nowrap',
             }}
           >
@@ -407,7 +462,7 @@ export default function MotherCare4Room() {
           3. แบบทดสอบความรู้ประจำห้อง
           ══════════════════════════════════════════════════════════════════════════ */}
       {showActivityModal && (
-        <Html fullscreen zIndexRange={[120, 0]}>
+        <ScreenPortal>
           <div
             style={{
               position: 'fixed',
@@ -418,7 +473,7 @@ export default function MotherCare4Room() {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '16px',
-              zIndex: 200,
+              zIndex: 95,
               fontFamily: '"Sarabun", system-ui, -apple-system, sans-serif',
             }}
             onClick={() => setShowActivityModal(false)}
@@ -625,22 +680,40 @@ export default function MotherCare4Room() {
                         ✓ ตรวจคำตอบ
                       </button>
                       {classifyFeedback?.pass && (
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab('review')}
-                          style={{
-                            background: '#16a34a',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '12px 24px',
-                            borderRadius: '14px',
-                            fontWeight: 900,
-                            fontSize: '17px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          ไปกิจกรรมที่ 2: ทบทวนภาวะแทรกซ้อน 5 อาการ ➜
-                        </button>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => setShowActivityModal(false)}
+                            style={{
+                              background: '#0284c7',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '12px 22px',
+                              borderRadius: '14px',
+                              fontWeight: 900,
+                              fontSize: '16px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            🚶 อยู่ในห้อง 3D ต่อ (ปิดหน้าต่าง)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('review')}
+                            style={{
+                              background: '#16a34a',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '12px 22px',
+                              borderRadius: '14px',
+                              fontWeight: 900,
+                              fontSize: '16px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ไปกิจกรรมที่ 2: ทบทวนภาวะแทรกซ้อน 5 อาการ ➜
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -707,7 +780,23 @@ export default function MotherCare4Room() {
                       })}
                     </div>
 
-                    <div style={{ marginTop: '18px', textAlign: 'right' }}>
+                    <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowActivityModal(false)}
+                        style={{
+                          background: '#16a34a',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '12px 24px',
+                          borderRadius: '14px',
+                          fontWeight: 900,
+                          fontSize: '16px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        🚶 อยู่ในห้อง 3D ต่อ (ปิดหน้าต่าง)
+                      </button>
                       <button
                         type="button"
                         onClick={() => setActiveTab('quiz')}
@@ -715,14 +804,14 @@ export default function MotherCare4Room() {
                           background: '#7c3aed',
                           color: '#ffffff',
                           border: 'none',
-                          padding: '12px 26px',
+                          padding: '12px 24px',
                           borderRadius: '14px',
                           fontWeight: 900,
-                          fontSize: '17px',
+                          fontSize: '16px',
                           cursor: 'pointer',
                         }}
                       >
-                        ไปทำแบบทดสอบท้ายห้อง ➜
+                        📝 ทำแบบทดสอบทบทวน ➜
                       </button>
                     </div>
                   </div>
@@ -786,33 +875,78 @@ export default function MotherCare4Room() {
                                 cursor: 'pointer',
                               }}
                             >
-                              {quizIndex < room4Questions.length - 1 ? 'ข้อถัดไป ➜' : 'เสร็จสิ้นบทเรียน 🏆'}
+                              {quizIndex < room4Questions.length - 1 ? 'ข้อถัดไป ➜' : 'สรุปผลคะแนน 🏆'}
                             </button>
                           </div>
                         )}
                       </div>
                     ) : (
                       <div style={{ textAlign: 'center', padding: '24px' }}>
-                        <h3 style={{ fontSize: '26px', fontWeight: 900, color: '#15803d' }}>
+                        <h3 style={{ fontSize: '26px', fontWeight: 900, color: '#15803d', marginBottom: '8px' }}>
                           🎉 ผ่านการเรียนรู้ Ward 104 การสังเกตอาการผิดปกติหลังคลอดเรียบร้อยแล้ว!
                         </h3>
-                        <button
-                          type="button"
-                          onClick={() => setRoom('lobby')}
-                          style={{
-                            marginTop: '14px',
-                            background: '#e11d48',
-                            color: '#fff',
-                            border: 'none',
-                            padding: '12px 26px',
-                            borderRadius: '14px',
-                            fontWeight: 900,
-                            fontSize: '17px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          กลับสู่ล็อบบี้ 🏥
-                        </button>
+                        <p style={{ fontSize: '17px', fontWeight: 700, color: '#475569', marginBottom: '18px' }}>
+                          คะแนนแบบทดสอบทบทวน: {quizScore} / {room4Questions.length} คะแนน
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => setShowActivityModal(false)}
+                            style={{
+                              background: '#16a34a',
+                              color: '#fff',
+                              border: 'none',
+                              padding: '12px 24px',
+                              borderRadius: '14px',
+                              fontWeight: 900,
+                              fontSize: '16px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            🚶 อยู่ในห้อง 3D ต่อ (เดินสำรวจห้อง)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setQuizIndex(0);
+                              setQuizScore(0);
+                              setQuizUserChoice(null);
+                              setQuizShowFeedback(false);
+                              setQuizFinished(false);
+                            }}
+                            style={{
+                              background: '#ffe4e6',
+                              color: '#be123c',
+                              border: '2px solid #f43f5e',
+                              padding: '12px 22px',
+                              borderRadius: '14px',
+                              fontWeight: 900,
+                              fontSize: '16px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            🔄 ทำแบบประเมินซ้ำ
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowActivityModal(false);
+                              setRoom('lobby');
+                            }}
+                            style={{
+                              background: '#e11d48',
+                              color: '#fff',
+                              border: 'none',
+                              padding: '12px 24px',
+                              borderRadius: '14px',
+                              fontWeight: 900,
+                              fontSize: '16px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            🏥 กลับสู่โถงล็อบบี้
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -820,7 +954,7 @@ export default function MotherCare4Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       <PlayerController initialPosition={[0, 0, 4.2]} />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
+import ScreenPortal from '../ui/ScreenPortal';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyAvatar from '../avatars/BabyAvatar';
@@ -224,7 +225,7 @@ export default function NewbornCare3Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           TOP-RIGHT TRANSLUCENT MISSION HUD
           ══════════════════════════════════════════════════════════════════════════ */}
-      <Html fullscreen style={{ pointerEvents: 'none' }}>
+      <ScreenPortal>
         <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/85 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-amber-200/90 text-slate-800">
           <div className="flex items-center justify-between border-b border-amber-200/70 pb-1.5 mb-2">
             <span className="text-xs font-extrabold text-amber-900 tracking-wide flex items-center gap-1.5">
@@ -273,7 +274,7 @@ export default function NewbornCare3Room() {
             </button>
           </div>
         </div>
-      </Html>
+      </ScreenPortal>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           1. 6 LARGE EDUCATIONAL WALL POSTERS AROUND THE ROOM (3D Mesh Flush on Walls)
@@ -590,7 +591,7 @@ export default function NewbornCare3Room() {
         </group>
 
         {/* ป้ายคลิกที่เตียงตรวจสะดือทารก */}
-        <Html position={[0, 1.48, 0]} center distanceFactor={11} zIndexRange={[15, 0]}>
+        <Html position={[0, 1.48, 0]} center zIndexRange={[15, 0]}>
           <button
             type="button"
             onClick={(e) => {
@@ -787,7 +788,7 @@ export default function NewbornCare3Room() {
         </group>
 
         {/* ป้ายคลิกดูอุปกรณ์บนรถเข็นเช็ดสะดือ */}
-        <Html position={[0, 1.32, 0]} center distanceFactor={11} zIndexRange={[15, 0]}>
+        <Html position={[0, 1.32, 0]} center zIndexRange={[15, 0]}>
           <button
             type="button"
             onClick={(e) => {
@@ -835,8 +836,8 @@ export default function NewbornCare3Room() {
 
       {/* 1. Equipment Details Modal (Shown when clicking items on the dressing cart) */}
       {activeModal === 'equipment' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-4 border-amber-400 max-h-[92vh] overflow-y-auto text-slate-800">
               <div className="flex items-center justify-between border-b pb-3">
                 <h2 className="text-lg font-bold text-amber-950 flex items-center gap-2">
@@ -895,13 +896,13 @@ export default function NewbornCare3Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
 
       {/* 2. Mother's Ordering Test Modal ("บททดสอบ ของคุณแม่: ให้เรียงภาพขั้นตอน การเช็ดสะดือ เมื่อเริ่มแห้ง" — nb34_p4..5) */}
       {activeModal === 'orderingQuiz' && (
-        <Html center>
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <ScreenPortal>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
             <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-4 border-amber-500 max-h-[92vh] overflow-y-auto text-slate-800">
               <div className="flex items-center justify-between border-b pb-3">
                 <div>
@@ -1021,7 +1022,7 @@ export default function NewbornCare3Room() {
               </div>
             </div>
           </div>
-        </Html>
+        </ScreenPortal>
       )}
     </group>
   );

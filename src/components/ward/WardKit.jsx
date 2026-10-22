@@ -348,13 +348,13 @@ export function DiningTable({ position = [0, 0, 0], onActivate, locked = false }
           ))}
         </group>
       ))}
-      <Html position={[0, 1.95, 0]} center distanceFactor={10} zIndexRange={[20, 0]}>
+      <Html position={[0, 1.55, 0]} center zIndexRange={[20, 0]}>
         <button
           type="button" onClick={activate}
           style={{
-            background: locked ? '#8e24aa' : '#e91e63', color: '#fff', border: '2px solid #fff', borderRadius: 22,
-            padding: '8px 20px', fontWeight: 800, fontSize: 17, whiteSpace: 'nowrap', cursor: 'pointer',
-            boxShadow: '0 5px 16px rgba(0,0,0,.4)', fontFamily: FONT,
+            background: locked ? '#8e24aa' : '#e91e63', color: '#fff', border: '2px solid #fff', borderRadius: 20,
+            padding: '6px 14px', fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap', cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,.35)', fontFamily: FONT,
           }}
         >{locked ? '📖 อ่านสไลด์ Zone 1 ก่อน แล้วมาเลือกอาหาร' : '🍽️ โต๊ะอาหาร — คลิกเพื่อเลือกเมนู'}</button>
       </Html>
@@ -440,13 +440,13 @@ export function CareBooth({ position = [0, 0, 0], rotation = [0, 0, 0], onActiva
           </group>
         ))}
       </group>
-      <Html position={[0, 3.55, -0.3]} center distanceFactor={10} zIndexRange={[20, 0]}>
+      <Html position={[0, 2.25, 0.2]} center zIndexRange={[20, 0]}>
         <button
           type="button" onClick={activate}
           style={{
-            background: locked ? '#8e24aa' : '#e91e63', color: '#fff', border: '2px solid #fff', borderRadius: 22,
-            padding: '8px 20px', fontWeight: 800, fontSize: 17, whiteSpace: 'nowrap', cursor: 'pointer',
-            boxShadow: '0 5px 16px rgba(0,0,0,.4)', fontFamily: FONT,
+            background: locked ? '#8e24aa' : '#e91e63', color: '#fff', border: '2px solid #fff', borderRadius: 20,
+            padding: '6px 14px', fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap', cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,.35)', fontFamily: FONT,
           }}
         >{locked ? '📖 อ่านสไลด์ Zone 2 ก่อน แล้วมาที่บูท' : '🩹 บูทดูแลแผลฝีเย็บ — คลิกเพื่อเริ่มกิจกรรม'}</button>
       </Html>
