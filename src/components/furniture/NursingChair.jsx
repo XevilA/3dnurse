@@ -22,7 +22,7 @@ export default function NursingChair({ position = [0, 0, 0], rotation = [0, 0, 0
 
   return (
     <group position={position} rotation={rotation} scale={scale} dispose={null}>
-      <primitive object={chairScene} scale={[2.4, 2.4, 2.4]} />
+      <primitive object={chairScene} scale={[1.35, 1.35, 1.35]} />
     </group>
   );
 }

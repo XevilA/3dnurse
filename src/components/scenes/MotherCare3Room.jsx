@@ -428,7 +428,7 @@ export default function MotherCare3Room() {
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.46, 0.15]}
       >
-        <Html position={[0, 1.38, 0]} center zIndexRange={[20, 0]}>
+        <Html position={[0, 1.88, 0]} center zIndexRange={[20, 0]}>
           <button
             type="button"
             onClick={(e) => {

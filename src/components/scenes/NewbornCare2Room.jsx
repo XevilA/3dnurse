@@ -292,6 +292,7 @@ export default function NewbornCare2Room() {
         width={13}
         depth={13}
         height={5.2}
+        doorZ={3.8}
         roomTitle="ห้องที่ 2: การอาบน้ำและการดูแลความสะอาดทารก การเปลี่ยนผ้าอ้อม"
         roomNumber="Nursery 202"
       />
@@ -440,21 +441,21 @@ export default function NewbornCare2Room() {
         seatOffset={[0, 0.46, 0.05]}
       >
         <group>
-          <mesh position={[0, 0.32, 0]} castShadow receiveShadow>
-            <boxGeometry args={[1.3, 0.46, 1.05]} />
+          <mesh position={[0, 0.24, -0.04]} castShadow receiveShadow>
+            <boxGeometry args={[1.3, 0.36, 0.74]} />
             <meshStandardMaterial color="#fef3c7" roughness={0.8} />
           </mesh>
-          <mesh position={[0, 0.88, -0.4]} castShadow>
-            <boxGeometry args={[1.22, 0.92, 0.26]} />
+          <mesh position={[0, 0.82, -0.38]} castShadow>
+            <boxGeometry args={[1.22, 0.88, 0.24]} />
             <meshStandardMaterial color="#fef3c7" roughness={0.8} />
           </mesh>
           {[-0.58, 0.58].map((x, i) => (
-            <mesh key={`arm_${i}`} position={[x, 0.56, 0.04]} castShadow>
-              <boxGeometry args={[0.22, 0.42, 0.98]} />
+            <mesh key={`arm_${i}`} position={[x, 0.48, -0.04]} castShadow>
+              <boxGeometry args={[0.20, 0.38, 0.76]} />
               <meshStandardMaterial color="#fde68a" roughness={0.85} />
             </mesh>
           ))}
-          <Pillows position={[0, 0.58, 0.06]} scale={0.88} />
+          <Pillows position={[-0.38, 0.46, -0.18]} scale={0.50} />
         </group>
       </InteractiveSeat>
 
@@ -680,7 +681,7 @@ export default function NewbornCare2Room() {
            Left section: ตกแต่ง (Teddy bears, frames, yarn balls, baskets)
            Right section: ตู้ของใช้ทารก (1. ผ้าอ้อมทารก, 2. สบู่อ่อน-ยาสระผมเด็ก, 3. เสื้อผ้าทารก, 4. ผ้าขนหนู, 5. ผ้าห่อทารก) */}
       <group
-        position={[-6.05, 0, 1.35]}
+        position={[-6.05, 0, 0.85]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -2169,13 +2170,6 @@ export default function NewbornCare2Room() {
           </div>
         </ScreenPortal>
       )}
-
-      {/* ── ชั้นวางของใช้ทารก (Diaper/supply shelf per room2 ref) ── */}
-      <BabyShelf position={[-7.2, 0, 0.5]} rotation={[0, Math.PI / 2, 0]} />
-
-      {/* ── ถังขยะ 2 ใบ (yellow = general, red = infectious waste) ── */}
-      <HospitalBin position={[-5.0, 0, 3.5]} color="#eab308" />
-      <HospitalBin position={[-4.6, 0, 3.5]} color="#ef4444" />
     </group>
   );
 }

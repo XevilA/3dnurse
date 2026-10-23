@@ -25,7 +25,7 @@ export default function HospitalSofa({
     return cloned;
   }, [scene]);
 
-  const sofaScale = typeof scale === 'number' ? [scale * 1.3, scale * 1.3, scale * 1.3] : scale;
+  const sofaScale = typeof scale === 'number' ? [scale * 1.05, scale * 1.05, scale * 1.05] : scale;
 
   if (!sofaScene) return null;
 

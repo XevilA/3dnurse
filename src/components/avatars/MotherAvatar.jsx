@@ -398,16 +398,18 @@ const MotherAvatar = forwardRef(({
       fixHips(cSitBase, idleFbx);
 
       const seatedOverrides = {
-        'mixamorigLeftUpLeg.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.06,  0.00,  Math.PI - 0.04, 'XYZ')),
-        'mixamorigRightUpLeg.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.06,  0.00, -Math.PI + 0.04, 'XYZ')),
-        'mixamorigLeftLeg.quaternion':      new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.08,  0.00,  0.00, 'XYZ')),
-        'mixamorigRightLeg.quaternion':     new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.08,  0.00,  0.00, 'XYZ')),
-        'mixamorigLeftFoot.quaternion':     new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.08,  0.00,  0.00, 'XYZ')),
-        'mixamorigRightFoot.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.08,  0.00,  0.00, 'XYZ')),
-        'mixamorigLeftArm.quaternion':      new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.15,  0.25, -0.15, 'XYZ')),
-        'mixamorigRightArm.quaternion':     new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.15, -0.25,  0.15, 'XYZ')),
-        'mixamorigLeftForeArm.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler( 0.10,  0.10,  0.85, 'XYZ')),
-        'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler( 0.10, -0.10, -0.85, 'XYZ')),
+        'mixamorigLeftUpLeg.quaternion':     new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.02,  0.00,  Math.PI - 0.09, 'XYZ')),
+        'mixamorigRightUpLeg.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.02,  0.00, -Math.PI + 0.09, 'XYZ')),
+        'mixamorigLeftLeg.quaternion':       new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.24,  0.00,  0.00, 'XYZ')),
+        'mixamorigRightLeg.quaternion':      new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.24,  0.00,  0.00, 'XYZ')),
+        'mixamorigLeftFoot.quaternion':      new THREE.Quaternion().setFromEuler(new THREE.Euler( 0.92,  0.00,  0.00, 'XYZ')),
+        'mixamorigRightFoot.quaternion':     new THREE.Quaternion().setFromEuler(new THREE.Euler( 0.92,  0.00,  0.00, 'XYZ')),
+        'mixamorigLeftShoulder.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.575, -0.052, -1.42, 'XYZ')),
+        'mixamorigRightShoulder.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.574, -0.001,  1.46, 'XYZ')),
+        'mixamorigLeftArm.quaternion':       new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.22,  0.38,  0.05, 'XYZ')),
+        'mixamorigRightArm.quaternion':      new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.22, -0.38, -0.05, 'XYZ')),
+        'mixamorigLeftForeArm.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler( 0.42,  0.28,  0.85, 'XYZ')),
+        'mixamorigRightForeArm.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler( 0.42, -0.28, -0.85, 'XYZ')),
       };
       const sit = applyBoneOverrides(cSitBase, 'sitting', seatedOverrides);
       list.push(sit);
@@ -552,9 +554,16 @@ const MotherAvatar = forwardRef(({
     // Megan hip bone sits at ~0.92m in T-pose → lower rig by (0.92 - seatHeight)
     if (isSitting) {
       const seatHeight = seatedTarget?.seatOffset?.[1] ?? 0.46;
-      const hipBoneHeight = 0.88; // Places thighs cleanly on top of sofa/chair cushion and feet flat on floor
-      const targetY = Math.max(-(hipBoneHeight - seatHeight), -0.46);
-      const targetZ = seatedTarget?.type === 'bed' ? 0.12 : seatedTarget?.type === 'sofa' ? 0.10 : 0.06;
+      const hipBoneHeight = seatedTarget?.type === 'wheelchair' ? 0.83 : 0.86;
+      const targetY = Math.max(-(hipBoneHeight - seatHeight), -0.44);
+      const targetZ =
+        seatedTarget?.type === 'bed'
+          ? 0.14
+          : seatedTarget?.type === 'sofa'
+            ? 0.14
+            : seatedTarget?.type === 'wheelchair'
+              ? 0.09
+              : 0.12;
       avatarRigRef.current.position.set(0, targetY, targetZ);
       avatarRigRef.current.rotation.set(0, 0, 0);
     } else {
@@ -562,7 +571,7 @@ const MotherAvatar = forwardRef(({
       avatarRigRef.current.rotation.set(0, 0, 0);
     }
 
-    // 3. Anatomically Accurate Maternal Baby-Cradling Animation & Hand-Locked Baby Synchronization
+    // 3. Anatomically Accurate Maternal Baby-Cradling Animation & Forearm-Cradled Baby Synchronization
     if (isHoldingBaby) {
       const t = state.clock.elapsedTime;
       const rock = Math.sin(t * 2.1) * 0.035;
@@ -573,19 +582,19 @@ const MotherAvatar = forwardRef(({
         rightShoulder.rotation.set(1.574, -0.001, 1.46);
       }
       if (leftArm && rightArm) {
-        leftArm.rotation.set(0.92 + breath, 0.48 + rock * 0.4, 0.36);
-        rightArm.rotation.set(0.98 + breath, -0.48 + rock * 0.4, -0.34);
+        leftArm.rotation.set(0.96 + breath, 0.48 + rock * 0.4, 0.36);
+        rightArm.rotation.set(1.02 + breath, -0.48 + rock * 0.4, -0.34);
       }
       if (leftForeArm && rightForeArm) {
-        leftForeArm.rotation.set(0.15, 0.25, 1.52 + rock * 0.5);
-        rightForeArm.rotation.set(0.15, -0.25, -1.48 - rock * 0.5);
+        leftForeArm.rotation.set(0.18, 0.25, 1.52 + rock * 0.5);
+        rightForeArm.rotation.set(0.18, -0.25, -1.48 - rock * 0.5);
       }
       if (leftHand && rightHand) {
         leftHand.rotation.set(0.22, -0.30, 0.18);
         rightHand.rotation.set(0.22, 0.30, -0.18);
       }
 
-      // Lock held baby directly to the live midpoint of the mother's cradling hands
+      // Lock held baby snugly onto the top of the mother's cradling forearms against her chest
       if (heldBabyRef.current && leftHand && rightHand) {
         leftHand.updateWorldMatrix(true, false);
         rightHand.updateWorldMatrix(true, false);
@@ -598,8 +607,8 @@ const MotherAvatar = forwardRef(({
         const midY = (_v1.y + _v2.y) * 0.5;
         const midZ = (_v1.z + _v2.z) * 0.5;
 
-        heldBabyRef.current.position.set(midX, midY - 0.015, midZ + 0.015);
-        heldBabyRef.current.rotation.set(breath * 0.6, rock * 0.8, rock * 0.45);
+        heldBabyRef.current.position.set(midX, midY + 0.035, midZ - 0.025);
+        heldBabyRef.current.rotation.set(breath * 0.5, rock * 0.7, rock * 0.4);
       }
     }
   });

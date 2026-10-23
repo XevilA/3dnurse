@@ -118,6 +118,7 @@ export default function HospitalRoomShell({
   depth = 18,
   height = 8,
   doorWall = 'left',
+  doorZ = null,
   windowWall = 'none', // default 'none' so custom room windows & posters never collide
   cozyMode = true, // Warm residential-hospital interior (wood floor, wood baseboards, warm cove ceiling)
   roomTitle = 'ห้องบริบาลมารดาและทารก',
@@ -446,7 +447,7 @@ export default function HospitalRoomShell({
           roomTitle="ประตูทางออก — โถงกลาง (Main Lobby)"
           icon="🚪"
           theme={theme}
-          position={[-halfW + 0.22, 0, halfD - 3.2]}
+          position={[-halfW + 0.22, 0, doorZ !== null ? doorZ : halfD - 3.2]}
           rotation={[0, Math.PI / 2, 0]}
           scale={1.0}
         />

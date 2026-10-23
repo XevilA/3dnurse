@@ -165,35 +165,19 @@ function RealRiggedBaby({
 
   return (
     <group ref={babyRootRef}>
-      {/* Rigged 46k-vertex 3D Newborn Infant oriented so head rests in Mother's Left Elbow (+X)
-          and bottom/diaper rests on Mother's Hands (-X), with face looking gently up at Mother */}
-      <primitive
-        object={clonedBaby}
-        position={[-0.14, -0.02, 0.02]}
-        rotation={[-0.45, 0.20, -1.45]}
-        scale={0.46}
-      />
-
-      {/* Soft Contoured Hospital Swaddle / Receiving Blanket Cradle under the Baby's Back & Bottom */}
-      {withSwaddleWrap && (
-        <group position={[0.02, 0.01, -0.04]} rotation={[0.18, 0.08, -0.35]}>
-          {/* Outer Quilted Receiving Blanket Cradle */}
-          <mesh position={[0, -0.015, -0.01]} rotation={[0, 0, Math.PI / 2]} castShadow receiveShadow>
-            <capsuleGeometry args={[0.088, 0.19, 16, 24]} />
-            <meshStandardMaterial color={blanketColor} roughness={0.85} />
-          </mesh>
-          {/* Soft Inner White Cotton Lining */}
-          <mesh position={[0, -0.008, 0.002]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.082, 0.18, 14, 20]} />
-            <meshStandardMaterial color="#fffdf9" roughness={0.9} />
-          </mesh>
-          {/* Soft Newborn Head Support Pillow Cushion under Left Elbow */}
-          <mesh position={[0.11, 0.055, -0.035]} rotation={[0.25, 0.2, -0.25]} castShadow>
-            <sphereGeometry args={[0.072, 20, 16]} />
-            <meshStandardMaterial color={beanieColor} roughness={0.85} />
-          </mesh>
+      {/* Centered Realistic Newborn Infant in Soft Hospital Swaddle & Beanie Cap
+          Oriented so head rests snugly in Mother's Left Elbow (+X), swaddled body lies across
+          both forearms, and face tilts gently upward toward Mother (-Z / +Y) */}
+      <group rotation={[-0.32, 0, 0.22]}>
+        <group position={[0.04, -0.055, -0.01]} rotation={[0, -Math.PI / 2, 0]} scale={0.92}>
+          <RealisticNewborn
+            pose="swaddle"
+            beanieColor={beanieColor}
+            blanketColor={blanketColor}
+            withBlanket={false}
+          />
         </group>
-      )}
+      </group>
     </group>
   );
 }

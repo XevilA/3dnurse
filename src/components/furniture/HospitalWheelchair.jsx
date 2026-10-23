@@ -26,7 +26,7 @@ export default function HospitalWheelchair({
     return cloned;
   }, [scene]);
 
-  const finalScale = typeof scale === 'number' ? [scale * 1.3, scale * 1.3, scale * 1.3] : scale;
+  const finalScale = typeof scale === 'number' ? [scale * 0.85, scale * 0.85, scale * 0.85] : scale;
 
   if (!wheelchairScene) return null;
 

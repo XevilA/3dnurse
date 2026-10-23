@@ -297,6 +297,7 @@ export default function NewbornCare1Room() {
         width={14}
         depth={14}
         height={5.2}
+        doorZ={5.3}
         roomTitle="ห้องที่ 1: การให้นมและการอุ้มจัดท่าทารก (Lactation & Positioning Room)"
         roomNumber="Nursery 201"
       />
@@ -510,8 +511,11 @@ export default function NewbornCare1Room() {
 
         {/* Crib Action Popup — ONLY shown when Crib is clicked */}
         {activeModal === 'cribPrompt' && (
-          <Html position={[0, 1.35, 0]} center zIndexRange={[20, 0]}>
-            <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-2xl border-2 border-pink-400 w-60 text-center">
+          <Html position={[0, 1.55, 0]} center zIndexRange={[20, 0]}>
+            <div
+              className="bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-2xl border-2 border-pink-400 w-64 text-center"
+              style={{ minWidth: '250px', whiteSpace: 'nowrap' }}
+            >
               <div className="text-xs font-extrabold text-pink-900 mb-2">
                 👶 เตียงนอนทารก (Baby Crib)
               </div>
@@ -666,9 +670,9 @@ export default function NewbornCare1Room() {
         </Html>
       </group>
 
-      {/* ── (a) Realistic Handwashing Sink (Left Wall middle, flush against wall x = -6.48, z = 1.0) ── */}
+      {/* ── (a) Realistic Handwashing Sink (Left Wall middle, flush against wall x = -6.48, z = 0.5) ── */}
       <group
-        position={[-6.48, 0, 1.0]}
+        position={[-6.48, 0, 0.5]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -743,9 +747,9 @@ export default function NewbornCare1Room() {
         </mesh>
       </group>
 
-      {/* ── (b) Realistic Table with Hot Water Thermos & Cup (Left Wall middle, flush against wall x = -6.48, z = 2.4) ── */}
+      {/* ── (b) Realistic Table with Hot Water Thermos & Cup (Left Wall middle, flush against wall x = -6.48, z = 1.75) ── */}
       <group
-        position={[-6.48, 0, 2.4]}
+        position={[-6.48, 0, 1.75]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -822,9 +826,9 @@ export default function NewbornCare1Room() {
         </group>
       </group>
 
-      {/* ── (c) Realistic 2-Door Breastmilk Refrigerator (Left Wall middle-south, flush against wall x = -6.42, z = 3.85) ── */}
+      {/* ── (c) Realistic 2-Door Breastmilk Refrigerator (Left Wall middle-south, flush against wall x = -6.42, z = 3.0) ── */}
       <group
-        position={[-6.42, 0, 3.85]}
+        position={[-6.42, 0, 3.0]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -883,36 +887,39 @@ export default function NewbornCare1Room() {
           }}
         >
           {/* Plush Sofa Seat Base */}
-          <mesh position={[0, 0.28, 0]} castShadow receiveShadow>
-            <boxGeometry args={[1.45, 0.44, 1.05]} />
+          <mesh position={[0, 0.24, -0.04]} castShadow receiveShadow>
+            <boxGeometry args={[1.45, 0.36, 0.74]} />
             <meshStandardMaterial color="#faf6f0" roughness={0.7} />
           </mesh>
           {/* Reclining Backrest */}
-          <mesh position={[0, 0.85, -0.38]} rotation={[-0.12, 0, 0]} castShadow>
-            <boxGeometry args={[1.38, 0.92, 0.28]} />
+          <mesh position={[0, 0.82, -0.38]} rotation={[-0.10, 0, 0]} castShadow>
+            <boxGeometry args={[1.38, 0.88, 0.24]} />
             <meshStandardMaterial color="#faf6f0" roughness={0.7} />
           </mesh>
           {/* Plush Armrests */}
           {[-0.65, 0.65].map((x, i) => (
-            <mesh key={`arm_${i}`} position={[x, 0.54, 0.04]} castShadow>
-              <boxGeometry args={[0.22, 0.42, 0.98]} />
+            <mesh key={`arm_${i}`} position={[x, 0.48, -0.04]} castShadow>
+              <boxGeometry args={[0.20, 0.38, 0.76]} />
               <meshStandardMaterial color="#f2ede4" roughness={0.75} />
             </mesh>
           ))}
-          {/* Nursing Cushion on Sofa */}
-          <Pillows position={[0, 0.54, 0.05]} scale={0.9} />
+          {/* Nursing Cushion neatly tucked at side corner of Sofa */}
+          <Pillows position={[-0.45, 0.46, -0.18]} scale={0.52} />
 
-          {/* When Mother is Seated with Baby, show subtle button to open 4-holds selector if closed */}
+          {/* When Mother is Seated with Baby, show floating action bar above her head (never covering face) */}
           {isMotherSeatedOnSofa && activeModal !== 'postureSelector' && (
-            <Html position={[0, 1.45, 0]} center zIndexRange={[20, 0]}>
-              <div className="flex flex-col items-center gap-1.5 bg-white/95 backdrop-blur-md p-2.5 rounded-2xl shadow-xl border-2 border-pink-400">
+            <Html position={[0, 1.92, 0]} center zIndexRange={[20, 0]}>
+              <div
+                className="flex flex-col items-center gap-1.5 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl shadow-xl border-2 border-pink-400"
+                style={{ minWidth: '250px', whiteSpace: 'nowrap' }}
+              >
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     if (!isHoldingBaby) setHoldingBaby(true);
                     setActiveModal('postureSelector');
                   }}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-pink-600 hover:bg-pink-500 shadow"
+                  className="w-full px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-pink-600 hover:bg-pink-500 shadow whitespace-nowrap"
                 >
                   🤱 เลือกท่าให้นมทารก (4 ท่า)
                 </button>
@@ -921,7 +928,7 @@ export default function NewbornCare1Room() {
                     e.stopPropagation();
                     standUp();
                   }}
-                  className="px-3 py-1 rounded-lg text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
+                  className="w-full px-3 py-1 rounded-lg text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 whitespace-nowrap"
                 >
                   🚶‍♀️ ลุกออกจากโซฟา
                 </button>
@@ -1708,11 +1715,8 @@ export default function NewbornCare1Room() {
         </ScreenPortal>
       )}
 
-      {/* ── ชั้นวางของใช้ทารก (Baby supply shelf near entrance, per room1 ref) ── */}
-      <BabyShelf position={[-7.0, 0, 1.0]} rotation={[0, Math.PI / 2, 0]} />
-
-      {/* ── ถังขยะ (Hospital waste bin near entrance) ── */}
-      <HospitalBin position={[-5.2, 0, 3.8]} color="#eab308" />
+      {/* ── ถังขยะข้างอ่างล้างมือ (ไม่บังประตูทางออก) ── */}
+      <HospitalBin position={[-6.48, 0, -0.25]} color="#eab308" />
     </group>
   );
 }
