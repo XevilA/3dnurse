@@ -77,7 +77,6 @@ const MotherAvatar = forwardRef(({
   // Load authentic Mixamo female animations
   const idleFbx = useFBX('/models/animations/Standing_Idle.fbx');
   const walkFbx = useFBX('/models/animations/walking.fbx');
-  const sitIdleFbx = useFBX('/models/animations/Sitting_Idle.fbx');
 
   // Authentic hospital & maternity color schemes
   const OUTFIT_COLOR_SCHEMES = useMemo(() => ({
@@ -388,45 +387,29 @@ const MotherAvatar = forwardRef(({
       // 1b. Standing Idle while Cradling Baby
       const idleHold = applyBoneOverrides(c, 'idle_hold', CRADLE_STANDING_OVERRIDES);
       list.push(idleHold);
-    }
 
-    // 2. Authentic Sitting_Idle.fbx — proper female seated pose (no mesh clipping)
-    if (sitIdleFbx && sitIdleFbx.animations && sitIdleFbx.animations[0]) {
-      const s = sitIdleFbx.animations[0].clone();
-      s.name = 'sitting';
-      s.tracks.forEach((t) => {
+      // 2. Proper upright chair/sofa seated pose derived from Standing_Idle (faces straight forward, thighs on top of cushion, calves in front of seat)
+      const cSitBase = idleFbx.animations[0].clone();
+      cSitBase.name = 'idle_base_for_sit';
+      cSitBase.tracks.forEach((t) => {
         if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
       });
-      s.tracks = s.tracks.filter((t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye'));
-      fixHips(s, sitIdleFbx);
-      list.push(s);
-
-      // 2b. Seated while holding baby
-      const sitHold = applyBoneOverrides(s, 'sitting_hold', CRADLE_STANDING_OVERRIDES);
-      list.push(sitHold);
-    } else if (idleFbx && idleFbx.animations && idleFbx.animations[0]) {
-      // Fallback: derive sitting from idle with bone overrides if Sitting_Idle fails to load
-      const c = idleFbx.animations[0].clone();
-      c.name = 'idle_base_for_sit';
-      c.tracks.forEach((t) => {
-        if (!t.name.startsWith('mixamorig')) t.name = 'mixamorig' + t.name;
-      });
-      c.tracks = c.tracks.filter((t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye'));
-      fixHips(c, idleFbx);
+      cSitBase.tracks = cSitBase.tracks.filter((t) => !t.name.endsWith('.scale') && !t.name.includes('Armature') && !t.name.includes('Eye'));
+      fixHips(cSitBase, idleFbx);
 
       const seatedOverrides = {
-        'mixamorigLeftUpLeg.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.10,  0.02,  -0.04)),
-        'mixamorigRightUpLeg.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.10, -0.02,   0.04)),
-        'mixamorigLeftLeg.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler( Math.PI / 2 - 0.15,  0.00,  -0.01)),
-        'mixamorigRightLeg.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler( Math.PI / 2 - 0.15,  0.00,   0.01)),
-        'mixamorigLeftFoot.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.28,  0.00,  -0.01)),
-        'mixamorigRightFoot.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.28,  0.00,   0.01)),
-        'mixamorigLeftArm.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.10,  0.30,   0.10)),
-        'mixamorigRightArm.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.10, -0.30,  -0.10)),
-        'mixamorigLeftForeArm.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler(0.04,  0.10,  1.00)),
-        'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler(0.04, -0.10, -1.00)),
+        'mixamorigLeftUpLeg.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.06,  0.00,  Math.PI - 0.04, 'XYZ')),
+        'mixamorigRightUpLeg.quaternion':   new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.06,  0.00, -Math.PI + 0.04, 'XYZ')),
+        'mixamorigLeftLeg.quaternion':      new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.08,  0.00,  0.00, 'XYZ')),
+        'mixamorigRightLeg.quaternion':     new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + 0.08,  0.00,  0.00, 'XYZ')),
+        'mixamorigLeftFoot.quaternion':     new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.08,  0.00,  0.00, 'XYZ')),
+        'mixamorigRightFoot.quaternion':    new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.08,  0.00,  0.00, 'XYZ')),
+        'mixamorigLeftArm.quaternion':      new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.15,  0.25, -0.15, 'XYZ')),
+        'mixamorigRightArm.quaternion':     new THREE.Quaternion().setFromEuler(new THREE.Euler( 1.15, -0.25,  0.15, 'XYZ')),
+        'mixamorigLeftForeArm.quaternion':  new THREE.Quaternion().setFromEuler(new THREE.Euler( 0.10,  0.10,  0.85, 'XYZ')),
+        'mixamorigRightForeArm.quaternion': new THREE.Quaternion().setFromEuler(new THREE.Euler( 0.10, -0.10, -0.85, 'XYZ')),
       };
-      const sit = applyBoneOverrides(c, 'sitting', seatedOverrides);
+      const sit = applyBoneOverrides(cSitBase, 'sitting', seatedOverrides);
       list.push(sit);
       const sitHold = applyBoneOverrides(sit, 'sitting_hold', CRADLE_STANDING_OVERRIDES);
       list.push(sitHold);
@@ -463,7 +446,7 @@ const MotherAvatar = forwardRef(({
     }
 
     return list;
-  }, [idleFbx, walkFbx, sitIdleFbx, clonedScene]);
+  }, [idleFbx, walkFbx, clonedScene]);
 
   // Bind animations directly to character rig
   const { actions } = useAnimations(animClips, clonedScene);
@@ -569,9 +552,9 @@ const MotherAvatar = forwardRef(({
     // Megan hip bone sits at ~0.92m in T-pose → lower rig by (0.92 - seatHeight)
     if (isSitting) {
       const seatHeight = seatedTarget?.seatOffset?.[1] ?? 0.46;
-      const hipBoneHeight = 0.87; // Megan Mixamo hip bone at T-pose
-      const targetY = Math.max(-(hipBoneHeight - seatHeight), -0.50);
-      const targetZ = seatedTarget?.type === 'bed' ? 0.08 : 0.05;
+      const hipBoneHeight = 0.88; // Places thighs cleanly on top of sofa/chair cushion and feet flat on floor
+      const targetY = Math.max(-(hipBoneHeight - seatHeight), -0.46);
+      const targetZ = seatedTarget?.type === 'bed' ? 0.12 : seatedTarget?.type === 'sofa' ? 0.10 : 0.06;
       avatarRigRef.current.position.set(0, targetY, targetZ);
       avatarRigRef.current.rotation.set(0, 0, 0);
     } else {
@@ -656,4 +639,3 @@ useGLTF.preload('/models/megan_opt.glb');
 useGLTF.preload('/models/pregnant_megan_opt.glb');
 useFBX.preload('/models/animations/Standing_Idle.fbx');
 useFBX.preload('/models/animations/walking.fbx');
-useFBX.preload('/models/animations/Sitting_Idle.fbx');

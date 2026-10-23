@@ -99,13 +99,18 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   // Seamless snap to seat cushion when sitting down (Wheelchair, Sofa, Bed, Chair)
   useEffect(() => {
     if (isSitting && seatedTarget) {
-      const targetX = seatedTarget.position[0] + (seatedTarget.seatOffset?.[0] || 0);
-      const targetZ = seatedTarget.position[2] + (seatedTarget.seatOffset?.[2] || 0);
+      const rotY = typeof seatedTarget.rotationY === 'number' ? seatedTarget.rotationY : 0;
+      const ox = seatedTarget.seatOffset?.[0] || 0;
+      const oz = seatedTarget.seatOffset?.[2] || 0;
+      const targetX = seatedTarget.position[0] + ox * Math.cos(rotY) + oz * Math.sin(rotY);
+      const targetZ = seatedTarget.position[2] - ox * Math.sin(rotY) + oz * Math.cos(rotY);
       pos.current.x = targetX;
       pos.current.z = targetZ;
       if (typeof seatedTarget.rotationY === 'number') {
         targetRotationY.current = seatedTarget.rotationY;
         characterRotationY.current = seatedTarget.rotationY;
+        // Swing camera to a flattering 3/4 front view for sofas/chairs/beds, or behind for drivable wheelchairs
+        cameraYaw.current = seatedTarget.isDrivable ? rotY + Math.PI : rotY + 0.32;
       }
     }
   }, [isSitting, seatedTarget]);
@@ -415,21 +420,17 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         }
       } else {
         // ── Static Chair / Sofa / Bed Resting Mode ──
-        // Lock player position to seat cushion
+        // Lock player position to seat cushion (properly rotated by seat rotationY)
         if (seatedTarget) {
-          const targetX = seatedTarget.position[0] + (seatedTarget.seatOffset?.[0] || 0);
-          const targetZ = seatedTarget.position[2] + (seatedTarget.seatOffset?.[2] || 0);
+          const rotY = typeof seatedTarget.rotationY === 'number' ? seatedTarget.rotationY : 0;
+          const ox = seatedTarget.seatOffset?.[0] || 0;
+          const oz = seatedTarget.seatOffset?.[2] || 0;
+          const targetX = seatedTarget.position[0] + ox * Math.cos(rotY) + oz * Math.sin(rotY);
+          const targetZ = seatedTarget.position[2] - ox * Math.sin(rotY) + oz * Math.cos(rotY);
           pos.current.x = THREE.MathUtils.lerp(pos.current.x, targetX, delta * 12);
           pos.current.z = THREE.MathUtils.lerp(pos.current.z, targetZ, delta * 12);
           if (typeof seatedTarget.rotationY === 'number') {
             targetRotationY.current = seatedTarget.rotationY;
-            if (!isDragging.current) {
-              const frontYaw = seatedTarget.rotationY + Math.PI;
-              let diffYaw = frontYaw - cameraYaw.current;
-              while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
-              while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
-              cameraYaw.current += diffYaw * Math.min(1, delta * 3);
-            }
           }
         }
 
