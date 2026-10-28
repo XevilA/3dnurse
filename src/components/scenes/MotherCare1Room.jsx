@@ -34,6 +34,7 @@ export default function MotherCare1Room() {
 
   const [activeTab, setActiveTab] = useState(0); // 0: พักผ่อน, 1: โภชนาการ, 2: ล้างมือ, 3: เคลื่อนไหว, 4: แบบประเมิน
   const [isBoardFullScreen, setIsBoardFullScreen] = useState(false);
+  const [missionCollapsed, setMissionCollapsed] = useState(false);
 
   // ── กิจกรรม 1: พักผ่อนและขอความช่วยเหลือ ──
   const [act1Cards, setAct1Cards] = useState([
@@ -234,7 +235,21 @@ export default function MotherCare1Room() {
             onClick={() => openWardModal('slide', ROOM)}
             style={{ background: '#fdf2f8', color: '#be185d', border: '1.5px solid #f472b6', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
           >
-            📖 ดูสไลด์แผ่นภาพ Zone 1
+            📖 สไลด์ Zone 1
+          </button>
+          <button
+            type="button"
+            onClick={() => openWardModal('food', ROOM)}
+            style={{ background: '#fff1f2', color: '#be123c', border: '1.5px solid #fb7185', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+          >
+            🍽️ กิจกรรมโต๊ะอาหาร (เลือก 3 เมนู)
+          </button>
+          <button
+            type="button"
+            onClick={() => openWardModal('quiz', ROOM)}
+            style={{ background: '#f8fafc', color: '#334155', border: '1.5px solid #cbd5e1', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+          >
+            📝 แบบประเมินประจำห้อง
           </button>
           {!isModal ? (
             <button
@@ -737,63 +752,83 @@ export default function MotherCare1Room() {
       {/* ── Top-Right Mission HUD (Portaled to document.body so user can explore 3D room freely) ── */}
       <ScreenPortal>
         <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border-2 border-pink-400 text-slate-800">
-          <div className="flex items-center justify-between border-b border-pink-100 pb-2 mb-2">
+          <div
+            onClick={() => setMissionCollapsed((v) => !v)}
+            className={`flex items-center justify-between cursor-pointer select-none ${
+              missionCollapsed ? '' : 'border-b border-pink-100 pb-2 mb-2'
+            }`}
+          >
             <span className="text-xs font-extrabold text-pink-900">
               🏥 ภารกิจห้องดูแลร่างกาย (Ward 101)
             </span>
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-pink-100 text-pink-700'
-              }`}
-            >
-              {isCompleted ? 'สำเร็จแล้ว ✓' : 'กำลังเรียนรู้'}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-pink-100 text-pink-700'
+                }`}
+              >
+                {isCompleted ? 'สำเร็จแล้ว ✓' : 'กำลังเรียนรู้'}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMissionCollapsed((v) => !v);
+                }}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-pink-100 text-slate-700 transition cursor-pointer"
+                title={missionCollapsed ? 'เปิดดูรายการภารกิจ' : 'พับเก็บหน้าต่างภารกิจ'}
+              >
+                {missionCollapsed ? '▼' : '▲'}
+              </button>
+            </div>
           </div>
-          <div className="space-y-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setIsBoardFullScreen(true)}
-              className="w-full p-2 rounded-xl border border-pink-300 bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>🎯 1. กิจกรรมโปรเจกเตอร์ (4 กิจกรรม)</span>
-              <span className="font-bold">เปิดทำ ▶</span>
-            </button>
+          {!missionCollapsed && (
+            <div className="space-y-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setIsBoardFullScreen(true)}
+                className="w-full p-2 rounded-xl border border-pink-300 bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow text-left font-semibold flex items-center justify-between transition cursor-pointer"
+              >
+                <span>🎯 1. กิจกรรมโปรเจกเตอร์ (4 กิจกรรม)</span>
+                <span className="font-bold">เปิดทำ ▶</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => openWardModal('slide', ROOM)}
-              className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
-                slideSeen
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                  : 'bg-pink-50 border-pink-200 hover:bg-pink-100 text-pink-950'
-              }`}
-            >
-              <span>📖 2. อ่านสไลด์ความรู้ Zone 1</span>
-              <span className="font-bold">{slideSeen ? '☑ อ่านแล้ว' : 'เปิดอ่าน ▶'}</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => openWardModal('slide', ROOM)}
+                className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
+                  slideSeen
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                    : 'bg-pink-50 border-pink-200 hover:bg-pink-100 text-pink-950'
+                }`}
+              >
+                <span>📖 2. อ่านสไลด์ความรู้ Zone 1</span>
+                <span className="font-bold">{slideSeen ? '☑ อ่านแล้ว' : 'เปิดอ่าน ▶'}</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => openWardModal('food', ROOM)}
-              className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
-                activityDone
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                  : 'bg-pink-50 border-pink-200 hover:bg-pink-100 text-pink-950'
-              }`}
-            >
-              <span>🍽️ 3. กิจกรรมโต๊ะอาหาร (เลือก 3 เมนู)</span>
-              <span className="font-bold">{activityDone ? '☑ สำเร็จ' : 'เริ่มทำ ▶'}</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => openWardModal('food', ROOM)}
+                className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
+                  activityDone
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                    : 'bg-pink-50 border-pink-200 hover:bg-pink-100 text-pink-950'
+                }`}
+              >
+                <span>🍽️ 3. กิจกรรมโต๊ะอาหาร (เลือก 3 เมนู)</span>
+                <span className="font-bold">{activityDone ? '☑ สำเร็จ' : 'เริ่มทำ ▶'}</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => openWardModal('quiz', ROOM)}
-              className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>📝 4. แบบประเมินทบทวนประจำห้อง</span>
-              <span className="font-bold text-pink-700">{flow.quiz ? '☑ ทำแล้ว' : 'ทำข้อสอบ ▶'}</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => openWardModal('quiz', ROOM)}
+                className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+              >
+                <span>📝 4. แบบประเมินทบทวนประจำห้อง</span>
+                <span className="font-bold text-pink-700">{flow.quiz ? '☑ ทำแล้ว' : 'ทำข้อสอบ ▶'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </ScreenPortal>
 
@@ -811,19 +846,36 @@ export default function MotherCare1Room() {
         </ScreenPortal>
       )}
 
-      {/* ── ป้ายและบอร์ดผนัง (ติดผนังด้านใน z = -8.80, x = -8.80 อย่างแนบสนิท) ── */}
-      <TitleSign position={[-6.3, 4.9, -8.78]} width={4.4} height={2.0} line1={B.title.line1} line2={B.title.line2} />
-      <WallBoard position={[-6.3, 2.5, -8.78]} width={3.2} height={2.6} title={B.goals.title} items={B.goals.items} />
-      <WallScreen position={[-0.8, 3.0, -8.78]} width={5.8} src={'/images/ward/zone1_slide.jpg'} room={ROOM} label="Zone 1" />
-      <WallBoard position={[4.1, 3.4, -8.78]} width={2.85} height={3.6} title={B.selfCare.title} items={B.selfCare.items} />
-      <WallBoard position={[7.2, 3.4, -8.78]} width={2.85} height={3.6} title={B.recovery.title} items={B.recovery.items} accent="#26a69a" />
+      {/* ── ป้ายและบอร์ดผนัง (ติดผนังด้านใน z = -8.76 อย่างแนบสนิท ไม่ชนกรอบโปรเจกเตอร์) ── */}
+      <TitleSign position={[-6.3, 4.9, -8.76]} width={4.4} height={2.0} line1={B.title.line1} line2={B.title.line2} />
+      <WallBoard position={[-6.3, 2.5, -8.76]} width={3.2} height={2.6} title={B.goals.title} items={B.goals.items} />
+      <WallBoard position={[4.1, 3.4, -8.76]} width={2.85} height={3.6} title={B.selfCare.title} items={B.selfCare.items} />
+      <WallBoard position={[7.2, 3.4, -8.76]} width={2.85} height={3.6} title={B.recovery.title} items={B.recovery.items} accent="#26a69a" />
+      {/* จอสไลด์ความรู้ Zone 1 ติดผนังฝั่งขวา (ไม่ซ้อนทับหลังโปรเจกเตอร์) */}
+      <WallScreen position={[8.72, 3.3, -5.6]} rotation={[0, -Math.PI / 2, 0]} width={3.4} src={'/images/ward/zone1_slide.jpg'} room={ROOM} label="Zone 1" />
       <WindowWithCurtains position={[-8.78, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          🏥 INTERACTIVE PROJECTOR LEARNING BOARD (Restored at Projector Screen per Client Request)
+          🏥 INTERACTIVE PROJECTOR LEARNING BOARD (Framed Cleanly on North Wall Projector Screen)
           ══════════════════════════════════════════════════════════════════════════ */}
+      <group position={[-0.65, 3.05, -8.76]}>
+        {/* Projector Top Housing Roller Bar */}
+        <mesh position={[0, 1.92, 0.04]} castShadow>
+          <boxGeometry args={[4.75, 0.14, 0.14]} />
+          <meshStandardMaterial color="#334155" metalness={0.5} roughness={0.3} />
+        </mesh>
+        {/* Clean Projector Screen Bezel & Matte White Canvas */}
+        <mesh position={[0, 0, -0.02]} castShadow>
+          <boxGeometry args={[4.56, 3.72, 0.05]} />
+          <meshStandardMaterial color="#8d5a3a" roughness={0.45} />
+        </mesh>
+        <mesh position={[0, 0, 0.012]}>
+          <planeGeometry args={[4.36, 3.52]} />
+          <meshBasicMaterial color="#fff9fb" />
+        </mesh>
+      </group>
       {!isBoardFullScreen && (
-        <Html position={[-0.8, 2.85, -8.62]} center transform scale={0.21} zIndexRange={[15, 0]}>
+        <Html position={[-0.65, 3.05, -8.68]} center transform scale={0.19} zIndexRange={[15, 0]}>
           {renderProjectorBoardContent(false)}
         </Html>
       )}

@@ -315,15 +315,15 @@ export default function LobbyRoom() {
 
       <WalkableRoomPortal
         roomKey="motherCare3"
-        roomNumber="Ward 103"
-        roomTitle="การดูแลเต้านมและท่าให้นม"
+        roomNumber="Mother Care 3"
+        roomTitle="ดูแลเต้านม"
         icon="🤱"
         theme="mother"
         position={[-10.78, 0, 2.2]}
         rotation={[0, Math.PI / 2, 0]}
       />
 
-      {/* Hallway Wall Artwork: Between Ward 103 & 104 */}
+      {/* Hallway Wall Artwork: Between Mother Care 3 & 4 */}
       <FramedImagePoster3D
         position={[-10.74, 2.35, 4.4]}
         rotation={[0, Math.PI / 2, 0]}
@@ -345,8 +345,8 @@ export default function LobbyRoom() {
 
       <WalkableRoomPortal
         roomKey="motherCare4"
-        roomNumber="Ward 104"
-        roomTitle="สังเกตอาการผิดปกติและแทรกซ้อน"
+        roomNumber="Mother Care 4"
+        roomTitle="สังเกตอาการผิดปกติ"
         icon="🩺"
         theme="mother"
         position={[-10.78, 0, 6.6]}

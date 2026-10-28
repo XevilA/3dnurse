@@ -13,18 +13,21 @@ export default function ImageViewerModal() {
 
   const items = activeLightboxImage?.items || null;
   const currentIndex = typeof activeLightboxImage?.currentIndex === 'number' ? activeLightboxImage.currentIndex : 0;
+  const onIndexChange = activeLightboxImage?.onIndexChange;
   const hasGallery = Array.isArray(items) && items.length > 1;
 
   const goPrev = () => {
     if (!hasGallery) return;
     const prevIdx = (currentIndex - 1 + items.length) % items.length;
-    openLightbox({ ...items[prevIdx], items, currentIndex: prevIdx });
+    onIndexChange?.(prevIdx);
+    openLightbox({ ...items[prevIdx], items, currentIndex: prevIdx, onIndexChange });
   };
 
   const goNext = () => {
     if (!hasGallery) return;
     const nextIdx = (currentIndex + 1) % items.length;
-    openLightbox({ ...items[nextIdx], items, currentIndex: nextIdx });
+    onIndexChange?.(nextIdx);
+    openLightbox({ ...items[nextIdx], items, currentIndex: nextIdx, onIndexChange });
   };
 
   // Keyboard shortcut: Escape to close, ArrowLeft/ArrowRight to navigate
@@ -42,6 +45,10 @@ export default function ImageViewerModal() {
 
   const {
     src,
+    isVideo,
+    videoUrl,
+    externalUrl,
+    citation,
     title,
     description,
     caption,
@@ -50,10 +57,11 @@ export default function ImageViewerModal() {
     details,
     clinicalDetails,
     tips,
+    hideDetails,
   } = activeLightboxImage;
   const descText = description || caption;
   const badgeText = badge || category;
-  const detailsList = details || clinicalDetails;
+  const detailsList = hideDetails ? null : (details || clinicalDetails);
 
   return (
     <div
@@ -87,15 +95,45 @@ export default function ImageViewerModal() {
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-          {/* Main Visual Image / Graphic */}
-          {src && (
-            <div className="w-full flex items-center justify-center bg-slate-950/5 rounded-2xl p-2 border border-slate-200 overflow-hidden">
-              <img
-                src={src}
-                alt={title || 'Clinical poster'}
-                className="max-h-[55vh] w-auto max-w-full object-contain rounded-xl shadow-md transition-transform hover:scale-[1.02]"
-              />
+          {/* Main Visual Image / Video Graphic */}
+          {isVideo && videoUrl ? (
+            <div className="w-full space-y-3">
+              <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-black">
+                <iframe
+                  src={videoUrl}
+                  title={title || 'Educational video'}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              {(citation || externalUrl) && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-950 flex flex-wrap items-center justify-between gap-2">
+                  {citation && <p className="font-bold">{citation}</p>}
+                  {externalUrl && (
+                    <a
+                      href={externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-sm transition shrink-0"
+                    >
+                      <span>▶</span>
+                      <span>เปิดดูบน YouTube</span>
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
+          ) : (
+            src && (
+              <div className="w-full flex items-center justify-center bg-slate-950/5 rounded-2xl p-2 border border-slate-200 overflow-hidden">
+                <img
+                  src={src}
+                  alt={title || 'Clinical poster'}
+                  className="max-h-[62vh] w-auto max-w-full object-contain rounded-xl shadow-md transition-transform hover:scale-[1.02]"
+                />
+              </div>
+            )
           )}
 
           {/* Description & Clinical Information */}

@@ -5,7 +5,7 @@ import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyAvatar from '../avatars/BabyAvatar';
 import BabyBathtub from '../furniture/BabyBathtub';
-import { DiaperStack, BabyBottle, BabyTowel, BathThermometer, CottonJar, BabyShelf, HospitalBin } from '../furniture/BabyProps';
+import { BathThermometer } from '../furniture/BabyProps';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import Pillows from '../decorations/Pillows';
 import InteractiveSeat from '../furniture/InteractiveSeat';
@@ -86,6 +86,7 @@ export default function NewbornCare2Room() {
 
   // ── Active popup modal state (ONLY shown when user clicks an object) ──
   const [activeModal, setActiveModal] = useState(null);
+  const [missionCollapsed, setMissionCollapsed] = useState(false);
   // 'acSwitch' | 'sink' | 'cottonTable' | 'cabinet' | 'missionDesk' | 'trash' | 'crib' | 'bathingWizard'
 
   // ── Derived Mission Progress ──
@@ -101,37 +102,21 @@ export default function NewbornCare2Room() {
       title: 'การเตรียมอุปกรณ์อาบน้ำและเปลี่ยนผ้าอ้อมทารก (น้ำอุ่น 37–38 °C)',
       caption: '3.1 อ่างอาบน้ำสะอาด 2 อ่าง (น้ำอุ่น อุณหภูมิ 37–38 °C) และอุปกรณ์ครบ 6 ชนิด',
       category: 'การอาบน้ำทารก (Nursery 202)',
-      clinicalDetails: [
-        '3.1 อ่างอาบน้ำสะอาด 2 อ่าง (น้ำอุ่น อุณหภูมิ 37–38 °C)',
-        '3.2 ผ้าขนหนูสำหรับเช็ด 1 ผืน และผ้าห่อตัวทารก 1 ผืน',
-        '3.3 สบู่เหลว–ยาสระผม สูตรอ่อนโยนสำหรับเด็กทารก',
-        '3.4 ผ้าผืนเล็กหรือฟองน้ำสำหรับอาบน้ำ',
-        '3.5 สำลีก้อนใส่น้ำต้มสุก/น้ำเกลือ (0.9% NSS) บิดหมาด 2 ก้อน ใส่ในถ้วยเล็กสำหรับเช็ดตาทารก',
-        '3.6 เสื้อผ้าและผ้าอ้อมทารก',
-      ],
+      hideDetails: true,
     },
     {
       src: '/references/room2/img_007.png',
       title: 'ขั้นตอนการอาบน้ำและการทำความสะอาดร่างกายทารก',
       caption: 'ประคองศีรษะในอุ้งฝ่ามือ อาบน้ำด้านหน้า อาบน้ำด้านหลัง และล้างน้ำสะอาดในอ่างที่ 2',
       category: 'การอาบน้ำทารก (Nursery 202)',
-      clinicalDetails: [
-        '1. ใช้แขนหนึ่งข้างประคองศีรษะทารกให้อยู่ในอุ้งฝ่ามือ',
-        '2. อาบน้ำด้านหน้าด้วยสบู่เหลวสูตรอ่อนโยนในอ่างที่ 1',
-        '3. อาบน้ำด้านหลังโดยประคองหน้าอกและล็อคใต้รักแร้ทารกอย่างมั่นคง',
-        '4. ย้ายทารกล้างน้ำสะอาดในอ่างที่ 2 แล้วนำขึ้นซับตัวให้แห้งทันที',
-      ],
+      hideDetails: true,
     },
     {
       src: '/references/room2/img_008.jpeg',
       title: 'การเช็ดตัวให้แห้งและการทำความสะอาดดวงตาทารก',
       caption: 'เช็ดจากหัวตาไปหางตา ทั้ง 2 ข้าง (ใช้สำลี 1 ก้อน/ตา 1 ข้าง ไม่เช็ดซ้ำ)',
       category: 'การอาบน้ำทารก (Nursery 202)',
-      clinicalDetails: [
-        '1. วางทารกบนผ้าขนหนู เช็ดตัวให้แห้งสนิทตามซอกคอ รักแร้ และข้อพับ',
-        '2. ห่อตัวทารกให้อบอุ่นก่อนเช็ดตา',
-        '3. เช็ดตาจากหัวตาไปหางตา ทั้ง 2 ข้าง (ใช้สำลีชุบน้ำต้มสุก/0.9% NSS บิดหมาด 1 ก้อนต่อตา 1 ข้าง ไม่เช็ดซ้ำ)',
-      ],
+      hideDetails: true,
     },
   ];
 
@@ -143,7 +128,7 @@ export default function NewbornCare2Room() {
     });
   };
 
-  // ── 8 TV Slides (Updated to 37–38 °C) ──
+  // ── 8 TV Slides (Complete topics 1 / 1.1 through 1.14, Updated to 37–38 °C) ──
   const tvSlidesData = [
     {
       title: 'บทเรียนที่ 2: การอาบน้ำและการเปลี่ยนผ้าอ้อมทารกแรกเกิด (1/8)',
@@ -184,15 +169,15 @@ export default function NewbornCare2Room() {
     },
     {
       title: '1.6 ถอดเสื้อผ้า-ตรวจสอบการขับถ่าย และ 1.7 นำทารกลงอ่างที่ 1 (5/8)',
-      img: '/images/rev/bath_step6_undress_check.jpg',
+      img: '/references/room2/img_006.png',
       bullets: [
         '1.6 วางทารกบนเบาะผ้า ถอดเสื้อผ้า และเปิดผ้าอ้อมตรวจสอบว่ามีการขับถ่ายหรือไม่ (เช็ดทำความสะอาดจากหน้าไปหลัง)',
         '1.7 อุ้มทารกลงอ่างอาบน้ำที่ 1 (อ่างสีฟ้า) อย่างนุ่มนวล',
       ],
     },
     {
-      title: '1.8–1.10 การฟอกสบู่และล้างน้ำสะอาดในอ่างที่ 2 (6/8)',
-      img: '/images/rev/bath_step7_tubs.jpg',
+      title: '1.8–1.10 การประคองศีรษะ ฟอกสบู่ และพลิกตัวอาบน้ำอ่างที่ 2 (6/8)',
+      img: '/references/room2/img_007.png',
       bullets: [
         '1.8 ใช้แขนหนึ่งข้างประคองศีรษะทารกให้อยู่ในอุ้งฝ่ามือ',
         '1.9 อาบน้ำด้านหน้า และอาบน้ำด้านหลังในอ่างที่ 1',
@@ -200,17 +185,17 @@ export default function NewbornCare2Room() {
       ],
     },
     {
-      title: '1.11–1.12 เช็ดตัวให้แห้ง ห่อตัว และเช็ดตาทารก (7/8)',
-      img: '/images/rev/bath_step12_eye_wipe.jpg',
+      title: '1.11–1.12.2 ซับตัวให้แห้ง ห่อตัว และเช็ดตาทารก (7/8)',
+      img: '/references/room2/img_008.jpeg',
       bullets: [
         '1.11 นำทารกวางบนผ้าขนหนู เช็ดตัวทารกให้แห้ง',
         '1.12 ห่อตัวทารก เตรียมสำลี ถ้วยสะอาดขนาดเล็ก และน้ำต้มสุก/0.9% NSS',
-        '• เช็ดจากหัวตาไปหางตา ทั้ง 2 ข้าง (ใช้สำลี 1 ก้อน/ตา 1 ข้าง ไม่เช็ดซ้ำ)',
+        '• เช็ดจากหัวตาไปหางตา ทั้ง 2 ข้าง (1.12.1 และ 1.12.2 ใช้สำลี 1 ก้อน/ตา 1 ข้าง ไม่เช็ดซ้ำ)',
       ],
     },
     {
-      title: '1.13–1.14 เช็ดสายสะดือ ใส่ผ้าอ้อม สวมเสื้อผ้า และเก็บของ (8/8)',
-      img: '/images/rev/bath_step13_cord_care.jpg',
+      title: '1.13–1.14 เช็ดสายสะดือ ใส่ผ้าอ้อม สวมเสื้อผ้า ห่อตัว และเก็บอุปกรณ์ (8/8)',
+      img: '/references/room2/img_009.png',
       bullets: [
         '1.13 ทำความสะอาดสายสะดือทารก (อ้างอิงจากห้องการดูแลสายสะดือ)',
         '1.14 คลายผ้าห่อตัว -> ใส่ผ้าอ้อม -> ใส่เสื้อผ้า -> ห่อตัวทารกอีกครั้ง -> อุ้มไปวางในเตียง -> เก็บของให้เรียบร้อย',
@@ -229,18 +214,20 @@ export default function NewbornCare2Room() {
   };
 
   const openTvGallery = (idx) => {
-    handleSelectSlide(idx);
+    const safeIdx = Math.max(0, Math.min(tvSlidesData.length - 1, idx));
+    handleSelectSlide(safeIdx);
     const gallery = tvSlidesData.map((s) => ({
       src: s.img,
       title: s.title,
-      caption: 'สื่อการเรียนรู้การอาบน้ำและเปลี่ยนผ้าอ้อมทารก (น้ำอุ่น 37–38 °C)',
+      caption: null,
       category: 'การอาบน้ำทารก (Nursery 202)',
-      clinicalDetails: s.bullets,
+      hideDetails: true,
     }));
     openLightbox({
-      ...gallery[idx],
+      ...gallery[safeIdx],
       items: gallery,
-      currentIndex: idx,
+      currentIndex: safeIdx,
+      onIndexChange: (nextIdx) => handleSelectSlide(nextIdx),
     });
   };
 
@@ -298,74 +285,92 @@ export default function NewbornCare2Room() {
       />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          TOP-RIGHT TRANSLUCENT MISSION HUD (Per bath_p5.jpg)
+          TOP-RIGHT TRANSLUCENT MISSION HUD (Collapsible per client request)
           ══════════════════════════════════════════════════════════════════════════ */}
       <ScreenPortal>
         <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/80 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-teal-200/90 text-slate-800">
-          <div className="flex items-center justify-between border-b border-teal-200/70 pb-1.5 mb-2">
-            <span className="text-xs font-extrabold text-teal-900 tracking-wide flex items-center gap-1.5">
-              📋 ภารกิจ (Mission Nursery 202)
-            </span>
+          <div className={`flex items-center justify-between gap-1.5 ${missionCollapsed ? '' : 'border-b border-teal-200/70 pb-1.5 mb-2'}`}>
             <button
-              onClick={() => setActiveModal('bathingWizard')}
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-600 text-white hover:bg-teal-500 shadow"
+              type="button"
+              onClick={() => setMissionCollapsed((v) => !v)}
+              className="text-xs font-extrabold text-teal-900 tracking-wide flex items-center gap-1 text-left cursor-pointer"
+              title={missionCollapsed ? 'คลิกเพื่อเปิดเนื้อหาภารกิจ' : 'คลิกเพื่อพับเก็บเนื้อหาภารกิจ'}
             >
-              เปิดคู่มือปฏิบัติ 14 ขั้น ▶
+              <span>📋 ภารกิจ (Nursery 202)</span>
             </button>
-          </div>
-
-          <div className="space-y-1.5 text-xs">
-            {/* Mission 1 */}
-            <div
-              onClick={() => setShowTvModal(true)}
-              className={`cursor-pointer p-2 rounded-xl border flex items-center gap-2 transition ${
-                isMission1Done ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950' : 'bg-white/90 border-slate-200 hover:border-teal-400'
-              }`}
-            >
-              <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                isMission1Done ? 'bg-emerald-600 text-white' : 'border-2 border-slate-400 text-transparent'
-              }`}>
-                ✓
-              </div>
-              <div className="flex-1 font-semibold leading-tight">
-                1. ให้ผู้เล่นเรียนรู้ผ่าน TV ให้ความรู้ ({viewedSlides.size}/8)
-              </div>
-            </div>
-
-            {/* Mission 2 */}
-            <div
-              onClick={() => setActiveModal('cabinet')}
-              className={`cursor-pointer p-2 rounded-xl border flex items-center gap-2 transition ${
-                isMission2Done ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950' : 'bg-white/90 border-slate-200 hover:border-teal-400'
-              }`}
-            >
-              <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                isMission2Done ? 'bg-emerald-600 text-white' : 'border-2 border-slate-400 text-transparent'
-              }`}>
-                ✓
-              </div>
-              <div className="flex-1 font-semibold leading-tight">
-                2. ให้ผู้เล่นเตรียมอุปกรณ์อาบน้ำและผ้าอ้อม ({collectedCount}/6)
-              </div>
-            </div>
-
-            {/* Mission 3 */}
-            <div
-              onClick={() => setActiveModal('bathingWizard')}
-              className={`cursor-pointer p-2 rounded-xl border flex items-center gap-2 transition ${
-                isMission3Done ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950' : 'bg-white/90 border-slate-200 hover:border-teal-400'
-              }`}
-            >
-              <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                isMission3Done ? 'bg-emerald-600 text-white' : 'border-2 border-slate-400 text-transparent'
-              }`}>
-                ✓
-              </div>
-              <div className="flex-1 font-semibold leading-tight">
-                3. ให้ผู้เล่นอาบน้ำทารกให้เสร็จตามขั้นตอน (ขั้นที่ {wizardStep}/14)
-              </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveModal('bathingWizard')}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-600 text-white hover:bg-teal-500 shadow cursor-pointer"
+              >
+                คู่มือ 14 ขั้น ▶
+              </button>
+              <button
+                type="button"
+                onClick={() => setMissionCollapsed((v) => !v)}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 hover:bg-teal-200 text-teal-900 border border-teal-300 transition cursor-pointer"
+                title={missionCollapsed ? 'เปิดดูรายการภารกิจ' : 'พับเก็บรายการภารกิจ'}
+              >
+                {missionCollapsed ? '▼ เปิด' : '▲ พับ'}
+              </button>
             </div>
           </div>
+
+          {!missionCollapsed && (
+            <div className="space-y-1.5 text-xs">
+              {/* Mission 1 */}
+              <div
+                onClick={() => openTvGallery(tvSlide)}
+                className={`cursor-pointer p-2 rounded-xl border flex items-center gap-2 transition ${
+                  isMission1Done ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950' : 'bg-white/90 border-slate-200 hover:border-teal-400'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                  isMission1Done ? 'bg-emerald-600 text-white' : 'border-2 border-slate-400 text-transparent'
+                }`}>
+                  ✓
+                </div>
+                <div className="flex-1 font-semibold leading-tight">
+                  1. ให้ผู้เล่นเรียนรู้ผ่าน TV ให้ความรู้ ({viewedSlides.size}/8)
+                </div>
+              </div>
+
+              {/* Mission 2 */}
+              <div
+                onClick={() => setActiveModal('cabinet')}
+                className={`cursor-pointer p-2 rounded-xl border flex items-center gap-2 transition ${
+                  isMission2Done ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950' : 'bg-white/90 border-slate-200 hover:border-teal-400'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                  isMission2Done ? 'bg-emerald-600 text-white' : 'border-2 border-slate-400 text-transparent'
+                }`}>
+                  ✓
+                </div>
+                <div className="flex-1 font-semibold leading-tight">
+                  2. ให้ผู้เล่นเตรียมอุปกรณ์อาบน้ำและผ้าอ้อม ({collectedCount}/6)
+                </div>
+              </div>
+
+              {/* Mission 3 */}
+              <div
+                onClick={() => setActiveModal('bathingWizard')}
+                className={`cursor-pointer p-2 rounded-xl border flex items-center gap-2 transition ${
+                  isMission3Done ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950' : 'bg-white/90 border-slate-200 hover:border-teal-400'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                  isMission3Done ? 'bg-emerald-600 text-white' : 'border-2 border-slate-400 text-transparent'
+                }`}>
+                  ✓
+                </div>
+                <div className="flex-1 font-semibold leading-tight">
+                  3. ให้ผู้เล่นอาบน้ำทารกให้เสร็จตามขั้นตอน (ขั้นที่ {wizardStep}/14)
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </ScreenPortal>
 
@@ -599,7 +604,7 @@ export default function NewbornCare2Room() {
         </mesh>
       </group>
 
-      {/* Wall-Mounted TV Screen */}
+      {/* Wall-Mounted TV Screen — Full-image display without side text box per pdf4_bath_p1.png */}
       <group position={[-6.4, 2.65, -2.8]} rotation={[0, Math.PI / 2, 0]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[3.2, 1.9, 0.06]} />
@@ -611,23 +616,23 @@ export default function NewbornCare2Room() {
         </mesh>
         <Html position={[0, 0, 0.045]} center transform scale={0.24}>
           <div
-            className="select-none bg-slate-900 text-white rounded-lg p-3 shadow-2xl flex flex-col justify-between"
+            className="select-none bg-slate-900 text-white rounded-lg p-2.5 shadow-2xl flex flex-col justify-between"
             style={{ width: '540px', height: '320px', border: '3px solid #00897b' }}
           >
-            <div className="flex items-center justify-between border-b border-slate-700 pb-1.5">
+            <div className="flex items-center justify-between border-b border-slate-700 pb-1">
               <span className="font-bold text-teal-300 text-xs flex items-center gap-1">
                 📺 สื่อให้ความรู้การอาบน้ำทารก ({tvSlide + 1}/8)
               </span>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => openTvGallery(tvSlide)}
-                  className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow"
+                  className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow cursor-pointer"
                 >
                   🔍 ขยายภาพ
                 </button>
                 <button
                   onClick={() => setShowTvModal(true)}
-                  className="bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow"
+                  className="bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow cursor-pointer"
                 >
                   📖 ดูเต็มจอ
                 </button>
@@ -635,30 +640,22 @@ export default function NewbornCare2Room() {
             </div>
 
             <div
-              className="my-1.5 flex-1 bg-slate-800 p-2 rounded border border-slate-700 flex gap-2.5 items-center cursor-pointer hover:bg-slate-750 transition"
+              className="my-1 flex-1 min-h-0 bg-white p-1 rounded border border-slate-700 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-teal-400 transition overflow-hidden"
               onClick={() => openTvGallery(tvSlide)}
+              title="คลิกเพื่อขยายภาพพร้อมปุ่ม ก่อนหน้า/ถัดไป"
             >
               <img
                 src={tvSlidesData[tvSlide].img}
                 alt={tvSlidesData[tvSlide].title}
-                className="w-36 h-28 object-contain rounded bg-white p-1 border border-slate-600"
+                className="w-full h-full object-contain rounded"
               />
-              <div className="flex-1 text-left">
-                <h4 className="font-bold text-amber-300 text-xs">{tvSlidesData[tvSlide].title}</h4>
-                <p className="text-[10px] text-slate-200 mt-1 line-clamp-3 leading-relaxed">
-                  {tvSlidesData[tvSlide].bullets[0]}
-                </p>
-                <span className="text-[9px] text-sky-400 font-semibold underline mt-1 inline-block">
-                  🔍 คลิกเพื่อดูภาพขยายใหญ่ (พร้อมปุ่ม ก่อนหน้า/ถัดไป)
-                </span>
-              </div>
             </div>
 
             <div className="flex items-center justify-between pt-1 border-t border-slate-800">
               <button
                 disabled={tvSlide === 0}
                 onClick={() => handleSelectSlide(tvSlide - 1)}
-                className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-xs rounded font-bold"
+                className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-xs rounded font-bold cursor-pointer"
               >
                 ◀ ก่อนหน้า
               </button>
@@ -668,7 +665,7 @@ export default function NewbornCare2Room() {
               <button
                 disabled={tvSlide === tvSlidesData.length - 1}
                 onClick={() => handleSelectSlide(tvSlide + 1)}
-                className="px-2.5 py-1 bg-teal-600 hover:bg-teal-500 disabled:opacity-40 text-xs rounded font-bold"
+                className="px-2.5 py-1 bg-teal-600 hover:bg-teal-500 disabled:opacity-40 text-xs rounded font-bold cursor-pointer"
               >
                 ถัดไป ▶
               </button>
@@ -677,112 +674,36 @@ export default function NewbornCare2Room() {
         </Html>
       </group>
 
-      {/* ── 2-Section Nursery Cabinet ("ชุดอุปกรณ์ของใช้และของตกแต่งทารก" per /images/rev/bath_cabinet_ref.jpg) ──
-           Left section: ตกแต่ง (Teddy bears, frames, yarn balls, baskets)
-           Right section: ตู้ของใช้ทารก (1. ผ้าอ้อมทารก, 2. สบู่อ่อน-ยาสระผมเด็ก, 3. เสื้อผ้าทารก, 4. ผ้าขนหนู, 5. ผ้าห่อทารก) */}
+      {/* ── 2 Small Trash Bins (Green / Red) on West Wall where old cabinet was removed (pdf4_bath_p1.png ①) ── */}
       <group
-        position={[-6.05, 0, 0.85]}
+        position={[-6.08, 0, 0.85]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
-          setActiveModal('cabinet');
+          setActiveModal('trash');
         }}
       >
-        {/* Outer Birch Wood Cabinet Frame */}
-        <mesh position={[0, 1.15, 0]} castShadow receiveShadow>
-          <boxGeometry args={[2.3, 2.3, 0.48]} />
-          <meshStandardMaterial color="#d4a373" roughness={0.4} />
-        </mesh>
-        {/* Inner White/Cream Backing */}
-        <mesh position={[0, 1.15, 0.04]}>
-          <boxGeometry args={[2.16, 2.16, 0.42]} />
-          <meshStandardMaterial color="#faf6f0" roughness={0.5} />
-        </mesh>
-        {/* Center Vertical Divider (Separating Left Decor vs Right Baby Supplies) */}
-        <mesh position={[0, 1.15, 0.06]} castShadow>
-          <boxGeometry args={[0.05, 2.16, 0.44]} />
-          <meshStandardMaterial color="#c29b68" roughness={0.4} />
-        </mesh>
-        {/* 3 Horizontal Shelf Dividers */}
-        {[0.6, 1.15, 1.7].map((y, i) => (
-          <mesh key={`shelf_div_${i}`} position={[0, y, 0.06]} castShadow>
-            <boxGeometry args={[2.16, 0.04, 0.44]} />
-            <meshStandardMaterial color="#c29b68" roughness={0.4} />
-          </mesh>
-        ))}
-
-        {/* LEFT SECTION (x = -0.55): ของตกแต่งทารก (Teddy Bear, Footprint Frame, Yarn Balls, Baskets) */}
-        <group position={[-0.55, 0, 0.14]}>
-          {/* Top Shelf: Teddy Bear & Footprint Frame */}
-          <mesh position={[-0.2, 1.85, 0]} castShadow>
-            <sphereGeometry args={[0.1, 16, 16]} />
-            <meshStandardMaterial color="#b45309" roughness={0.85} />
-          </mesh>
-          <mesh position={[-0.2, 1.98, 0]} castShadow>
-            <sphereGeometry args={[0.08, 16, 16]} />
-            <meshStandardMaterial color="#b45309" roughness={0.85} />
-          </mesh>
-          <mesh position={[0.2, 1.88, 0]} castShadow>
-            <boxGeometry args={[0.24, 0.28, 0.03]} />
-            <meshStandardMaterial color="#fde68a" />
-          </mesh>
-          {/* Middle Shelf: Pastel Yarn Balls & Blocks */}
-          {[-0.22, 0, 0.22].map((x, idx) => (
-            <mesh key={`yarn_${idx}`} position={[x, 1.28, 0]} castShadow>
-              <sphereGeometry args={[0.08, 16, 16]} />
-              <meshStandardMaterial
-                color={idx === 0 ? '#fbcfe8' : idx === 1 ? '#bae6fd' : '#fef08a'}
-                roughness={0.8}
-              />
-            </mesh>
-          ))}
-          {/* Lower Shelves: Woven Storage Baskets */}
-          <mesh position={[0, 0.78, 0]} castShadow>
-            <boxGeometry args={[0.72, 0.28, 0.3]} />
-            <meshStandardMaterial color="#e6ccb2" roughness={0.7} />
-          </mesh>
+        {/* Green General Waste Bin */}
+        <group position={[-0.28, 0, 0]}>
           <mesh position={[0, 0.28, 0]} castShadow>
-            <boxGeometry args={[0.72, 0.28, 0.3]} />
-            <meshStandardMaterial color="#ddb892" roughness={0.7} />
+            <cylinderGeometry args={[0.18, 0.15, 0.56, 24]} />
+            <meshStandardMaterial color="#16a34a" roughness={0.35} />
+          </mesh>
+          <mesh position={[0, 0.57, 0]} castShadow>
+            <cylinderGeometry args={[0.19, 0.19, 0.04, 24]} />
+            <meshStandardMaterial color="#15803d" roughness={0.3} />
           </mesh>
         </group>
 
-        {/* RIGHT SECTION (x = 0.55): ตู้ของใช้ทารก 1..5 */}
-        <group position={[0.55, 0, 0.14]}>
-          {/* 1. ผ้าอ้อมทารก & 3. เสื้อผ้าทารก (Top Shelf) */}
-          <mesh position={[-0.2, 1.82, 0]} castShadow>
-            <boxGeometry args={[0.34, 0.16, 0.26]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
+        {/* Red Infectious / Soiled Diaper Waste Bin */}
+        <group position={[0.28, 0, 0]}>
+          <mesh position={[0, 0.28, 0]} castShadow>
+            <cylinderGeometry args={[0.18, 0.15, 0.56, 24]} />
+            <meshStandardMaterial color="#dc2626" roughness={0.35} />
           </mesh>
-          <mesh position={[0.22, 1.82, 0]} castShadow>
-            <boxGeometry args={[0.34, 0.14, 0.26]} />
-            <meshStandardMaterial color="#bae6fd" roughness={0.75} />
-          </mesh>
-
-          {/* 2. สบู่อ่อน–ยาสระผมเด็ก & ฟองน้ำ (Middle Top Shelf) */}
-          <mesh position={[-0.18, 1.32, 0]} castShadow>
-            <cylinderGeometry args={[0.045, 0.05, 0.22, 16]} />
-            <meshStandardMaterial color="#38bdf8" roughness={0.3} />
-          </mesh>
-          <mesh position={[0, 1.32, 0]} castShadow>
-            <cylinderGeometry args={[0.045, 0.05, 0.22, 16]} />
-            <meshStandardMaterial color="#f472b6" roughness={0.3} />
-          </mesh>
-          <mesh position={[0.22, 1.28, 0]} castShadow>
-            <sphereGeometry args={[0.075, 16, 16]} />
-            <meshStandardMaterial color="#fde047" roughness={0.95} />
-          </mesh>
-
-          {/* 4. ผ้าขนหนู (Middle Lower Shelf) */}
-          <mesh position={[0, 0.76, 0]} castShadow>
-            <boxGeometry args={[0.68, 0.18, 0.28]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.9} />
-          </mesh>
-
-          {/* 5. ผ้าห่อทารก (Bottom Shelf) */}
-          <mesh position={[0, 0.26, 0]} castShadow>
-            <boxGeometry args={[0.68, 0.18, 0.28]} />
-            <meshStandardMaterial color="#fef08a" roughness={0.85} />
+          <mesh position={[0, 0.57, 0]} castShadow>
+            <cylinderGeometry args={[0.19, 0.19, 0.04, 24]} />
+            <meshStandardMaterial color="#b91c1c" roughness={0.3} />
           </mesh>
         </group>
       </group>
@@ -790,7 +711,8 @@ export default function NewbornCare2Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           3. CENTER AREA:
              - Expanded Wooden Bathing Table with 2 Tubs (Blue & Pink) + Padded Towel Mat
-             - 3D RealisticNewborn positioned dynamically in Tub 1, Tub 2, or on Mat!
+             - All staged accessories strictly inside wooden tabletop (no overhang)
+             - 3D Baby positioned dynamically in Tub 1, Tub 2, or on Mat!
           ══════════════════════════════════════════════════════════════════════════ */}
       <group position={[0.2, 0, -0.4]}>
         <BabyBathtub
@@ -799,12 +721,8 @@ export default function NewbornCare2Room() {
           onMatClick={() => setActiveModal('bathingWizard')}
         />
 
-        {/* ── Baby Bath Props — ผ้าเช็ดตัว, เทอร์โมมิเตอร์, สำลี, ผ้าอ้อม บนโต๊ะข้างอ่าง ── */}
-        {/* BabyBathtub group is at [0.2, 0, -0.4]; table surface Y ≈ 0.93; right edge X ≈ 1.75 */}
-        <BabyTowel position={[1.75, 0.97, -0.4]} rotation={[0, 0.3, 0]} />
-        <BathThermometer position={[2.05, 1.04, -0.52]} />
-        <CottonJar position={[2.05, 1.00, -0.28]} />
-        <DiaperStack position={[2.30, 0.95, -0.4]} count={6} />
+        {/* Water thermometer resting flat beside the soap/shampoo tray well inside tabletop bounds */}
+        <BathThermometer position={[-0.65, 0.88, -0.35]} rotation={[Math.PI / 2, 0, 0.25]} />
 
         {/* 3D Baby inside Blue Tub #1 (Step 7–9) */}
         {babyLocation === 'tub1' && (
@@ -829,42 +747,254 @@ export default function NewbornCare2Room() {
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          4. SOUTH WALL & SOUTH-WEST CORNER:
-             - Corner Trash Bins: 2 small bins (Green / Red) in South-West Corner
-             - Realistic Handwashing Sink (with "ล้างมือ" button on click)
+          4. SOUTH WALL & SOUTH-EAST CORNER NURSERY SET (Per pdf4_bath_p3.png ภาพที่ 3 & 4):
+             - Unit ① (East Wall, x = 6.16): ชั้นตกแต่งสวยงามสำหรับทารก (White Decor Shelving)
+             - Unit ② (South Wall, z = 6.16): ตู้ของใช้ทารก 1..5 (Warm Oak Baby Supplies Cabinet)
+             - Realistic Handwashing Sink (South Wall)
              - Adjacent Small Table with Cotton ball pack / Warm water / 0.9% NSS bottle
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* 2 Small Trash Bins (Green / Red) in the South-West Corner ("เปลี่ยนเป็นถังขยะใบเล็ก 2 ใบ สีเขียว / แดง มาทางนี้มุมห้อง") */}
+      {/* ── UNIT ① (EAST WALL, South-East Corner): ชั้นตกแต่งสวยงามสำหรับทารก ── */}
       <group
-        position={[-5.55, 0, 5.45]}
+        position={[6.16, 0, 4.65]}
+        rotation={[0, -Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
-          setActiveModal('trash');
+          setActiveModal('cabinet');
         }}
       >
-        {/* Green General Waste Bin */}
-        <group position={[-0.26, 0, 0]}>
-          <mesh position={[0, 0.28, 0]} castShadow>
-            <cylinderGeometry args={[0.18, 0.15, 0.56, 24]} />
-            <meshStandardMaterial color="#16a34a" roughness={0.35} />
+        {/* White/Cream Decorative Open Bookcase Frame */}
+        <mesh position={[0, 1.08, -0.20]} castShadow receiveShadow>
+          <boxGeometry args={[2.06, 2.16, 0.04]} />
+          <meshStandardMaterial color="#f8f5f0" roughness={0.55} />
+        </mesh>
+        {[-1.01, 1.01].map((sx, i) => (
+          <mesh key={`dec_side_${i}`} position={[sx, 1.08, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.04, 2.16, 0.44]} />
+            <meshStandardMaterial color="#efe9df" roughness={0.5} />
           </mesh>
-          <mesh position={[0, 0.57, 0]} castShadow>
-            <cylinderGeometry args={[0.19, 0.19, 0.04, 24]} />
-            <meshStandardMaterial color="#15803d" roughness={0.3} />
+        ))}
+        {[0.04, 0.72, 1.40, 2.14].map((sy, i) => (
+          <mesh key={`dec_shelf_${i}`} position={[0, sy, 0]} castShadow receiveShadow>
+            <boxGeometry args={[2.06, 0.04, 0.44]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.45} />
+          </mesh>
+        ))}
+
+        {/* Top Shelf (y = 1.42): Cute Plush Teddy Bear + 2 Baby Footprint Frames + Pastel Mobile Stand */}
+        <group position={[-0.62, 1.42, 0.04]}>
+          {/* Teddy Body & Head */}
+          <mesh position={[0, 0.14, 0]} castShadow>
+            <sphereGeometry args={[0.13, 18, 18]} />
+            <meshStandardMaterial color="#c08552" roughness={0.88} />
+          </mesh>
+          <mesh position={[0, 0.32, 0.01]} castShadow>
+            <sphereGeometry args={[0.105, 18, 18]} />
+            <meshStandardMaterial color="#c08552" roughness={0.88} />
+          </mesh>
+          {/* Ears & Cream Snout */}
+          {[-0.075, 0.075].map((ex, i) => (
+            <mesh key={`tb1_ear_${i}`} position={[ex, 0.40, 0]} castShadow>
+              <sphereGeometry args={[0.036, 12, 12]} />
+              <meshStandardMaterial color="#9c6644" roughness={0.88} />
+            </mesh>
+          ))}
+          <mesh position={[0, 0.30, 0.095]}>
+            <sphereGeometry args={[0.038, 12, 12]} />
+            <meshStandardMaterial color="#faedcd" roughness={0.8} />
+          </mesh>
+          {/* Teddy Seated Legs */}
+          {[-0.08, 0.08].map((lx, i) => (
+            <mesh key={`tb1_leg_${i}`} position={[lx, 0.06, 0.10]} castShadow>
+              <sphereGeometry args={[0.048, 12, 12]} />
+              <meshStandardMaterial color="#b07d4b" roughness={0.88} />
+            </mesh>
+          ))}
+        </group>
+        {/* 2 Pastel Footprint Picture Frames */}
+        {[-0.12, 0.24].map((fx, i) => (
+          <group key={`fp_frame_${i}`} position={[fx, 1.58, -0.04]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.26, 0.30, 0.03]} />
+              <meshStandardMaterial color="#e6ccb2" roughness={0.5} />
+            </mesh>
+            <mesh position={[0, 0, 0.017]}>
+              <planeGeometry args={[0.21, 0.25]} />
+              <meshStandardMaterial color={i === 0 ? '#e0f2fe' : '#fce7f3'} roughness={0.7} />
+            </mesh>
+          </group>
+        ))}
+        {/* Pastel Star/Cloud Nursery Stand */}
+        <group position={[0.66, 1.42, 0.02]}>
+          <mesh position={[0, 0.02, 0]} castShadow>
+            <cylinderGeometry args={[0.10, 0.11, 0.03, 18]} />
+            <meshStandardMaterial color="#fde68a" roughness={0.6} />
+          </mesh>
+          <mesh position={[0, 0.22, 0]}>
+            <cylinderGeometry args={[0.012, 0.012, 0.38, 10]} />
+            <meshStandardMaterial color="#d4a373" />
+          </mesh>
+          <mesh position={[0, 0.42, 0]} castShadow>
+            <sphereGeometry args={[0.08, 16, 16]} />
+            <meshStandardMaterial color="#bae6fd" roughness={0.7} />
           </mesh>
         </group>
 
-        {/* Red Infectious / Soiled Diaper Waste Bin */}
-        <group position={[0.26, 0, 0]}>
-          <mesh position={[0, 0.28, 0]} castShadow>
-            <cylinderGeometry args={[0.18, 0.15, 0.56, 24]} />
-            <meshStandardMaterial color="#dc2626" roughness={0.35} />
+        {/* Middle Shelf (y = 0.74): Footprint Frame + Pastel Toy Blocks + Second Plush Bear */}
+        <group position={[-0.64, 0.90, -0.04]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.28, 0.30, 0.03]} />
+            <meshStandardMaterial color="#ddb892" roughness={0.5} />
           </mesh>
-          <mesh position={[0, 0.57, 0]} castShadow>
-            <cylinderGeometry args={[0.19, 0.19, 0.04, 24]} />
-            <meshStandardMaterial color="#b91c1c" roughness={0.3} />
+          <mesh position={[0, 0, 0.017]}>
+            <planeGeometry args={[0.22, 0.24]} />
+            <meshStandardMaterial color="#fef3c7" roughness={0.7} />
           </mesh>
         </group>
+        {[-0.18, -0.04, 0.10].map((bx, i) => (
+          <mesh key={`blk_${i}`} position={[bx, 0.80, 0.05]} castShadow>
+            <boxGeometry args={[0.10, 0.10, 0.10]} />
+            <meshStandardMaterial
+              color={i === 0 ? '#fbcfe8' : i === 1 ? '#a7f3d0' : '#bae6fd'}
+              roughness={0.65}
+            />
+          </mesh>
+        ))}
+        <mesh position={[-0.11, 0.90, 0.05]} castShadow>
+          <boxGeometry args={[0.10, 0.10, 0.10]} />
+          <meshStandardMaterial color="#fde68a" roughness={0.65} />
+        </mesh>
+        {/* Rose-Beige Plush Bear on Right of Middle Shelf */}
+        <group position={[0.58, 0.74, 0.04]}>
+          <mesh position={[0, 0.13, 0]} castShadow>
+            <sphereGeometry args={[0.12, 16, 16]} />
+            <meshStandardMaterial color="#d4a373" roughness={0.88} />
+          </mesh>
+          <mesh position={[0, 0.29, 0.01]} castShadow>
+            <sphereGeometry args={[0.095, 16, 16]} />
+            <meshStandardMaterial color="#d4a373" roughness={0.88} />
+          </mesh>
+          {[-0.07, 0.07].map((ex, i) => (
+            <mesh key={`tb2_ear_${i}`} position={[ex, 0.36, 0]} castShadow>
+              <sphereGeometry args={[0.032, 12, 12]} />
+              <meshStandardMaterial color="#b08968" roughness={0.88} />
+            </mesh>
+          ))}
+        </group>
+
+        {/* Bottom Shelf (y = 0.06): Pastel Yarn Balls + Soft Woven Nursery Basket */}
+        {[
+          [-0.68, 0.16, '#fbcfe8'],
+          [-0.48, 0.16, '#a7f3d0'],
+          [-0.28, 0.16, '#fef08a'],
+          [-0.58, 0.30, '#bae6fd'],
+          [-0.38, 0.30, '#f5ebe0'],
+        ].map(([yx, yy, col], idx) => (
+          <mesh key={`dec_yarn_${idx}`} position={[yx, yy, 0.05]} castShadow>
+            <sphereGeometry args={[0.088, 16, 16]} />
+            <meshStandardMaterial color={col} roughness={0.85} />
+          </mesh>
+        ))}
+        <mesh position={[0.42, 0.24, 0.03]} castShadow>
+          <boxGeometry args={[0.78, 0.34, 0.32]} />
+          <meshStandardMaterial color="#e6ccb2" roughness={0.75} />
+        </mesh>
+      </group>
+
+      {/* ── UNIT ② (SOUTH WALL, South-East Corner): ตู้ของใช้ทารก 1..5 (Click to prepare items) ── */}
+      <group
+        position={[4.95, 0, 6.16]}
+        rotation={[0, Math.PI, 0]}
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveModal('cabinet');
+        }}
+      >
+        {/* Warm Honey-Oak Outer Cabinet Frame */}
+        <mesh position={[0, 1.09, -0.21]} castShadow receiveShadow>
+          <boxGeometry args={[1.86, 2.18, 0.04]} />
+          <meshStandardMaterial color="#faf6f0" roughness={0.5} />
+        </mesh>
+        {[-0.91, 0.91].map((sx, i) => (
+          <mesh key={`cab_side_${i}`} position={[sx, 1.09, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.045, 2.18, 0.46]} />
+            <meshStandardMaterial color="#c89662" roughness={0.42} />
+          </mesh>
+        ))}
+        {[0.04, 0.72, 1.40, 2.16].map((sy, i) => (
+          <mesh key={`cab_shelf_${i}`} position={[0, sy, 0]} castShadow receiveShadow>
+            <boxGeometry args={[1.86, 0.045, 0.46]} />
+            <meshStandardMaterial color="#c89662" roughness={0.42} />
+          </mesh>
+        ))}
+
+        {/* Top Shelf (y = 1.42): 5. ผ้าห่อทารก (Folded Swaddle Wraps) + 2. สบู่อ่อน–ยาสระผมเด็ก (Pump Bottles) */}
+        {[0.05, 0.14, 0.23].map((wy, i) => (
+          <mesh key={`swaddle_pack_${i}`} position={[-0.44, 1.42 + wy, 0.04]} castShadow>
+            <boxGeometry args={[0.58, 0.075, 0.30]} />
+            <meshStandardMaterial
+              color={i === 0 ? '#fef9c3' : i === 1 ? '#ffffff' : '#e0f2fe'}
+              roughness={0.82}
+            />
+          </mesh>
+        ))}
+        {[
+          [0.12, '#a7f3d0', 0.26],
+          [0.32, '#fbcfe8', 0.28],
+          [0.52, '#bae6fd', 0.26],
+          [0.70, '#fef08a', 0.20],
+        ].map(([bx, bcol, bh], i) => (
+          <group key={`soap_btl_${i}`} position={[bx, 1.42, 0.05]}>
+            <mesh position={[0, bh / 2, 0]} castShadow>
+              <cylinderGeometry args={[0.055, 0.06, bh, 18]} />
+              <meshStandardMaterial color={bcol} roughness={0.3} />
+            </mesh>
+            <mesh position={[0, bh + 0.025, 0]}>
+              <cylinderGeometry args={[0.018, 0.022, 0.05, 12]} />
+              <meshStandardMaterial color="#ffffff" />
+            </mesh>
+          </group>
+        ))}
+
+        {/* Middle Shelf (y = 0.74): 1. ผ้าอ้อมทารก (Teal Diaper Pack) + 3. เสื้อผ้าทารก + 4. ผ้าขนหนู */}
+        {/* 1. ผ้าอ้อมทารก (Pampers-style Pack) */}
+        <group position={[-0.54, 0.94, 0.04]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.46, 0.34, 0.28]} />
+            <meshStandardMaterial color="#0d9488" roughness={0.38} />
+          </mesh>
+          <mesh position={[0, 0, 0.142]}>
+            <planeGeometry args={[0.36, 0.22]} />
+            <meshBasicMaterial color="#fef08a" />
+          </mesh>
+        </group>
+        {/* 3. เสื้อผ้าทารก (Folded Pastel Baby Clothes Stack) */}
+        {[0.05, 0.13, 0.21].map((cy, i) => (
+          <mesh key={`clothes_st_${i}`} position={[0.02, 0.74 + cy, 0.04]} castShadow>
+            <boxGeometry args={[0.42, 0.065, 0.28]} />
+            <meshStandardMaterial
+              color={i === 0 ? '#fce7f3' : i === 1 ? '#ffffff' : '#bae6fd'}
+              roughness={0.82}
+            />
+          </mesh>
+        ))}
+        {/* 4. ผ้าขนหนู (Soft Folded Pastel Bath Towels) */}
+        {[0.06, 0.15, 0.24].map((ty, i) => (
+          <mesh key={`towel_st_${i}`} position={[0.54, 0.74 + ty, 0.04]} castShadow>
+            <boxGeometry args={[0.44, 0.075, 0.30]} />
+            <meshStandardMaterial
+              color={i === 0 ? '#d9f99d' : i === 1 ? '#ffffff' : '#fbcfe8'}
+              roughness={0.88}
+            />
+          </mesh>
+        ))}
+
+        {/* Bottom Shelf (y = 0.06): 3 Warm Rattan Woven Storage Baskets */}
+        {[-0.56, 0, 0.56].map((kx, i) => (
+          <mesh key={`rattan_bsk_${i}`} position={[kx, 0.25, 0.03]} castShadow>
+            <boxGeometry args={[0.50, 0.34, 0.34]} />
+            <meshStandardMaterial color="#b07d4b" roughness={0.78} />
+          </mesh>
+        ))}
       </group>
 
       {/* Realistic Handwashing Sink Counter (South Wall, X: -3.6, Z: 5.5) */}
@@ -2129,22 +2259,12 @@ export default function NewbornCare2Room() {
                 </button>
               </div>
 
-              <div className="mt-4 space-y-4">
+              <div className="mt-4">
                 <img
                   src={tvSlidesData[tvSlide].img}
                   alt={tvSlidesData[tvSlide].title}
-                  className="w-full h-64 object-contain rounded-xl bg-white p-2 border border-slate-700"
+                  className="w-full max-h-[64vh] object-contain rounded-xl bg-white p-2 border border-slate-700"
                 />
-                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2 text-sm">
-                  <h4 className="font-bold text-amber-300 text-base border-b border-slate-700 pb-1.5">
-                    สาระสำคัญทางการพยาบาล (น้ำอุ่น อุณหภูมิ 37–38 °C)
-                  </h4>
-                  <ul className="space-y-1.5 list-disc pl-5 text-slate-200">
-                    {tvSlidesData[tvSlide].bullets.map((b, i) => (
-                      <li key={i}>{b}</li>
-                    ))}
-                  </ul>
-                </div>
               </div>
 
               <div className="mt-6 flex items-center justify-between border-t border-slate-800 pt-3">

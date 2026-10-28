@@ -14,14 +14,13 @@ import {
   CozyRoomDecorCorners,
 } from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
-import { DiaperStack, BabyBottle, CottonJar } from '../furniture/BabyProps';
 
 // ── ข้อมูลโปสเตอร์ผนังทั้ง 3 ด้าน (ตามไฟล์สมุดโน้ตไม่มีชื่อ 2.pdf และ IMG_7528.JPG) ──
 const W103_GALLERY = [
   {
     src: '/images/rev/w103_col1.jpg',
     title: 'ผนังที่ 1: 1. การดูแลเต้านม',
-    badge: 'ผนังที่ 1 • Ward 103',
+    badge: 'ผนังที่ 1',
     description: 'สังเกตความปกติของเต้านม (ปกติ, บวม, แดง ร้อน, เจ็บ กดเจ็บ), การทำความสะอาดเต้านม และการประเมินเต้านมด้วยตนเอง',
     details: [
       'สังเกตความปกติของเต้านม: ปกติ / บวม / แดง ร้อน / เจ็บ กดเจ็บ',
@@ -32,7 +31,7 @@ const W103_GALLERY = [
   {
     src: '/images/rev/w103_col2.jpg',
     title: 'ผนังที่ 2: 2. การนวดเต้านมและกระตุ้นการไหลของน้ำนม',
-    badge: 'ผนังที่ 2 • Ward 103',
+    badge: 'ผนังที่ 2',
     description: 'นวดเบา ๆ วันละ 2–3 ครั้ง หรือก่อนให้นม/เมื่อรู้สึกคัดตึง',
     details: [
       '1. ใช้นิ้วมือวนเบา ๆ จากฐานเต้านมเข้าหาหัวนม',
@@ -92,7 +91,7 @@ const W103_GALLERY = [
   {
     src: '/images/rev/w103_scenarios.jpg',
     title: 'สถานการณ์จำลอง: การดูแลเต้านม (4 สถานการณ์)',
-    badge: 'สถานการณ์จำลอง • Ward 103',
+    badge: 'สถานการณ์จำลอง',
     description: 'ฝึกวิเคราะห์และเลือกวิธีจัดการปัญหาเต้านมทั้ง 4 สถานการณ์อย่างเหมาะสม',
   },
 ];
@@ -156,6 +155,7 @@ export default function MotherCare3Room() {
   const openLightbox = useStore((s) => s.openLightbox);
 
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [missionCollapsed, setMissionCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('massage'); // 'massage' | 'scenarios' | 'quiz'
   const [practicedSteps, setPracticedSteps] = useState([]);
   const [selectedOpts, setSelectedOpts] = useState({ 1: [], 2: [], 3: [], 4: [] });
@@ -172,11 +172,11 @@ export default function MotherCare3Room() {
     openLightbox({
       ...item,
       caption: item.description,
-      category: 'การดูแลเต้านม (Ward 103)',
+      category: 'การดูแลเต้านม',
       items: W103_GALLERY.map((g) => ({
         ...g,
         caption: g.description,
-        category: 'การดูแลเต้านม (Ward 103)',
+        category: 'การดูแลเต้านม',
       })),
       currentIndex: index,
     });
@@ -263,69 +263,89 @@ export default function MotherCare3Room() {
       <HospitalRoomShell
         theme="mother"
         cozyMode={true}
-        roomTitle="ห้องบริบาลมารดา 3: การดูแลเต้านม"
-        roomNumber="Ward 103"
+        roomTitle="การดูแลเต้านม"
+        roomNumber=""
       />
 
       {/* ── Top-Right Mission HUD (Portaled to document.body) ── */}
       <ScreenPortal>
         <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border-2 border-pink-400 text-slate-800">
-          <div className="flex items-center justify-between border-b border-pink-100 pb-2 mb-2">
+          <div
+            onClick={() => setMissionCollapsed((v) => !v)}
+            className={`flex items-center justify-between cursor-pointer select-none ${
+              missionCollapsed ? '' : 'border-b border-pink-100 pb-2 mb-2'
+            }`}
+          >
             <span className="text-xs font-extrabold text-pink-900">
-              🤱 ภารกิจห้องดูแลเต้านม (Ward 103)
+              🤱 ภารกิจห้องดูแลเต้านม
             </span>
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                scenarioFeedback?.pass || learningProgress?.motherCare3
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-pink-100 text-pink-700'
-              }`}
-            >
-              {scenarioFeedback?.pass || learningProgress?.motherCare3 ? 'สำเร็จแล้ว ✓' : 'กำลังเรียนรู้'}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  scenarioFeedback?.pass || learningProgress?.motherCare3
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-pink-100 text-pink-700'
+                }`}
+              >
+                {scenarioFeedback?.pass || learningProgress?.motherCare3 ? 'สำเร็จแล้ว ✓' : 'กำลังเรียนรู้'}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMissionCollapsed((v) => !v);
+                }}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-pink-100 text-slate-700 transition cursor-pointer"
+                title={missionCollapsed ? 'เปิดดูรายการภารกิจ' : 'พับเก็บหน้าต่างภารกิจ'}
+              >
+                {missionCollapsed ? '▼' : '▲'}
+              </button>
+            </div>
           </div>
-          <div className="space-y-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => openGalleryAt(0)}
-              className="w-full p-2 rounded-xl border border-pink-200 bg-pink-50 hover:bg-pink-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>🖼️ 1. ดูโปสเตอร์ความรู้รอบห้อง (6 ภาพ)</span>
-              <span className="font-bold text-pink-700">เปิดดู ▶</span>
-            </button>
+          {!missionCollapsed && (
+            <div className="space-y-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => openGalleryAt(0)}
+                className="w-full p-2 rounded-xl border border-pink-200 bg-pink-50 hover:bg-pink-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+              >
+                <span>🖼️ 1. ดูโปสเตอร์ความรู้รอบห้อง (7 ภาพ)</span>
+                <span className="font-bold text-pink-700">เปิดดู ▶</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('massage');
-                handleSitAndPractice();
-              }}
-              className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
-                practicedSteps.length === 4
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                  : 'bg-pink-50 border-pink-200 hover:bg-pink-100 text-pink-950'
-              }`}
-            >
-              <span>🛋️ 2. นั่งโซฟาฝึกนวดเต้านม ({practicedSteps.length}/4)</span>
-              <span className="font-bold">{practicedSteps.length === 4 ? '☑ ครบแล้ว' : 'ฝึกทำ ▶'}</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('massage');
+                  handleSitAndPractice();
+                }}
+                className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
+                  practicedSteps.length === 4
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                    : 'bg-pink-50 border-pink-200 hover:bg-pink-100 text-pink-950'
+                }`}
+              >
+                <span>🛋️ 2. นั่งโซฟาฝึกนวดเต้านม ({practicedSteps.length}/4)</span>
+                <span className="font-bold">{practicedSteps.length === 4 ? '☑ ครบแล้ว' : 'ฝึกทำ ▶'}</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('scenarios');
-                setShowActivityModal(true);
-              }}
-              className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
-                scenarioFeedback?.pass
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                  : 'bg-gradient-to-r from-pink-500 to-rose-600 border-pink-300 text-white shadow'
-              }`}
-            >
-              <span>📋 3. ทำสถานการณ์จำลอง 4 ข้อ</span>
-              <span className="font-bold">{scenarioFeedback?.pass ? '☑ สำเร็จ' : 'เริ่มทำ ▶'}</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('scenarios');
+                  setShowActivityModal(true);
+                }}
+                className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
+                  scenarioFeedback?.pass
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                    : 'bg-gradient-to-r from-pink-500 to-rose-600 border-pink-300 text-white shadow'
+                }`}
+              >
+                <span>📋 3. ทำสถานการณ์จำลอง 4 ข้อ</span>
+                <span className="font-bold">{scenarioFeedback?.pass ? '☑ สำเร็จ' : 'เริ่มทำ ▶'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </ScreenPortal>
 
@@ -334,58 +354,88 @@ export default function MotherCare3Room() {
 
       {/* ป้ายชื่อห้องด้านบนผนังกลาง (ติดผนังด้านใน z = -8.78 อย่างแนบสนิท) */}
       <TitleSign
-        position={[0, 5.05, -8.78]}
+        position={[0, 5.2, -8.78]}
         width={5.4}
-        height={1.55}
+        height={1.35}
         line1="ZONE 1 การดูแลเต้านม"
-        line2="Ward 103 • การดูแลเต้านมและกระตุ้นน้ำนม"
+        line2="การดูแลเต้านมและกระตุ้นการไหลของน้ำนม"
       />
 
       {/* หน้าต่างบานใหญ่พร้อมผ้าม่านโทนอบอุ่น ติดผนังด้านใน z = -8.78 */}
-      <WindowWithCurtains position={[-5.6, 2.8, -8.78]} width={3.4} height={2.8} />
-      <WindowWithCurtains position={[5.6, 2.8, -8.78]} width={3.4} height={2.8} />
+      <WindowWithCurtains position={[-6.0, 2.8, -8.78]} width={3.1} height={2.8} />
+      <WindowWithCurtains position={[6.0, 2.8, -8.78]} width={3.1} height={2.8} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 1 (ซ้าย X = -8.78): กรอบไม้ 3D แท้ติดผนัง แปะภาพ "1 การดูแลเต้านม" + โจทย์ 4 สถานการณ์
+          ผนังที่ 1 (ซ้าย X = -8.78): แผงไม้ไฟซ่อน แปะภาพ "1 การดูแลเต้านม" 2 กรอบคู่กัน (ซ้าย-ขวา)
+          ตรงตามผังหน้า 1 ของ สมุดโน้ตไม่มีชื่อ(1).pdf
           ══════════════════════════════════════════════════════════════════════════ */}
-      <FramedImagePoster3D
-        position={[-8.78, 2.75, -2.35]}
+      <WoodFramedBacklitPanel
+        position={[-8.78, 2.75, 0]}
         rotation={[0, Math.PI / 2, 0]}
-        width={4.2}
-        height={4.6}
-        src="/images/rev/w103_col1.jpg"
-        title="ผนังที่ 1: 1. การดูแลเต้านม"
-        badgeText="🔍 คลิกขยาย"
-        headerColor="#db2777"
-        onClick={() => openGalleryAt(0)}
-      />
-
-      <FramedImagePoster3D
-        position={[-8.78, 2.75, 2.55]}
-        rotation={[0, Math.PI / 2, 0]}
-        width={4.2}
-        height={4.6}
-        src="/images/rev/w103_scenarios.jpg"
-        title="สถานการณ์จำลอง: การดูแลเต้านม (4 ข้อ)"
-        badgeText="🔍 คลิกขยาย"
-        headerColor="#be185d"
-        onClick={() => openGalleryAt(6)}
-      />
+        width={9.2}
+        height={4.3}
+      >
+        <FramedImagePoster3D
+          position={[-2.35, 0.15, 0.02]}
+          width={4.2}
+          height={2.6}
+          src="/images/rev/w103_wall1_left.jpg"
+          title="1. การดูแลเต้านม — สังเกตความปกติของเต้านม"
+          badgeText="🔍 คลิกขยาย"
+          headerColor="#db2777"
+          onClick={() => openGalleryAt(0)}
+        />
+        <FramedImagePoster3D
+          position={[2.25, 0, 0.02]}
+          width={3.9}
+          height={3.6}
+          src="/images/rev/w103_wall1_right.jpg"
+          title="การทำความสะอาดเต้านม & การประเมินด้วยตนเอง"
+          badgeText="🔍 คลิกขยาย"
+          headerColor="#be185d"
+          onClick={() => openGalleryAt(0)}
+        />
+      </WoodFramedBacklitPanel>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 2 (กลาง Z = -8.78): กรอบไม้ 3D แท้ติดผนัง "2 การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
+          ผนังที่ 2 (กลาง Z = -8.78): "2 การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
+          แปะหัวข้อด้านบน + รูปขั้นตอน 1, 2, 3, 4 จัดเรียง 2x2 ให้สวยงามตามคอมเมนต์ลูกค้า
           ══════════════════════════════════════════════════════════════════════════ */}
-      <FramedImagePoster3D
-        position={[0, 2.45, -8.78]}
+      <WoodFramedBacklitPanel
+        position={[0, 2.42, -8.78]}
         rotation={[0, 0, 0]}
-        width={4.4}
-        height={3.9}
-        src="/images/rev/w103_col2.jpg"
-        title="ผนังที่ 2: 2. การนวดเต้านมและกระตุ้นน้ำนม"
-        badgeText="🔍 คลิกขยาย"
-        headerColor="#0284c7"
-        onClick={() => openGalleryAt(1)}
-      />
+        width={5.4}
+        height={4.15}
+      >
+        <FramedImagePoster3D
+          position={[0, 1.42, 0.02]}
+          width={3.7}
+          height={1.08}
+          src="/images/rev/w103_wall2_header.jpg"
+          title="2. การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
+          badgeText="🔍 ขยาย"
+          headerColor="#0284c7"
+          onClick={() => openGalleryAt(1)}
+        />
+        {[
+          { step: 1, pos: [-1.25, 0.12, 0.02], label: '1. วนเบา ๆ จากฐานเข้าหาหัวนม', img: '/images/rev/w103_wall2_step1.jpg' },
+          { step: 2, pos: [1.25, 0.12, 0.02], label: '2. นวดจากด้านนอกเข้าหาลานหัวนม', img: '/images/rev/w103_wall2_step2.jpg' },
+          { step: 3, pos: [-1.25, -1.30, 0.02], label: '3. คลึงเบา ๆ รอบลานหัวนม', img: '/images/rev/w103_wall2_step3.jpg' },
+          { step: 4, pos: [1.25, -1.30, 0.02], label: '4. เคล้น/บีบเบา ๆ ระบายน้ำนม', img: '/images/rev/w103_wall2_step4.jpg' },
+        ].map((card) => (
+          <FramedImagePoster3D
+            key={card.step}
+            position={card.pos}
+            width={2.15}
+            height={1.3}
+            src={card.img}
+            title={card.label}
+            badgeText="🔍 ขยาย"
+            headerColor="#0369a1"
+            onClick={() => openGalleryAt(1)}
+          />
+        ))}
+      </WoodFramedBacklitPanel>
 
       {/* ══════════════════════════════════════════════════════════════════════════
           ผนังที่ 3 (ขวา X = +8.78): กรอบไม้ไฟซ่อน LED ติดผนัง แปะรูป 1, 2, 3, 4 จัดเรียง 2x2 ด้วย 3D Mesh แท้
@@ -470,11 +520,6 @@ export default function MotherCare3Room() {
       <RealPlant type="potted" position={[7.6, 0, -7.2]} scale={1.2} />
       <RealPlant type="succulent" position={[7.5, 0, 6.8]} scale={1.25} />
 
-      {/* ── Baby nursing supplies on side table beside the sofa ── */}
-      <DiaperStack position={[-1.2, 0.56, 1.4]} count={2} />
-      <CottonJar position={[-1.6, 0.56, 0.9]} />
-      <BabyBottle position={[-1.0, 0.56, 0.8]} rotation={[0, -0.5, 0]} />
-
       {/* ══════════════════════════════════════════════════════════════════════════
           📋 หน้าต่างกิจกรรมฝึกนวดเต้านมบนโซฟา & สถานการณ์จำลอง 4 สถานการณ์ (IMG_7527.JPG)
           ══════════════════════════════════════════════════════════════════════════ */}
@@ -529,7 +574,7 @@ export default function MotherCare3Room() {
                     fontSize: '13px',
                     fontWeight: 900,
                   }}>
-                    Ward 103 • การดูแลเต้านม
+                    การดูแลเต้านม
                   </span>
                   <h2 style={{ margin: '6px 0 0', fontSize: '24px', fontWeight: 900, color: '#831843' }}>
                     ฝึกปฏิบัติบนโซฟาและทำสถานการณ์จำลองการดูแลเต้านม
@@ -882,7 +927,7 @@ export default function MotherCare3Room() {
                     {!quizFinished ? (
                       <div style={{ background: '#ffffff', padding: '20px', borderRadius: '18px', border: '2px solid #fbcfe8' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 800, color: '#9d174d' }}>
-                          <span>แบบประเมินความรู้ Ward 103</span>
+                          <span>แบบประเมินความรู้ การดูแลเต้านม</span>
                           <span>ข้อ {quizIndex + 1} / {room3Questions.length}</span>
                         </div>
                         <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b', marginBottom: '16px' }}>
@@ -943,7 +988,7 @@ export default function MotherCare3Room() {
                     ) : (
                       <div style={{ textAlign: 'center', padding: '24px' }}>
                         <h3 style={{ fontSize: '26px', fontWeight: 900, color: '#15803d', marginBottom: '8px' }}>
-                          🎉 ผ่านการเรียนรู้ Ward 103 การดูแลเต้านมเรียบร้อยแล้ว!
+                          🎉 ผ่านการเรียนรู้ การดูแลเต้านมเรียบร้อยแล้ว!
                         </h3>
                         <p style={{ fontSize: '17px', fontWeight: 700, color: '#475569', marginBottom: '18px' }}>
                           คะแนนแบบทดสอบทบทวน: {quizScore} / {room3Questions.length} คะแนน

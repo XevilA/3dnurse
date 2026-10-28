@@ -25,23 +25,51 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/** ตัดบรรทัดสำหรับภาษาไทย (ไม่มีช่องว่าง → ตัดทีละตัวอักษรเมื่อเต็มความกว้าง) */
+/** ตัดบรรทัดสำหรับภาษาไทย รองรับ '\n' และตัดตามขอบเขตคำภาษาไทย (Intl.Segmenter) ไม่ให้ฉีกพยางค์กลางคำ */
+const THAI_WORD_SEGMENTER =
+  typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function'
+    ? new Intl.Segmenter('th', { granularity: 'word' })
+    : null;
+
+function segmentThaiTokens(str) {
+  if (!THAI_WORD_SEGMENTER) return Array.from(str);
+  return Array.from(THAI_WORD_SEGMENTER.segment(str), (s) => s.segment);
+}
+
 function wrapLines(ctx, text, maxWidth) {
-  const words = text.split(' ');
+  const paragraphs = String(text || '').split('\n');
   const lines = [];
-  let cur = '';
-  const pushChars = (word) => {
-    for (const ch of word) {
-      if (ctx.measureText(cur + ch).width > maxWidth && cur) { lines.push(cur); cur = ch; } else cur += ch;
-    }
-  };
-  words.forEach((w) => {
-    const trial = cur ? `${cur} ${w}` : w;
-    if (ctx.measureText(trial).width <= maxWidth) cur = trial;
-    else if (ctx.measureText(w).width <= maxWidth) { if (cur) lines.push(cur); cur = w; }
-    else { if (cur) { lines.push(cur); cur = ''; } pushChars(w); }
+  paragraphs.forEach((para) => {
+    const tokens = segmentThaiTokens(para);
+    let cur = '';
+    const pushChars = (token) => {
+      for (const ch of token) {
+        if (ctx.measureText(cur + ch).width > maxWidth && cur) {
+          lines.push(cur.trimEnd());
+          cur = ch;
+        } else {
+          cur += ch;
+        }
+      }
+    };
+    tokens.forEach((tok) => {
+      if (!cur && /^\s+$/.test(tok)) return;
+      const trial = cur + tok;
+      if (ctx.measureText(trial).width <= maxWidth) {
+        cur = trial;
+      } else if (ctx.measureText(tok.trimStart()).width <= maxWidth) {
+        if (cur.trimEnd()) lines.push(cur.trimEnd());
+        cur = tok.trimStart();
+      } else {
+        if (cur.trimEnd()) {
+          lines.push(cur.trimEnd());
+          cur = '';
+        }
+        pushChars(tok.trimStart());
+      }
+    });
+    if (cur.trimEnd()) lines.push(cur.trimEnd());
   });
-  if (cur) lines.push(cur);
   return lines;
 }
 
@@ -102,7 +130,14 @@ export function WallBoard({ position, rotation = [0, 0, 0], width = 3, height = 
       ctx.fillStyle = '#3b1230'; ctx.textAlign = 'left';
       let tfs = Math.min(58, rowH * 0.42);
       ctx.font = `700 ${tfs}px ${FONT}`;
-      const maxW = w - 80 - rowH - 40;
+      const maxW = w - 80 - rowH - 48;
+      // หากไม่มี '\n' และยาวเกินบรรทัดเดียวเพียงเล็กน้อย (เช่น "เลือดออกทางช่องคลอดมาก") ให้ย่อฟอนต์เล็กน้อยเพื่อให้อยู่บรรทัด 1 ทั้งหมด
+      if (!String(it.text || '').includes('\n') && ctx.measureText(it.text).width > maxW && ctx.measureText(it.text).width <= maxW * 1.18) {
+        while (ctx.measureText(it.text).width > maxW && tfs > 40) {
+          tfs -= 2;
+          ctx.font = `700 ${tfs}px ${FONT}`;
+        }
+      }
       let lines = wrapLines(ctx, it.text, maxW);
       while (lines.length > 2 && tfs > 30) { tfs -= 3; ctx.font = `700 ${tfs}px ${FONT}`; lines = wrapLines(ctx, it.text, maxW); }
       const lh = tfs * 1.18;
@@ -117,7 +152,7 @@ export function WallBoard({ position, rotation = [0, 0, 0], width = 3, height = 
         <boxGeometry args={[width + 0.1, height + 0.1, 0.04]} />
         <meshStandardMaterial color="#f6a5c3" roughness={0.6} />
       </mesh>
-      <mesh>
+      <mesh position={[0, 0, 0.008]}>
         <planeGeometry args={[width, height]} />
         <meshBasicMaterial map={tex} toneMapped={false} />
       </mesh>
@@ -150,13 +185,15 @@ export function TitleSign({ position, rotation = [0, 0, 0], width = 4.6, height 
     // ข้อความ
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillStyle = '#1a2a6c';
-    ctx.font = `900 ${h * 0.34}px ${FONT}`;
-    ctx.fillText(line1, h * 0.8, h * 0.36);
-    let fs = h * 0.22;
+    let fs1 = Math.round(h * 0.34);
+    ctx.font = `900 ${fs1}px ${FONT}`;
+    while (ctx.measureText(line1).width > w - h * 0.88 && fs1 > 36) { fs1 -= 2; ctx.font = `900 ${fs1}px ${FONT}`; }
+    ctx.fillText(line1, h * 0.78, h * 0.36);
+    let fs = Math.round(h * 0.22);
     ctx.font = `800 ${fs}px ${FONT}`;
-    while (ctx.measureText(line2).width > w - h * 0.9 && fs > 20) { fs -= 2; ctx.font = `800 ${fs}px ${FONT}`; }
+    while (ctx.measureText(line2).width > w - h * 0.88 && fs > 20) { fs -= 2; ctx.font = `800 ${fs}px ${FONT}`; }
     ctx.fillStyle = '#243b8c';
-    ctx.fillText(line2, h * 0.8, h * 0.72);
+    ctx.fillText(line2, h * 0.78, h * 0.72);
   }, W, H, [line1, line2, width, height]);
 
   return (
@@ -165,7 +202,7 @@ export function TitleSign({ position, rotation = [0, 0, 0], width = 4.6, height 
         <boxGeometry args={[width + 0.1, height + 0.1, 0.04]} />
         <meshStandardMaterial color="#f6a5c3" roughness={0.6} />
       </mesh>
-      <mesh>
+      <mesh position={[0, 0, 0.008]}>
         <planeGeometry args={[width, height]} />
         <meshBasicMaterial map={tex} toneMapped={false} transparent />
       </mesh>
@@ -174,7 +211,7 @@ export function TitleSign({ position, rotation = [0, 0, 0], width = 4.6, height 
 }
 
 /** จอสไลด์ติดผนัง — คลิกเพื่อเปิดสไลด์ขยาย */
-export function WallScreen({ position, rotation = [0, 0, 0], width = 6.6, src, room, label }) {
+export function WallScreen({ position, rotation = [0, 0, 0], width = 6.6, src, room, label, hideButton = false }) {
   const tex = useTexture(src);
   useMemo(() => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; tex.needsUpdate = true; }, [tex]);
   const height = width * (tex.image ? tex.image.height / tex.image.width : 2 / 3);
@@ -191,20 +228,22 @@ export function WallScreen({ position, rotation = [0, 0, 0], width = 6.6, src, r
         <boxGeometry args={[width + 0.28, height + 0.28, 0.12]} />
         <meshStandardMaterial color={hover ? '#ec407a' : '#8d5a3a'} roughness={0.5} />
       </mesh>
-      <mesh onClick={open} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+      <mesh position={[0, 0, 0.008]} onClick={open} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
         <planeGeometry args={[width, height]} />
         <meshBasicMaterial map={tex} toneMapped={false} />
       </mesh>
-      <Html position={[0, -height / 2 - 0.32, 0.05]} center distanceFactor={9} zIndexRange={[20, 0]}>
-        <button
-          type="button" onClick={(e) => { e.stopPropagation(); openWardModal('slide', room); }}
-          style={{
-            background: seen ? '#2e7d32' : '#e91e63', color: '#fff', border: '2px solid #fff', borderRadius: 20,
-            padding: '6px 18px', fontWeight: 800, fontSize: 15, whiteSpace: 'nowrap', cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(0,0,0,.35)', fontFamily: FONT,
-          }}
-        >{seen ? '📖 ดูสไลด์อีกครั้ง' : `📖 ${label || 'อ่านเนื้อหาก่อนเริ่มกิจกรรม'} (คลิกเพื่อขยาย)`}</button>
-      </Html>
+      {!hideButton && (
+        <Html position={[0, -height / 2 - 0.32, 0.05]} center distanceFactor={9} zIndexRange={[20, 0]}>
+          <button
+            type="button" onClick={(e) => { e.stopPropagation(); openWardModal('slide', room); }}
+            style={{
+              background: seen ? '#2e7d32' : '#e91e63', color: '#fff', border: '2px solid #fff', borderRadius: 20,
+              padding: '6px 18px', fontWeight: 800, fontSize: 15, whiteSpace: 'nowrap', cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(0,0,0,.35)', fontFamily: FONT,
+            }}
+          >{seen ? '📖 ดูสไลด์อีกครั้ง' : `📖 ${label || 'อ่านเนื้อหาก่อนเริ่มกิจกรรม'} (คลิกเพื่อขยาย)`}</button>
+        </Html>
+      )}
     </group>
   );
 }

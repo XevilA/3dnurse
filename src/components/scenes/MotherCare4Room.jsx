@@ -14,14 +14,13 @@ import {
   CozyRoomDecorCorners,
 } from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
-import { DiaperStack, BabyBottle, CottonJar } from '../furniture/BabyProps';
 
 // ── ข้อมูลภาพสไลด์ทั้ง 6 ภาพของ Ward 104 (ภาพรวม + รายละเอียด 1–5 ตาม IMG_7526, 7529–7533) ──
 const W104_GALLERY = [
   {
     src: '/images/rev/w104_overview.jpg',
     title: 'ภาพรวม: การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด (5 อาการสำคัญ)',
-    badge: 'ภาพรวม • Ward 104',
+    badge: 'ภาพรวม 5 อาการสำคัญ',
     description: 'อาการสำคัญที่ต้องเฝ้าระวังหลังคลอด 5 อาการ: 1.เลือดออกมาก 2.ไข้/น้ำคาวปลาเหม็น 3.ปวดศีรษะรุนแรง/ตาพร่ามัว 4.ปวดหรือบวมน่อง 5.เจ็บหน้าอก/หายใจลำบาก หากพบอาการเหล่านี้ ควรรีบไปพบแพทย์ทันที',
     details: [
       '1. เลือดออกมาก — ภาวะตกเลือดหลังคลอด',
@@ -167,6 +166,7 @@ export default function MotherCare4Room() {
   const openLightbox = useStore((s) => s.openLightbox);
 
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [missionCollapsed, setMissionCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('classify'); // 'classify' | 'review' | 'quiz'
   const [answers, setAnswers] = useState({});
   const [classifyFeedback, setClassifyFeedback] = useState(null);
@@ -182,12 +182,12 @@ export default function MotherCare4Room() {
       ...item,
       clinicalDetails: item.details || item.clinicalDetails,
       caption: item.description,
-      category: 'การสังเกตอาการผิดปกติหลังคลอด (Ward 104)',
+      category: 'การสังเกตอาการผิดปกติหลังคลอด',
       items: W104_GALLERY.map((g) => ({
         ...g,
         clinicalDetails: g.details || g.clinicalDetails,
         caption: g.description,
-        category: 'การสังเกตอาการผิดปกติหลังคลอด (Ward 104)',
+        category: 'การสังเกตอาการผิดปกติหลังคลอด',
       })),
       currentIndex: index,
     });
@@ -265,65 +265,85 @@ export default function MotherCare4Room() {
       <HospitalRoomShell
         theme="mother"
         cozyMode={true}
-        roomTitle="ห้องบริบาลมารดา 4: การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด"
-        roomNumber="Ward 104"
+        roomTitle="สังเกตอาการผิดปกติ"
+        roomNumber=""
       />
 
       {/* ── Top-Right Mission HUD (Portaled to document.body) ── */}
       <ScreenPortal>
         <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border-2 border-rose-400 text-slate-800">
-          <div className="flex items-center justify-between border-b border-rose-100 pb-2 mb-2">
+          <div
+            onClick={() => setMissionCollapsed((v) => !v)}
+            className={`flex items-center justify-between cursor-pointer select-none ${
+              missionCollapsed ? '' : 'border-b border-rose-100 pb-2 mb-2'
+            }`}
+          >
             <span className="text-xs font-extrabold text-rose-900">
-              🩺 ภารกิจห้องสังเกตอาการ (Ward 104)
+              🩺 ภารกิจห้องสังเกตอาการผิดปกติ
             </span>
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                classifyFeedback?.pass || learningProgress?.motherCare4
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-rose-100 text-rose-700'
-              }`}
-            >
-              {classifyFeedback?.pass || learningProgress?.motherCare4 ? 'สำเร็จแล้ว ✓' : 'กำลังเรียนรู้'}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  classifyFeedback?.pass || learningProgress?.motherCare4
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-rose-100 text-rose-700'
+                }`}
+              >
+                {classifyFeedback?.pass || learningProgress?.motherCare4 ? 'สำเร็จแล้ว ✓' : 'กำลังเรียนรู้'}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMissionCollapsed((v) => !v);
+                }}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-rose-100 text-slate-700 transition cursor-pointer"
+                title={missionCollapsed ? 'เปิดดูรายการภารกิจ' : 'พับเก็บหน้าต่างภารกิจ'}
+              >
+                {missionCollapsed ? '▼' : '▲'}
+              </button>
+            </div>
           </div>
-          <div className="space-y-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => openGalleryAt(0)}
-              className="w-full p-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>🖼️ 1. ดูโปสเตอร์ 5 อาการสำคัญ (6 ภาพ)</span>
-              <span className="font-bold text-rose-700">เปิดดู ▶</span>
-            </button>
+          {!missionCollapsed && (
+            <div className="space-y-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => openGalleryAt(0)}
+                className="w-full p-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+              >
+                <span>🖼️ 1. ดูโปสเตอร์ 5 อาการสำคัญ (6 ภาพ)</span>
+                <span className="font-bold text-rose-700">เปิดดู ▶</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('classify');
-                handleSitSofa();
-              }}
-              className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
-                classifyFeedback?.pass
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                  : 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-300 text-white shadow'
-              }`}
-            >
-              <span>🚨 2. จำแนกอาการปกติ vs ผิดปกติ</span>
-              <span className="font-bold">{classifyFeedback?.pass ? '☑ สำเร็จ' : 'เริ่มทำ ▶'}</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('classify');
+                  handleSitSofa();
+                }}
+                className={`w-full p-2 rounded-xl border text-left font-semibold flex items-center justify-between transition cursor-pointer ${
+                  classifyFeedback?.pass
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                    : 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-300 text-white shadow'
+                }`}
+              >
+                <span>🚨 2. จำแนกอาการปกติ vs ผิดปกติ</span>
+                <span className="font-bold">{classifyFeedback?.pass ? '☑ สำเร็จ' : 'เริ่มทำ ▶'}</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('review');
-                setShowActivityModal(true);
-              }}
-              className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>📋 3. ทบทวนภาวะแทรกซ้อน & แบบทดสอบ</span>
-              <span className="font-bold text-rose-700">เปิดดู ▶</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('review');
+                  setShowActivityModal(true);
+                }}
+                className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+              >
+                <span>📋 3. ทบทวนภาวะแทรกซ้อน & แบบทดสอบ</span>
+                <span className="font-bold text-rose-700">เปิดดู ▶</span>
+              </button>
+            </div>
+          )}
         </div>
       </ScreenPortal>
 
@@ -332,8 +352,8 @@ export default function MotherCare4Room() {
         position={[0, 4.95, -8.78]}
         width={6.2}
         height={1.65}
-        line1="Ward 104"
-        line2="การสังเกตอาการผิดปกติและแทรกซ้อนหลังคลอด"
+        line1="ZONE 2 สังเกตอาการผิดปกติ"
+        line2="การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด"
       />
 
       <WindowWithCurtains position={[-5.8, 2.8, -8.78]} width={3.4} height={2.8} />
@@ -450,11 +470,6 @@ export default function MotherCare4Room() {
       <RealPlant type="potted" position={[7.6, 0, -7.2]} scale={1.2} />
       <RealPlant type="succulent" position={[7.5, 0, 6.8]} scale={1.25} />
 
-      {/* ── Baby care supplies on side table beside the sofa ── */}
-      <DiaperStack position={[-1.2, 0.56, 1.4]} count={3} />
-      <CottonJar position={[-1.6, 0.56, 0.9]} />
-      <BabyBottle position={[-1.0, 0.56, 0.8]} rotation={[0, 0.4, 0]} />
-
       {/* ══════════════════════════════════════════════════════════════════════════
           🩺 หน้าต่างกิจกรรม Ward 104:
           1. สังเกตอาการผิดปกติ (จำแนกอาการปกติ vs อาการผิดปกติที่ต้องพบแพทย์)
@@ -512,7 +527,7 @@ export default function MotherCare4Room() {
                     fontSize: '13px',
                     fontWeight: 900,
                   }}>
-                    Ward 104 • การสังเกตอาการผิดปกติหลังคลอด
+                    การสังเกตอาการผิดปกติหลังคลอด
                   </span>
                   <h2 style={{ margin: '6px 0 0', fontSize: '23px', fontWeight: 900, color: '#881337' }}>
                     การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด
@@ -822,7 +837,7 @@ export default function MotherCare4Room() {
                     {!quizFinished ? (
                       <div style={{ background: '#ffffff', padding: '20px', borderRadius: '18px', border: '2px solid #fecdd3' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 800, color: '#9f1239' }}>
-                          <span>แบบประเมินความรู้ Ward 104</span>
+                          <span>แบบประเมินความรู้ การสังเกตอาการผิดปกติหลังคลอด</span>
                           <span>ข้อ {quizIndex + 1} / {room4Questions.length}</span>
                         </div>
                         <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b', marginBottom: '16px' }}>
@@ -883,7 +898,7 @@ export default function MotherCare4Room() {
                     ) : (
                       <div style={{ textAlign: 'center', padding: '24px' }}>
                         <h3 style={{ fontSize: '26px', fontWeight: 900, color: '#15803d', marginBottom: '8px' }}>
-                          🎉 ผ่านการเรียนรู้ Ward 104 การสังเกตอาการผิดปกติหลังคลอดเรียบร้อยแล้ว!
+                          🎉 ผ่านการเรียนรู้ การสังเกตอาการผิดปกติหลังคลอดเรียบร้อยแล้ว!
                         </h3>
                         <p style={{ fontSize: '17px', fontWeight: 700, color: '#475569', marginBottom: '18px' }}>
                           คะแนนแบบทดสอบทบทวน: {quizScore} / {room4Questions.length} คะแนน

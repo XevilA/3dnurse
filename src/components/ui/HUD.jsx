@@ -20,8 +20,8 @@ const ROOM_TITLES = {
   dressingRoom: '👗 ห้องแต่งตัว & ปรับแต่งตัวละคร (Suite 001)',
   motherCare1: '🏥 ดูแลร่างกายและฟื้นตัว (Ward 101)',
   motherCare2: '🩹 ดูแลแผลหลังคลอด (Ward 102)',
-  motherCare3: '🤱 ดูแลเต้านมและการให้นม (Ward 103)',
-  motherCare4: '🩺 สังเกตอาการผิดปกติ (Ward 104)',
+  motherCare3: '🤱 ดูแลเต้านม',
+  motherCare4: '🩺 สังเกตอาการผิดปกติ',
   newbornCare1: '🍼 การให้นมและการอุ้มจัดท่า (Nursery 201)',
   newbornCare2: '🛁 การอาบน้ำและเปลี่ยนผ้าอ้อม (Nursery 202)',
   newbornCare3: '🔗 การดูแลสายสะดือทารก (Nursery 203)',
@@ -254,7 +254,16 @@ export default function HUD() {
                     <button
                       key={room.key}
                       type="button"
-                      onClick={() => handleSelectRoom(room.key, room.label, `Ward 10${room.key.slice(-1)}`, room.icon)}
+                      onClick={() =>
+                        handleSelectRoom(
+                          room.key,
+                          room.label,
+                          room.key === 'motherCare3' || room.key === 'motherCare4'
+                            ? 'โซนดูแลมารดา'
+                            : `Ward 10${room.key.slice(-1)}`,
+                          room.icon
+                        )
+                      }
                       className={`w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 border transition cursor-pointer ${
                         currentRoom === room.key
                           ? 'bg-pink-100 border-pink-400 font-bold text-pink-900 shadow-sm'

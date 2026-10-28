@@ -276,7 +276,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         case 'Space':
           if (store.isSitting && !store.seatedTarget?.isDrivable) {
             store.standUp();
-          } else if (store.currentRoom !== 'quiz') {
+          } else if (!['quiz', 'motherCare3', 'motherCare4'].includes(store.currentRoom)) {
             setHoldingBaby(!store.isHoldingBaby);
           }
           break;

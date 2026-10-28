@@ -58,6 +58,7 @@ export default function NewbornCare1Room() {
   const [selectedHold, setSelectedHold] = useState('cradleHold');
   const [holdFeedback, setHoldFeedback] = useState(null);
   const [missionCompleted, setMissionCompleted] = useState(Boolean(completedModules?.newbornCare1));
+  const [missionCollapsed, setMissionCollapsed] = useState(false);
 
   const isMotherSeatedOnSofa = isSitting && seatedTarget?.id === 'nb1-nursing-sofa';
 
@@ -68,36 +69,21 @@ export default function NewbornCare1Room() {
       title: '4 Key Signs การอมหัวนมและการดูดนมแม่ที่ถูกต้อง (Latching)',
       caption: 'ลานนมบนเห็นมากกว่าล่าง, อ้าปากกว้าง >140°, คางแนบชิดเต้า, ริมฝีปากบานออกคล้ายปากปลา',
       category: 'การให้นมบุตร (Nursery 201)',
-      clinicalDetails: [
-        '1. เห็นลานนมด้านบนมากกว่าด้านล่าง (ลานนมล่างถูกอมมิด)',
-        '2. อ้าปากกว้างแนบชิดสนิทกับเต้านม ทำมุมกว้างกว่า 140 องศา',
-        '3. คางแนบชิดเต้านมแม่ จมูกเปิดโล่งหายใจสะดวก',
-        '4. ริมฝีปากบนและล่างบานม้วนออกด้านนอกคล้ายปากปลา ไม่เม้ม',
-      ],
+      hideDetails: true,
     },
     {
       src: '/references/room1/img_010.jpeg',
       title: '4 Key Points for Breastfeeding Positioning (มาตรฐานสากล)',
       caption: 'ท้องแนบท้อง หันหน้าหาเต้า ลำตัวและคอตรงแนว ประคองศีรษะและสะโพกมั่นคง',
       category: 'การให้นมบุตร (Nursery 201)',
-      clinicalDetails: [
-        '1. ลำตัวชิดกับแม่ (Tummy to Tummy ท้องแนบท้อง อกแนบอก)',
-        '2. ลูกหันหน้าเข้าหาเต้านมแม่ (จมูกตรงระดับหัวนมก่อนเข้าเต้า)',
-        '3. ศีรษะ ลำตัว และสะโพกทารกอยู่ในแนวเส้นตรงเดียวกัน',
-        '4. ทารกได้รับการประคองอย่างมั่นคงทั้งศีรษะ หลัง และก้น',
-      ],
+      hideDetails: true,
     },
     {
       src: '/images/rev/bf_4holds.jpg',
       title: 'ท่าให้นมทารก 4 ท่า (Breastfeeding Positions)',
       caption: '1. Cradle Hold (ท่าอุ้มลูกบนแขน) | 2. Football Hold (ท่าอุ้มสอดข้างลำตัว) | 3. Side Lying (ท่านอนตะแคง) | 4. Cross Cradle (ท่าอุ้มข้ามตัก)',
       category: 'การให้นมบุตร (Nursery 201)',
-      clinicalDetails: [
-        '1. Cradle Hold (ท่าอุ้มลูกบนแขน): ศีรษะลูกหนุนในข้อพับแขนข้างเดียวกับเต้านม เหมาะสำหรับให้นมบนเก้าอี้โซฟา',
-        '2. Football Hold (ท่าอุ้มสอดข้างลำตัว): หนีบลูกข้างเอว มือประคองท้ายทอย เหมาะกับแม่ผ่าตัดคลอดหรือเต้านมใหญ่',
-        '3. Side Lying (ท่านอนตะแคง): เป็นการให้นมทารกบนเตียงนอน เหมาะกับคุณแม่เต้านมใหญ่ สะดวกสบายไม่ต้องเกร็งแขน พักผ่อนไปพร้อมกับลูกได้',
-        '4. Cross Cradle (ท่าอุ้มข้ามตัก): ใช้มือฝั่งตรงข้ามเต้าประคองท้ายทอย ควบคุมศีรษะลูกเข้าเต้าได้แม่นยำ',
-      ],
+      hideDetails: true,
     },
   ];
 
@@ -193,23 +179,24 @@ export default function NewbornCare1Room() {
   ];
 
   const openTvLightbox = (idx) => {
-    if (tvSlidesData[idx].isVideo) {
-      setShowTvModal(true);
-      return;
-    }
-    const imageSlides = tvSlidesData
-      .filter((s) => !s.isVideo)
-      .map((s) => ({
-        src: s.img,
-        title: s.title,
-        caption: 'สื่อให้ความรู้การให้นมบุตร',
-        category: 'การให้นมบุตร (Nursery 201)',
-        clinicalDetails: s.bullets,
-      }));
+    const allSlides = tvSlidesData.map((s) => ({
+      src: s.img || null,
+      isVideo: Boolean(s.isVideo),
+      videoUrl: s.videoUrl || null,
+      externalUrl: s.externalUrl || null,
+      citation: s.citation || null,
+      title: s.title,
+      caption: null,
+      category: 'การให้นมบุตร (Nursery 201)',
+      hideDetails: true,
+    }));
+    const safeIdx = Math.max(0, Math.min(allSlides.length - 1, idx));
+    setTvSlide(safeIdx);
     openLightbox({
-      ...imageSlides[idx],
-      items: imageSlides,
-      currentIndex: idx,
+      ...allSlides[safeIdx],
+      items: allSlides,
+      currentIndex: safeIdx,
+      onIndexChange: (nextIdx) => setTvSlide(nextIdx),
     });
   };
 
@@ -242,7 +229,7 @@ export default function NewbornCare1Room() {
     {
       id: 4,
       name: '4. ตู้เย็นสำหรับเก็บน้ำนม',
-      location: 'ชิดผนังฝั่งซ้ายของห้อง',
+      location: 'ชิดผนังด้านหลังโซนล้างมือและเตรียมน้ำอุ่น',
       usage: 'ใช้เก็บรักษาน้ำนมแม่เพื่อคงคุณค่าสารอาหารและภูมิคุ้มกัน (ช่องธรรมดา 4°C เก็บได้ 3–5 วัน, ช่องแช่แข็ง -18°C เก็บได้ 3–6 เดือน)',
       icon: '🧊',
       color: 'amber',
@@ -307,64 +294,86 @@ export default function NewbornCare1Room() {
           ══════════════════════════════════════════════════════════════════════════ */}
       <ScreenPortal>
         <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-72 bg-white/85 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-pink-200/90 text-slate-800">
-          <div className="flex items-center justify-between border-b border-pink-200/70 pb-1.5 mb-2">
+          <div
+            onClick={() => setMissionCollapsed((v) => !v)}
+            className={`flex items-center justify-between cursor-pointer select-none ${
+              missionCollapsed ? '' : 'border-b border-pink-200/70 pb-1.5 mb-2'
+            }`}
+          >
             <span className="text-xs font-extrabold text-pink-800 tracking-wide flex items-center gap-1.5">
               🎯 Mission ภารกิจประจำห้อง
             </span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${missionCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
-              {missionCompleted ? 'สำเร็จแล้ว ✓' : 'กำลังปฏิบัติ'}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${missionCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
+                {missionCompleted ? 'สำเร็จแล้ว ✓' : 'กำลังปฏิบัติ'}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMissionCollapsed((v) => !v);
+                }}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-pink-100 text-slate-700 transition cursor-pointer"
+                title={missionCollapsed ? 'เปิดดูรายการภารกิจ' : 'พับเก็บหน้าต่างภารกิจ'}
+              >
+                {missionCollapsed ? '▼' : '▲'}
+              </button>
+            </div>
           </div>
 
-          <div
-            onClick={() => {
-              if (!isHoldingBaby) {
-                setHoldingBaby(true);
-              }
-              handleSitAndBreastfeed();
-              setActiveModal('postureSelector');
-            }}
-            className={`cursor-pointer p-2.5 rounded-xl border transition flex items-start gap-2.5 ${
-              missionCompleted
-                ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
-                : 'bg-white/90 border-slate-200 hover:border-pink-400'
-            }`}
-          >
-            <div className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-xs mt-0.5 shrink-0 ${
-              missionCompleted ? 'bg-emerald-600 text-white' : 'border-2 border-slate-400 text-transparent'
-            }`}>
-              ✓
-            </div>
-            <div className="text-xs leading-snug">
-              <div className="font-bold">1. ให้นมและจัดท่าอุ้มทารกให้ถูกต้อง</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">
-                {!isHoldingBaby
-                  ? 'คลิกเพื่ออุ้มทารกและเลือกท่าให้นม 4 ท่า ▶'
-                  : !isMotherSeatedOnSofa
-                  ? 'คลิกที่เก้าอี้โซฟาหน้า TV เพื่อนั่งให้นม ▶'
-                  : 'คลิกเพื่อเลือกท่าให้นมทารกบนโซฟา ▶'}
+          {!missionCollapsed && (
+            <>
+              <div
+                onClick={() => {
+                  if (!isHoldingBaby) {
+                    setHoldingBaby(true);
+                  }
+                  handleSitAndBreastfeed();
+                  setActiveModal('postureSelector');
+                }}
+                className={`cursor-pointer p-2.5 rounded-xl border transition flex items-start gap-2.5 ${
+                  missionCompleted
+                    ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
+                    : 'bg-white/90 border-slate-200 hover:border-pink-400'
+                }`}
+              >
+                <div className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-xs mt-0.5 shrink-0 ${
+                  missionCompleted ? 'bg-emerald-600 text-white' : 'border-2 border-slate-400 text-transparent'
+                }`}>
+                  ✓
+                </div>
+                <div className="text-xs leading-snug">
+                  <div className="font-bold">1. ให้นมและจัดท่าอุ้มทารกให้ถูกต้อง</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">
+                    {!isHoldingBaby
+                      ? 'คลิกเพื่ออุ้มทารกและเลือกท่าให้นม 4 ท่า ▶'
+                      : !isMotherSeatedOnSofa
+                      ? 'คลิกที่เก้าอี้โซฟาหน้า TV เพื่อนั่งให้นม ▶'
+                      : 'คลิกเพื่อเลือกท่าให้นมทารกบนโซฟา ▶'}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="mt-1.5 space-y-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setShowTvModal(true)}
-              className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-pink-400 text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>📺 2. เรียนรู้ผ่านจอ TV ({tvSlide + 1}/7)</span>
-              <span className="text-pink-600 font-bold">เปิดดู ▶</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveModal('tableItems')}
-              className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-pink-400 text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>🍼 3. ดูอุปกรณ์เก็บน้ำนมแม่บนโต๊ะ</span>
-              <span className="text-pink-600 font-bold">ดูอุปกรณ์ ▶</span>
-            </button>
-          </div>
+              <div className="mt-1.5 space-y-1.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => openTvLightbox(tvSlide)}
+                  className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-pink-400 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+                >
+                  <span>📺 2. เรียนรู้ผ่านจอ TV ({tvSlide + 1}/8)</span>
+                  <span className="text-pink-600 font-bold">เปิดดู ▶</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal('tableItems')}
+                  className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-pink-400 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+                >
+                  <span>🍼 3. ดูอุปกรณ์เก็บน้ำนมแม่บนโต๊ะ</span>
+                  <span className="text-pink-600 font-bold">ดูอุปกรณ์ ▶</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </ScreenPortal>
 
@@ -670,10 +679,10 @@ export default function NewbornCare1Room() {
         </Html>
       </group>
 
-      {/* ── (a) Realistic Handwashing Sink (Left Wall middle, flush against wall x = -6.48, z = 0.5) ── */}
+      {/* ── (a) Realistic Handwashing Sink (South Wall middle-left per ภาพที่ 4 ①, flush against wall z = 6.90) ── */}
       <group
-        position={[-6.48, 0, 0.5]}
-        rotation={[0, Math.PI / 2, 0]}
+        position={[2.15, 0, 6.53]}
+        rotation={[0, Math.PI, 0]}
         onClick={(e) => {
           e.stopPropagation();
           setActiveModal('sink');
@@ -747,10 +756,10 @@ export default function NewbornCare1Room() {
         </mesh>
       </group>
 
-      {/* ── (b) Realistic Table with Hot Water Thermos & Cup (Left Wall middle, flush against wall x = -6.48, z = 1.75) ── */}
+      {/* ── (b) Realistic Table with Hot Water Thermos & Cup (South Wall middle per ภาพที่ 4 ①, flush against wall z = 6.90) ── */}
       <group
-        position={[-6.48, 0, 1.75]}
-        rotation={[0, Math.PI / 2, 0]}
+        position={[0.75, 0, 6.54]}
+        rotation={[0, Math.PI, 0]}
         onClick={(e) => {
           e.stopPropagation();
           setActiveModal('kettleTable');
@@ -826,10 +835,10 @@ export default function NewbornCare1Room() {
         </group>
       </group>
 
-      {/* ── (c) Realistic 2-Door Breastmilk Refrigerator (Left Wall middle-south, flush against wall x = -6.42, z = 3.0) ── */}
+      {/* ── (c) Realistic 2-Door Breastmilk Refrigerator (South Wall middle per ภาพที่ 4 ①, flush against wall z = 6.90) ── */}
       <group
-        position={[-6.42, 0, 3.0]}
-        rotation={[0, Math.PI / 2, 0]}
+        position={[-0.60, 0, 6.47]}
+        rotation={[0, Math.PI, 0]}
         onClick={(e) => {
           e.stopPropagation();
           setActiveModal('fridge');
@@ -1027,31 +1036,30 @@ export default function NewbornCare1Room() {
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          4. NORTH-EAST CORNER NURSERY DECORATION (Per Reference Image 6: /images/rev/bf_corner_decor_ref.jpg)
-             (1) โต๊ะของใช้ทารก พร้อมของ (Dresser table, nursing pillow, clothes/diapers stack, rug)
-             (2) ภาพดอกไม้สวยงาม, แผนที่ Nursery Land
-             (3) ชั้นประดับห้อง (Floating shelves with teddy bears & frames)
-             (4) ที่แขวนของ (Wall pegboard with hanging baby items)
+          4. SOUTH-EAST CORNER NURSERY DECORATION (Per ภาพที่ 5 ④ & ภาพที่ 6: /images/rev/bf_corner_decor_ref.jpg)
+             (1) โต๊ะของใช้ทารก พร้อมของ (Dresser table against East Wall, nursing pillow, clothes/diapers stack, rug)
+             (2) ภาพดอกไม้สวยงาม (Mounted flush on South Wall)
+             (3) ชั้นประดับห้อง (Floating shelves on East Wall above dresser with teddy bears & frames)
+             (4) ที่แขวนของ (Wall pegboard on East Wall with hanging baby items)
           ══════════════════════════════════════════════════════════════════════════ */}
       <group
-        position={[5.3, 0, -5.1]}
         onClick={(e) => {
           e.stopPropagation();
           setActiveModal('cornerDecor');
         }}
       >
-        {/* Soft Round Woven Nursery Rug on Floor */}
-        <mesh position={[-0.2, 0.015, 0.3]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        {/* Soft Round Woven Nursery Rug on Floor in South-East Corner */}
+        <mesh position={[5.35, 0.015, 5.15]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <circleGeometry args={[1.45, 36]} />
           <meshStandardMaterial color="#f5ebe0" roughness={0.9} />
         </mesh>
-        <mesh position={[-0.2, 0.018, 0.3]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <mesh position={[5.35, 0.018, 5.15]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <ringGeometry args={[1.15, 1.38, 36]} />
           <meshStandardMaterial color="#e3d5ca" roughness={0.9} />
         </mesh>
 
-        {/* (1) โต๊ะของใช้ทารก พร้อมของ (Birch Wood Baby Care Dresser Table) */}
-        <group position={[0, 0, -0.4]}>
+        {/* (1) โต๊ะของใช้ทารก พร้อมของ (Birch Wood Baby Care Dresser Table flush against East Wall x = 6.90) */}
+        <group position={[6.50, 0, 4.75]} rotation={[0, -Math.PI / 2, 0]}>
           <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
             <boxGeometry args={[1.55, 0.88, 0.68]} />
             <meshStandardMaterial color="#f3e5d8" roughness={0.4} />
@@ -1084,15 +1092,14 @@ export default function NewbornCare1Room() {
             <meshStandardMaterial color="#e6ccb2" roughness={0.6} />
           </mesh>
           {/* ── Feeding Props on Dresser — ขวดนม, ผ้าอ้อม, สำลี ── */}
-          {/* Dresser local coords: tabletop Y≈0.94; props float just above it */}
           <BabyBottle position={[-0.55, 1.03, 0.08]} rotation={[0, 0.5, 0]} />
           <BabyBottle position={[-0.55, 1.03, -0.10]} rotation={[0, -0.3, 0]} color="#bbf7d0" />
           <DiaperStack position={[-0.28, 0.97, 0]} count={4} />
           <CottonJar position={[0.72, 1.01, 0]} />
         </group>
 
-        {/* (2) ภาพดอกไม้สวยงาม (Mounted on North Wall above dresser — ปรับแก้ห้องให้นมทารก หน้า 3 ภาพที่ 6) */}
-        <group position={[-0.35, 2.25, -1.78]}>
+        {/* (2) ภาพดอกไม้สวยงาม (Mounted flush on South Wall z = 6.86 — ปรับแก้ห้องให้นมทารก หน้า 3 ภาพที่ 5 & 6) */}
+        <group position={[5.45, 2.25, 6.86]} rotation={[0, Math.PI, 0]}>
           {/* กรอบภาพดอกไม้สวยงาม */}
           <mesh castShadow>
             <boxGeometry args={[1.15, 0.85, 0.03]} />
@@ -1172,8 +1179,8 @@ export default function NewbornCare1Room() {
             </div>
           </Html>
         </group>
-        {/* Framed Botanical Art beside main floral frame */}
-        <group position={[0.62, 2.25, -1.78]}>
+        {/* Framed Botanical Art beside main floral frame on South Wall */}
+        <group position={[4.45, 2.25, 6.86]} rotation={[0, Math.PI, 0]}>
           <mesh castShadow>
             <boxGeometry args={[0.6, 0.78, 0.03]} />
             <meshStandardMaterial color="#f5ebe0" roughness={0.4} />
@@ -1184,8 +1191,8 @@ export default function NewbornCare1Room() {
           </mesh>
         </group>
 
-        {/* (3) ชั้นประดับห้อง (Floating Wooden Shelves on East Wall with Teddy Bear & Frames) */}
-        <group position={[1.55, 2.2, 0.2]} rotation={[0, -Math.PI / 2, 0]}>
+        {/* (3) ชั้นประดับห้อง (Floating Wooden Shelves on East Wall x = 6.76 above Dresser) */}
+        <group position={[6.76, 2.22, 4.75]} rotation={[0, -Math.PI / 2, 0]}>
           {/* Top Shelf */}
           <mesh position={[0, 0.35, 0]} castShadow>
             <boxGeometry args={[1.2, 0.04, 0.24]} />
@@ -1228,8 +1235,8 @@ export default function NewbornCare1Room() {
           </mesh>
         </group>
 
-        {/* (4) ที่แขวนของ (Wooden Pegboard / Wall Hanger with Hanging Baby Items on East Wall) */}
-        <group position={[1.55, 1.45, 1.35]} rotation={[0, -Math.PI / 2, 0]}>
+        {/* (4) ที่แขวนของ (Wooden Pegboard / Wall Hanger with Hanging Baby Items on East Wall x = 6.86) */}
+        <group position={[6.86, 1.58, 3.35]} rotation={[0, -Math.PI / 2, 0]}>
           <mesh castShadow>
             <boxGeometry args={[0.85, 0.55, 0.03]} />
             <meshStandardMaterial color="#e6ccb2" roughness={0.45} />
@@ -1254,12 +1261,12 @@ export default function NewbornCare1Room() {
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          5. EAST WALL & SOUTH-EAST CORNER:
-             - Full-length Standing Wooden Mirror
-             - Corner Flower Vase (ขยับไปตามมุมห้อง และเปลี่ยนเป็นแจกันดอกไม้สวยงาม)
+          5. EAST WALL & NORTH-EAST CORNER (Per ภาพที่ 3 & ภาพที่ 5):
+             - Full-length Standing Wooden Mirror on East Wall
+             - Beautiful Corner Flower Vase in North-East Corner (x = 6.15, z = -6.15)
           ══════════════════════════════════════════════════════════════════════════ */}
       {/* Full Length Standing Wooden Arched Mirror */}
-      <group position={[6.1, 0, 1.8]} rotation={[0, -Math.PI / 2 + 0.12, 0]}>
+      <group position={[6.35, 0, 1.65]} rotation={[0, -Math.PI / 2 + 0.12, 0]}>
         <mesh position={[0, 1.05, 0]} castShadow>
           <boxGeometry args={[0.78, 1.85, 0.06]} />
           <meshStandardMaterial color="#b45309" roughness={0.4} />
@@ -1274,8 +1281,8 @@ export default function NewbornCare1Room() {
         </mesh>
       </group>
 
-      {/* Beautiful Corner Flower Vase in South-East Corner (x = 6.1, z = 5.8) */}
-      <group position={[6.1, 0, 5.8]}>
+      {/* Beautiful Corner Flower Vase in North-East Corner per ภาพที่ 3 (x = 6.15, z = -6.15) */}
+      <group position={[6.15, 0, -6.15]}>
         <mesh position={[0, 0.35, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[0.26, 0.3, 0.7, 24]} />
           <meshStandardMaterial color="#f8fafc" roughness={0.3} />
@@ -1715,8 +1722,8 @@ export default function NewbornCare1Room() {
         </ScreenPortal>
       )}
 
-      {/* ── ถังขยะข้างอ่างล้างมือ (ไม่บังประตูทางออก) ── */}
-      <HospitalBin position={[-6.48, 0, -0.25]} color="#eab308" />
+      {/* ── ถังขยะข้างอ่างล้างมือ (ชิดผนังข้างโซนอ่างล้างมือ ไม่บังประตูทางออก) ── */}
+      <HospitalBin position={[3.05, 0, 6.58]} color="#eab308" />
     </group>
   );
 }
