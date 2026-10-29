@@ -23,11 +23,12 @@ const useStore = create((set, get) => ({
   // ── Simulation state ──
   currentStep: 0,
 
-  // ── Avatar & Player state (Realistic Adult Female Suite: Pregnant Mother, Postpartum Mother, Nurse) ──
+  // ── Avatar & Player state (Postpartum Mother Suite: Pants Set vs Midi Dress) ──
   selectedCharacter: (() => {
     if (typeof localStorage === 'undefined') return 'postpartum_mother';
     const s = localStorage.getItem('3dnurse_character');
-    if (s === 'pregnant_mother' || s === 'postpartum_mother' || s === 'nurse') return s;
+    if (s === 'postpartum_mother' || s === 'postpartum_dress') return s;
+    if (s === 'pregnant_mother') return 'postpartum_dress';
     return 'postpartum_mother';
   })(),
   selectedOutfit: (typeof localStorage !== 'undefined' && localStorage.getItem('3dnurse_outfit')) || 'pink', // 'pink' | 'blue' | 'lavender' | 'mint' | 'white' | 'peach'

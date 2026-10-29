@@ -28,20 +28,194 @@ const CRADLE_STANDING_OVERRIDES = {
 };
 
 /**
- * MotherAvatar — Authentic Healthcare & Maternity Female Character Suite
- *
- * 100% Anatomically accurate female characters:
- *  1. 🤰 คุณแม่สวมชุดคลุมท้อง / เดรสยาว (Maternity Long Dress / Gown — Amy)
- *     - สวมชุดเดรสยาวคลุมเข่า ผ้านุ่ม ทรงปล่อยสบาย สรีระคุณแม่สมจริง
- *  2. 👩‍🍼 คุณแม่พักฟื้นหลังคลอด (Postpartum Mother — Megan)
- *     - สวมชุดผู้ป่วยพักฟื้นหลังคลอด สรีระนุ่มนวล พร้อมโหมดอุ้มทารก 3D สมจริง
- *  3. 👩‍⚕️ พยาบาลวิชาชีพสาว (Registered Nurse & Midwife — Megan)
- *     - สวมชุดสครับพยาบาล หูฟังตรวจ (Stethoscope) และป้ายประจำตัว
- *
- * Locomotion, Sitting & Baby Cradling:
- *  - 100% Native Mixamo rig matching Megan & Amy skeletons with deterministic local Hips retargeting.
- *  - Hard upright pelvis guard prevents any forward pitch ("ดมดิน") or vertical floor sinking ("จมดิน").
- *  - Dedicated 'idle_hold', 'walk_hold', 'run_hold', and 'sitting_hold' animations + hand-locked 3D rigged baby.
+ * Builds a rigged THREE.SkinnedMesh A-Line Midi Dress Skirt (+ Waist Sash Belt)
+ * bound directly to Megan's `Ch22_Pants.skeleton` so it bends naturally with
+ * her hips, thighs, and knees during walking, sitting, and baby cradling.
+ */
+function createSkinnedDressMeshes(pantsMesh, { isNurse = false } = {}) {
+  const skeleton = pantsMesh.skeleton;
+  const bones = skeleton.bones;
+
+  const findIdx = (substr, exclude = null) => {
+    const idx = bones.findIndex(
+      (b) => b.name.includes(substr) && (!exclude || !b.name.includes(exclude))
+    );
+    return idx >= 0 ? idx : 0;
+  };
+
+  const bHips = findIdx('Hips');
+  const bSpine = findIdx('Spine', 'Spine1');
+  const bLUp = findIdx('LeftUpLeg');
+  const bRUp = findIdx('RightUpLeg');
+  const bLLeg = findIdx('LeftLeg');
+  const bRLeg = findIdx('RightLeg');
+
+  // Determine whether LeftUpLeg sits on +X or -X in bind space
+  const lMat = skeleton.boneInverses[bLUp]
+    ? skeleton.boneInverses[bLUp].clone().invert()
+    : new THREE.Matrix4();
+  const leftSign = lMat.elements[12] >= 0 ? 1 : -1;
+
+  const topY = 1.135;
+  const hemY = isNurse ? 0.43 : 0.35; // Knee-length clinical nurse dress vs midi postpartum dress
+  const flareX = isNurse ? 0.255 : 0.305;
+  const flareZ = isNurse ? 0.205 : 0.245;
+
+  const radialSegs = 36;
+  const heightSegs = 14;
+  const positions = [];
+  const normals = [];
+  const uvs = [];
+  const skinIndices = [];
+  const skinWeights = [];
+  const indices = [];
+
+  for (let r = 0; r <= heightSegs; r++) {
+    const t = r / heightSegs; // 0 = waist, 1 = hem
+    const y = topY + (hemY - topY) * t;
+    const ease = Math.pow(t, 0.86);
+
+    const cz = 0.066 * Math.pow(1 - t, 2.1) - 0.006 * t;
+    const rx = 0.134 + (flareX - 0.134) * ease;
+    const rz = 0.118 + (flareZ - 0.118) * ease;
+
+    for (let s = 0; s <= radialSegs; s++) {
+      const u = s / radialSegs;
+      const theta = u * Math.PI * 2;
+      const pleat = 1 + Math.sin(theta * 12) * (isNurse ? 0.012 : 0.024) * t * t;
+
+      const x = Math.sin(theta) * rx * pleat;
+      const z = cz + Math.cos(theta) * rz * pleat;
+
+      positions.push(x, y, z);
+
+      const nx = Math.sin(theta) * rz;
+      const nz = Math.cos(theta) * rx;
+      const ny = 0.18;
+      const nLen = Math.hypot(nx, ny, nz) || 1;
+      normals.push(nx / nLen, ny / nLen, nz / nLen);
+      uvs.push(u, 1 - t);
+
+      // Compute smooth anatomical bone weights
+      if (y >= 1.02) {
+        const wSpine = Math.min(0.65, ((y - 1.02) / 0.12) * 0.65);
+        skinIndices.push(bHips, bSpine, 0, 0);
+        skinWeights.push(1 - wSpine, wSpine, 0, 0);
+      } else {
+        const legTotal = Math.min(0.88, Math.pow((1.02 - y) / (1.02 - hemY), 0.88) * 0.88);
+        const wHips = 1 - legTotal;
+        // Smooth left-right crossfade across center seam so skirt never splits
+        const sideRatio = THREE.MathUtils.clamp(0.5 + (x * leftSign) / 0.22, 0.08, 0.92);
+        const kneeBlend = y < 0.52 ? THREE.MathUtils.clamp((0.52 - y) / 0.2, 0, 0.35) : 0;
+
+        const wLTotal = legTotal * sideRatio;
+        const wRTotal = legTotal * (1 - sideRatio);
+
+        if (kneeBlend > 0.01) {
+          const domUp = sideRatio >= 0.5 ? bLUp : bRUp;
+          const domLeg = sideRatio >= 0.5 ? bLLeg : bRLeg;
+          const otherUp = sideRatio >= 0.5 ? bRUp : bLUp;
+          const domW = Math.max(wLTotal, wRTotal);
+          const othW = Math.min(wLTotal, wRTotal);
+          skinIndices.push(bHips, domUp, domLeg, otherUp);
+          skinWeights.push(wHips, domW * (1 - kneeBlend), domW * kneeBlend, othW);
+        } else {
+          skinIndices.push(bHips, bLUp, bRUp, 0);
+          skinWeights.push(wHips, wLTotal, wRTotal, 0);
+        }
+      }
+    }
+  }
+
+  const rowStride = radialSegs + 1;
+  for (let r = 0; r < heightSegs; r++) {
+    for (let s = 0; s < radialSegs; s++) {
+      const a = r * rowStride + s;
+      const b = a + rowStride;
+      const c = b + 1;
+      const d = a + 1;
+      indices.push(a, b, d, b, c, d);
+    }
+  }
+
+  const skirtGeo = new THREE.BufferGeometry();
+  skirtGeo.setIndex(indices);
+  skirtGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  skirtGeo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  skirtGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  skirtGeo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndices, 4));
+  skirtGeo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeights, 4));
+
+  const skirtMat = new THREE.MeshStandardMaterial({
+    color: '#f472b6',
+    roughness: 0.88,
+    metalness: 0.0,
+    side: THREE.DoubleSide,
+  });
+
+  const skirtMesh = new THREE.SkinnedMesh(skirtGeo, skirtMat);
+  skirtMesh.name = 'Ch22_DressSkirt';
+  skirtMesh.castShadow = true;
+  skirtMesh.receiveShadow = true;
+  skirtMesh.frustumCulled = false;
+
+  // Slim waist belt / sash bound to Hips + Spine
+  const beltPos = [];
+  const beltNorm = [];
+  const beltSkinIdx = [];
+  const beltSkinW = [];
+  const beltIndices = [];
+  const beltTop = 1.148;
+  const beltBot = 1.112;
+  for (let r = 0; r <= 1; r++) {
+    const by = r === 0 ? beltTop : beltBot;
+    for (let s = 0; s <= radialSegs; s++) {
+      const theta = (s / radialSegs) * Math.PI * 2;
+      const bx = Math.sin(theta) * 0.137;
+      const bz = 0.066 + Math.cos(theta) * 0.121;
+      beltPos.push(bx, by, bz);
+      beltNorm.push(Math.sin(theta), 0, Math.cos(theta));
+      beltSkinIdx.push(bHips, bSpine, 0, 0);
+      beltSkinW.push(0.45, 0.55, 0, 0);
+    }
+  }
+  for (let s = 0; s < radialSegs; s++) {
+    const a = s;
+    const b = s + rowStride;
+    const c = b + 1;
+    const d = a + 1;
+    beltIndices.push(a, b, d, b, c, d);
+  }
+  const beltGeo = new THREE.BufferGeometry();
+  beltGeo.setIndex(beltIndices);
+  beltGeo.setAttribute('position', new THREE.Float32BufferAttribute(beltPos, 3));
+  beltGeo.setAttribute('normal', new THREE.Float32BufferAttribute(beltNorm, 3));
+  beltGeo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(beltSkinIdx, 4));
+  beltGeo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(beltSkinW, 4));
+
+  const beltMat = new THREE.MeshStandardMaterial({
+    color: '#ec4899',
+    roughness: 0.78,
+    metalness: 0.0,
+    side: THREE.DoubleSide,
+  });
+  const beltMesh = new THREE.SkinnedMesh(beltGeo, beltMat);
+  beltMesh.name = 'Ch22_DressBelt';
+  beltMesh.castShadow = true;
+  beltMesh.frustumCulled = false;
+
+  if (pantsMesh.parent) {
+    pantsMesh.parent.add(skirtMesh);
+    pantsMesh.parent.add(beltMesh);
+  }
+  skirtMesh.bind(skeleton, pantsMesh.bindMatrix.clone());
+  beltMesh.bind(skeleton, pantsMesh.bindMatrix.clone());
+
+  return { skirtMesh, beltMesh };
+}
+
+/**
+ * MotherAvatar — Authentic Healthcare & Postpartum Female Character Suite
  */
 const MotherAvatar = forwardRef(({
   currentAnimation = 'idle',
@@ -53,6 +227,7 @@ const MotherAvatar = forwardRef(({
   isSittingOverride = null,
   isHoldingBabyOverride = null,
   showHeldBaby = true,
+  barefoot = false,
 }, ref) => {
   const group = useRef();
   const avatarRigRef = useRef();
@@ -64,65 +239,69 @@ const MotherAvatar = forwardRef(({
   const storeSitting = useStore((state) => state.isSitting);
   const seatedTarget = useStore((state) => state.seatedTarget);
 
-  const selectedCharacter = characterOverride !== null ? characterOverride : storeCharacter;
+  const rawCharacter = characterOverride !== null ? characterOverride : storeCharacter;
+  const selectedCharacter = rawCharacter === 'pregnant_mother' ? 'postpartum_dress' : rawCharacter;
   const selectedOutfit = outfitOverride !== null ? outfitOverride : storeOutfit;
   const isHoldingBaby = isHoldingBabyOverride !== null ? isHoldingBabyOverride : storeHoldingBaby;
   const isSitting = isSittingOverride !== null ? isSittingOverride : storeSitting;
 
-  // Load optimized female character models
-  // pregnant_megan_opt.glb = realistic Megan with natural belly bump (สมจริง ท้องนิดๆ)
+  // Load optimized female character model (100% postpartum anatomy — no pregnant belly bump)
   const { scene: meganScene } = useGLTF('/models/megan_opt.glb');
-  const { scene: pregnantScene } = useGLTF('/models/pregnant_megan_opt.glb');
 
   // Load authentic Mixamo female animations
   const idleFbx = useFBX('/models/animations/Standing_Idle.fbx');
   const walkFbx = useFBX('/models/animations/walking.fbx');
 
-  // Authentic hospital & maternity color schemes
+  // Authentic hospital & postpartum color schemes
   const OUTFIT_COLOR_SCHEMES = useMemo(() => ({
     pink: {
       primary: '#f472b6',
+      belt: '#db2777',
       badge: 'ชมพูนวลมารดา',
     },
     blue: {
       primary: '#38bdf8',
+      belt: '#0284c7',
       badge: 'ฟ้าครามคนไข้',
     },
     lavender: {
       primary: '#c084fc',
+      belt: '#9333ea',
       badge: 'ม่วงลาเวนเดอร์',
     },
     mint: {
       primary: '#34d399',
+      belt: '#059669',
       badge: 'เขียวมิ้นต์สดใส',
     },
     white: {
       primary: '#f8fafc',
+      belt: '#cbd5e1',
       badge: 'ขาวบริสุทธิ์คลินิก',
     },
     peach: {
       primary: '#fb923c',
+      belt: '#ea580c',
       badge: 'ส้มพีชอบอุ่น',
     },
   }), []);
 
-  // Determine active model based on character selection
-  // pregnant_mother → pregnant_megan_opt (Megan rig + belly bump mesh, same skeleton as megan_opt)
-  // nurse / postpartum_mother → megan_opt (standard Megan)
-  const isPregnant = selectedCharacter === 'pregnant_mother';
-  // pregnant_megan_opt uses the SAME Megan skeleton (hipZ ≈ -100.08) — NOT Amy's hipZ of -69.77
-  const isMaternityDress = false; // Always false now — pregnant_megan uses Megan rig, not Amy
-  const activeBaseScene = isPregnant ? (pregnantScene || meganScene) : meganScene;
+  const isMaternityDress = false;
+  const isNurse = selectedCharacter === 'nurse';
+  const isDressStyle = selectedCharacter === 'postpartum_dress' || isNurse;
 
-  // Clone active scene cleanly
-  // pregnant_megan_opt uses the same Megan rig scale (0.01) — no separate Amy scale needed
+  // Clone active scene cleanly and attach rigged dress skirt when in dress or nurse mode
   const clonedScene = useMemo(() => {
-    if (!activeBaseScene) return null;
-    const clone = SkeletonUtils.clone(activeBaseScene);
+    if (!meganScene) return null;
+    const clone = SkeletonUtils.clone(meganScene);
+    let pantsMesh = null;
     clone.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
+        if (child.name === 'Ch22_Pants' && child.isSkinnedMesh) {
+          pantsMesh = child;
+        }
         if (child.material) {
           child.material = child.material.clone();
           child.material.roughness = 0.92;
@@ -134,86 +313,161 @@ const MotherAvatar = forwardRef(({
         }
       }
     });
+    if (pantsMesh && isDressStyle) {
+      createSkinnedDressMeshes(pantsMesh, { isNurse });
+    }
     return clone;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeBaseScene, isPregnant]);
+  }, [meganScene, isDressStyle, isNurse]);
 
-  // ── Professional Nurse Accessories (Stethoscope & Nurse ID Badge) ──
+  // ── 1. Official Thai Registered Nurse Cap (หมวกพยาบาลวิชาชีพสีขาวแถบกรมท่า) ──
+  // Note: Megan's Armature has scale = 0.01, so bone-attached groups MUST use scale = 100!
+  const nurseCapGroup = useMemo(() => {
+    const capRoot = new THREE.Group();
+    capRoot.name = 'NurseCapGroup';
+    capRoot.scale.set(100, 100, 100);
+    // HeadTop_End is at [0, +21.3cm, +1.1cm] in Head bone space -> [0, 0.184m, -0.008m] sits snugly on crown of hair
+    capRoot.position.set(0, 18.2, -0.4);
+    capRoot.rotation.set(-0.14, 0, 0);
+
+    const whiteCapMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.02 });
+    const navyStripeMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4 });
+    const crossMat = new THREE.MeshBasicMaterial({ color: 0xe11d48 });
+
+    // Base crown band sitting on hair
+    const baseCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.078, 0.036, 24), whiteCapMat);
+    baseCrown.position.set(0, 0.005, -0.006);
+    capRoot.add(baseCrown);
+
+    // Classic Thai Nurse folded winged front brim
+    const frontWing = new THREE.Mesh(new THREE.BoxGeometry(0.185, 0.062, 0.022), whiteCapMat);
+    frontWing.position.set(0, 0.024, 0.056);
+    frontWing.rotation.x = -0.18;
+    frontWing.castShadow = true;
+    capRoot.add(frontWing);
+
+    // Angled side wings folding back
+    const leftWing = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.052, 0.115), whiteCapMat);
+    leftWing.position.set(-0.084, 0.018, 0.006);
+    leftWing.rotation.set(0.08, 0.18, 0.15);
+    capRoot.add(leftWing);
+
+    const rightWing = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.052, 0.115), whiteCapMat);
+    rightWing.position.set(0.084, 0.018, 0.006);
+    rightWing.rotation.set(0.08, -0.18, -0.15);
+    capRoot.add(rightWing);
+
+    // Registered Nurse Dark Navy Velvet Rank Stripe across front wing
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.148, 0.013, 0.025), navyStripeMat);
+    stripe.position.set(0, 0.036, 0.058);
+    stripe.rotation.x = -0.18;
+    capRoot.add(stripe);
+
+    // Small Medical Cross Emblem
+    const cH = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.005, 0.004), crossMat);
+    cH.position.set(0, 0.016, 0.069);
+    cH.rotation.x = -0.18;
+    capRoot.add(cH);
+    const cV = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.016, 0.004), crossMat);
+    cV.position.set(0, 0.016, 0.069);
+    cV.rotation.x = -0.18;
+    capRoot.add(cV);
+
+    return capRoot;
+  }, []);
+
+  // ── 2. Professional Nurse Accessories (Peter Pan Collar, Stethoscope & Nurse ID Badge) ──
   const nurseAccessories = useMemo(() => {
     const root = new THREE.Group();
     root.name = 'NurseAccessoriesGroup';
+    root.scale.set(100, 100, 100); // Compensate for Armature 0.01 scale
 
-    // 1. Stethoscope around neck
+    // Crisp Clinical Sky-Blue Trim Collar + Stethoscope around neck (Spine2 bone space)
     const stethGroup = new THREE.Group();
-    stethGroup.position.set(0, 0.04, 0.02);
+    stethGroup.position.set(0, 0.135, 0.015);
 
-    const torusGeo = new THREE.TorusGeometry(0.082, 0.008, 12, 28, Math.PI * 0.92);
-    const tubeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3, metalness: 0.1 });
+    const collarMat = new THREE.MeshStandardMaterial({ color: 0xe0f2fe, roughness: 0.35 });
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.078, 0.014, 12, 28, Math.PI * 1.15), collarMat);
+    collar.rotation.set(Math.PI / 2 + 0.18, 0, Math.PI * 0.92);
+    stethGroup.add(collar);
+
+    const torusGeo = new THREE.TorusGeometry(0.084, 0.0075, 12, 28, Math.PI * 0.92);
+    const tubeMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3, metalness: 0.15 });
     const neckTorus = new THREE.Mesh(torusGeo, tubeMat);
     neckTorus.rotation.x = Math.PI / 2.3;
     stethGroup.add(neckTorus);
 
-    const leftTubeGeo = new THREE.CylinderGeometry(0.006, 0.006, 0.15, 12);
+    const leftTubeGeo = new THREE.CylinderGeometry(0.0055, 0.0055, 0.15, 12);
     const leftTube = new THREE.Mesh(leftTubeGeo, tubeMat);
-    leftTube.position.set(-0.065, -0.06, 0.07);
+    leftTube.position.set(-0.065, -0.065, 0.072);
     leftTube.rotation.z = 0.22;
     stethGroup.add(leftTube);
 
-    const rightTubeGeo = new THREE.CylinderGeometry(0.006, 0.006, 0.15, 12);
+    const rightTubeGeo = new THREE.CylinderGeometry(0.0055, 0.0055, 0.15, 12);
     const rightTube = new THREE.Mesh(rightTubeGeo, tubeMat);
-    rightTube.position.set(0.065, -0.06, 0.07);
+    rightTube.position.set(0.065, -0.065, 0.072);
     rightTube.rotation.z = -0.22;
     stethGroup.add(rightTube);
 
-    const discGeo = new THREE.CylinderGeometry(0.024, 0.024, 0.007, 24);
+    const discGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.007, 24);
     const chromeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.1 });
     const disc = new THREE.Mesh(discGeo, chromeMat);
-    disc.position.set(-0.04, -0.15, 0.095);
+    disc.position.set(-0.042, -0.148, 0.098);
     disc.rotation.x = Math.PI / 2 - 0.2;
     stethGroup.add(disc);
 
     root.add(stethGroup);
 
-    // 2. Nurse ID Badge on Left Chest
+    // Nurse ID Badge on Left Chest
     const badgeGroup = new THREE.Group();
-    badgeGroup.position.set(0.085, -0.04, 0.095);
-    badgeGroup.rotation.set(-0.1, 0.1, -0.05);
+    badgeGroup.position.set(0.078, 0.045, 0.125);
+    badgeGroup.rotation.set(-0.08, 0.12, -0.04);
 
-    const clipGeo = new THREE.BoxGeometry(0.016, 0.01, 0.006);
-    const clipMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.5 });
-    const clip = new THREE.Mesh(clipGeo, clipMat);
-    clip.position.set(0, 0.035, 0);
+    const clip = new THREE.Mesh(
+      new THREE.BoxGeometry(0.018, 0.01, 0.006),
+      new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.5 })
+    );
+    clip.position.set(0, 0.034, 0);
     badgeGroup.add(clip);
 
-    const cardGeo = new THREE.BoxGeometry(0.046, 0.062, 0.003);
-    const cardMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
-    const card = new THREE.Mesh(cardGeo, cardMat);
+    const card = new THREE.Mesh(
+      new THREE.BoxGeometry(0.048, 0.064, 0.004),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+    );
     badgeGroup.add(card);
 
+    const headerStrip = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.044, 0.014),
+      new THREE.MeshBasicMaterial({ color: 0x0284c7 })
+    );
+    headerStrip.position.set(0, 0.02, 0.0025);
+    badgeGroup.add(headerStrip);
+
     const crossMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
-    const c1 = new THREE.Mesh(new THREE.PlaneGeometry(0.02, 0.006), crossMat);
-    c1.position.set(0, -0.015, 0.002);
+    const c1 = new THREE.Mesh(new THREE.PlaneGeometry(0.018, 0.0055), crossMat);
+    c1.position.set(0, -0.01, 0.0025);
     badgeGroup.add(c1);
-    const c2 = new THREE.Mesh(new THREE.PlaneGeometry(0.006, 0.02), crossMat);
-    c2.position.set(0, -0.015, 0.0025);
+    const c2 = new THREE.Mesh(new THREE.PlaneGeometry(0.0055, 0.018), crossMat);
+    c2.position.set(0, -0.01, 0.0028);
     badgeGroup.add(c2);
 
     root.add(badgeGroup);
     return root;
   }, []);
 
-  // Attach Nurse accessories to Spine2 when character is nurse
+  // Attach Nurse Cap to Head bone & Nurse Accessories to Spine2 bone when character is nurse
   useEffect(() => {
     if (!clonedScene) return;
     let spine2Bone = null;
+    let headBone = null;
     clonedScene.traverse((child) => {
-      if (child.isBone && child.name.includes('Spine2')) {
-        spine2Bone = child;
+      if (child.isBone) {
+        if (child.name.includes('Spine2')) spine2Bone = child;
+        if (child.name.includes('Head') && !child.name.includes('Top')) headBone = child;
       }
     });
 
     if (spine2Bone) {
-      if (selectedCharacter === 'nurse') {
+      if (isNurse) {
         if (!spine2Bone.getObjectByName('NurseAccessoriesGroup')) {
           spine2Bone.add(nurseAccessories);
         }
@@ -222,75 +476,66 @@ const MotherAvatar = forwardRef(({
         if (existing) spine2Bone.remove(existing);
       }
     }
-  }, [clonedScene, selectedCharacter, nurseAccessories]);
 
-  // Seamless outfit changing across all 6 maternity & hospital recovery colorways
-  // Covers: megan_opt (postpartum/nurse) + pregnant_megan_opt (pregnant — same Ch22_* mesh names)
+    if (headBone) {
+      if (isNurse) {
+        if (!headBone.getObjectByName('NurseCapGroup')) {
+          headBone.add(nurseCapGroup);
+        }
+      } else {
+        const existingCap = headBone.getObjectByName('NurseCapGroup');
+        if (existingCap) headBone.remove(existingCap);
+      }
+    }
+  }, [clonedScene, isNurse, nurseAccessories, nurseCapGroup]);
+
+  // Seamless outfit changing across all 6 postpartum colorways (Pants Set, Midi Dress, and Nurse Uniform)
   useEffect(() => {
     if (!clonedScene) return;
     const scheme = OUTFIT_COLOR_SCHEMES[selectedOutfit] || OUTFIT_COLOR_SCHEMES.pink;
-    const isNurse = selectedCharacter === 'nurse';
 
-    let changed = false;
     clonedScene.traverse((child) => {
       if (!child.isMesh || !child.material) return;
 
-      // ── All Megan variants (postpartum, pregnant, nurse) share Ch22_* mesh names ──
       if (child.name === 'Ch22_Shirt') {
         child.material.map = null;
         child.material.color.set(isNurse ? '#ffffff' : scheme.primary);
-        child.material.roughness = 0.92;
+        child.material.roughness = isNurse ? 0.72 : 0.9;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
-        changed = true;
+      } else if (child.name === 'Ch22_DressSkirt') {
+        child.material.color.set(isNurse ? '#ffffff' : scheme.primary);
+        child.material.roughness = isNurse ? 0.72 : 0.88;
+        child.material.needsUpdate = true;
+      } else if (child.name === 'Ch22_DressBelt') {
+        child.material.color.set(isNurse ? '#38bdf8' : scheme.belt);
+        child.material.roughness = 0.75;
+        child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_Pants') {
         child.material.map = null;
-        child.material.color.set(isNurse ? '#0284c7' : scheme.primary);
-        child.material.roughness = 0.92;
+        // When wearing a dress (postpartum_dress or nurse), lower calves peek out below the skirt hem -> warm skin tone
+        child.material.color.set(isDressStyle ? '#f5d0a9' : scheme.primary);
+        child.material.roughness = isDressStyle ? 0.75 : 0.92;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
-        changed = true;
       } else if (child.name === 'Ch22_Sneakers') {
         child.material.map = null;
-        child.material.color.set('#f8fafc');
-        child.material.roughness = 0.6;
+        child.material.color.set(barefoot ? '#f5d0a9' : '#f8fafc');
+        child.material.roughness = barefoot ? 0.78 : 0.55;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
-        changed = true;
       } else if (child.name === 'Ch22_Body') {
         child.material.color.set('#f5d0a9'); // warm skin tone
         child.material.roughness = 0.75;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
-        changed = true;
       } else if (child.name === 'Ch22_Hair') {
         child.material.color.set('#2d1a10');
         child.material.roughness = 0.85;
         child.material.needsUpdate = true;
-        changed = true;
       }
     });
-
-    // Retry after 120ms if GLB meshes haven't resolved yet
-    if (!changed) {
-      const timer = setTimeout(() => {
-        clonedScene.traverse((child) => {
-          if (!child.isMesh || !child.material) return;
-          if (child.name === 'Ch22_Shirt') {
-            child.material.map = null;
-            child.material.color.set(isNurse ? '#ffffff' : scheme.primary);
-            child.material.needsUpdate = true;
-          }
-          if (child.name === 'Ch22_Pants') {
-            child.material.map = null;
-            child.material.color.set(isNurse ? '#0284c7' : scheme.primary);
-            child.material.needsUpdate = true;
-          }
-        });
-      }, 120);
-      return () => clearTimeout(timer);
-    }
-  }, [clonedScene, selectedOutfit, selectedCharacter, OUTFIT_COLOR_SCHEMES]);
+  }, [clonedScene, selectedOutfit, isNurse, isDressStyle, barefoot, OUTFIT_COLOR_SCHEMES]);
 
   // Authentic Mixamo Animation Clips for Megan & Amy (Idle, Walk, Run, Sitting + Baby-Holding Variants)
   const animClips = useMemo(() => {
@@ -645,6 +890,5 @@ MotherAvatar.displayName = 'MotherAvatar';
 export default MotherAvatar;
 
 useGLTF.preload('/models/megan_opt.glb');
-useGLTF.preload('/models/pregnant_megan_opt.glb');
 useFBX.preload('/models/animations/Standing_Idle.fbx');
 useFBX.preload('/models/animations/walking.fbx');

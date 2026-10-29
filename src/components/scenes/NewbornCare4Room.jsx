@@ -3,7 +3,6 @@ import { Html } from '@react-three/drei';
 import ScreenPortal from '../ui/ScreenPortal';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
-import BabyCrib from '../furniture/BabyCrib';
 import BabyAvatar from '../avatars/BabyAvatar';
 import MotherAvatar from '../avatars/MotherAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
@@ -52,6 +51,7 @@ export default function NewbornCare4Room() {
 
   // ── Active Modal State ──
   const [activeModal, setActiveModal] = useState(null); // null | 'practice' | 'quiz'
+  const [hudCollapsed, setHudCollapsed] = useState(false);
 
   // ── แบบทดลองปฏิบัติ: เข้าไปครั้งแรก ลูกนอนคว่ำอยู่ ('prone') และมี หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม ในเตียงทารก ──
   const [sleepPose, setSleepPose] = useState('prone'); // 'prone' (นอนคว่ำ - เริ่มต้น) | 'supine' (นอนหงาย - ปลอดภัย)
@@ -238,176 +238,185 @@ export default function NewbornCare4Room() {
         roomNumber="Nursery 204"
       />
 
-      {/* ── แสงไฟโทนอบอุ่น สบายตา น่านอน (Soothing Warm Bedroom Lighting) ── */}
-      <pointLight position={[2.4, 3.2, -1.6]} intensity={0.95} color="#ffd8a8" distance={13} />
-      <pointLight position={[-3.5, 2.8, -2.5]} intensity={0.75} color="#ffe8cc" distance={11} />
-      <pointLight position={[4.5, 1.4, -3.5]} intensity={0.65} color="#ffb76b" distance={8} />
+      {/* ── แสงไฟโทนอบอุ่น สบายตา น่านอนพักผ่อน (Soothing Warm Bedroom Lighting) ── */}
+      <pointLight position={[2.4, 3.0, -4.6]} intensity={0.95} color="#ffd8a8" distance={13} />
+      <pointLight position={[4.15, 1.45, -6.1]} intensity={0.85} color="#ffb76b" distance={7} />
+      <pointLight position={[-3.5, 2.6, -3.5]} intensity={0.72} color="#ffe8cc" distance={11} />
+      <pointLight position={[0.0, 3.1, 2.2]} intensity={0.65} color="#ffe8cc" distance={12} />
 
-      {/* พรมปูพื้นสีครีมลายข้าวหลามตัด (Diamond Woven Cream Rug) ใต้เตียงผู้ปกครองและเตียงทารก */}
-      <mesh position={[1.1, 0.014, -1.3]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[7.1, 5.5]} />
+      {/* พรมปูพื้นสีครีมลายข้าวหลามตัด (Diamond Woven Cream Rug) ใต้เตียงผู้ปกครองชิดผนังและเตียงทารก */}
+      <mesh position={[1.45, 0.014, -4.65]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[6.4, 4.7]} />
         <meshStandardMaterial color="#dfd1c1" roughness={0.95} />
       </mesh>
-      <mesh position={[1.1, 0.017, -1.3]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[6.8, 5.2]} />
+      <mesh position={[1.45, 0.017, -4.65]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[6.1, 4.4]} />
         <meshStandardMaterial map={diamondRugTex} color="#faf4ec" roughness={0.92} />
       </mesh>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          TOP-RIGHT TRANSLUCENT MISSION HUD (ภารกิจห้องการนอนหลับที่ปลอดภัย)
+          TOP-RIGHT TRANSLUCENT MISSION HUD (Collapsible)
           ══════════════════════════════════════════════════════════════════════════ */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-amber-950/85 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border border-amber-400/50 text-amber-50">
-          <div className="flex items-center justify-between border-b border-amber-400/30 pb-1.5 mb-2">
+        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-amber-950/88 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border border-amber-400/50 text-amber-50">
+          <div className={`flex items-center justify-between ${hudCollapsed ? '' : 'border-b border-amber-400/30 pb-1.5 mb-2'}`}>
             <span className="text-xs font-extrabold text-amber-200 tracking-wide flex items-center gap-1.5">
               🌙 ภารกิจห้องการนอนทารก (Nursery 204)
             </span>
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                isPracticeComplete || learningProgress?.newbornCare4
-                  ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/50'
-                  : 'bg-amber-500/30 text-amber-200 border border-amber-400/50'
-              }`}
-            >
-              {isPracticeComplete || learningProgress?.newbornCare4 ? 'สำเร็จแล้ว ✓' : 'กำลังปฏิบัติ'}
-            </span>
-          </div>
-
-          {/* สถานะแบบทดลองปฏิบัติสด (Live Checklist) */}
-          <div className="bg-black/30 rounded-xl p-2.5 mb-2 space-y-1.5 border border-white/10 text-[11px]">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-amber-100">
-                1. หยิบของนุ่มออกจากเตียงลูก (4 ชิ้น):
-              </span>
+            <div className="flex items-center gap-1.5">
               <span
-                className={`font-black ${
-                  allItemsRemoved ? 'text-emerald-300' : 'text-rose-300'
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isPracticeComplete || learningProgress?.newbornCare4
+                    ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/50'
+                    : 'bg-amber-500/30 text-amber-200 border border-amber-400/50'
                 }`}
               >
-                {removedCount}/4 ชิ้น {allItemsRemoved ? '✓' : ''}
+                {isPracticeComplete || learningProgress?.newbornCare4 ? 'สำเร็จแล้ว ✓' : 'กำลังปฏิบัติ'}
               </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-amber-100">
-                2. จัดท่านอนลูก (หงาย = ปลอดภัย):
-              </span>
-              <span
-                className={`font-black ${
-                  isBabySupine ? 'text-emerald-300' : 'text-rose-300'
-                }`}
+              <button
+                type="button"
+                onClick={() => setHudCollapsed((v) => !v)}
+                className="w-6 h-6 rounded-lg bg-amber-500/30 hover:bg-amber-500/50 text-amber-100 text-[11px] font-black flex items-center justify-center cursor-pointer transition border border-amber-400/40"
+                title={hudCollapsed ? 'ขยายหน้าต่างภารกิจ' : 'ย่อหน้าต่างภารกิจ'}
               >
-                {isBabySupine ? '✓ นอนหงายแล้ว' : '✕ ลูกนอนคว่ำอยู่!'}
-              </span>
+                {hudCollapsed ? '▼' : '▲'}
+              </button>
             </div>
           </div>
 
-          <div className="space-y-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => openWallPoster(0)}
-              className="w-full p-2 rounded-xl border border-amber-300/30 bg-white/10 hover:bg-white/20 text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>🖼️ 1. ดูโปสเตอร์ความรู้รอบห้อง (5 ภาพ)</span>
-              <span className="text-amber-300 font-bold">เปิดดู ▶</span>
-            </button>
+          {!hudCollapsed && (
+            <>
+              {/* สถานะแบบทดลองปฏิบัติสด (Live Checklist) */}
+              <div className="bg-black/30 rounded-xl p-2.5 mb-2 space-y-1.5 border border-white/10 text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-amber-100">
+                    1. หยิบของนุ่มออกจากเตียงลูก (4 ชิ้น):
+                  </span>
+                  <span
+                    className={`font-black ${
+                      allItemsRemoved ? 'text-emerald-300' : 'text-rose-300'
+                    }`}
+                  >
+                    {removedCount}/4 ชิ้น {allItemsRemoved ? '✓' : ''}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-amber-100">
+                    2. จัดท่านอนลูก (หงาย = ปลอดภัย):
+                  </span>
+                  <span
+                    className={`font-black ${
+                      isBabySupine ? 'text-emerald-300' : 'text-rose-300'
+                    }`}
+                  >
+                    {isBabySupine ? '✓ นอนหงายแล้ว' : '✕ ลูกนอนคว่ำอยู่!'}
+                  </span>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => setActiveModal('practice')}
-              className={`w-full p-2.5 rounded-xl border text-left font-bold flex items-center justify-between transition cursor-pointer ${
-                isPracticeComplete
-                  ? 'bg-emerald-600/40 border-emerald-400 text-emerald-100'
-                  : 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-200 text-white shadow-lg'
-              }`}
-            >
-              <span>🛏️ 2. แบบทดลองปฏิบัติ: จัดเตียง & พลิกตัวลูก</span>
-              <span>{isPracticeComplete ? 'สำเร็จ ✓' : 'เริ่มทำ ▶'}</span>
-            </button>
+              <div className="space-y-1.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => openWallPoster(0)}
+                  className="w-full p-2 rounded-xl border border-amber-300/30 bg-white/10 hover:bg-white/20 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+                >
+                  <span>🖼️ 1. ดูโปสเตอร์ความรู้รอบห้อง (5 ภาพ)</span>
+                  <span className="text-amber-300 font-bold">เปิดดู ▶</span>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveModal('quiz')}
-              className="w-full p-2 rounded-xl border border-amber-300/30 bg-white/10 hover:bg-white/20 text-left font-semibold flex items-center justify-between transition cursor-pointer"
-            >
-              <span>📝 3. แบบประเมินความรู้ท้ายห้อง</span>
-              <span className="text-amber-300 font-bold">ทำข้อสอบ ▶</span>
-            </button>
-          </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal('practice')}
+                  className={`w-full p-2.5 rounded-xl border text-left font-bold flex items-center justify-between transition cursor-pointer ${
+                    isPracticeComplete
+                      ? 'bg-emerald-600/40 border-emerald-400 text-emerald-100'
+                      : 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-200 text-white shadow-lg'
+                  }`}
+                >
+                  <span>🛏️ 2. แบบทดลองปฏิบัติ: จัดเตียง & พลิกตัวลูก</span>
+                  <span>{isPracticeComplete ? 'สำเร็จ ✓' : 'เริ่มทำ ▶'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveModal('quiz')}
+                  className="w-full p-2 rounded-xl border border-amber-300/30 bg-white/10 hover:bg-white/20 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+                >
+                  <span>📝 3. แบบประเมินความรู้ท้ายห้อง</span>
+                  <span className="text-amber-300 font-bold">ทำข้อสอบ ▶</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </ScreenPortal>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. ผนังด้านเหนือ (North Wall, Flush against inner wall z = -6.78):
-             "หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง" + ผ้าม่านสีครีมอบอุ่น
+          1. ผนังด้านเหนือฝั่งซ้าย (North Wall Left, Flush against inner wall z = -6.78):
+             "หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง" + ผ้าม่านสีครีมอบอุ่น (ไม่ชนหัวเตียงคุณแม่)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[0.5, 2.65, -6.78]}>
+      <group position={[-2.35, 2.58, -6.78]}>
         {/* กรอบหน้าต่างไม้สีอบอุ่น (ฝังแนบผิวกำแพงด้านใน) */}
         <mesh position={[0, 0, -0.015]} castShadow>
-          <boxGeometry args={[4.4, 2.5, 0.1]} />
+          <boxGeometry args={[3.15, 2.35, 0.1]} />
           <meshStandardMaterial color="#8c5a3c" roughness={0.5} />
         </mesh>
 
-        {/* วิวนอกหน้าต่างยามค่ำคืนที่เงียบสงบ น่านอน (Calm Night / Twilight Sky View) */}
+        {/* วิวนอกหน้าต่างยามค่ำคืนที่เงียบสงบ น่านอนพักผ่อน (Calm Night / Twilight Sky View) */}
         <mesh position={[0, 0, 0.036]}>
-          <planeGeometry args={[4.1, 2.25]} />
+          <planeGeometry args={[2.88, 2.1]} />
           <meshBasicMaterial color="#1b263b" />
         </mesh>
         {/* แสงขอบฟ้าและดวงจันทร์เสี้ยว */}
-        <mesh position={[0, -0.55, 0.04]}>
-          <planeGeometry args={[4.1, 0.9]} />
+        <mesh position={[0, -0.52, 0.04]}>
+          <planeGeometry args={[2.88, 0.85]} />
           <meshBasicMaterial color="#283845" />
         </mesh>
-        <mesh position={[1.1, 0.6, 0.045]}>
-          <circleGeometry args={[0.24, 24]} />
+        <mesh position={[0.78, 0.54, 0.045]}>
+          <circleGeometry args={[0.2, 24]} />
           <meshBasicMaterial color="#fef3c7" />
         </mesh>
         {/* พุ่มไม้และต้นไม้ด้านนอกหน้าต่าง */}
-        <mesh position={[-1.2, -0.75, 0.048]}>
-          <sphereGeometry args={[0.45, 16, 16]} />
+        <mesh position={[-0.85, -0.68, 0.048]}>
+          <sphereGeometry args={[0.38, 16, 16]} />
           <meshBasicMaterial color="#1f4e3d" />
         </mesh>
-        <mesh position={[-0.5, -0.8, 0.048]}>
-          <sphereGeometry args={[0.38, 16, 16]} />
+        <mesh position={[-0.25, -0.74, 0.048]}>
+          <sphereGeometry args={[0.32, 16, 16]} />
           <meshBasicMaterial color="#2d6a4f" />
         </mesh>
-        <mesh position={[1.3, -0.78, 0.048]}>
-          <sphereGeometry args={[0.42, 16, 16]} />
+        <mesh position={[0.9, -0.7, 0.048]}>
+          <sphereGeometry args={[0.36, 16, 16]} />
           <meshBasicMaterial color="#1f4e3d" />
         </mesh>
 
         {/* บานหน้าต่างเลื่อนเปิดแง้มเล็กน้อย ("หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง") */}
-        {/* บานซ้าย */}
-        <mesh position={[-1.05, 0, 0.06]}>
-          <boxGeometry args={[1.95, 2.2, 0.04]} />
+        <mesh position={[-0.72, 0, 0.06]}>
+          <boxGeometry args={[1.38, 2.05, 0.04]} />
           <meshStandardMaterial color="#e0f2fe" transparent opacity={0.22} roughness={0.1} />
         </mesh>
-        {/* บานขวาเลื่อนเปิดแง้มไว้ประมาณ 45 ซม. เพื่อระบายอากาศ */}
-        <mesh position={[0.6, 0, 0.08]}>
-          <boxGeometry args={[1.65, 2.2, 0.04]} />
+        <mesh position={[0.38, 0, 0.08]}>
+          <boxGeometry args={[1.18, 2.05, 0.04]} />
           <meshStandardMaterial color="#e0f2fe" transparent opacity={0.25} roughness={0.1} />
-        </mesh>
-        <mesh position={[0.6, 0, 0.085]}>
-          <boxGeometry args={[1.68, 2.22, 0.02]} />
-          <meshStandardMaterial color="#a47148" wireframe />
         </mesh>
 
         {/* ผ้าม่านสองฝั่งสีครีมอุ่น */}
-        <mesh position={[-2.05, 0, 0.12]} castShadow>
-          <boxGeometry args={[0.55, 2.6, 0.12]} />
+        <mesh position={[-1.45, 0, 0.12]} castShadow>
+          <boxGeometry args={[0.44, 2.45, 0.12]} />
           <meshStandardMaterial color="#e6ccb2" roughness={0.85} />
         </mesh>
-        <mesh position={[2.05, 0, 0.12]} castShadow>
-          <boxGeometry args={[0.55, 2.6, 0.12]} />
+        <mesh position={[1.45, 0, 0.12]} castShadow>
+          <boxGeometry args={[0.44, 2.45, 0.12]} />
           <meshStandardMaterial color="#e6ccb2" roughness={0.85} />
         </mesh>
         {/* ราวผ้าม่าน */}
-        <mesh position={[0, 1.32, 0.14]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.03, 0.03, 4.8, 12]} />
+        <mesh position={[0, 1.24, 0.14]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.026, 0.026, 3.5, 12]} />
           <meshStandardMaterial color="#5c3a21" />
         </mesh>
 
         {/* ป้ายกำกับหน้าต่างเปิดแง้มระบายอากาศ */}
-        <Html position={[1.4, -0.9, 0.15]} center zIndexRange={[10, 0]}>
+        <Html position={[0, -0.95, 0.15]} center zIndexRange={[10, 0]}>
           <div
             onClick={() => openWallPoster(0)}
             className="cursor-pointer select-none bg-amber-950/90 text-amber-100 border border-amber-400/70 px-3 py-1 rounded-full text-[11px] font-bold shadow-lg whitespace-nowrap hover:scale-105 transition"
@@ -418,14 +427,18 @@ export default function NewbornCare4Room() {
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          2. 5 โปสเตอร์ความรู้ 3D Mesh ติดผนังแนบสนิท 100% พร้อมกรอบไม้โอ๊คไฟซ่อนอุ่น (คลิกขยายได้)
+          2. 5 โปสเตอร์ความรู้จัดเป็นบล็อคขนาดเท่ากันเรียบเสมอกันทุกบาน ("ทำเป็นบล็อคๆ ให้เท่ากันเรียบ")
+             - ทุกบานขนาดบล็อคเท่ากันเป๊ะ: width={3.55}, height={2.45}, y = 2.65
+             - ผนังด้านขวา (East Wall, x = 6.78): ภาพที่ 3, 4, 5 เรียง 3 บล็อคระยะห่างเท่ากัน (0.40m)
+             - ผนังด้านใต้ (South Wall, z = 6.78): ภาพที่ 1, 2 เรียง 2 บล็อคสมมาตรกึ่งกลาง (0.40m)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* ภาพที่ 1 (North Wall Left, z = -6.78): การจัดสภาพแวดล้อมในห้องนอน — ขนาดใหญ่ */}
+      {/* ภาพที่ 1 (South Wall Right-of-Player / West-Half, z = 6.78): การจัดสภาพแวดล้อมในห้องนอน */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster1_env.jpg"
-        width={3.8}
-        height={2.5}
-        position={[-4.2, 2.9, -6.78]}
+        width={3.55}
+        height={2.45}
+        position={[-1.98, 2.65, 6.78]}
+        rotation={[0, Math.PI, 0]}
         title="การจัดสภาพแวดล้อมในห้องนอนทารก"
         badge="ภาพที่ 1"
         frameColor="#8c5a32"
@@ -433,12 +446,13 @@ export default function NewbornCare4Room() {
         onClick={() => openWallPoster(0)}
       />
 
-      {/* ภาพที่ 2 (North Wall Right, z = -6.78): ✓ นอนหงาย vs ✕ นอนคว่ำ */}
+      {/* ภาพที่ 2 (South Wall East-Half, z = 6.78): ✓ นอนหงาย vs ✕ นอนคว่ำ */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster2_back_vs_prone.jpg"
-        width={3.6}
-        height={2.5}
-        position={[4.9, 2.9, -6.78]}
+        width={3.55}
+        height={2.45}
+        position={[1.98, 2.65, 6.78]}
+        rotation={[0, Math.PI, 0]}
         title="ท่านอนทารก (✓ นอนหงาย vs ✕ นอนคว่ำ)"
         badge="ภาพที่ 2"
         frameColor="#8c5a32"
@@ -446,12 +460,12 @@ export default function NewbornCare4Room() {
         onClick={() => openWallPoster(1)}
       />
 
-      {/* ภาพที่ 3 (East Wall North, x = 6.78): ✓ ที่นอนทารกที่ปลอดภัย vs ✕ ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก */}
+      {/* ภาพที่ 3 (East Wall Block 1, x = 6.78): ✓ ที่นอนทารกที่ปลอดภัย vs ✕ ไม่ควรมีของนุ่ม ๆ */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster3_safe_mattress.jpg"
-        width={4.5}
-        height={2.8}
-        position={[6.78, 2.9, -3.5]}
+        width={3.55}
+        height={2.45}
+        position={[6.78, 2.65, -3.55]}
         rotation={[0, -Math.PI / 2, 0]}
         title="ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ"
         badge="ภาพที่ 3"
@@ -460,12 +474,12 @@ export default function NewbornCare4Room() {
         onClick={() => openWallPoster(2)}
       />
 
-      {/* ภาพที่ 4 (East Wall Center, x = 6.78): ✓ แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน */}
+      {/* ภาพที่ 4 (East Wall Block 2, x = 6.78): ✓ แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster4_separate_bed.jpg"
-        width={4.5}
-        height={2.8}
-        position={[6.78, 2.9, 0.6]}
+        width={3.55}
+        height={2.45}
+        position={[6.78, 2.65, 0.4]}
         rotation={[0, -Math.PI / 2, 0]}
         title="แยกเตียงจากผู้ปกครอง แต่ให้อยู่ข้างกัน"
         badge="ภาพที่ 4"
@@ -474,12 +488,12 @@ export default function NewbornCare4Room() {
         onClick={() => openWallPoster(3)}
       />
 
-      {/* ภาพที่ 5 (East Wall South, x = 6.78): สังเกตอาการอันตรายระหว่างการนอนของทารก */}
+      {/* ภาพที่ 5 (East Wall Block 3, x = 6.78): สังเกตอาการอันตรายระหว่างการนอนของทารก */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster5_danger_signs.jpg"
-        width={4.5}
-        height={2.8}
-        position={[6.78, 2.9, 4.5]}
+        width={3.55}
+        height={2.45}
+        position={[6.78, 2.65, 4.35]}
         rotation={[0, -Math.PI / 2, 0]}
         title="สังเกตอาการอันตรายระหว่างการนอนของทารก"
         badge="ภาพที่ 5"
@@ -694,25 +708,26 @@ export default function NewbornCare4Room() {
       <RealPlant type="potted" position={[-5.9, 0, -5.8]} scale={1.25} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          4. เตียงผู้ปกครอง (คุณแม่นอนหลับอยู่) + ตู้เสื้อผ้าบิวท์อินบานขาวตัดไม้โอ๊ค
-             + กรอบรูปใบไม้เหนือหัวเตียง 2 กรอบ + เตียงทารกขอบขาวตาข่ายโปร่งตั้งอยู่ข้างกัน
-             (ตรงตามภาพตัวอย่าง /images/rev/nb4_room_ref.jpg)
+          4. เตียงผู้ปกครองชิดผนังเหนือ + ตู้เสื้อผ้าบิวท์อินชิดมุมผนังเหนือ-ตะวันออก
+             + คุณแม่นอนหลับพักผ่อนห่มผ้าห่มอบอุ่นโดยไม่ใส่รองเท้า
+             + เตียงนอนทารก 1 ชั้น (Co-Sleeper Crib) ขยับชิดข้างเตียงคุณแม่
+             (ตรงตามภาพอ้างอิง /images/rev/nb4_room_ref.jpg และหมายเหตุ QA ทุกจุด)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* ── ตู้เสื้อผ้าบิวท์อินบานขาวตัดไม้โอ๊ค (Built-in White & Oak Wardrobe Closet) ── */}
-      <group position={[5.55, 0, -4.85]} rotation={[0, -Math.PI / 6, 0]}>
-        {/* โครงตู้ไม้โอ๊ค */}
+      {/* ── ตู้เสื้อผ้าบิวท์อินบานขาวตัดไม้โอ๊คแนบชิดมุมผนังด้านเหนือ-ขวา 100% ("ตู้ชิดผนัง") ── */}
+      <group position={[5.82, 0, -6.44]} rotation={[0, 0, 0]}>
+        {/* โครงตู้ไม้โอ๊คแนบสนิทผนังด้านเหนือ (z = -6.78) และผนังด้านขวา (x = 6.78) */}
         <mesh position={[0, 1.55, 0]} castShadow receiveShadow>
-          <boxGeometry args={[1.65, 3.1, 0.68]} />
+          <boxGeometry args={[1.9, 3.1, 0.68]} />
           <meshStandardMaterial color="#b58354" roughness={0.5} />
         </mesh>
         {/* บานตู้สีขาวคู่ + มือจับไม้ยาว */}
-        {[-0.39, 0.39].map((dx, i) => (
+        {[-0.44, 0.44].map((dx, i) => (
           <group key={`wd_door_${i}`} position={[dx, 1.55, 0.345]}>
             <mesh castShadow>
-              <boxGeometry args={[0.74, 2.94, 0.02]} />
+              <boxGeometry args={[0.84, 2.94, 0.02]} />
               <meshStandardMaterial color="#f8fafc" roughness={0.3} />
             </mesh>
-            <mesh position={[i === 0 ? 0.28 : -0.28, 0, 0.02]}>
+            <mesh position={[i === 0 ? 0.32 : -0.32, 0, 0.02]}>
               <boxGeometry args={[0.03, 0.55, 0.02]} />
               <meshStandardMaterial color="#8c5a32" roughness={0.45} />
             </mesh>
@@ -720,14 +735,14 @@ export default function NewbornCare4Room() {
         ))}
       </group>
 
-      {/* ── 4.1 เตียงผู้ปกครอง (Parent's Bed with Sleeping Mother) ── */}
-      <group position={[2.55, 0, -1.65]}>
+      {/* ── 4.1 เตียงผู้ปกครองแนบชิดผนังด้านเหนือ 100% ("เตียงนอนชิดผนัง") + คุณแม่ไม่ใส่รองเท้าและห่มผ้า ── */}
+      <group position={[2.42, 0, -5.22]}>
         {/* ฐานเตียงไม้โอ๊คขนาดใหญ่ */}
         <mesh position={[0, 0.24, 0]} castShadow receiveShadow>
           <boxGeometry args={[2.6, 0.42, 3.1]} />
           <meshStandardMaterial color="#b07d4f" roughness={0.52} />
         </mesh>
-        {/* หัวเตียงไม้โอ๊ค + แถบไฟซ่อน LED สีส้มอุ่นหลังหัวเตียง (ตามภาพ nb4_room_ref.jpg) */}
+        {/* หัวเตียงไม้โอ๊คแนบสนิทผนังเหนือ (z = -5.22 - 1.48 = -6.70, ผิวหลัง -6.78 ชิดผนังเป๊ะ!) + แถบไฟซ่อน LED สีส้มอุ่น */}
         <mesh position={[0, 0.95, -1.48]} castShadow>
           <boxGeometry args={[2.75, 1.32, 0.16]} />
           <meshStandardMaterial color="#9c6b3f" roughness={0.5} />
@@ -741,7 +756,7 @@ export default function NewbornCare4Room() {
           <meshStandardMaterial color="#f5ebe0" roughness={0.8} />
         </mesh>
 
-        {/* กรอบรูปภาพใบไม้และดอกไม้ 2 กรอบเหนือหัวเตียงคุณแม่ (ตามภาพ nb4_room_ref.jpg) */}
+        {/* กรอบรูปภาพใบไม้และดอกไม้ 2 กรอบติดผนังเหนือหัวเตียงคุณแม่ (ตามภาพ nb4_room_ref.jpg) */}
         {[-0.65, 0.65].map((fx, fi) => (
           <group key={`hb_art_${fi}`} position={[fx, 2.28, -1.52]}>
             <mesh castShadow>
@@ -752,7 +767,6 @@ export default function NewbornCare4Room() {
               <planeGeometry args={[0.66, 0.84]} />
               <meshStandardMaterial color="#faf6f0" roughness={0.7} />
             </mesh>
-            {/* ลวดลายใบไม้/ดอกไม้โทนธรรมชาติในกรอบรูป */}
             <mesh position={[0, -0.04, 0.026]} rotation={[0, 0, fi === 0 ? 0.25 : -0.2]}>
               <planeGeometry args={[0.24, 0.46]} />
               <meshStandardMaterial color={fi === 0 ? '#84a98c' : '#d4a373'} roughness={0.8} />
@@ -765,36 +779,51 @@ export default function NewbornCare4Room() {
           <boxGeometry args={[2.42, 0.24, 2.9]} />
           <meshStandardMaterial color="#fff8f0" roughness={0.75} />
         </mesh>
-        {/* ผ้าห่มสีชมพูตุ่นอบอุ่นคลุมเตียงผู้ปกครอง (ตามภาพ nb4_room_ref.jpg) */}
-        <mesh position={[0, 0.65, 0.38]} castShadow receiveShadow>
-          <boxGeometry args={[2.44, 0.14, 2.1]} />
-          <meshStandardMaterial color="#d8a499" roughness={0.82} />
+
+        {/* หมอนหนุนบนเตียงผู้ปกครอง 2 ใบ (สีชมพูอ่อนและสีขาวครีมตามภาพอ้างอิง) */}
+        <mesh position={[-0.62, 0.68, -1.14]} rotation={[0.16, 0, 0]} castShadow>
+          <boxGeometry args={[0.88, 0.12, 0.48]} />
+          <meshStandardMaterial color="#f4cfd6" roughness={0.78} />
         </mesh>
-        {/* หมอนหนุนบนเตียงผู้ปกครอง 2 ใบ */}
-        <mesh position={[-0.6, 0.7, -1.0]} castShadow>
-          <boxGeometry args={[0.85, 0.16, 0.48]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.7} />
-        </mesh>
-        <mesh position={[0.6, 0.7, -1.0]} castShadow>
-          <boxGeometry args={[0.85, 0.16, 0.48]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.7} />
+        <mesh position={[0.62, 0.68, -1.12]} rotation={[0.14, 0, 0]} castShadow>
+          <boxGeometry args={[0.88, 0.13, 0.48]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.72} />
         </mesh>
 
-        {/* คุณแม่นอนหลับพักผ่อนอยู่บนเตียงผู้ปกครอง (นอนหงาย ศีรษะหนุนหมอนที่ z = -0.95 ปลายเท้าไปทาง +z) */}
-        <group position={[-0.6, 0.78, 0.52]} rotation={[-Math.PI / 2, 0, 0]}>
+        {/* คุณแม่นอนหลับพักผ่อนหนุนหมอนบนเตียงผู้ปกครอง — ถอดรองเท้าเท้าเปล่า 100% ("ไม่ใส่รองเท้า") และซุกตัวอยู่ใต้ผ้าห่ม ("คุณแม่ห่มผ้า") */}
+        <group position={[-0.62, 0.60, 0.43]} rotation={[-Math.PI / 2 + 0.14, 0, 0]}>
           <MotherAvatar
             position={[0, 0, 0]}
             scale={0.94}
             characterOverride="postpartum_mother"
             outfitOverride="pink"
+            barefoot={true}
+            showHeldBaby={false}
             isSittingOverride={false}
             isHoldingBabyOverride={false}
             currentAnimation="idle"
           />
         </group>
 
-        {/* โต๊ะข้างเตียงไม้โอ๊ค 2 ลิ้นชัก + โคมไฟหัวเตียงแสงอุ่น + นาฬิกาดิจิทัล + ต้นไม้เล็ก */}
-        <group position={[1.78, 0, -1.1]}>
+        {/* ── ผ้าห่มผืนหนานุ่มคลุมทับตัวคุณแม่ตั้งแต่หน้าอกลงไปถึงปลายเท้า ("คุณแม่ห่มผ้า") โดยเห็นใบหน้าและศีรษะบนหมอนชัดเจน ── */}
+        {/* ผ้านวมหลักคลุมเต็มความกว้างเตียงเรียบเนียนตั้งแต่ระดับอกคุณแม่ (z = -0.73) ถึงปลายเตียง (z = +1.45) */}
+        <mesh position={[0, 0.74, 0.36]} castShadow receiveShadow>
+          <boxGeometry args={[2.46, 0.23, 2.18]} />
+          <meshStandardMaterial color="#f5ebe2" roughness={0.85} />
+        </mesh>
+        {/* ขอบผ้าปูพับทบสีขาวสะอาดพาดเรียบเต็มเตียงระดับหน้าอกคุณแม่ */}
+        <mesh position={[0, 0.858, -0.61]} castShadow>
+          <boxGeometry args={[2.48, 0.024, 0.24]} />
+          <meshStandardMaterial color="#fffaf5" roughness={0.8} />
+        </mesh>
+        {/* ผ้าคลุมเตียงสีชมพูตุ่นอบอุ่นพาดทับครึ่งล่างของเตียงอย่างเรียบเนียน */}
+        <mesh position={[0, 0.755, 0.72]} castShadow receiveShadow>
+          <boxGeometry args={[2.50, 0.22, 1.48]} />
+          <meshStandardMaterial color="#d8a499" roughness={0.84} />
+        </mesh>
+
+        {/* โต๊ะข้างเตียงไม้โอ๊คแนบชิดผนังเหนือ 100% + โคมไฟหัวเตียงแสงอุ่น + นาฬิกาดิจิทัล + ต้นไม้เล็ก */}
+        <group position={[1.76, 0, -1.26]}>
           <mesh position={[0, 0.34, 0]} castShadow receiveShadow>
             <boxGeometry args={[0.68, 0.68, 0.56]} />
             <meshStandardMaterial color="#b07d4f" roughness={0.52} />
@@ -805,16 +834,16 @@ export default function NewbornCare4Room() {
               <meshStandardMaterial color="#c89666" roughness={0.5} />
             </mesh>
           ))}
-          {/* โคมไฟหัวเตียง */}
+          {/* โคมไฟหัวเตียงแสงนวลชวนพักผ่อน */}
           <mesh position={[-0.12, 0.78, -0.05]}>
             <cylinderGeometry args={[0.07, 0.09, 0.2, 14]} />
             <meshStandardMaterial color="#ddb892" />
           </mesh>
           <mesh position={[-0.12, 0.98, -0.05]}>
             <cylinderGeometry args={[0.13, 0.21, 0.25, 16]} />
-            <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.65} />
+            <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.8} />
           </mesh>
-          {/* กรอบนาฬิกา/รูปเล็กและกระถางต้นไม้บนโต๊ะข้างเตียง */}
+          {/* นาฬิกาดิจิทัลและกระถางต้นไม้เล็กบนโต๊ะข้างเตียง */}
           <mesh position={[0.16, 0.74, 0.06]} rotation={[-0.2, -0.3, 0]} castShadow>
             <boxGeometry args={[0.16, 0.12, 0.03]} />
             <meshStandardMaterial color="#ffffff" roughness={0.3} />
@@ -828,74 +857,145 @@ export default function NewbornCare4Room() {
             <meshStandardMaterial color="#4d7c0f" roughness={0.75} />
           </mesh>
         </group>
-
-        {/* คลิกที่เตียงผู้ปกครองเพื่อดูคำแนะนำการแยกเตียงทารกให้อยู่ข้างเตียงผู้ปกครอง */}
       </group>
 
-      {/* ── 4.2 เตียงทารกขอบขาวโครงไม้โอ๊คตาข่ายโปร่ง ตั้งอยู่ข้างเตียงผู้ปกครอง (ตามภาพ nb4_room_ref.jpg) ── */}
-      <group position={[-0.55, 0, -1.55]}>
-        <BabyCrib position={[0, 0, 0]} scale={1.18} />
-        {/* ขอบเตียงทารกบุสีขาว + ผนังตาข่ายโปร่งระบายอากาศสีขาวนวลตามดีไซน์ Co-Sleeper Crib ในรูป */}
-        <mesh position={[-0.47, 0.84, 0]} castShadow>
-          <boxGeometry args={[0.04, 0.36, 1.32]} />
-          <meshStandardMaterial color="#f8fafc" transparent opacity={0.45} roughness={0.6} />
+      {/* ── 4.2 เตียงนอนทารก 1 ชั้น (Single-Tier Oak & Breathable White Mesh Co-Sleeper Crib)
+             ขยับมาตั้งชิดข้างเตียงคุณแม่ ("เตียงนอนลูก 1 ชั้น ขยับมาใกล้เตียงแม่อีกนิด") ── */}
+      <group position={[0.36, 0, -5.05]}>
+        {/* เสาขาเตียงไม้โอ๊คกลมมน 4 มุม ยาวลงพื้นโล่งโปร่ง 1 ชั้น (ไม่มีชั้นวางของชั้นที่ 2 ด้านล่าง!) */}
+        {[
+          [-0.46, -0.66],
+          [0.46, -0.66],
+          [-0.46, 0.66],
+          [0.46, 0.66],
+        ].map(([px, pz], idx) => (
+          <group key={`crib_post_${idx}`} position={[px, 0, pz]}>
+            <mesh position={[0, 0.49, 0]} castShadow receiveShadow>
+              <cylinderGeometry args={[0.036, 0.034, 0.98, 16]} />
+              <meshStandardMaterial color="#c69264" roughness={0.45} />
+            </mesh>
+            <mesh position={[0, 0.98, 0]}>
+              <sphereGeometry args={[0.038, 14, 14]} />
+              <meshStandardMaterial color="#c69264" roughness={0.45} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* คานไม้โอ๊ครองรับฐานที่นอนชั้นเดียว (ที่ระดับ y = 0.52m — 1 ชั้นสะอาดตา ตรงภาพ nb4_room_ref.jpg) */}
+        <mesh position={[-0.46, 0.51, 0]} castShadow>
+          <boxGeometry args={[0.055, 0.06, 1.32]} />
+          <meshStandardMaterial color="#c69264" roughness={0.48} />
         </mesh>
-        <mesh position={[0.47, 0.84, 0]} castShadow>
-          <boxGeometry args={[0.04, 0.36, 1.32]} />
-          <meshStandardMaterial color="#f8fafc" transparent opacity={0.45} roughness={0.6} />
+        <mesh position={[0.46, 0.51, 0]} castShadow>
+          <boxGeometry args={[0.055, 0.06, 1.32]} />
+          <meshStandardMaterial color="#c69264" roughness={0.48} />
         </mesh>
-        <mesh position={[0, 1.03, -0.66]} castShadow>
-          <boxGeometry args={[0.98, 0.05, 0.05]} />
+        <mesh position={[0, 0.51, -0.66]} castShadow>
+          <boxGeometry args={[0.92, 0.06, 0.055]} />
+          <meshStandardMaterial color="#c69264" roughness={0.48} />
+        </mesh>
+        <mesh position={[0, 0.51, 0.66]} castShadow>
+          <boxGeometry args={[0.92, 0.06, 0.055]} />
+          <meshStandardMaterial color="#c69264" roughness={0.48} />
+        </mesh>
+        <mesh position={[0, 0.53, 0]} receiveShadow>
+          <boxGeometry args={[0.9, 0.03, 1.3]} />
+          <meshStandardMaterial color="#e6ccb2" roughness={0.6} />
+        </mesh>
+
+        {/* ขอบบุนวมสีขาวด้านบนทั้ง 4 ด้าน */}
+        <mesh position={[-0.46, 0.94, 0]} castShadow>
+          <boxGeometry args={[0.055, 0.055, 1.32]} />
           <meshStandardMaterial color="#ffffff" roughness={0.35} />
         </mesh>
-        <mesh position={[0, 1.03, 0.66]} castShadow>
-          <boxGeometry args={[0.98, 0.05, 0.05]} />
+        <mesh position={[0.46, 0.94, 0]} castShadow>
+          <boxGeometry args={[0.055, 0.055, 1.32]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+        </mesh>
+        <mesh position={[0, 0.94, -0.66]} castShadow>
+          <boxGeometry args={[0.94, 0.055, 0.055]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+        </mesh>
+        <mesh position={[0, 0.94, 0.66]} castShadow>
+          <boxGeometry args={[0.94, 0.055, 0.055]} />
           <meshStandardMaterial color="#ffffff" roughness={0.35} />
         </mesh>
 
-        {/* แผ่นที่นอนทารกเรียบตึงภายในเตียงไม้ */}
+        {/* ผนังผ้าตาข่ายระบายอากาศสีขาวโปร่ง 4 ด้าน + ซี่ไม้โอ๊คด้านข้าง (มองเห็นลูกน้อยชัดเจน) */}
+        <mesh position={[-0.46, 0.73, 0]}>
+          <boxGeometry args={[0.02, 0.37, 1.26]} />
+          <meshStandardMaterial color="#f8fafc" transparent opacity={0.48} roughness={0.65} />
+        </mesh>
+        <mesh position={[0.46, 0.73, 0]}>
+          <boxGeometry args={[0.02, 0.37, 1.26]} />
+          <meshStandardMaterial color="#f8fafc" transparent opacity={0.48} roughness={0.65} />
+        </mesh>
+        <mesh position={[0, 0.73, -0.66]}>
+          <boxGeometry args={[0.88, 0.37, 0.024]} />
+          <meshStandardMaterial color="#f8fafc" transparent opacity={0.78} roughness={0.55} />
+        </mesh>
+        <mesh position={[0, 0.73, 0.66]}>
+          <boxGeometry args={[0.88, 0.37, 0.024]} />
+          <meshStandardMaterial color="#f8fafc" transparent opacity={0.78} roughness={0.55} />
+        </mesh>
+        {[-0.45, -0.22, 0, 0.22, 0.45].map((sz, si) => (
+          <React.Fragment key={`slat_${si}`}>
+            <mesh position={[-0.46, 0.73, sz]}>
+              <cylinderGeometry args={[0.01, 0.01, 0.38, 8]} />
+              <meshStandardMaterial color="#d4a373" roughness={0.5} />
+            </mesh>
+            <mesh position={[0.46, 0.73, sz]}>
+              <cylinderGeometry args={[0.01, 0.01, 0.38, 8]} />
+              <meshStandardMaterial color="#d4a373" roughness={0.5} />
+            </mesh>
+          </React.Fragment>
+        ))}
+
+        {/* แผ่นที่นอนทารกเรียบตึงภายในเตียงไม้ 1 ชั้น (พื้นผิวด้านบน y = 0.62) */}
         <mesh
-          position={[0, 0.66, 0]}
+          position={[0, 0.58, 0]}
           receiveShadow
           onClick={(e) => {
             e.stopPropagation();
             setActiveModal('practice');
           }}
         >
-          <boxGeometry args={[0.88, 0.08, 1.28]} />
-          <meshStandardMaterial color="#fffbeb" roughness={0.7} />
+          <boxGeometry args={[0.86, 0.08, 1.26]} />
+          <meshStandardMaterial color="#fffdf7" roughness={0.72} />
         </mesh>
 
-        {/* ทารกนอนอยู่ในเตียง:
+        {/* ทารกนอนราบบนที่นอนในเตียง 1 ชั้น:
             - เข้าไปครั้งแรก ลูกนอนคว่ำอยู่ (sleepPose === 'prone')
-            - เมื่อคุณแม่จับพลิกตัวแล้ว ลูกนอนหงาย (sleepPose === 'supine') */}
+            - เมื่อคุณแม่จับพลิกตัวแล้ว ลูกนอนหงาย (sleepPose === 'supine' -> pose='dressed') */}
         <group
-          position={[0, 0.75, 0.05]}
-          rotation={
-            sleepPose === 'prone'
-              ? [Math.PI / 2, 0, Math.PI] // นอนคว่ำหน้าลง (Prone)
-              : [-Math.PI / 2, 0, 0] // นอนหงาย (Supine - Safe)
-          }
+          position={[0, 0.62, 0.02]}
+          rotation={[0, 0, 0]}
           onClick={(e) => {
             e.stopPropagation();
             setSleepPose((prev) => (prev === 'prone' ? 'supine' : 'prone'));
           }}
         >
-          <BabyAvatar position={[0, 0, 0]} scale={1.15} isSwaddled={true} />
+          <BabyAvatar
+            pose={sleepPose === 'prone' ? 'prone' : 'dressed'}
+            pajamaColor="#fff8eb"
+            withBlanket={false}
+            position={[0, 0, 0]}
+            scale={1.18}
+          />
         </group>
 
         {/* ── อุปกรณ์นุ่ม ๆ 4 ชิ้นในเตียงทารก ที่คุณแม่ต้องหยิบออก (หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม) ── */}
         {/* 1. หมอน (Pillow) */}
         {cribItems.find((i) => i.id === 'pillow')?.inCrib && (
           <group
-            position={[0, 0.73, -0.35]}
+            position={[0, 0.65, -0.36]}
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveSingleItem('pillow');
             }}
           >
             <mesh castShadow>
-              <boxGeometry args={[0.52, 0.09, 0.32]} />
+              <boxGeometry args={[0.5, 0.08, 0.3]} />
               <meshStandardMaterial color="#fde68a" roughness={0.75} />
             </mesh>
           </group>
@@ -904,7 +1004,7 @@ export default function NewbornCare4Room() {
         {/* 2. หมอนข้าง (Bolster) */}
         {cribItems.find((i) => i.id === 'bolster')?.inCrib && (
           <group
-            position={[-0.25, 0.75, 0.08]}
+            position={[-0.26, 0.68, 0.06]}
             rotation={[Math.PI / 2, 0, 0]}
             onClick={(e) => {
               e.stopPropagation();
@@ -912,7 +1012,7 @@ export default function NewbornCare4Room() {
             }}
           >
             <mesh castShadow>
-              <cylinderGeometry args={[0.085, 0.085, 0.62, 16]} />
+              <cylinderGeometry args={[0.075, 0.075, 0.58, 16]} />
               <meshStandardMaterial color="#fbcfe8" roughness={0.75} />
             </mesh>
           </group>
@@ -921,27 +1021,26 @@ export default function NewbornCare4Room() {
         {/* 3. ตุ๊กตา (Plush Doll / Teddy Bear) */}
         {cribItems.find((i) => i.id === 'doll')?.inCrib && (
           <group
-            position={[0.26, 0.78, -0.28]}
+            position={[0.26, 0.71, -0.28]}
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveSingleItem('doll');
             }}
           >
-            {/* ตัวตุ๊กตาหมี */}
             <mesh position={[0, 0, 0]} castShadow>
-              <sphereGeometry args={[0.11, 14, 14]} />
+              <sphereGeometry args={[0.1, 14, 14]} />
               <meshStandardMaterial color="#c08552" roughness={0.85} />
             </mesh>
-            <mesh position={[0, 0.14, 0]} castShadow>
-              <sphereGeometry args={[0.085, 14, 14]} />
+            <mesh position={[0, 0.13, 0]} castShadow>
+              <sphereGeometry args={[0.08, 14, 14]} />
               <meshStandardMaterial color="#c08552" roughness={0.85} />
             </mesh>
-            <mesh position={[-0.06, 0.21, 0]} castShadow>
-              <sphereGeometry args={[0.03, 10, 10]} />
+            <mesh position={[-0.055, 0.195, 0]} castShadow>
+              <sphereGeometry args={[0.028, 10, 10]} />
               <meshStandardMaterial color="#8c5a3c" />
             </mesh>
-            <mesh position={[0.06, 0.21, 0]} castShadow>
-              <sphereGeometry args={[0.03, 10, 10]} />
+            <mesh position={[0.055, 0.195, 0]} castShadow>
+              <sphereGeometry args={[0.028, 10, 10]} />
               <meshStandardMaterial color="#8c5a3c" />
             </mesh>
           </group>
@@ -950,21 +1049,21 @@ export default function NewbornCare4Room() {
         {/* 4. ผ้าห่มหนา (Thick Blanket) */}
         {cribItems.find((i) => i.id === 'blanket')?.inCrib && (
           <group
-            position={[0.04, 0.79, 0.28]}
+            position={[0.03, 0.71, 0.26]}
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveSingleItem('blanket');
             }}
           >
             <mesh castShadow>
-              <boxGeometry args={[0.68, 0.07, 0.55]} />
+              <boxGeometry args={[0.64, 0.06, 0.5]} />
               <meshStandardMaterial color="#bae6fd" roughness={0.85} />
             </mesh>
           </group>
         )}
 
-        {/* ปุ่มเดียวที่สะอาดตาเหนือเตียงทารกสำหรับเปิดหน้าต่างแบบทดลองปฏิบัติ (ไม่บดบังบรรยากาศห้องนอน) */}
-        <Html position={[0, 1.42, 0]} center zIndexRange={[20, 0]}>
+        {/* ปุ่มเหนือเตียงทารก 1 ชั้นสำหรับเปิดหน้าต่างแบบทดลองปฏิบัติ */}
+        <Html position={[0, 1.32, 0]} center zIndexRange={[20, 0]}>
           <button
             type="button"
             onClick={(e) => {
@@ -1361,7 +1460,7 @@ export default function NewbornCare4Room() {
       )}
 
       {/* ── Player Controller ── */}
-      <PlayerController />
+      <PlayerController initialPosition={[-1.2, 0, 1.85]} initialRotation={Math.PI * 0.88} />
 
       {/* ── Baby care supplies on the console cabinet beside the TV ── */}
       <DiaperStack position={[-6.5, 0.72, 0.55]} count={3} rotation={[0, -Math.PI / 2, 0]} />

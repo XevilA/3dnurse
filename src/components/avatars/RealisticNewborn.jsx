@@ -62,6 +62,43 @@ const drawTerry = (base) => (g, w, h) => {
   }
 };
 
+const drawFeatheredBabyHair = (wet = false) => (g, w, h) => {
+  g.clearRect(0, 0, w, h);
+  const grad = g.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, wet ? 'rgba(38, 24, 18, 0.90)' : 'rgba(66, 43, 31, 0.85)');
+  grad.addColorStop(0.55, wet ? 'rgba(46, 30, 22, 0.72)' : 'rgba(78, 52, 38, 0.65)');
+  grad.addColorStop(0.84, 'rgba(92, 62, 46, 0.22)');
+  grad.addColorStop(1.0, 'rgba(92, 62, 46, 0.0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 420; i++) {
+    const x0 = (i / 420) * w + Math.sin(i * 3.7) * 4;
+    const swerve = Math.sin(i * 1.9) * 10;
+    const len = h * (0.68 + ((i * 29) % 32) / 100);
+    const strandGrad = g.createLinearGradient(x0, 0, x0 + swerve, len);
+    strandGrad.addColorStop(0, 'rgba(38, 24, 17, 0.50)');
+    strandGrad.addColorStop(0.75, 'rgba(68, 44, 32, 0.30)');
+    strandGrad.addColorStop(1, 'rgba(68, 44, 32, 0.0)');
+    g.strokeStyle = strandGrad;
+    g.lineWidth = 1.1 + (i % 3) * 0.45;
+    g.beginPath();
+    g.moveTo(x0, 0);
+    g.quadraticCurveTo(x0 + swerve * 0.5, len * 0.55, x0 + swerve, len);
+    g.stroke();
+  }
+};
+
+const drawSoftCheekBlush = () => (g, w, h) => {
+  g.clearRect(0, 0, w, h);
+  const rad = g.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w * 0.48);
+  rad.addColorStop(0.0, 'rgba(244, 132, 132, 0.40)');
+  rad.addColorStop(0.55, 'rgba(244, 145, 140, 0.16)');
+  rad.addColorStop(1.0, 'rgba(244, 145, 140, 0.0)');
+  g.fillStyle = rad;
+  g.fillRect(0, 0, w, h);
+};
+
 /* ── primitives ──────────────────────────────────────────────────── */
 const _up = new THREE.Vector3(0, 1, 0);
 /** tapered limb segment between two points (+ end caps) */
@@ -102,97 +139,145 @@ function Ellipsoid({ p, s, color = SKIN, wet = false, children, mat }) {
   );
 }
 
-/* ── head ────────────────────────────────────────────────────────── */
+/* ── head (lifelike sculpted newborn baby face + feathered wispy baby hair) ── */
 function Head({ wet = false, beanie = null, eyes = 'closed', mouth = 'rest' }) {
-  const hair = wet ? '#1c1411' : '#2b1d17';
+  const hair = wet ? '#241812' : '#4a3123';
+  const hairTex = useCanvasTexture(drawFeatheredBabyHair(wet), 512, 256, [2, 1]);
+  const blushTex = useCanvasTexture(drawSoftCheekBlush(), 128, 128, [1, 1]);
+
   return (
     <group>
-      {/* cranium — slightly egg-shaped, wider at the back */}
-      <Ellipsoid p={[0, 0.004, -0.004]} s={[0.083, 0.088, 0.092]} wet={wet} />
-      {/* forehead + brow ridge */}
-      <Ellipsoid p={[0, 0.045, 0.06]} s={[0.066, 0.034, 0.03]} wet={wet} />
-      {/* chubby cheeks */}
-      <Ellipsoid p={[-0.05, -0.03, 0.058]} s={[0.036, 0.034, 0.03]} color="#f1b09b" wet={wet} />
-      <Ellipsoid p={[0.05, -0.03, 0.058]} s={[0.036, 0.034, 0.03]} color="#f1b09b" wet={wet} />
-      {/* chin */}
-      <Ellipsoid p={[0, -0.066, 0.052]} s={[0.026, 0.02, 0.022]} wet={wet} />
-      {/* soft rosy blush */}
-      {[-0.052, 0.052].map((x) => (
-        <mesh key={x} position={[x, -0.024, 0.081]} rotation={[0, x < 0 ? -0.5 : 0.5, 0]}>
-          <circleGeometry args={[0.02, 24]} />
-          <meshBasicMaterial color="#f08a82" transparent opacity={0.22} depthWrite={false} />
+      {/* Unified smooth cranium & lower face (same warm SKIN tone so there are zero harsh seam lines!) */}
+      <Ellipsoid p={[0, 0.005, -0.004]} s={[0.084, 0.089, 0.092]} wet={wet} />
+      {/* Soft rounded baby cheeks blended smoothly into cranium */}
+      <Ellipsoid p={[-0.044, -0.026, 0.056]} s={[0.040, 0.036, 0.034]} color={SKIN} wet={wet} />
+      <Ellipsoid p={[0.044, -0.026, 0.056]} s={[0.040, 0.036, 0.034]} color={SKIN} wet={wet} />
+      {/* Smooth baby chin & jaw contour */}
+      <Ellipsoid p={[0, -0.058, 0.050]} s={[0.038, 0.026, 0.030]} color={SKIN} wet={wet} />
+
+      {/* Airbrushed radial rosy cheek blush */}
+      {[-0.048, 0.048].map((x) => (
+        <mesh key={x} position={[x, -0.022, 0.084]} rotation={[0.1, x < 0 ? -0.42 : 0.42, 0]}>
+          <planeGeometry args={[0.044, 0.036]} />
+          <meshBasicMaterial map={blushTex} transparent depthWrite={false} />
         </mesh>
       ))}
-      {/* eyes */}
+
+      {/* Expressive Newborn Eyes (Flush almond eye contour, soft upper eyelid hood, large warm dark irises + catchlights) */}
       {[-1, 1].map((sx) => (
-        <group key={sx} position={[sx * 0.033, 0.016, 0.083]} rotation={[0.08, sx * -0.28, sx * 0.1]}>
-          {/* eyelid — slightly puffy */}
-          <Ellipsoid p={[0, 0, 0]} s={[0.021, eyes === 'closed' ? 0.0085 : 0.011, 0.007]} color="#e9ad98" wet={wet} />
+        <group key={sx} position={[sx * 0.029, 0.008, 0.0795]} rotation={[-0.04, sx * 0.28, sx * -0.04]}>
           {eyes === 'closed' ? (
             <>
-              {/* closed-lid lash line (downward curve) */}
-              <mesh position={[0, -0.003, 0.006]} rotation={[0, 0, Math.PI]}>
-                <torusGeometry args={[0.016, 0.0012, 6, 20, Math.PI * 0.8]} />
-                <meshStandardMaterial color="#3a2824" roughness={0.6} />
+              <Ellipsoid p={[0, 0.001, 0.003]} s={[0.016, 0.007, 0.005]} color="#efb9a3" wet={wet} />
+              <mesh position={[0, -0.0015, 0.0068]} rotation={[0, 0, Math.PI]}>
+                <torusGeometry args={[0.0125, 0.0012, 8, 22, Math.PI * 0.82]} />
+                <meshStandardMaterial color="#422c23" roughness={0.55} />
               </mesh>
-              {[-2, -1, 0, 1, 2].map((i) => (
-                <mesh key={i} position={[i * 0.0075, -0.0105 + Math.abs(i) * 0.0022, 0.006]} rotation={[0, 0, i * 0.18]}>
-                  <boxGeometry args={[0.0008, 0.0045, 0.0008]} />
-                  <meshStandardMaterial color="#3a2824" />
-                </mesh>
-              ))}
             </>
           ) : (
             <>
-              <mesh position={[0, 0, 0.005]}><sphereGeometry args={[0.0085, 16, 12]} /><meshStandardMaterial color="#fdfdfd" roughness={0.3} /></mesh>
-              <mesh position={[0, 0, 0.012]}><sphereGeometry args={[0.0055, 16, 12]} /><meshStandardMaterial color="#2c1c16" roughness={0.2} /></mesh>
+              {/* Flush Almond Sclera (recessed naturally into eye socket — zero side bulge) */}
+              <mesh position={[0, 0, 0.0015]} scale={[1.15, 0.78, 0.42]}>
+                <sphereGeometry args={[0.0108, 20, 16]} />
+                <meshStandardMaterial color="#fdf8f6" roughness={0.22} />
+              </mesh>
+              {/* Large warm dark-brown newborn iris */}
+              <mesh position={[0, -0.0004, 0.0044]} scale={[1.0, 0.94, 0.32]}>
+                <sphereGeometry args={[0.0076, 20, 16]} />
+                <meshStandardMaterial color="#361f14" roughness={0.14} />
+              </mesh>
+              {/* Deep glossy pupil */}
+              <mesh position={[0, -0.0004, 0.0062]} scale={[1.0, 0.94, 0.25]}>
+                <sphereGeometry args={[0.0043, 16, 12]} />
+                <meshStandardMaterial color="#0f172a" roughness={0.08} />
+              </mesh>
+              {/* Lifelike white corneal catchlight sparkles */}
+              <mesh position={[0.0022, 0.002, 0.0075]}>
+                <circleGeometry args={[0.0016, 12]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+              <mesh position={[-0.0018, -0.0018, 0.0074]}>
+                <circleGeometry args={[0.0008, 10]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+              {/* Soft upper baby eyelid hood & lash line */}
+              <mesh position={[0, 0.0036, 0.0026]} rotation={[0.18, 0, 0]} scale={[1.18, 0.52, 0.48]}>
+                <sphereGeometry args={[0.0112, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.52]} />
+                <meshStandardMaterial color="#efb9a1" roughness={0.65} />
+              </mesh>
+              <mesh position={[0, 0.0022, 0.0058]} rotation={[-0.12, 0, 0]}>
+                <torusGeometry args={[0.0108, 0.0011, 8, 20, Math.PI * 0.86]} />
+                <meshStandardMaterial color="#4a2e22" roughness={0.6} />
+              </mesh>
             </>
           )}
-          {/* faint brow */}
-          <mesh position={[0, 0.02, 0.003]} rotation={[0, 0, sx * -0.12]}>
-            <boxGeometry args={[0.03, 0.0035, 0.002]} />
-            <meshStandardMaterial color={hair} transparent opacity={0.45} />
+          {/* Delicate curved baby eyebrow */}
+          <mesh position={[0, 0.0155, 0.004]} rotation={[0, 0, sx * -0.08]}>
+            <torusGeometry args={[0.0135, 0.0012, 6, 16, Math.PI * 0.62]} />
+            <meshStandardMaterial color={hair} transparent opacity={0.45} roughness={0.8} />
           </mesh>
         </group>
       ))}
-      {/* nose */}
-      <Ellipsoid p={[0, -0.01, 0.094]} s={[0.011, 0.0095, 0.012]} color="#f0b6a0" wet={wet} />
-      <Ellipsoid p={[0, 0.012, 0.088]} s={[0.007, 0.012, 0.007]} wet={wet} />
+
+      {/* Soft sculpted baby button nose */}
+      <Ellipsoid p={[0, -0.002, 0.088]} s={[0.0075, 0.011, 0.0075]} color={SKIN} wet={wet} />
+      <Ellipsoid p={[0, -0.012, 0.093]} s={[0.0115, 0.009, 0.011]} color="#f1ba9f" wet={wet} />
       {[-0.0045, 0.0045].map((x) => (
-        <mesh key={x} position={[x, -0.0165, 0.0985]}><sphereGeometry args={[0.0027, 8, 8]} /><meshStandardMaterial color="#b9766a" /></mesh>
+        <mesh key={x} position={[x, -0.0165, 0.0975]}>
+          <sphereGeometry args={[0.0022, 8, 8]} />
+          <meshStandardMaterial color="#c48272" roughness={0.7} />
+        </mesh>
       ))}
-      {/* philtrum + lips */}
-      <Ellipsoid p={[0, -0.0335, 0.089]} s={[0.014, 0.0042, 0.0048]} color="#e48a88" wet={wet} />
-      <Ellipsoid p={[0, -0.0415, 0.0875]} s={[0.012, 0.0048, 0.0052]} color="#ea9a98" wet={wet} />
-      <mesh position={[0, -0.0378, 0.0915]}>
-        <boxGeometry args={[mouth === 'open' ? 0.016 : 0.022, mouth === 'open' ? 0.006 : 0.0009, 0.0008]} />
-        <meshStandardMaterial color={mouth === 'open' ? '#7a2e32' : '#a05358'} />
+
+      {/* Cute rosy Cupid's-bow newborn lips */}
+      <Ellipsoid p={[-0.004, -0.034, 0.088]} s={[0.0085, 0.0042, 0.005]} color="#e58c8a" wet={wet} />
+      <Ellipsoid p={[0.004, -0.034, 0.088]} s={[0.0085, 0.0042, 0.005]} color="#e58c8a" wet={wet} />
+      <Ellipsoid p={[0, -0.0405, 0.087]} s={[0.0115, 0.0052, 0.0055]} color="#ec9997" wet={wet} />
+      <mesh position={[0, -0.0372, 0.0912]}>
+        <boxGeometry args={[mouth === 'open' ? 0.015 : 0.018, mouth === 'open' ? 0.005 : 0.0011, 0.001]} />
+        <meshStandardMaterial color={mouth === 'open' ? '#88343a' : '#b45c62'} />
       </mesh>
-      {/* ears */}
+
+      {/* Soft sculpted baby ears */}
       {[-1, 1].map((sx) => (
-        <group key={sx} position={[sx * 0.0865, -0.006, -0.002]} rotation={[0, 0, sx * -0.18]}>
-          <Ellipsoid p={[0, 0, 0]} s={[0.0075, 0.021, 0.0155]} color="#eeae98" wet={wet} />
-          <mesh position={[sx * 0.0035, 0, 0.001]} scale={[0.4, 1, 0.8]}><sphereGeometry args={[0.011, 12, 12]} /><meshStandardMaterial color={SKIN_DARK} roughness={0.8} /></mesh>
+        <group key={sx} position={[sx * 0.085, -0.008, -0.004]} rotation={[0, sx * 0.15, sx * -0.15]}>
+          <Ellipsoid p={[0, 0, 0]} s={[0.008, 0.020, 0.015]} color="#f0b49d" wet={wet} />
+          <mesh position={[sx * 0.003, 0, 0.001]} scale={[0.4, 0.85, 0.7]}>
+            <sphereGeometry args={[0.010, 12, 12]} />
+            <meshStandardMaterial color="#dc9784" roughness={0.8} />
+          </mesh>
         </group>
       ))}
-      {/* fine newborn hair */}
+
+      {/* Feathered silky newborn hair tilted BACK (-0.48 rad around X) so forehead & face stay 100% clear and natural */}
       {!beanie && (
-        <mesh position={[0, 0.006, -0.012]} scale={[0.0845 / 0.083, 0.0895 / 0.088, 0.0935 / 0.092]}>
-          <sphereGeometry args={[0.0842, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.46]} />
-          <meshStandardMaterial color={hair} roughness={0.95} side={THREE.DoubleSide} />
-        </mesh>
+        <group rotation={[-0.48, 0, 0]} position={[0, 0.005, -0.005]}>
+          <mesh scale={[0.0855 / 0.084, 0.0905 / 0.089, 0.0935 / 0.092]}>
+            <sphereGeometry args={[0.0845, 36, 26, 0, Math.PI * 2, 0, Math.PI * 0.50]} />
+            <meshStandardMaterial
+              map={hairTex}
+              transparent
+              roughness={0.92}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        </group>
       )}
       {beanie && (
-        <group position={[0, 0.012, -0.012]}>
+        <group position={[0, 0.012, -0.012]} rotation={[-0.22, 0, 0]}>
           <mesh castShadow scale={[1.04, 1.02, 1.03]}>
-            <sphereGeometry args={[0.0905, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+            <sphereGeometry args={[0.0905, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.50]} />
             <meshStandardMaterial color={beanie} roughness={0.95} />
           </mesh>
-          <mesh position={[0, -0.0095, 0.002]} rotation={[Math.PI / 2 - 0.2, 0, 0]} scale={[1, 1.03, 1]}>
-            <torusGeometry args={[0.0895, 0.0105, 12, 40]} />
+          <mesh position={[0, 0.002, 0.002]} rotation={[Math.PI / 2, 0, 0]} scale={[1, 1.03, 1]}>
+            <torusGeometry args={[0.089, 0.010, 12, 40]} />
             <meshStandardMaterial color="#fffaf0" roughness={0.98} />
           </mesh>
-          <mesh position={[0, 0.092, -0.004]}><sphereGeometry args={[0.014, 16, 16]} /><meshStandardMaterial color="#fffaf0" roughness={1} /></mesh>
+          <mesh position={[0, 0.094, -0.004]}>
+            <sphereGeometry args={[0.013, 16, 16]} />
+            <meshStandardMaterial color="#fffaf0" roughness={1} />
+          </mesh>
         </group>
       )}
     </group>
@@ -501,14 +586,7 @@ export default function RealisticNewborn({
   wetDiaper = false,
 }) {
   const breath = useRef();
-  useFrame(({ clock }) => {
-    if (!breath.current) return;
-    const b = Math.sin(clock.getElapsedTime() * 3.0) * 0.014;
-    breath.current.scale.set(1 + b * 0.5, 1 + b * 1.4, 1 + b * 0.4);
-  });
-  const starMap = useCanvasTexture(drawStars(pajamaColor, '#ffffff'), 256, 256, [3, 5]);
-  const terry = useCanvasTexture(drawTerry(towelColor), 256, 256, [3, 3]);
-
+  const headRef = useRef();
   const isSwaddle = pose === 'swaddle';
   const isTowel = pose === 'towelWrap';
   const isDressed = pose === 'dressed' || pose === 'prone';
@@ -517,6 +595,20 @@ export default function RealisticNewborn({
   const isChange = pose === 'diaperChange';
   const isDiaperOn = pose === 'diaperOn';
   const isNaked = pose === 'naked';
+  const isAwakeTable = isDiaperOn || isChange || isBath || isNaked;
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    if (breath.current) {
+      const b = Math.sin(t * 3.0) * 0.014;
+      breath.current.scale.set(1 + b * 0.5, 1 + b * 1.4, 1 + b * 0.4);
+    }
+    if (headRef.current && isAwakeTable) {
+      headRef.current.rotation.z = Math.sin(t * 1.1) * 0.06;
+    }
+  });
+  const starMap = useCanvasTexture(drawStars(pajamaColor, '#ffffff'), 256, 256, [3, 5]);
+  const terry = useCanvasTexture(drawTerry(towelColor), 256, 256, [3, 3]);
 
   const headBeanie = isSwaddle ? beanieColor : (isDressed && !isProne) ? '#fffaf0' : null;
 
@@ -524,6 +616,7 @@ export default function RealisticNewborn({
     <group rotation={isProne ? [0, 0, Math.PI] : [0, 0, 0]} position={isProne ? [0, 0.16, 0] : [0, 0, 0]}>
       {/* head — rotated so the face points up (+Y) when lying supine, or turned slightly to the side when prone */}
       <group
+        ref={headRef}
         position={[0, 0.088, -0.178]}
         rotation={
           isProne
@@ -531,7 +624,12 @@ export default function RealisticNewborn({
             : [-Math.PI / 2 + (isBath ? 0.12 : 0), 0, 0]
         }
       >
-        <Head wet={isBath} beanie={headBeanie} eyes="closed" mouth={isChange ? 'open' : 'rest'} />
+        <Head
+          wet={isBath}
+          beanie={headBeanie}
+          eyes={isAwakeTable ? 'open' : 'closed'}
+          mouth={isChange ? 'open' : 'rest'}
+        />
       </group>
 
       {(isSwaddle) && <SwaddleWrap blanketColor={blanketColor} withBlanket={withBlanket} />}

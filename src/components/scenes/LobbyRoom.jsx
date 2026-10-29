@@ -201,29 +201,29 @@ export default function LobbyRoom() {
 
 
 
-      {/* ── Patient Mobility: Hospital Wheelchairs on West & East Wings (รถเข็นแยก 2 ฝั่ง ซ้าย-ขวา ไม่จอดติดกันตามโน้ตแก้ไข) ── */}
+      {/* ── Patient Mobility: Hospital Wheelchairs Parked Neatly in the South-West & South-East Corners ("จอดชิดมุม") ── */}
       <InteractiveSeat
         id="lobby_wheelchair_1"
-        name="รถเข็นโรงพยาบาล ฝั่งปีกมารดา (West)"
+        name="รถเข็นโรงพยาบาล มุมห้องฝั่งปีกมารดา (West Corner)"
         type="wheelchair"
-        position={[-3.8, 0, 4.2]}
-        rotation={[0, 0.25, 0]}
+        position={[-9.1, 0, 8.1]}
+        rotation={[0, Math.PI * 0.38, 0]}
         seatOffset={[0, 0.46, 0.05]}
         isDrivable={true}
       >
-        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.12} />
       </InteractiveSeat>
 
       <InteractiveSeat
         id="lobby_wheelchair_2"
-        name="รถเข็นโรงพยาบาล ฝั่งปีกทารก (East)"
+        name="รถเข็นโรงพยาบาล มุมห้องฝั่งปีกทารก (East Corner)"
         type="wheelchair"
-        position={[4.5, 0, 4.0]}
-        rotation={[0, -Math.PI / 2, 0]}
+        position={[8.05, 0, 9.15]}
+        rotation={[0, -Math.PI * 0.72, 0]}
         seatOffset={[0, 0.46, 0.05]}
         isDrivable={true}
       >
-        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.15} />
+        <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.12} />
       </InteractiveSeat>
 
       {/* ── Floor Guidance Pathway to Hall 301 ── */}

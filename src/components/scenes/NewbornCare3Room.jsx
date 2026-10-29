@@ -35,6 +35,220 @@ import { DiaperStack, BabyTowel, CottonJar } from '../furniture/BabyProps';
  *   Uses /images/rev/nb3_card1_base.jpg, /images/rev/nb3_card2_shaft.jpg, /images/rev/nb3_card3_tip.jpg
  *   and reveals official answer sheet /images/rev/nb3_quiz_answer.jpg.
  */
+/**
+ * ScenicDaytimeWindow3D — หน้าต่างบานใหญ่มองเห็นทิวทัศน์ธรรมชาติภายนอกสบายตา
+ * (ท้องฟ้าสดใส เมฆสีขาว ต้นไม้สีเขียว สนามหญ้า และผ้าม่านสีชมพูพาสเทล ตามภาพอ้างอิง image1.jpeg & page_1.png)
+ */
+function ScenicDaytimeWindow3D({ position = [0, 0, 0], rotation = [0, 0, 0], width = 3.8, height = 2.45 }) {
+  const innerW = width - 0.34;
+  const innerH = height - 0.32;
+  return (
+    <group position={position} rotation={rotation}>
+      {/* กรอบหน้าต่างไม้สีขาวครีมแนบสนิทผนัง */}
+      <mesh position={[0, 0, -0.01]} castShadow receiveShadow>
+        <boxGeometry args={[width, height, 0.1]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.35} />
+      </mesh>
+      {/* ขอบบัวธรณีหน้าต่างไม้โอ๊คด้านล่าง */}
+      <mesh position={[0, -height / 2 - 0.04, 0.06]} castShadow>
+        <boxGeometry args={[width + 0.24, 0.09, 0.18]} />
+        <meshStandardMaterial color="#c69264" roughness={0.45} />
+      </mesh>
+
+      {/* ท้องฟ้าสดใสสบายตา (Sky Gradient Planes) */}
+      <mesh position={[0, innerH * 0.14, 0.042]}>
+        <planeGeometry args={[innerW, innerH * 0.72]} />
+        <meshBasicMaterial color="#bae6fd" />
+      </mesh>
+      <mesh position={[0, innerH * 0.36, 0.043]}>
+        <planeGeometry args={[innerW, innerH * 0.28]} />
+        <meshBasicMaterial color="#7dd3fc" />
+      </mesh>
+
+      {/* ก้อนเมฆสีขาวนุ่ม */}
+      {[
+        [-innerW * 0.26, innerH * 0.26, 0.24],
+        [-innerW * 0.18, innerH * 0.29, 0.19],
+        [innerW * 0.20, innerH * 0.22, 0.22],
+        [innerW * 0.28, innerH * 0.25, 0.17],
+      ].map(([cx, cy, cr], idx) => (
+        <mesh key={`cld_${idx}`} position={[cx, cy, 0.046]}>
+          <circleGeometry args={[cr, 20]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+      ))}
+
+      {/* สนามหญ้าสีเขียวสดชื่นและเนินธรรมชาติภายนอก */}
+      <mesh position={[0, -innerH * 0.31, 0.044]}>
+        <planeGeometry args={[innerW, innerH * 0.38]} />
+        <meshBasicMaterial color="#86efac" />
+      </mesh>
+      <mesh position={[0, -innerH * 0.40, 0.045]}>
+        <planeGeometry args={[innerW, innerH * 0.20]} />
+        <meshBasicMaterial color="#4ade80" />
+      </mesh>
+
+      {/* ทิวต้นไม้สีเขียวร่มรื่นนอกหน้าต่าง */}
+      {[
+        [-innerW * 0.33, -innerH * 0.10, 0.42, '#22c55e'],
+        [-innerW * 0.18, -innerH * 0.16, 0.34, '#16a34a'],
+        [innerW * 0.12, -innerH * 0.15, 0.36, '#4ade80'],
+        [innerW * 0.31, -innerH * 0.08, 0.44, '#15803d'],
+      ].map(([tx, ty, tr, col], idx) => (
+        <group key={`tr_${idx}`} position={[tx, ty, 0.047]}>
+          <mesh position={[0, -tr * 0.75, -0.001]}>
+            <planeGeometry args={[0.09, tr * 0.9]} />
+            <meshBasicMaterial color="#78350f" />
+          </mesh>
+          <mesh>
+            <circleGeometry args={[tr, 22]} />
+            <meshBasicMaterial color={col} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* กระจกใสสะท้อนแสงอ่อนๆ + เส้นกรอบแบ่งช่องหน้าต่างสีขาว */}
+      <mesh position={[0, 0, 0.052]}>
+        <planeGeometry args={[innerW, innerH]} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.12} roughness={0.05} />
+      </mesh>
+      <mesh position={[0, 0, 0.056]}>
+        <boxGeometry args={[0.07, innerH, 0.04]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0.05, 0.056]}>
+        <boxGeometry args={[innerW, 0.06, 0.04]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.3} />
+      </mesh>
+
+      {/* ผ้าม่านสีชมพูพาสเทลอ่อนโยนสองฝั่ง + ราวม่านไม้ */}
+      {[-1, 1].map((side) => (
+        <group key={`curt_${side}`} position={[side * (width / 2 - 0.16), -0.02, 0.11]}>
+          {[-0.14, 0, 0.14].map((fx, fi) => (
+            <mesh key={fi} position={[fx, 0, (fi % 2) * 0.02]} castShadow>
+              <boxGeometry args={[0.16, height + 0.18, 0.09]} />
+              <meshStandardMaterial color={fi % 2 === 0 ? '#fbcfe8' : '#f9a8d4'} roughness={0.85} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      <mesh position={[0, height / 2 + 0.10, 0.12]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.026, 0.026, width + 0.45, 14]} />
+        <meshStandardMaterial color="#c69264" roughness={0.45} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
+ * WheeledHospitalBassinet3D — รถเข็นเตียงนอนทารกโรงพยาบาลอ่างอะคริลิกใสพร้อมล้อเข็น
+ * (ตรงตามภาพอ้างอิง image1.jpeg & image2.jpeg จอดอยู่ข้างพยาบาลและโต๊ะเช็ดสะดือ)
+ */
+function WheeledHospitalBassinet3D({ position = [0, 0, 0], rotation = [0, 0, 0] }) {
+  return (
+    <group position={position} rotation={rotation}>
+      {/* โครงฐานล่างและล้อเข็น 4 ล้อ */}
+      {[
+        [-0.46, -0.26],
+        [0.46, -0.26],
+        [-0.46, 0.26],
+        [0.46, 0.26],
+      ].map(([wx, wz], idx) => (
+        <group key={`whl_${idx}`} position={[wx, 0, wz]}>
+          {/* ล้อยางหมุนได้ */}
+          <mesh position={[0, 0.055, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+            <cylinderGeometry args={[0.055, 0.055, 0.036, 16]} />
+            <meshStandardMaterial color="#334155" roughness={0.5} />
+          </mesh>
+          <mesh position={[0, 0.055, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.03, 0.03, 0.04, 14]} />
+            <meshStandardMaterial color="#e2e8f0" metalness={0.6} roughness={0.3} />
+          </mesh>
+          {/* เสาโครงรถเข็นสีฟ้าพาสเทล-สแตนเลส */}
+          <mesh position={[0, 0.46, 0]} castShadow>
+            <cylinderGeometry args={[0.022, 0.022, 0.74, 14]} />
+            <meshStandardMaterial color="#93c5fd" metalness={0.25} roughness={0.35} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* ชั้นวางของด้านล่างรถเข็น + ผ้าห่มทารกพับสีชมพูและสีฟ้า */}
+      <mesh position={[0, 0.24, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.96, 0.035, 0.54]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.35} />
+      </mesh>
+      <mesh position={[-0.22, 0.285, 0]} castShadow>
+        <boxGeometry args={[0.34, 0.055, 0.36]} />
+        <meshStandardMaterial color="#fbcfe8" roughness={0.85} />
+      </mesh>
+      <mesh position={[0.22, 0.285, 0]} castShadow>
+        <boxGeometry args={[0.34, 0.055, 0.36]} />
+        <meshStandardMaterial color="#bae6fd" roughness={0.85} />
+      </mesh>
+
+      {/* กรอบสแตนเลสรองรับอ่างทารก + มือจับเข็นโค้งด้านข้าง */}
+      <mesh position={[0, 0.82, 0]} castShadow>
+        <boxGeometry args={[1.04, 0.045, 0.60]} />
+        <meshStandardMaterial color="#bfdbfe" roughness={0.35} />
+      </mesh>
+      {[-0.56, 0.56].map((hx, hi) => (
+        <mesh key={`hdl_${hi}`} position={[hx, 0.90, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.016, 0.016, 0.48, 12]} />
+          <meshStandardMaterial color="#cbd5e1" metalness={0.85} roughness={0.18} />
+        </mesh>
+      ))}
+
+      {/* อ่างนอนทารกอะคริลิกใส (Clear Acrylic Hospital Newborn Tub) */}
+      <mesh position={[0, 0.85, 0]}>
+        <boxGeometry args={[0.96, 0.03, 0.54]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.2} />
+      </mesh>
+      {/* ผนังอะคริลิกใส 4 ด้าน */}
+      {[
+        [0, 1.00, 0.27, [0.96, 0.28, 0.025]],
+        [0, 1.00, -0.27, [0.96, 0.28, 0.025]],
+        [-0.48, 1.00, 0, [0.025, 0.28, 0.54]],
+        [0.48, 1.00, 0, [0.025, 0.28, 0.54]],
+      ].map(([px, py, pz, args], wi) => (
+        <mesh key={`tub_w_${wi}`} position={[px, py, pz]}>
+          <boxGeometry args={args} />
+          <meshPhysicalMaterial
+            color="#e0f2fe"
+            transmission={0.86}
+            transparent
+            opacity={0.55}
+            roughness={0.06}
+            ior={1.48}
+          />
+        </mesh>
+      ))}
+
+      {/* เบาะนอนทารกสีชมพูอ่อนนุ่ม + หมอนหลุมทารก + ป้ายชื่อหน้าเตียง */}
+      <mesh position={[0, 0.89, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.88, 0.06, 0.48]} />
+        <meshStandardMaterial color="#fdf2f8" roughness={0.8} />
+      </mesh>
+      <mesh position={[0.14, 0.925, 0]} castShadow>
+        <boxGeometry args={[0.48, 0.025, 0.44]} />
+        <meshStandardMaterial color="#fbcfe8" roughness={0.85} />
+      </mesh>
+      <mesh position={[-0.26, 0.925, 0]} castShadow>
+        <boxGeometry args={[0.20, 0.03, 0.30]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.85} />
+      </mesh>
+      {/* ป้ายบัตรประจำตัวทารกติดขอบอ่างใส */}
+      <mesh position={[0, 1.04, 0.286]}>
+        <boxGeometry args={[0.20, 0.11, 0.01]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 1.07, 0.292]}>
+        <planeGeometry args={[0.18, 0.03]} />
+        <meshBasicMaterial color="#f472b6" />
+      </mesh>
+    </group>
+  );
+}
+
 export default function NewbornCare3Room() {
   const {
     completeModule,
@@ -52,12 +266,13 @@ export default function NewbornCare3Room() {
   const [selectedSequence, setSelectedSequence] = useState([]); // Array of card IDs clicked in order (correct: [1, 2, 3])
   const [quizFeedback, setQuizFeedback] = useState(null);
   const [missionCompleted, setMissionCompleted] = useState(Boolean(learningProgress?.newbornCare3));
+  const [hudCollapsed, setHudCollapsed] = useState(false);
 
   // ── 6 Large Wall Posters around the Room ──
   const wallPosters = [
     {
       src: '/images/rev/nb3_poster1_equip.jpg',
-      title: 'ภาพที่ 1: อุปกรณ์เช็ดสะดือทารก',
+      title: 'ภาพที่ 1: อุปกรณ์สำหรับทำความสะอาดสะดือทารก',
       caption: 'สำลีก้อน, ไม้พันสำลี, Alcohol 70%, และถังขยะติดเชื้อสีแดง',
       category: 'การดูแลสายสะดือ (Nursery 203)',
       clinicalDetails: [
@@ -223,84 +438,99 @@ export default function NewbornCare3Room() {
       />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          TOP-RIGHT TRANSLUCENT MISSION HUD
+          TOP-RIGHT TRANSLUCENT MISSION HUD (Collapsible)
           ══════════════════════════════════════════════════════════════════════════ */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/85 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-amber-200/90 text-slate-800">
-          <div className="flex items-center justify-between border-b border-amber-200/70 pb-1.5 mb-2">
+        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/88 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-amber-200/90 text-slate-800">
+          <div className={`flex items-center justify-between ${hudCollapsed ? '' : 'border-b border-amber-200/70 pb-1.5 mb-2'}`}>
             <span className="text-xs font-extrabold text-amber-900 tracking-wide flex items-center gap-1.5">
               🩹 ภารกิจห้องดูแลสายสะดือ (Nursery 203)
             </span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-              missionCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-            }`}>
-              {missionCompleted ? 'สำเร็จแล้ว ✓' : 'กำลังปฏิบัติ'}
-            </span>
-          </div>
-
-          <div className="space-y-1.5 text-xs">
-            <button
-              onClick={() => setActiveModal('equipment')}
-              className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-amber-400 text-left font-semibold flex items-center justify-between transition"
-            >
-              <span>🔍 1. คลิกดูอุปกรณ์เช็ดสะดือบนรถเข็น</span>
-              <span className="text-amber-600 font-bold">ดูอุปกรณ์ ▶</span>
-            </button>
-
-            <button
-              onClick={() => openWallPoster(0)}
-              className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-amber-400 text-left font-semibold flex items-center justify-between transition"
-            >
-              <span>🖼️ 2. ศึกษาโปสเตอร์ความรู้รอบห้อง (6 ภาพ)</span>
-              <span className="text-amber-600 font-bold">เปิดดู ▶</span>
-            </button>
-
-            <button
-              onClick={() => setActiveModal('orderingQuiz')}
-              className={`w-full p-2.5 rounded-xl border text-left font-bold flex items-center gap-2 transition ${
-                missionCompleted
-                  ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
-                  : 'bg-amber-50 border-amber-400 text-amber-950 hover:bg-amber-100'
-              }`}
-            >
-              <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                missionCompleted ? 'bg-emerald-600 text-white' : 'border-2 border-amber-600 text-transparent'
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                missionCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
               }`}>
-                ✓
-              </div>
-              <span className="flex-1">
-                3. บททดสอบคุณแม่: เรียงภาพขั้นตอนการเช็ดสะดือเมื่อเริ่มแห้ง
+                {missionCompleted ? 'สำเร็จแล้ว ✓' : 'กำลังปฏิบัติ'}
               </span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setHudCollapsed((v) => !v)}
+                className="w-6 h-6 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[11px] font-black flex items-center justify-center cursor-pointer transition"
+                title={hudCollapsed ? 'ขยายหน้าต่างภารกิจ' : 'ย่อหน้าต่างภารกิจ'}
+              >
+                {hudCollapsed ? '▼' : '▲'}
+              </button>
+            </div>
           </div>
+
+          {!hudCollapsed && (
+            <div className="space-y-1.5 text-xs">
+              <button
+                onClick={() => setActiveModal('equipment')}
+                className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-amber-400 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+              >
+                <span>🔍 1. คลิกดูอุปกรณ์เช็ดสะดือบนรถเข็น</span>
+                <span className="text-amber-600 font-bold">ดูอุปกรณ์ ▶</span>
+              </button>
+
+              <button
+                onClick={() => openWallPoster(0)}
+                className="w-full p-2 rounded-xl border border-slate-200 bg-white/90 hover:border-amber-400 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+              >
+                <span>🖼️ 2. ศึกษาโปสเตอร์ความรู้รอบห้อง (6 ภาพ)</span>
+                <span className="text-amber-600 font-bold">เปิดดู ▶</span>
+              </button>
+
+              <button
+                onClick={() => setActiveModal('orderingQuiz')}
+                className={`w-full p-2.5 rounded-xl border text-left font-bold flex items-center gap-2 transition cursor-pointer ${
+                  missionCompleted
+                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
+                    : 'bg-amber-50 border-amber-400 text-amber-950 hover:bg-amber-100'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                  missionCompleted ? 'bg-emerald-600 text-white' : 'border-2 border-amber-600 text-transparent'
+                }`}>
+                  ✓
+                </div>
+                <span className="flex-1">
+                  3. บททดสอบคุณแม่: เรียงภาพขั้นตอนการเช็ดสะดือเมื่อเริ่มแห้ง
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       </ScreenPortal>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. 6 LARGE EDUCATIONAL WALL POSTERS AROUND THE ROOM (3D Mesh Flush on Walls)
-             - North Wall (z = -6.78): Posters 1, 2, 3
-             - West Wall (x = -6.78): Posters 4, 5
-             - East Wall (x = 6.78): Poster 6
+          1. 6 LARGE EDUCATIONAL WALL POSTERS & OUTDOOR SCENIC WINDOWS
+             - Zero overlap with West-wall exit door ([-6.78, 0, +3.8]) or sink counter
+             - True aspect ratios for every DOCX poster (no stretching, crisp readable text)
+             - North Wall (z = -6.78): Poster 1, Poster 2 + Sunny Outdoor Window
+             - West Wall North (x = -6.78, z = -4.45): Poster 5 (portrait)
+             - East Wall (x = 6.78): Poster 3 (portrait), Poster 4, Poster 6
+             - South Wall (z = 6.78): Panoramic Outdoor Daytime Window
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Poster 1 (North Wall Left): อุปกรณ์เช็ดสะดือ — ขนาดใหญ่ขึ้น อ่านชัดเจน */}
+      {/* Poster 1 (North Wall Left, 3:2 landscape): อุปกรณ์สำหรับทำความสะอาดสะดือทารก */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster1_equip.jpg"
-        width={3.4}
-        height={2.3}
-        position={[-3.5, 2.95, -6.78]}
-        title="อุปกรณ์เช็ดสะดือทารกแรกเกิด"
+        width={3.85}
+        height={2.7}
+        position={[-4.55, 2.8, -6.78]}
+        title="อุปกรณ์สำหรับทำความสะอาดสะดือทารก"
         badge="ภาพที่ 1"
         frameColor="#8c5a32"
         accentColor="#d97706"
         onClick={() => openWallPoster(0)}
       />
 
-      {/* Poster 2 (North Wall Center): วิธีการเช็ดสะดือทารก (สะดือสด) */}
+      {/* Poster 2 (North Wall Center, 3:2 landscape): วิธีการเช็ดสะดือทารก (สะดือสด) */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster2_fresh.jpg"
-        width={3.6}
-        height={2.4}
-        position={[0.6, 2.95, -6.78]}
+        width={3.85}
+        height={2.7}
+        position={[-0.35, 2.8, -6.78]}
         title="วิธีการเช็ดสะดือทารก (สะดือสด)"
         badge="ภาพที่ 2"
         frameColor="#8c5a32"
@@ -308,12 +538,20 @@ export default function NewbornCare3Room() {
         onClick={() => openWallPoster(1)}
       />
 
-      {/* Poster 3 (North Wall Right): วิธีการเช็ดสะดือทารก (สะดือเริ่มแห้ง) */}
+      {/* หน้าต่างวิวธรรมชาติภายนอกด้านหลังโซฟาพักผ่อน (North Wall Right — ตามภาพอ้างอิง nb3_room_ref.jpg) */}
+      <ScenicDaytimeWindow3D
+        position={[4.25, 2.7, -6.78]}
+        width={3.9}
+        height={2.5}
+      />
+
+      {/* Poster 3 (East Wall North, 3:4 portrait): วิธีการเช็ดสะดือทารก (สะดือเริ่มแห้ง) */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster3_dry.jpg"
-        width={3.6}
-        height={2.4}
-        position={[4.9, 2.95, -6.78]}
+        width={2.75}
+        height={3.45}
+        position={[6.78, 2.8, -4.55]}
+        rotation={[0, -Math.PI / 2, 0]}
         title="วิธีการเช็ดสะดือทารก (สะดือเริ่มแห้ง)"
         badge="ภาพที่ 3"
         frameColor="#8c5a32"
@@ -321,13 +559,13 @@ export default function NewbornCare3Room() {
         onClick={() => openWallPoster(2)}
       />
 
-      {/* Poster 4 (West Wall): สายสะดือมักหลุดเมื่อไหร่ ? — ขนาดใหญ่ */}
+      {/* Poster 4 (East Wall Center, 6:5): สายสะดือมักหลุดเมื่อไหร่ ? */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster4_timeline.jpg"
-        width={4.8}
-        height={2.8}
-        position={[-6.78, 2.95, -2.0]}
-        rotation={[0, Math.PI / 2, 0]}
+        width={3.65}
+        height={3.1}
+        position={[6.78, 2.8, -0.75]}
+        rotation={[0, -Math.PI / 2, 0]}
         title="สายสะดือทารกมักหลุดเมื่อไหร่ ?"
         badge="ภาพที่ 4"
         frameColor="#8c5a32"
@@ -335,12 +573,26 @@ export default function NewbornCare3Room() {
         onClick={() => openWallPoster(3)}
       />
 
-      {/* Poster 5 (West Wall South): ข้อควรสังเกต สัญญาณผิดปกติของสะดือทารก */}
+      {/* Poster 6 (East Wall South, 3:2 landscape): การใส่แพมเพิสที่ถูกต้อง */}
+      <FramedImagePoster3D
+        imgSrc="/images/rev/nb3_poster6_diaper.jpg"
+        width={4.1}
+        height={2.85}
+        position={[6.78, 2.8, 3.85]}
+        rotation={[0, -Math.PI / 2, 0]}
+        title="การใส่แพมเพิส (ผ้าอ้อมสำเร็จรูป) ที่ถูกต้อง"
+        badge="ภาพที่ 6"
+        frameColor="#8c5a32"
+        accentColor="#10b981"
+        onClick={() => openWallPoster(5)}
+      />
+
+      {/* Poster 5 (West Wall North, 3:4 portrait — พ้นประตูทางออกและอ่างล้างมือ 100%): ข้อควรสังเกต สัญญาณผิดปกติของสะดือทารก */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb3_poster5_warning.jpg"
-        width={4.8}
-        height={2.8}
-        position={[-6.78, 2.95, 3.6]}
+        width={2.8}
+        height={3.45}
+        position={[-6.78, 2.8, -4.45]}
         rotation={[0, Math.PI / 2, 0]}
         title="ข้อควรสังเกต สัญญาณผิดปกติของสะดือทารก"
         badge="ภาพที่ 5"
@@ -349,18 +601,12 @@ export default function NewbornCare3Room() {
         onClick={() => openWallPoster(4)}
       />
 
-      {/* Poster 6 (East Wall Center): การใส่แพมเพิสที่ถูกต้อง — ภาพใหญ่ */}
-      <FramedImagePoster3D
-        imgSrc="/images/rev/nb3_poster6_diaper.jpg"
-        width={4.5}
-        height={2.8}
-        position={[6.78, 2.95, -0.5]}
-        rotation={[0, -Math.PI / 2, 0]}
-        title="การใส่แพมเพิส (ผ้าอ้อมสำเร็จรูป) ที่ถูกต้อง"
-        badge="ภาพที่ 6"
-        frameColor="#8c5a32"
-        accentColor="#10b981"
-        onClick={() => openWallPoster(5)}
+      {/* หน้าต่างบานใหญ่วิวภายนอกบนผนังด้านทิศใต้ที่โล่ง ("หน้าต่าง ตรงที่โล่งๆ ขอเป็นวิวภายนอก") */}
+      <ScenicDaytimeWindow3D
+        position={[0, 2.7, 6.78]}
+        rotation={[0, Math.PI, 0]}
+        width={5.4}
+        height={2.65}
       />
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -430,15 +676,15 @@ export default function NewbornCare3Room() {
         </group>
       </group>
 
-      {/* ม่านกั้นห้องสีชมพูพาสเทลด้านหลังซ้าย (Pastel Pink Privacy Curtain ตามรูป nb3_room_ref.jpg) */}
-      <group position={[-2.95, 0, -4.4]}>
-        <mesh position={[0, 2.95, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.02, 0.02, 2.2, 12]} />
+      {/* ม่านกั้นห้องสีชมพูพาสเทลรวบเก็บเรียบร้อยชิดผนังซ้ายข้างเคาน์เตอร์อ่างล้างมือ (ไม่บังโปสเตอร์ 100%) */}
+      <group position={[-6.18, 0, -2.1]} rotation={[0, Math.PI / 2, 0]}>
+        <mesh position={[0, 2.65, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.018, 0.018, 1.05, 12]} />
           <meshStandardMaterial color="#cbd5e1" metalness={0.7} roughness={0.25} />
         </mesh>
-        {[-0.75, -0.45, -0.15, 0.15, 0.45, 0.75].map((cx, ci) => (
-          <mesh key={`curt_fold_${ci}`} position={[cx, 1.48, (ci % 2) * 0.04]} castShadow>
-            <boxGeometry args={[0.32, 2.85, 0.06]} />
+        {[-0.36, -0.18, 0, 0.18, 0.36].map((cx, ci) => (
+          <mesh key={`curt_fold_${ci}`} position={[cx, 1.32, (ci % 2) * 0.03]} castShadow>
+            <boxGeometry args={[0.18, 2.55, 0.08]} />
             <meshStandardMaterial color={ci % 2 === 0 ? '#fbcfe8' : '#f9a8d4'} roughness={0.85} />
           </mesh>
         ))}
@@ -605,7 +851,7 @@ export default function NewbornCare3Room() {
         </Html>
       </group>
 
-      {/* 3D Nurse Standing behind the Examination Bed (Teaching Mother) */}
+      {/* 3D Nurse Standing behind the Examination Bed (Uniform Dress + Nurse Cap, Teaching Mother) */}
       <group
         position={[0, 0, -2.05]}
         rotation={[0, 0, 0]}
@@ -619,43 +865,53 @@ export default function NewbornCare3Room() {
           outfitOverride="blue"
           isSittingOverride={false}
           isHoldingBabyOverride={false}
+          showHeldBaby={false}
           currentAnimation="idle"
         />
       </group>
 
-      {/* Mother's Chair right beside the Examination Bed (InteractiveSeat so Mother sits like nb3_room_ref.jpg) */}
-      <InteractiveSeat
-        id="nb3-mother-chair"
-        name="เก้าอี้คุณแม่ข้างเตียงตรวจสะดือ (คลิกเพื่อนั่งเรียนกับพยาบาล)"
-        type="chair"
-        position={[0.85, 0, -0.25]}
-        rotation={[0, -Math.PI * 0.75, 0]}
-        seatOffset={[0, 0.46, 0]}
+      {/* รถเข็นเตียงนอนทารกโรงพยาบาลอ่างอะคริลิกใสพร้อมล้อ จอดอยู่ข้างพยาบาลและเตียงเช็ดสะดือ ("ขอให้มีเตียงนอนเด็ก (รถเข็น) ตามภาพที่ส่งให้ จอดอยู่ข้างๆ") */}
+      <WheeledHospitalBassinet3D
+        position={[1.95, 0, -1.65]}
+        rotation={[0, -0.28, 0]}
+      />
+
+      {/* คุณแม่นั่งดูคุณพยาบาลสาธิตการเช็ดสะดือทารกอยู่ข้างเตียงตั้งแต่แรก ("อยากให้มีคุณแม่ที่นั่งดูตั้งแต่แรก") */}
+      <group
+        position={[0.88, 0, -0.22]}
+        rotation={[0, -Math.PI * 0.76, 0]}
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveModal('orderingQuiz');
+        }}
       >
-        <group
-          onClick={() => {
-            setTimeout(() => setActiveModal('orderingQuiz'), 200);
-          }}
-        >
-          {/* Chair Seat */}
-          <mesh position={[0, 0.44, 0]} castShadow receiveShadow>
-            <boxGeometry args={[0.56, 0.07, 0.54]} />
-            <meshStandardMaterial color="#fde68a" roughness={0.6} />
+        {/* เก้าอี้คุณแม่โทนชมพูพาสเทลขาไม้โอ๊ค (ตามภาพอ้างอิง nb3_room_ref.jpg) */}
+        <mesh position={[0, 0.44, 0]} castShadow receiveShadow>
+          <boxGeometry args={[0.56, 0.08, 0.54]} />
+          <meshStandardMaterial color="#f9a8d4" roughness={0.65} />
+        </mesh>
+        <mesh position={[0, 0.78, -0.24]} castShadow>
+          <boxGeometry args={[0.54, 0.62, 0.07]} />
+          <meshStandardMaterial color="#f9a8d4" roughness={0.65} />
+        </mesh>
+        {[[-0.23, -0.22], [0.23, -0.22], [-0.23, 0.22], [0.23, 0.22]].map(([x, z], i) => (
+          <mesh key={`ch_leg_${i}`} position={[x, 0.22, z]} castShadow>
+            <cylinderGeometry args={[0.025, 0.02, 0.44, 14]} />
+            <meshStandardMaterial color="#b45309" roughness={0.4} />
           </mesh>
-          {/* Chair Backrest */}
-          <mesh position={[0, 0.78, -0.24]} castShadow>
-            <boxGeometry args={[0.54, 0.62, 0.06]} />
-            <meshStandardMaterial color="#fde68a" roughness={0.6} />
-          </mesh>
-          {/* 4 Wooden Legs */}
-          {[[-0.23, -0.22], [0.23, -0.22], [-0.23, 0.22], [0.23, 0.22]].map(([x, z], i) => (
-            <mesh key={`ch_leg_${i}`} position={[x, 0.22, z]} castShadow>
-              <cylinderGeometry args={[0.025, 0.02, 0.44, 14]} />
-              <meshStandardMaterial color="#b45309" roughness={0.4} />
-            </mesh>
-          ))}
-        </group>
-      </InteractiveSeat>
+        ))}
+
+        {/* 3D คุณแม่ชุดหลังคลอดสีชมพูนั่งชมการสาธิตตั้งแต่เริ่มเข้าห้อง */}
+        <MotherAvatar
+          position={[0, 0, 0]}
+          characterOverride="postpartum_mother"
+          outfitOverride="pink"
+          isSittingOverride={true}
+          isHoldingBabyOverride={false}
+          showHeldBaby={false}
+          currentAnimation="sitting"
+        />
+      </group>
 
       {/* ── Stainless Steel Dressing Cart beside Examination Bed (x = -1.65, z = -1.2) ──
            With 4 Clickable Equipment Items ("อุปกรณ์สามารถคลิก ว่านี่คืออะไร") + Diaper Pack on lower shelf */}
@@ -823,7 +1079,7 @@ export default function NewbornCare3Room() {
       </group>
 
       {/* 3D Player Controller */}
-      <PlayerController initialPosition={[0, 0, 2.6]} initialRotation={Math.PI} />
+      <PlayerController initialPosition={[-0.95, 0, 2.8]} initialRotation={Math.PI} />
 
       {/* ── Baby care supplies near the umbilical cord examination bed ── */}
       <DiaperStack position={[1.1, 1.02, -1.2]} count={3} />
@@ -961,7 +1217,7 @@ export default function NewbornCare3Room() {
                 })}
               </div>
 
-              {/* Feedback & Official Answer Sheet (/images/rev/nb3_quiz_answer.jpg) */}
+              {/* Feedback */}
               {quizFeedback && (
                 <div
                   className={`mt-4 p-4 rounded-xl border-2 text-xs ${
@@ -972,19 +1228,6 @@ export default function NewbornCare3Room() {
                 >
                   <div className="font-bold text-sm">{quizFeedback.title}</div>
                   <p className="mt-1 leading-relaxed">{quizFeedback.msg}</p>
-
-                  {quizFeedback.pass && (
-                    <div className="mt-3 bg-white p-2 rounded-xl border border-emerald-200">
-                      <div className="text-[11px] font-bold text-emerald-800 mb-1 text-center">
-                        เฉลยลำดับขั้นตอนการเช็ดสะดือเมื่อเริ่มแห้ง (1 ➔ 2 ➔ 3)
-                      </div>
-                      <img
-                        src="/images/rev/nb3_quiz_answer.jpg"
-                        alt="เฉลยการเช็ดสะดือเมื่อเริ่มแห้ง"
-                        className="w-full h-48 object-contain rounded-lg"
-                      />
-                    </div>
-                  )}
                 </div>
               )}
 

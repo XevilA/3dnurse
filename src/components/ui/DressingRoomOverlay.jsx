@@ -91,39 +91,27 @@ const OUTFITS = [
 const CHARACTERS = [
   {
     id: 'postpartum_mother',
-    name: 'คุณแม่หลังคลอด',
-    nameSub: 'Postpartum Mother',
-    icon: '👩‍🍼',
-    desc: 'ชุดผู้ป่วยพักฟื้น\nหลังคลอด',
+    name: 'ชุดกางเกงพักฟื้นหลังคลอด',
+    nameSub: 'Postpartum Pants Set',
+    icon: '👖',
+    desc: 'ชุดเสื้อ + กางเกงขายาวผ้านุ่ม\nคล่องตัวสำหรับคุณแม่หลังคลอด',
     accent: 'from-pink-400 to-rose-500',
-    border: 'border-pink-300',
+    border: 'border-pink-400',
     ring: 'ring-pink-400',
-    badge: 'ค่าเริ่มต้น',
+    badge: 'แบบกางเกง',
     badgeBg: 'bg-pink-500',
   },
   {
-    id: 'pregnant_mother',
-    name: 'คุณแม่ตั้งครรภ์ (สมจริง)',
-    nameSub: 'Pregnant Megan — ท้องป่องนิดๆ',
-    icon: '🤰',
-    desc: 'โมเดล Megan 3D สมจริง\nท้องป่องนิดๆ ตามธรรมชาติ',
-    accent: 'from-purple-400 to-violet-500',
-    border: 'border-purple-300',
+    id: 'postpartum_dress',
+    name: 'ชุดเดรสคุณแม่หลังคลอด',
+    nameSub: 'Postpartum Midi Dress',
+    icon: '👗',
+    desc: 'ชุดเดรสยาวคลุมเข่า ทรงปล่อยสบาย\nสรีระคุณแม่หลังคลอด (ไม่ท้องป่อง)',
+    accent: 'from-rose-400 to-purple-500',
+    border: 'border-purple-400',
     ring: 'ring-purple-400',
-    badge: '🌸 สมจริง ท้องนิดๆ',
+    badge: 'แบบชุดเดรส',
     badgeBg: 'bg-purple-500',
-  },
-  {
-    id: 'nurse',
-    name: 'พยาบาลวิชาชีพ',
-    nameSub: 'Registered Nurse',
-    icon: '👩‍⚕️',
-    desc: 'ชุดสครับ + หูฟัง\n+ บัตรประจำตัว',
-    accent: 'from-sky-400 to-blue-500',
-    border: 'border-sky-300',
-    ring: 'ring-sky-400',
-    badge: 'บุคลากร',
-    badgeBg: 'bg-sky-500',
   },
 ];
 
@@ -132,7 +120,11 @@ export default function DressingRoomOverlay() {
   const currentRoom = useStore((s) => s.currentRoom);
   const setRoom = useStore((s) => s.setRoom);
 
-  const selectedCharacter = useStore((s) => s.selectedCharacter) || 'postpartum_mother';
+  const rawCharacter = useStore((s) => s.selectedCharacter) || 'postpartum_mother';
+  const selectedCharacter =
+    rawCharacter === 'postpartum_dress' || rawCharacter === 'pregnant_mother'
+      ? 'postpartum_dress'
+      : 'postpartum_mother';
   const setCharacter = useStore((s) => s.setCharacter);
   const selectedOutfit = useStore((s) => s.selectedOutfit) || 'pink';
   const setOutfit = useStore((s) => s.setOutfit);
@@ -148,8 +140,7 @@ export default function DressingRoomOverlay() {
 
   const handleCharacterSelect = (id) => {
     setCharacter(id);
-    if (id === 'pregnant_mother') { setBellyBump('9months'); setHoldingBaby(false); }
-    else if (id === 'postpartum_mother') setBellyBump('none');
+    setBellyBump('none');
   };
 
   const handleSave = () => {
@@ -198,9 +189,9 @@ export default function DressingRoomOverlay() {
             {/* Tab Header */}
             <div className="flex items-center gap-1 px-3 pt-2.5 pb-1.5 border-b border-gray-100">
               {[
-                { id: 'outfit', label: '👗 เลือกชุด', active: 'bg-gradient-to-r from-pink-500 to-rose-500 text-white' },
-                { id: 'character', label: '👩 ตัวละคร', active: 'bg-gradient-to-r from-purple-500 to-violet-600 text-white' },
-                { id: 'accessories', label: '👶 ทารก', active: 'bg-gradient-to-r from-amber-400 to-orange-500 text-white' },
+                { id: 'outfit', label: '👗 เลือกชุด & สี', active: 'bg-gradient-to-r from-pink-500 to-rose-500 text-white' },
+                { id: 'character', label: '👚 ทรงชุด (กางเกง / เดรส)', active: 'bg-gradient-to-r from-purple-500 to-violet-600 text-white' },
+                { id: 'accessories', label: '👶 อุ้มทารก', active: 'bg-gradient-to-r from-amber-400 to-orange-500 text-white' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -221,15 +212,41 @@ export default function DressingRoomOverlay() {
                   className="w-4 h-4 rounded-full border border-white shadow-sm"
                   style={{ backgroundColor: currentOutfit.color }}
                 />
-                <span className="text-[10px] text-gray-600 font-semibold truncate max-w-[80px]">
-                  {currentOutfit.name}
+                <span className="text-[10px] text-gray-600 font-semibold truncate max-w-[110px]">
+                  {selectedCharacter === 'postpartum_dress' ? 'ชุดเดรส' : 'ชุดกางเกง'} • {currentOutfit.name}
                 </span>
               </div>
             </div>
 
             {/* ── Tab: Outfit Selection ── */}
             {activeTab === 'outfit' && (
-              <div className="p-2.5">
+              <div className="p-2.5 space-y-2">
+                {/* Quick 2-column Style Toggle: ชุดกางเกง vs ชุดเดรส */}
+                <div className="grid grid-cols-2 gap-2">
+                  {CHARACTERS.map((char) => {
+                    const isStyleActive = selectedCharacter === char.id;
+                    return (
+                      <button
+                        key={char.id}
+                        onClick={() => handleCharacterSelect(char.id)}
+                        className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl border-2 text-xs font-extrabold transition cursor-pointer ${
+                          isStyleActive
+                            ? `${char.border} bg-pink-50/80 text-pink-900 shadow-sm ring-1 ${char.ring}`
+                            : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-white'
+                        }`}
+                      >
+                        <span className="text-base">{char.icon}</span>
+                        <span>{char.name}</span>
+                        {isStyleActive && (
+                          <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px]">
+                            ✓ เลือกอยู่
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   {OUTFITS.map((outfit) => {
                     const isSelected = selectedOutfit === outfit.id;
@@ -283,10 +300,10 @@ export default function DressingRoomOverlay() {
               </div>
             )}
 
-            {/* ── Tab: Character Selection ── */}
+            {/* ── Tab: Character / Style Selection (2 Postpartum Styles Side-by-Side) ── */}
             {activeTab === 'character' && (
               <div className="p-2.5">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   {CHARACTERS.map((char) => {
                     const isSelected = selectedCharacter === char.id;
                     return (
@@ -295,7 +312,7 @@ export default function DressingRoomOverlay() {
                         onClick={() => handleCharacterSelect(char.id)}
                         className={`relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer ${
                           isSelected
-                            ? `${char.border} ring-2 ${char.ring} ring-offset-1 shadow-lg scale-[1.03] bg-white`
+                            ? `${char.border} ring-2 ${char.ring} ring-offset-1 shadow-lg scale-[1.02] bg-white`
                             : 'border-gray-200 bg-gray-50 hover:bg-white hover:scale-[1.01]'
                         }`}
                       >
@@ -309,10 +326,10 @@ export default function DressingRoomOverlay() {
                         <div className="text-center leading-tight">
                           <div className="text-xs font-extrabold text-gray-800">{char.name}</div>
                           <div className="text-[9px] text-gray-500">{char.nameSub}</div>
-                          <div className="text-[9px] text-gray-400 mt-0.5 whitespace-pre-line">{char.desc}</div>
+                          <div className="text-[10px] text-gray-500 mt-1 whitespace-pre-line">{char.desc}</div>
                         </div>
 
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full text-white font-bold ${char.badgeBg}`}>
+                        <span className={`text-[9px] px-2.5 py-0.5 rounded-full text-white font-bold ${char.badgeBg}`}>
                           {char.badge}
                         </span>
 
@@ -331,43 +348,35 @@ export default function DressingRoomOverlay() {
             {/* ── Tab: Baby/Accessories ── */}
             {activeTab === 'accessories' && (
               <div className="p-3">
-                {selectedCharacter === 'pregnant_mother' ? (
-                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center text-sm text-purple-700">
-                    <div className="text-2xl mb-1">🤰</div>
-                    <div className="font-bold">คุณแม่ตั้งครรภ์</div>
-                    <div className="text-xs text-purple-500 mt-1">สรีระอุ้มท้องสมจริง ไม่สามารถอุ้มทารกในโหมดนี้</div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">👶</span>
-                        <div>
-                          <div className="text-sm font-bold text-gray-800">อุ้มทารกแรกเกิด</div>
-                          <div className="text-xs text-gray-500">ท่าทางอุ้มทารกน้อยแนบอกแม่ 3D สมจริง</div>
-                        </div>
+                <div className="space-y-2">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">👶</span>
+                      <div>
+                        <div className="text-sm font-bold text-gray-800">อุ้มทารกแรกเกิด</div>
+                        <div className="text-xs text-gray-500">ท่าทางอุ้มทารกน้อยแนบอกแม่ 3D สมจริง</div>
                       </div>
-                      <button
-                        onClick={() => setHoldingBaby(!isHoldingBaby)}
-                        className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer flex-shrink-0 ${
-                          isHoldingBaby ? 'bg-pink-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div
-                          className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
-                            isHoldingBaby ? 'translate-x-7' : 'translate-x-0.5'
-                          }`}
-                        />
-                      </button>
                     </div>
-                    {isHoldingBaby && (
-                      <div className="bg-pink-50 border border-pink-200 rounded-xl p-2.5 text-xs text-pink-700 flex items-center gap-2">
-                        <span className="text-lg">🌸</span>
-                        <span>กำลังอุ้มทารกน้อย — แม่เต้นเบาๆ สายตาจับที่ลูก</span>
-                      </div>
-                    )}
+                    <button
+                      onClick={() => setHoldingBaby(!isHoldingBaby)}
+                      className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer flex-shrink-0 ${
+                        isHoldingBaby ? 'bg-pink-500' : 'bg-gray-300'
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
+                          isHoldingBaby ? 'translate-x-7' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
                   </div>
-                )}
+                  {isHoldingBaby && (
+                    <div className="bg-pink-50 border border-pink-200 rounded-xl p-2.5 text-xs text-pink-700 flex items-center gap-2">
+                      <span className="text-lg">🌸</span>
+                      <span>กำลังอุ้มทารกน้อย — แม่กล่อมเบาๆ สายตาจับที่ลูก</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

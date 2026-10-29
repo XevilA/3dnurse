@@ -50,9 +50,9 @@ export const ROOM_COLLIDERS = {
       // Potted Plants
       { x: -4.8, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ซ้าย' },
       { x: 4.8, z: -6.2, radius: 0.6, name: 'กระถางต้นไม้ขวา' },
-      // Hospital Wheelchairs (unoccupied)
-      { x: -3.8, z: 3.8, radius: 0.65, name: 'รถเข็น 1', seatId: 'lobby_wheelchair_1' },
-      { x: 4.8, z: 3.8, radius: 0.65, name: 'รถเข็น 2', seatId: 'lobby_wheelchair_2' },
+      // Hospital Wheelchairs (parked snugly in South-West & South-East corners)
+      { x: -9.1, z: 8.1, radius: 0.65, name: 'รถเข็น 1', seatId: 'lobby_wheelchair_1' },
+      { x: 8.05, z: 9.15, radius: 0.65, name: 'รถเข็น 2', seatId: 'lobby_wheelchair_2' },
     ]
   },
 
@@ -204,15 +204,20 @@ export const ROOM_COLLIDERS = {
     doorways: [{ wall: 'minX', minSpan: 2.4, maxSpan: 5.2, thresholdLimit: -6.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
       // Center Baby Examination Bed at [0, 0, -1.2]
-      { minX: -1.05, maxX: 1.05, minZ: -1.8, maxZ: -0.6, name: 'เตียงตรวจเช็ดสายสะดือทารก' },
-      // Stainless Steel Dressing Trolley at [1.75, 0, -1.15]
-      { minX: 1.25, maxX: 2.25, minZ: -1.6, maxZ: -0.7, name: 'รถเข็นอุปกรณ์เช็ดสะดือ' },
-      // Corner Lounge Sofa at [3.25, 0, -4.55]
-      { minX: 2.2, maxX: 4.3, minZ: -5.1, maxZ: -4.0, name: 'โซฟาพักผ่อนมุมห้อง', seatId: 'nb203_corner_sofa' },
+      { minX: -1.02, maxX: 1.02, minZ: -1.78, maxZ: -0.62, name: 'เตียงตรวจเช็ดสายสะดือทารก' },
+      // Stainless Steel Dressing Trolley at [-1.65, 0, -1.2]
+      { minX: -2.25, maxX: -1.1, minZ: -1.6, maxZ: -0.78, name: 'รถเข็นอุปกรณ์เช็ดสะดือ' },
+      // Wheeled Hospital Newborn Bassinet Cart at [1.95, 0, -1.65]
+      { minX: 1.38, maxX: 2.52, minZ: -2.05, maxZ: -1.25, name: 'รถเข็นเตียงนอนทารก' },
+      // West Wall Sink Counter at [-6.35, 0, -0.1]
+      { minX: -6.8, maxX: -5.98, minZ: -1.2, maxZ: 1.0, name: 'เคาน์เตอร์อ่างล้างมือ' },
+      // Corner Lounge Sofa at [3.4, 0, -4.6]
+      { minX: 2.45, maxX: 4.35, minZ: -5.1, maxZ: -4.05, name: 'โซฟาพักผ่อนมุมห้อง', seatId: 'nb3-lounge-sofa' },
     ],
     circles: [
       { x: 5.5, z: -5.2, radius: 0.55, name: 'ต้นไม้' },
-      { x: 2.45, z: -1.15, radius: 0.35, name: 'ถังขยะติดเชื้อ' },
+      { x: 0.88, z: -0.22, radius: 0.38, name: 'คุณแม่นั่งชมการสาธิต' },
+      { x: -2.33, z: -1.1, radius: 0.28, name: 'ถังขยะติดเชื้อ' },
     ]
   },
 
@@ -221,12 +226,14 @@ export const ROOM_COLLIDERS = {
     bounds: { minX: -6.55, maxX: 6.55, minZ: -6.55, maxZ: 6.55 },
     doorways: [{ wall: 'minX', minSpan: 2.4, maxSpan: 5.2, thresholdLimit: -6.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
-      // Parent's Bed at [2.55, 0, -1.65]
-      { minX: 1.2, maxX: 3.9, minZ: -3.25, maxZ: -0.05, name: 'เตียงผู้ปกครอง' },
-      // Safe Sleep Baby Crib beside Parent's Bed at [4.95, 0, -1.5]
-      { minX: 4.2, maxX: 5.7, minZ: -2.4, maxZ: -0.6, name: 'เตียงนอนทารกปลอดภัย' },
-      // Built-in Wardrobe at [5.55, 0, -4.85]
-      { minX: 4.6, maxX: 6.4, minZ: -5.6, maxZ: -4.1, name: 'ตู้เสื้อผ้าบิวท์อิน' },
+      // Parent's Bed flush against North wall at [2.42, 0, -5.22]
+      { minX: 1.08, maxX: 3.76, minZ: -6.8, maxZ: -3.65, name: 'เตียงผู้ปกครอง' },
+      // Nightstand flush against North wall at [4.18, 0, -6.48]
+      { minX: 3.82, maxX: 4.54, minZ: -6.8, maxZ: -6.15, name: 'โต๊ะข้างเตียงโคมไฟ' },
+      // 1-Tier Baby Co-Sleeper Crib beside Mother's Bed at [0.36, 0, -5.05]
+      { minX: -0.14, maxX: 0.86, minZ: -5.75, maxZ: -4.35, name: 'เตียงนอนทารกปลอดภัย 1 ชั้น' },
+      // Built-in Wardrobe flush in North-East corner at [5.82, 0, -6.44]
+      { minX: 4.85, maxX: 6.8, minZ: -6.8, maxZ: -6.08, name: 'ตู้เสื้อผ้าบิวท์อิน' },
       // Cozy Armchair at [-4.65, 0, -4.45]
       { minX: -5.25, maxX: -4.05, minZ: -5.05, maxZ: -3.85, name: 'เก้าอี้นวมพักผ่อน', seatId: 'nb204_cozy_armchair' },
       // West Wall TV Console at [-6.78, 0, -0.5]
