@@ -164,9 +164,9 @@ export default function App() {
   }, [hasCompletedPretest, incrementPlayTime]);
 
   return (
-    <div className="w-screen h-screen relative bg-slate-900 overflow-hidden select-none">
+    <div className="w-screen h-screen h-[100dvh] relative bg-slate-900 overflow-hidden select-none">
       {/* ── 3D Canvas (Isolated stacking context prevents Drei Html from escaping above UI) ── */}
-      <div className="w-full h-full absolute inset-0 z-0 isolate" style={{ touchAction: 'none' }}>
+      <div className="w-full h-full absolute inset-0 z-0 isolate">
         <Canvas
           shadows={!IS_MOBILE_DEVICE}
           dpr={IS_MOBILE_DEVICE ? [1, 1.35] : [1, 2]}

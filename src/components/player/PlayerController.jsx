@@ -72,7 +72,21 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   const cameraDistance = useRef(4.8);
   const isDragging = useRef(false);
   const previousMousePos = useRef({ x: 0, y: 0 });
+  const touchStartPos = useRef({ x: 0, y: 0 });
+  const hasTouchDragged = useRef(false);
   const cameraTouchId = useRef(null);
+
+  // Make player avatar & floor ring 100% raycast-transparent so the character NEVER blocks 3D taps/clicks behind her
+  // and mobile devices never stall raycasting 34k skinned avatar triangles on every touch.
+  useEffect(() => {
+    if (!playerRef.current) return;
+    const noopRaycast = () => null;
+    playerRef.current.traverse((obj) => {
+      if (obj.isMesh || obj.isSkinnedMesh) {
+        obj.raycast = noopRaycast;
+      }
+    });
+  }, [selectedCharacter, isHoldingBaby, cameraMode, currentRoom]);
 
   // ── Sync Position when Switching Rooms or Teleporting ──
   const [initX, initY, initZ] = initialPosition;
@@ -162,6 +176,8 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
 
         cameraTouchId.current = touch.identifier;
         isDragging.current = true;
+        hasTouchDragged.current = false;
+        touchStartPos.current = { x: touch.clientX, y: touch.clientY };
         previousMousePos.current = { x: touch.clientX, y: touch.clientY };
         break;
       }
@@ -179,6 +195,18 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
       }
       if (!touch) return;
 
+      // 6px tap deadzone so quick thumb taps on 3D props / floating buttons don't jitter the camera
+      if (!hasTouchDragged.current) {
+        const totalDist = Math.hypot(
+          touch.clientX - touchStartPos.current.x,
+          touch.clientY - touchStartPos.current.y
+        );
+        if (totalDist < 6) return;
+        hasTouchDragged.current = true;
+        previousMousePos.current = { x: touch.clientX, y: touch.clientY };
+        return;
+      }
+
       const deltaX = touch.clientX - previousMousePos.current.x;
       const deltaY = touch.clientY - previousMousePos.current.y;
       previousMousePos.current = { x: touch.clientX, y: touch.clientY };
@@ -194,6 +222,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         if (e.changedTouches[i].identifier === cameraTouchId.current) {
           cameraTouchId.current = null;
           isDragging.current = false;
+          hasTouchDragged.current = false;
           break;
         }
       }

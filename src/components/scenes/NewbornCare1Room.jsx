@@ -395,11 +395,10 @@ export default function NewbornCare1Room() {
           <boxGeometry args={[2.15, 1.5, 0.03]} />
           <meshStandardMaterial color="#b45309" roughness={0.35} />
         </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
           <div
-            onClick={() => openWallPoster(0)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-amber-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '400px' }}
+            className="select-none bg-white p-1.5 rounded-lg border-2 border-amber-500 shadow-md overflow-hidden"
+            style={{ width: '400px', pointerEvents: 'none' }}
           >
             <img
               src="/references/room1/img_006.png"
@@ -423,11 +422,10 @@ export default function NewbornCare1Room() {
           <boxGeometry args={[2.15, 1.5, 0.03]} />
           <meshStandardMaterial color="#0284c7" roughness={0.35} />
         </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
           <div
-            onClick={() => openWallPoster(1)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-sky-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '400px' }}
+            className="select-none bg-white p-1.5 rounded-lg border-2 border-sky-500 shadow-md overflow-hidden"
+            style={{ width: '400px', pointerEvents: 'none' }}
           >
             <img
               src="/references/room1/img_010.jpeg"
@@ -451,11 +449,10 @@ export default function NewbornCare1Room() {
           <boxGeometry args={[2.65, 1.55, 0.03]} />
           <meshStandardMaterial color="#be185d" roughness={0.35} />
         </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
           <div
-            onClick={() => openWallPoster(2)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-pink-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '490px' }}
+            className="select-none bg-white p-1.5 rounded-lg border-2 border-pink-500 shadow-md overflow-hidden"
+            style={{ width: '490px', pointerEvents: 'none' }}
           >
             <img
               src="/images/rev/bf_4holds.jpg"
@@ -1101,15 +1098,21 @@ export default function NewbornCare1Room() {
         {/* (2) ภาพดอกไม้สวยงาม (Mounted flush on South Wall z = 6.86 — ปรับแก้ห้องให้นมทารก หน้า 3 ภาพที่ 5 & 6) */}
         <group position={[5.45, 2.25, 6.86]} rotation={[0, Math.PI, 0]}>
           {/* กรอบภาพดอกไม้สวยงาม */}
-          <mesh castShadow>
+          <mesh
+            castShadow
+            onClick={(e) => {
+              if (e.delta > 10) return;
+              e.stopPropagation();
+              setActiveModal('cornerDecor');
+            }}
+          >
             <boxGeometry args={[1.15, 0.85, 0.03]} />
             <meshStandardMaterial color="#d4a373" roughness={0.4} />
           </mesh>
-          <Html position={[0, 0, 0.02]} center transform scale={0.16}>
+          <Html position={[0, 0, 0.02]} center transform scale={0.16} style={{ pointerEvents: 'none' }}>
             <div
-              onClick={() => setActiveModal('cornerDecor')}
-              className="cursor-pointer select-none bg-gradient-to-br from-rose-50 via-amber-50/70 to-pink-50 p-2 rounded border-2 border-rose-300 shadow text-center"
-              style={{ width: '260px' }}
+              className="select-none bg-gradient-to-br from-rose-50 via-amber-50/70 to-pink-50 p-2 rounded border-2 border-rose-300 shadow text-center"
+              style={{ width: '260px', pointerEvents: 'none' }}
             >
               <svg viewBox="0 0 280 150" className="w-full h-36 rounded bg-white/80 border border-rose-100">
                 <path

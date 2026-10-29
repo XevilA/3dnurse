@@ -13,9 +13,11 @@ body {
   overflow: hidden;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   /* Fill iPhone notch area with app background instead of white */
   background-color: #0f172a;
-  touch-action: none;
+  /* Use manipulation (NOT none) so modals/overlays can scroll & tap instantly on iOS Safari while canvas still blocks pan/zoom */
+  touch-action: manipulation;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -29,13 +31,18 @@ body {
 #root {
   width: 100%;
   height: 100%;
-  touch-action: none;
+  touch-action: manipulation;
 }
 canvas {
   touch-action: none !important;
 }
 
-/* Prevent double-tap zoom on interactive elements on iOS */
-button, a {
+/* Instant zero-delay taps on all interactive UI & clickable cards on iOS Safari */
+button,
+a,
+[role="button"],
+.cursor-pointer {
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
 }

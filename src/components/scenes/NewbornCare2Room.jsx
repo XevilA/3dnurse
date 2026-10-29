@@ -394,11 +394,10 @@ export default function NewbornCare2Room() {
           <boxGeometry args={[2.1, 1.45, 0.03]} />
           <meshStandardMaterial color="#0f766e" roughness={0.35} />
         </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
           <div
-            onClick={() => openWallPoster(0)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-teal-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '380px' }}
+            className="select-none bg-white p-1.5 rounded-lg border-2 border-teal-500 shadow-md overflow-hidden"
+            style={{ width: '380px', pointerEvents: 'none' }}
           >
             <img
               src="/images/rev/bath_equip_poster.jpg"
@@ -421,11 +420,10 @@ export default function NewbornCare2Room() {
           <boxGeometry args={[2.1, 1.45, 0.03]} />
           <meshStandardMaterial color="#0d9488" roughness={0.35} />
         </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
           <div
-            onClick={() => openWallPoster(1)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-teal-600 shadow-md hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '380px' }}
+            className="select-none bg-white p-1.5 rounded-lg border-2 border-teal-600 shadow-md overflow-hidden"
+            style={{ width: '380px', pointerEvents: 'none' }}
           >
             <img
               src="/references/room2/img_007.png"
@@ -533,15 +531,22 @@ export default function NewbornCare2Room() {
           </mesh>
         ))}
         {/* White Paper Sheet on Table with "ภารกิจ" written on it */}
-        <mesh position={[0, 0.8, 0]} receiveShadow>
-          <boxGeometry args={[0.52, 0.01, 0.38]} />
+        <mesh
+          position={[0, 0.8, 0]}
+          receiveShadow
+          onClick={(e) => {
+            if (e.delta > 10) return;
+            e.stopPropagation();
+            setActiveModal('missionDesk');
+          }}
+        >
+          <boxGeometry args={[0.52, 0.02, 0.38]} />
           <meshStandardMaterial color="#ffffff" roughness={0.5} />
         </mesh>
-        <Html position={[0, 0.82, 0]} rotation={[-Math.PI / 2, 0, 0]} center transform scale={0.18}>
+        <Html position={[0, 0.82, 0]} rotation={[-Math.PI / 2, 0, 0]} center transform scale={0.18} style={{ pointerEvents: 'none' }}>
           <div
-            onClick={() => setActiveModal('missionDesk')}
-            className="cursor-pointer select-none bg-amber-50 border-2 border-teal-700 rounded-lg px-4 py-2 shadow text-center"
-            style={{ width: '160px' }}
+            className="select-none bg-amber-50 border-2 border-teal-700 rounded-lg px-4 py-2 shadow text-center"
+            style={{ width: '160px', pointerEvents: 'none' }}
           >
             <div className="text-base font-extrabold text-teal-900">📋 ภารกิจ</div>
             <div className="text-[10px] font-semibold text-slate-600">คลิกเพื่อดูรายละเอียด</div>
@@ -1113,11 +1118,10 @@ export default function NewbornCare2Room() {
           <boxGeometry args={[2.0, 1.4, 0.03]} />
           <meshStandardMaterial color="#0f766e" roughness={0.35} />
         </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22}>
+        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
           <div
-            onClick={() => openWallPoster(2)}
-            className="cursor-pointer select-none bg-white p-1.5 rounded-lg border-2 border-teal-500 shadow-md hover:scale-[1.02] transition overflow-hidden"
-            style={{ width: '360px' }}
+            className="select-none bg-white p-1.5 rounded-lg border-2 border-teal-500 shadow-md overflow-hidden"
+            style={{ width: '360px', pointerEvents: 'none' }}
           >
             <img
               src="/references/room2/img_008.jpeg"

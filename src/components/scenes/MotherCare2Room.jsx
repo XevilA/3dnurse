@@ -813,7 +813,14 @@ export default function MotherCare2Room() {
       {/* ══════════════════════════════════════════════════════════════════════════
           🩹 INTERACTIVE PROJECTOR LEARNING BOARD (Framed Cleanly on North Wall Projector Screen)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[-0.65, 3.05, -8.76]}>
+      <group
+        position={[-0.65, 3.05, -8.76]}
+        onClick={(e) => {
+          if (e.delta > 10) return;
+          e.stopPropagation();
+          setIsBoardFullScreen(true);
+        }}
+      >
         {/* Projector Top Housing Roller Bar */}
         <mesh position={[0, 1.92, 0.04]} castShadow>
           <boxGeometry args={[4.75, 0.14, 0.14]} />
@@ -831,7 +838,16 @@ export default function MotherCare2Room() {
       </group>
       {!isBoardFullScreen && (
         <Html position={[-0.65, 3.05, -8.68]} center transform scale={0.19} zIndexRange={[15, 0]}>
-          {renderProjectorBoardContent(false)}
+          <div className="relative">
+            {renderProjectorBoardContent(false)}
+            {/* On Mobile/Tablet, tapping anywhere on the distant 3D wall board opens the crisp Full-Screen 2D Modal */}
+            <button
+              type="button"
+              onClick={() => setIsBoardFullScreen(true)}
+              aria-label="ขยายกระดานกิจกรรมเต็มจอ"
+              className="lg:hidden absolute inset-0 z-30 bg-transparent cursor-pointer"
+            />
+          </div>
         </Html>
       )}
 

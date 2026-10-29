@@ -82,8 +82,9 @@ export default function InteractiveSeat({
     }
   });
 
-  const handlePointerDown = (e) => {
-    e.stopPropagation();
+  const handleSeatClick = (e) => {
+    if (e && typeof e.delta === 'number' && e.delta > 10) return;
+    if (e?.stopPropagation) e.stopPropagation();
     if (!isSitting) {
       sitDown({
         id,
@@ -102,18 +103,18 @@ export default function InteractiveSeat({
       ref={groupRef}
       position={position}
       rotation={rotation}
-      onClick={handlePointerDown}
-      onPointerDown={handlePointerDown}
+      onClick={handleSeatClick}
     >
       {/* 3D Furniture Model */}
       {children}
 
-      {/* ── Gamified 3D Interaction Prompt (Floats above seat when nearby) ── */}
+      {/* ── Gamified 3D Interaction Prompt (2D screen-aligned so touch hit-testing is always exact on iOS) ── */}
       {isNearby && (
-        <Html position={[0, seatOffset[1] + 0.85, 0]} center transform scale={0.4}>
-          <div
-            onClick={handlePointerDown}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl font-bold text-xs shadow-2xl backdrop-blur-md cursor-pointer select-none transition transform hover:scale-110 active:scale-95 border-2 animate-bounce pointer-events-auto"
+        <Html position={[0, seatOffset[1] + 0.85, 0]} center zIndexRange={[20, 0]}>
+          <button
+            type="button"
+            onClick={handleSeatClick}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl font-bold text-xs shadow-2xl backdrop-blur-md cursor-pointer select-none transition transform hover:scale-105 active:scale-95 border-2 pointer-events-auto"
             style={{
               background: type === 'wheelchair'
                 ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
@@ -127,10 +128,10 @@ export default function InteractiveSeat({
               {type === 'wheelchair' ? '♿' : type === 'sofa' ? '🛋️' : type === 'bed' ? '🛏️' : '🪑'}
             </span>
             <div className="flex flex-col text-left">
-              <span className="text-[10px] text-yellow-300 font-mono tracking-wider">กด [F] หรือคลิก</span>
+              <span className="text-[10px] text-yellow-300 font-mono tracking-wider">แตะเพื่อนั่ง / กด [F]</span>
               <span className="text-xs whitespace-nowrap">{name}</span>
             </div>
-          </div>
+          </button>
         </Html>
       )}
 
