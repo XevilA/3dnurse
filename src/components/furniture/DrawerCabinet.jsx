@@ -27,5 +27,3 @@ export default function DrawerCabinet({ position = [0, 0, 0], rotation = [0, 0, 
     </group>
   );
 }
-
-useGLTF.preload('/models/drawer_cabinet.glb');

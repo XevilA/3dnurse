@@ -35,5 +35,3 @@ export default function SteelShelves({
     </group>
   );
 }
-
-useGLTF.preload('/models/steel_frame_shelves_01.glb');

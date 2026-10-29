@@ -1,8 +1,36 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
+
+let _sharedLockBannerTex = null;
+function getSharedLockBannerTex() {
+  if (_sharedLockBannerTex) return _sharedLockBannerTex;
+  const canvas = document.createElement('canvas');
+  canvas.width = 640;
+  canvas.height = 76;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 22px "Sarabun", system-ui, -apple-system, sans-serif';
+    ctx.fillText('🔒 ห้องล็อค • ต้องทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน', canvas.width / 2, canvas.height / 2);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  _sharedLockBannerTex = tex;
+  return tex;
+}
 
 /**
  * WalkableRoomPortal — Modern Architectural Hospital Doorway & Walk-in Entrance
@@ -122,110 +150,93 @@ export default function WalkableRoomPortal({
 
   const configuredMetal = useMemo(() => {
     if (!textures.metal) return null;
-    const cloned = textures.metal.clone();
-    cloned.wrapS = THREE.RepeatWrapping;
-    cloned.wrapT = THREE.RepeatWrapping;
-    cloned.repeat.set(1, 4);
-    cloned.colorSpace = THREE.SRGBColorSpace;
-    cloned.needsUpdate = true;
-    return cloned;
+    textures.metal.wrapS = THREE.RepeatWrapping;
+    textures.metal.wrapT = THREE.RepeatWrapping;
+    textures.metal.repeat.set(1, 4);
+    textures.metal.colorSpace = THREE.SRGBColorSpace;
+    return textures.metal;
   }, [textures.metal]);
 
   const configuredFloor = useMemo(() => {
     if (!textures.floor) return null;
-    const cloned = textures.floor.clone();
-    cloned.wrapS = THREE.RepeatWrapping;
-    cloned.wrapT = THREE.RepeatWrapping;
-    cloned.repeat.set(2, 2);
-    cloned.colorSpace = THREE.SRGBColorSpace;
-    cloned.needsUpdate = true;
-    return cloned;
-  }, [textures.floor]);
+    textures.floor.wrapS = THREE.RepeatWrapping;
+    textures.floor.wrapT = THREE.RepeatWrapping;
+    if (roomKey !== 'lobby') {
+      textures.floor.repeat.set(2, 2);
+    }
+    textures.floor.colorSpace = THREE.SRGBColorSpace;
+    return textures.floor;
+  }, [textures.floor, roomKey]);
 
   const configuredDoor = useMemo(() => {
     if (!textures.door) return null;
-    const cloned = textures.door.clone();
-    cloned.colorSpace = THREE.SRGBColorSpace;
-    cloned.needsUpdate = true;
-    return cloned;
+    textures.door.colorSpace = THREE.SRGBColorSpace;
+    return textures.door;
   }, [textures.door]);
 
   const headerSignTex = useMemo(() => {
     const canvas = document.createElement('canvas');
-    canvas.width = 1400;
-    canvas.height = 320;
+    canvas.width = 768;
+    canvas.height = 176;
     const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = isLocked ? '#ef4444' : themeConfig.primary;
+      ctx.lineWidth = 8;
+      ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = isLocked ? '#ef4444' : themeConfig.primary;
-    ctx.lineWidth = 14;
-    ctx.strokeRect(7, 7, canvas.width - 14, canvas.height - 14);
+      // Top badge pill
+      const badgeColor = isLocked
+        ? '#dc2626'
+        : roomKey === 'quiz' && !hasCompletedPretest
+        ? '#d97706'
+        : themeConfig.primary;
+      ctx.fillStyle = badgeColor;
+      ctx.fillRect(16, 11, canvas.width - 32, 44);
 
-    // Top badge pill
-    const badgeColor = isLocked
-      ? '#dc2626'
-      : roomKey === 'quiz' && !hasCompletedPretest
-      ? '#d97706'
-      : themeConfig.primary;
-    ctx.fillStyle = badgeColor;
-    ctx.fillRect(30, 20, canvas.width - 60, 80);
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '900 23px "Sarabun", system-ui, -apple-system, sans-serif';
+      const badgeLabel = isLocked
+        ? `🔒 ${roomNumber} (ล็อค — ทำ Pre-test ที่ Hall 301 ก่อน)`
+        : roomKey === 'quiz' && !hasCompletedPretest
+        ? `⭐ จุดเริ่มต้น: ${roomNumber} • ทำ Pre-test 20 ข้อ`
+        : `${icon || ''} ${roomNumber}${isCompleted ? '  ✅ ผ่านแล้ว' : ''}`;
+      ctx.fillText(badgeLabel, canvas.width / 2, 33, canvas.width - 44);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = '900 42px "Sarabun", system-ui, -apple-system, sans-serif';
-    const badgeLabel = isLocked
-      ? `🔒 ${roomNumber} (ล็อค — ทำ Pre-test ที่ Hall 301 ก่อน)`
-      : roomKey === 'quiz' && !hasCompletedPretest
-      ? `⭐ จุดเริ่มต้น: ${roomNumber} • ทำ Pre-test 20 ข้อ`
-      : `${icon || ''} ${roomNumber}${isCompleted ? '  ✅ ผ่านแล้ว' : ''}`;
-    ctx.fillText(badgeLabel, canvas.width / 2, 60);
+      // Room title
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 33px "Sarabun", system-ui, -apple-system, sans-serif';
+      ctx.fillText(roomTitle || '', canvas.width / 2, 96, canvas.width - 36);
 
-    // Room title (Enlarged & Bold for High Visibility from Distance)
-    ctx.fillStyle = '#0f172a';
-    ctx.font = '900 60px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText(roomTitle || '', canvas.width / 2, 175);
-
-    // Subtitle action hint
-    ctx.fillStyle = isLocked ? '#dc2626' : themeConfig.text;
-    ctx.font = '800 32px "Sarabun", system-ui, -apple-system, sans-serif';
-    const subLabel = isLocked
-      ? '⚠️ กรุณาทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน'
-      : '🚪 เดินเข้าใกล้เพื่อให้ประตูเปิดอัตโนมัติ หรือคลิกที่ป้ายเพื่อเข้าห้อง ➜';
-    ctx.fillText(subLabel, canvas.width / 2, 260);
+      // Subtitle action hint
+      ctx.fillStyle = isLocked ? '#dc2626' : themeConfig.text;
+      ctx.font = '800 18px "Sarabun", system-ui, -apple-system, sans-serif';
+      const subLabel = isLocked
+        ? '⚠️ กรุณาทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน'
+        : '🚪 เดินเข้าใกล้เพื่อให้ประตูเปิดอัตโนมัติ หรือคลิกที่ป้ายเพื่อเข้าห้อง ➜';
+      ctx.fillText(subLabel, canvas.width / 2, 143, canvas.width - 36);
+    }
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 16;
-    tex.generateMipmaps = true;
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.anisotropy = 2;
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
     tex.magFilter = THREE.LinearFilter;
     tex.needsUpdate = true;
     return tex;
   }, [isLocked, roomKey, hasCompletedPretest, roomNumber, roomTitle, icon, isCompleted, themeConfig.primary, themeConfig.text]);
 
-  const lockBannerTex = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 960;
-    canvas.height = 110;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#dc2626';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = '900 32px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('🔒 ห้องล็อค • ต้องทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน', canvas.width / 2, canvas.height / 2);
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
-    tex.needsUpdate = true;
-    return tex;
-  }, []);
+  useEffect(() => {
+    return () => {
+      headerSignTex.dispose();
+    };
+  }, [headerSignTex]);
+
+  const lockBannerTex = isLocked ? getSharedLockBannerTex() : null;
 
   const [px, py, pz] = position;
 
@@ -363,13 +374,12 @@ export default function WalkableRoomPortal({
         {/* Safety Glass Vision Panel */}
         <mesh position={[0.48, 1.42, 0]}>
           <boxGeometry args={[0.20, 0.84, 0.048]} />
-          <meshPhysicalMaterial
+          <meshStandardMaterial
             color="#e0f7fa"
-            transmission={0.82}
-            roughness={0.08}
+            roughness={0.12}
+            metalness={0.1}
             transparent
-            opacity={0.9}
-            ior={1.5}
+            opacity={0.38}
           />
         </mesh>
         {/* Frosted Privacy Center Stripe on Vision Glass */}
@@ -421,13 +431,12 @@ export default function WalkableRoomPortal({
         {/* Safety Glass Vision Panel */}
         <mesh position={[-0.48, 1.42, 0]}>
           <boxGeometry args={[0.20, 0.84, 0.048]} />
-          <meshPhysicalMaterial
+          <meshStandardMaterial
             color="#e0f7fa"
-            transmission={0.82}
-            roughness={0.08}
+            roughness={0.12}
+            metalness={0.1}
             transparent
-            opacity={0.9}
-            ior={1.5}
+            opacity={0.38}
           />
         </mesh>
         {/* Frosted Privacy Center Stripe on Vision Glass */}

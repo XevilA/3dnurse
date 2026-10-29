@@ -924,7 +924,7 @@ export default function MotherCare1Room() {
           {/* Clean Glass Water Pitcher */}
           <mesh position={[-0.15, 0.72, -0.05]} castShadow>
             <cylinderGeometry args={[0.07, 0.08, 0.26, 24]} />
-            <meshPhysicalMaterial color="#e0f7fa" transmission={0.9} roughness={0.05} />
+            <meshStandardMaterial color="#e0f7fa" roughness={0.1} transparent opacity={0.45} />
           </mesh>
         </HospitalNightstand>
       </group>
@@ -973,7 +973,7 @@ export default function MotherCare1Room() {
         <HospitalNightstand position={[0, 0, 0]} scale={0.85}>
           <mesh position={[-0.12, 0.90, -0.05]} castShadow>
             <cylinderGeometry args={[0.06, 0.07, 0.22, 20]} />
-            <meshPhysicalMaterial color="#f0fdf4" transmission={0.85} roughness={0.1} />
+            <meshStandardMaterial color="#f0fdf4" roughness={0.12} transparent opacity={0.45} />
           </mesh>
           {/* กองผ้าอ้อมพับสำหรับลูกน้อยบนโต๊ะข้างเก้าอี้ให้นม */}
           {[

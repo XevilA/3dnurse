@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 
 /**
@@ -202,9 +202,17 @@ export default function RealisticComputerWorkstation({
     ctx.fillText('➜ เรียกคิวถัดไป', 812, 573);
 
     const texture = new THREE.CanvasTexture(canvas);
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
     texture.needsUpdate = true;
     return texture;
   }, [isTriage, nurseName]);
+
+  useEffect(() => {
+    return () => {
+      screenTexture.dispose();
+    };
+  }, [screenTexture]);
 
   return (
     <group position={position} rotation={rotation} scale={scale} dispose={null}>
@@ -431,14 +439,13 @@ export default function RealisticComputerWorkstation({
           ══════════════════════════════════════════════════════════════════════════════ */}
       <group position={[-0.42, 0.015, 0.10]} rotation={[0, 0.45, 0]}>
         {/* Clear Acrylic Body */}
-        <mesh position={[0, 0.10, 0]} castShadow>
+        <mesh position={[0, 0.10, 0]}>
           <boxGeometry args={[0.14, 0.20, 0.06]} />
-          <meshPhysicalMaterial
-            color="#ffffff"
-            transmission={0.88}
-            roughness={0.1}
+          <meshStandardMaterial
+            color="#e0f2fe"
+            roughness={0.12}
             transparent
-            opacity={0.85}
+            opacity={0.38}
           />
         </mesh>
         {/* Printed Maternal Care Booklets Inside */}

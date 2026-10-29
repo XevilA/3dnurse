@@ -44,20 +44,20 @@ export default function BabyCrib({ position = [0, 0, 0], rotation = [0, 0, 0], s
       {/* Transparent Front/Back Walls */}
       <mesh position={[0, 1.15, 0.38]}>
         <boxGeometry args={[1.4, 0.38, 0.04]} />
-        <meshPhysicalMaterial color="#ffffff" transmission={0.9} opacity={1} transparent roughness={0.05} ior={1.5} />
+        <meshStandardMaterial color="#e0f7fa" opacity={0.34} transparent roughness={0.1} depthWrite={false} />
       </mesh>
       <mesh position={[0, 1.15, -0.38]}>
         <boxGeometry args={[1.4, 0.38, 0.04]} />
-        <meshPhysicalMaterial color="#ffffff" transmission={0.9} opacity={1} transparent roughness={0.05} ior={1.5} />
+        <meshStandardMaterial color="#e0f7fa" opacity={0.34} transparent roughness={0.1} depthWrite={false} />
       </mesh>
       {/* Transparent Left/Right Walls */}
       <mesh position={[-0.68, 1.15, 0]}>
         <boxGeometry args={[0.04, 0.38, 0.76]} />
-        <meshPhysicalMaterial color="#ffffff" transmission={0.9} opacity={1} transparent roughness={0.05} ior={1.5} />
+        <meshStandardMaterial color="#e0f7fa" opacity={0.34} transparent roughness={0.1} depthWrite={false} />
       </mesh>
       <mesh position={[0.68, 1.15, 0]}>
         <boxGeometry args={[0.04, 0.38, 0.76]} />
-        <meshPhysicalMaterial color="#ffffff" transmission={0.9} opacity={1} transparent roughness={0.05} ior={1.5} />
+        <meshStandardMaterial color="#e0f7fa" opacity={0.34} transparent roughness={0.1} depthWrite={false} />
       </mesh>
 
       {/* Soft Mattress with Pink/Blue Trim */}

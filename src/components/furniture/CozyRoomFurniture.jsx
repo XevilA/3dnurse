@@ -25,109 +25,122 @@ export function usePosterTitleTexture({
   bgColor = '#fffdf9',
   textColor = '#7c2d12',
   accentColor = '#d97706',
-  widthPx = 1024,
-  heightPx = 180,
+  widthPx = 768,
+  heightPx = 136,
 }) {
-  return useMemo(() => {
+  const tex = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = widthPx;
     canvas.height = heightPx;
     const ctx = canvas.getContext('2d');
+    const s = heightPx / 180;
 
     const draw = () => {
+      if (!ctx) return;
       ctx.clearRect(0, 0, widthPx, heightPx);
       ctx.fillStyle = bgColor;
-      roundRect2D(ctx, 0, 0, widthPx, heightPx, 20);
+      roundRect2D(ctx, 0, 0, widthPx, heightPx, 20 * s);
       ctx.fill();
 
       ctx.strokeStyle = accentColor;
-      ctx.lineWidth = 6;
-      roundRect2D(ctx, 4, 4, widthPx - 8, heightPx - 8, 18);
+      ctx.lineWidth = Math.max(3, 6 * s);
+      roundRect2D(ctx, 3, 3, widthPx - 6, heightPx - 6, 18 * s);
       ctx.stroke();
 
-      let textStartX = 32;
+      let textStartX = 24 * s;
       if (badge) {
-        ctx.font = `900 32px ${THAI_FONT}`;
-        const bw = Math.max(110, ctx.measureText(badge).width + 44);
+        ctx.font = `900 ${Math.round(31 * s)}px ${THAI_FONT}`;
+        const bw = Math.max(84 * s, ctx.measureText(badge).width + 34 * s);
         ctx.fillStyle = accentColor;
-        roundRect2D(ctx, 24, 24, bw, heightPx - 48, 16);
+        roundRect2D(ctx, 18 * s, 18 * s, bw, heightPx - 36 * s, 12 * s);
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(badge, 24 + bw / 2, heightPx / 2 + 2);
-        textStartX = 24 + bw + 24;
+        ctx.fillText(badge, 18 * s + bw / 2, heightPx / 2 + 1);
+        textStartX = 18 * s + bw + 18 * s;
       }
 
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = textColor;
-      ctx.font = `900 ${subtitle ? 40 : 44}px ${THAI_FONT}`;
-      ctx.fillText(title, textStartX, subtitle ? heightPx * 0.36 : heightPx * 0.5, widthPx - textStartX - 32);
+      ctx.font = `900 ${Math.round((subtitle ? 39 : 43) * s)}px ${THAI_FONT}`;
+      ctx.fillText(title, textStartX, subtitle ? heightPx * 0.36 : heightPx * 0.5, widthPx - textStartX - 24 * s);
 
       if (subtitle) {
         ctx.fillStyle = '#475569';
-        ctx.font = `700 28px ${THAI_FONT}`;
-        ctx.fillText(subtitle, textStartX, heightPx * 0.74, widthPx - textStartX - 32);
+        ctx.font = `700 ${Math.round(27 * s)}px ${THAI_FONT}`;
+        ctx.fillText(subtitle, textStartX, heightPx * 0.74, widthPx - textStartX - 24 * s);
       }
     };
 
     draw();
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
-    tex.needsUpdate = true;
+    const t = new THREE.CanvasTexture(canvas);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.generateMipmaps = false;
+    t.minFilter = THREE.LinearFilter;
+    t.needsUpdate = true;
+    return t;
+  }, [title, subtitle, badge, bgColor, textColor, accentColor, widthPx, heightPx]);
 
+  useEffect(() => {
+    let alive = true;
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
-        draw();
-        tex.needsUpdate = true;
+        if (alive) tex.needsUpdate = true;
       });
     }
-    return tex;
-  }, [title, subtitle, badge, bgColor, textColor, accentColor, widthPx, heightPx]);
+    return () => {
+      alive = false;
+      tex.dispose();
+    };
+  }, [tex]);
+
+  return tex;
 }
 
+const _sharedRugTextures = {};
+
 /**
- * Generates a woven beige fabric rug texture matching the reference images
- * (สมุดโน้ตไม่มีชื่อ 2_p2.png, p4.png, nb4_room_ref.jpg).
+ * Generates a shared woven beige fabric rug texture singleton per pattern
  */
 export function useWovenRugTexture(pattern = 'weave') {
   return useMemo(() => {
+    if (_sharedRugTextures[pattern]) return _sharedRugTextures[pattern];
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
+    canvas.width = 256;
+    canvas.height = 256;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = '#e7dacb';
-    ctx.fillRect(0, 0, 512, 512);
+    if (ctx) {
+      ctx.fillStyle = '#e7dacb';
+      ctx.fillRect(0, 0, 256, 256);
 
-    if (pattern === 'diamond') {
-      // Diamond geometric relief rug (matching nb4_room_ref.jpg)
-      ctx.strokeStyle = 'rgba(180, 156, 132, 0.55)';
-      ctx.lineWidth = 5;
-      const step = 64;
-      for (let y = -512; y < 1024; y += step) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(512, y + 512);
-        ctx.stroke();
+      if (pattern === 'diamond') {
+        ctx.strokeStyle = 'rgba(180, 156, 132, 0.55)';
+        ctx.lineWidth = 3;
+        const step = 32;
+        for (let y = -256; y < 512; y += step) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(256, y + 256);
+          ctx.stroke();
 
-        ctx.beginPath();
-        ctx.moveTo(512, y);
-        ctx.lineTo(0, y + 512);
-        ctx.stroke();
-      }
-    } else {
-      // Ribbed woven sisal/boucle rug (matching Ward 103 & 104 reference)
-      for (let y = 0; y < 512; y += 6) {
-        ctx.fillStyle = y % 12 === 0 ? 'rgba(166, 142, 118, 0.25)' : 'rgba(255, 248, 240, 0.22)';
-        ctx.fillRect(0, y, 512, 3);
-      }
-      for (let x = 0; x < 512; x += 8) {
-        ctx.fillStyle = 'rgba(150, 125, 100, 0.12)';
-        ctx.fillRect(x, 0, 2, 512);
+          ctx.beginPath();
+          ctx.moveTo(256, y);
+          ctx.lineTo(0, y + 256);
+          ctx.stroke();
+        }
+      } else {
+        for (let y = 0; y < 256; y += 4) {
+          ctx.fillStyle = y % 8 === 0 ? 'rgba(166, 142, 118, 0.25)' : 'rgba(255, 248, 240, 0.22)';
+          ctx.fillRect(0, y, 256, 2);
+        }
+        for (let x = 0; x < 256; x += 6) {
+          ctx.fillStyle = 'rgba(150, 125, 100, 0.12)';
+          ctx.fillRect(x, 0, 1, 256);
+        }
       }
     }
 
@@ -137,6 +150,7 @@ export function useWovenRugTexture(pattern = 'weave') {
     tex.repeat.set(3, 3);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.needsUpdate = true;
+    _sharedRugTextures[pattern] = tex;
     return tex;
   }, [pattern]);
 }
@@ -739,6 +753,7 @@ export function WallMountedTV3D({
     const ctx = canvas.getContext('2d');
 
     const draw = () => {
+      if (!ctx) return;
       const grad = ctx.createLinearGradient(0, 0, 1024, 600);
       grad.addColorStop(0, '#0f172a');
       grad.addColorStop(0.5, '#1e1b4b');
@@ -797,16 +812,17 @@ export function WallMountedTV3D({
     draw();
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
     tex.needsUpdate = true;
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        draw();
-        tex.needsUpdate = true;
-      });
-    }
     return tex;
   }, [title, subtitle, badge, accentColor]);
+
+  useEffect(() => {
+    return () => {
+      screenTex.dispose();
+    };
+  }, [screenTex]);
 
   const [hovered, setHovered] = useState(false);
   useEffect(() => {

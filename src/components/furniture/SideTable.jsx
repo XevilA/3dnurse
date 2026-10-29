@@ -27,5 +27,3 @@ export default function SideTable({ position = [0, 0, 0], rotation = [0, 0, 0], 
     </group>
   );
 }
-
-useGLTF.preload('/models/side_table_01.glb');

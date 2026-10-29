@@ -277,5 +277,3 @@ const BabyAvatar = forwardRef(({
 
 BabyAvatar.displayName = 'BabyAvatar';
 export default BabyAvatar;
-
-useGLTF.preload('/models/baby_real.glb');

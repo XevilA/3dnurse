@@ -567,8 +567,8 @@ function Suds() {
     <group>
       {bubbles.map((b, i) => (
         <mesh key={i} position={b.p}>
-          <sphereGeometry args={[b.r, 14, 12]} />
-          <meshPhysicalMaterial color="#ffffff" roughness={0.15} transmission={0.1} transparent opacity={0.92} clearcoat={1} />
+          <sphereGeometry args={[b.r, 12, 10]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.15} transparent opacity={0.86} />
         </mesh>
       ))}
     </group>

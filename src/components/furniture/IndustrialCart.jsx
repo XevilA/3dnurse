@@ -27,5 +27,3 @@ export default function IndustrialCart({ position = [0, 0, 0], rotation = [0, 0,
     </group>
   );
 }
-
-useGLTF.preload('/models/industrial_storage_cart.glb');

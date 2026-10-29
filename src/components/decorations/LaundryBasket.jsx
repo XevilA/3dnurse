@@ -35,5 +35,3 @@ export default function LaundryBasket({
     </group>
   );
 }
-
-useGLTF.preload('/models/wicker_basket_01.glb');

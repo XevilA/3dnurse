@@ -3,110 +3,113 @@ import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import WalkableRoomPortal from './WalkableRoomPortal';
 
+let _sharedWoodPlankTex = null;
+
 /**
- * Generates a high-resolution, realistic Warm Oak Wood Plank floor texture
- * matching the client's reference rooms (Ward 103, Ward 104, Nursery 201-204).
+ * Generates a realistic Warm Oak Wood Plank floor texture once as a shared singleton
+ * (only allocated when entering a Mother or Newborn room, never in Lobby).
  */
-function useWarmWoodPlankTexture(repeatX = 5, repeatY = 5) {
+function useWarmWoodPlankTexture(repeatX = 5, repeatY = 5, enabled = true) {
   return useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
+    if (!enabled) return null;
+    if (!_sharedWoodPlankTex) {
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
 
-    // Base warm honey-oak tone
-    ctx.fillStyle = '#c89b6e';
-    ctx.fillRect(0, 0, 1024, 1024);
+      if (ctx) {
+        ctx.fillStyle = '#c89b6e';
+        ctx.fillRect(0, 0, size, size);
 
-    const rows = 8;
-    const rowH = 1024 / rows;
-    const plankColors = [
-      '#cfa377',
-      '#c49568',
-      '#d5ab80',
-      '#bd8d60',
-      '#cc9f72',
-      '#c7986b',
-      '#d2a679',
-      '#c09164',
-    ];
+        const rows = 8;
+        const rowH = size / rows;
+        const plankColors = [
+          '#cfa377',
+          '#c49568',
+          '#d5ab80',
+          '#bd8d60',
+          '#cc9f72',
+          '#c7986b',
+          '#d2a679',
+          '#c09164',
+        ];
 
-    for (let r = 0; r < rows; r++) {
-      const y = r * rowH;
-      const offset = (r % 2) * 256 + ((r * 97) % 180);
-      const plankW = 512;
+        for (let r = 0; r < rows; r++) {
+          const y = r * rowH;
+          const offset = (r % 2) * 128 + ((r * 49) % 90);
+          const plankW = 256;
 
-      for (let c = -1; c < 3; c++) {
-        const x = c * plankW + offset;
-        const baseColor = plankColors[(r * 3 + c + 8) % plankColors.length];
+          for (let c = -1; c < 3; c++) {
+            const x = c * plankW + offset;
+            const baseColor = plankColors[(r * 3 + c + 8) % plankColors.length];
 
-        // Plank body gradient
-        const grad = ctx.createLinearGradient(x, y, x + plankW, y + rowH);
-        grad.addColorStop(0, baseColor);
-        grad.addColorStop(0.5, '#d6ac82');
-        grad.addColorStop(1, baseColor);
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, y, plankW, rowH);
+            const grad = ctx.createLinearGradient(x, y, x + plankW, y + rowH);
+            grad.addColorStop(0, baseColor);
+            grad.addColorStop(0.5, '#d6ac82');
+            grad.addColorStop(1, baseColor);
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, plankW, rowH);
 
-        // Subtle wood grain fibers along plank
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(x, y, plankW, rowH);
-        ctx.clip();
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(x, y, plankW, rowH);
+            ctx.clip();
 
-        for (let g = 0; g < 28; g++) {
-          const gy = y + (g / 28) * rowH + Math.sin(g * 1.7 + r) * 3;
-          ctx.strokeStyle = g % 3 === 0 ? 'rgba(120, 74, 36, 0.12)' : 'rgba(255, 235, 210, 0.10)';
-          ctx.lineWidth = 1.5 + (g % 2);
+            for (let g = 0; g < 16; g++) {
+              const gy = y + (g / 16) * rowH + Math.sin(g * 1.7 + r) * 2;
+              ctx.strokeStyle = g % 3 === 0 ? 'rgba(120, 74, 36, 0.12)' : 'rgba(255, 235, 210, 0.10)';
+              ctx.lineWidth = 1.2;
+              ctx.beginPath();
+              ctx.moveTo(x, gy);
+              ctx.bezierCurveTo(
+                x + plankW * 0.33,
+                gy + Math.sin(g + r) * 2.5,
+                x + plankW * 0.66,
+                gy - Math.cos(g + r) * 2.5,
+                x + plankW,
+                gy
+              );
+              ctx.stroke();
+            }
+
+            ctx.strokeStyle = 'rgba(92, 54, 24, 0.55)';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + rowH);
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          ctx.strokeStyle = 'rgba(88, 50, 22, 0.62)';
+          ctx.lineWidth = 1.6;
           ctx.beginPath();
-          ctx.moveTo(x, gy);
-          ctx.bezierCurveTo(
-            x + plankW * 0.33,
-            gy + Math.sin(g + r) * 4,
-            x + plankW * 0.66,
-            gy - Math.cos(g + r) * 4,
-            x + plankW,
-            gy
-          );
+          ctx.moveTo(0, y);
+          ctx.lineTo(size, y);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(255, 236, 209, 0.25)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(0, y + 1);
+          ctx.lineTo(size, y + 1);
           ctx.stroke();
         }
-
-        // Plank vertical joint line
-        ctx.strokeStyle = 'rgba(92, 54, 24, 0.55)';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x, y + rowH);
-        ctx.stroke();
-
-        ctx.restore();
       }
 
-      // Plank horizontal seam line with subtle bevel highlight
-      ctx.strokeStyle = 'rgba(88, 50, 22, 0.62)';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(1024, y);
-      ctx.stroke();
-
-      ctx.strokeStyle = 'rgba(255, 236, 209, 0.25)';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(0, y + 2);
-      ctx.lineTo(1024, y + 2);
-      ctx.stroke();
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 4;
+      tex.needsUpdate = true;
+      _sharedWoodPlankTex = tex;
     }
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(repeatX, repeatY);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
-    tex.needsUpdate = true;
-    return tex;
-  }, [repeatX, repeatY]);
+    _sharedWoodPlankTex.repeat.set(repeatX, repeatY);
+    return _sharedWoodPlankTex;
+  }, [repeatX, repeatY, enabled]);
 }
 
 /**
@@ -179,10 +182,11 @@ export default function HospitalRoomShell({
     }
   }, [theme, isWarmWoodRoom]);
 
-  // Procedural high-res oak wood plank texture for Mother & Newborn rooms
+  // Procedural oak wood plank texture for Mother & Newborn rooms (skipped completely in Lobby/Quiz)
   const warmWoodPlankTex = useWarmWoodPlankTexture(
     Math.max(4, Math.round(width / 3.2)),
-    Math.max(4, Math.round(depth / 3.2))
+    Math.max(4, Math.round(depth / 3.2)),
+    isWarmWoodRoom
   );
 
   // Load floor texture for Lobby / Quiz fallback
@@ -200,14 +204,12 @@ export default function HospitalRoomShell({
   const configuredFloor = useMemo(() => {
     if (isWarmWoodRoom) return warmWoodPlankTex;
     if (!textures.floor) return null;
-    const cloned = textures.floor.clone();
-    cloned.wrapS = THREE.RepeatWrapping;
-    cloned.wrapT = THREE.RepeatWrapping;
+    textures.floor.wrapS = THREE.RepeatWrapping;
+    textures.floor.wrapT = THREE.RepeatWrapping;
     const repeatFactor = theme === 'lobby' ? 6 : theme === 'quiz' ? 5 : 4;
-    cloned.repeat.set(repeatFactor, repeatFactor);
-    cloned.colorSpace = THREE.SRGBColorSpace;
-    cloned.needsUpdate = true;
-    return cloned;
+    textures.floor.repeat.set(repeatFactor, repeatFactor);
+    textures.floor.colorSpace = THREE.SRGBColorSpace;
+    return textures.floor;
   }, [isWarmWoodRoom, warmWoodPlankTex, textures.floor, theme]);
 
   const halfW = width / 2;
@@ -334,14 +336,12 @@ export default function HospitalRoomShell({
           {/* Panoramic Hospital Glass Curtain Wall */}
           <mesh position={[0, -0.5, 0]}>
             <boxGeometry args={[width, height - 1.0, 0.06]} />
-            <meshPhysicalMaterial
+            <meshStandardMaterial
               color="#e0f2fe"
-              transmission={0.88}
-              roughness={0.05}
-              metalness={0.1}
+              roughness={0.12}
+              metalness={0.12}
               transparent
-              opacity={0.85}
-              ior={1.5}
+              opacity={0.34}
             />
           </mesh>
 

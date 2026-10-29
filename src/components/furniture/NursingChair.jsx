@@ -26,5 +26,3 @@ export default function NursingChair({ position = [0, 0, 0], rotation = [0, 0, 0
     </group>
   );
 }
-
-useGLTF.preload('/models/nursing_chair.glb');

@@ -40,62 +40,17 @@ const ROOM_MAP = {
   quiz: QuizRoom,
 };
 
-// ── Preload only Lobby-essential 3D models (loads on startup).
-//    Remaining room-specific models load lazily on first room visit. ──
-const LOBBY_MODELS = [
-  '/models/megan_opt.glb',   // Player avatar (needed immediately)
-  '/models/soldier.glb',     // Father avatar (needed immediately)
-  '/models/flowers_vase.glb', // Lobby decoration
-  '/models/robot.glb',       // Lobby guide robot
-];
+// ── Detect Mobile / iOS / Tablet once so WebGL stays well inside iOS Safari Jetsam memory limits ──
+const IS_MOBILE_DEVICE =
+  typeof navigator !== 'undefined' &&
+  (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && typeof window !== 'undefined' && window.innerWidth < 1180));
 
-LOBBY_MODELS.forEach((path) => {
-  useGLTF.preload(path);
-});
-
-// ── Prefetch remaining room models in the background after lobby loads ──
-// Uses requestIdleCallback so it never blocks the first paint
-if (typeof window !== 'undefined') {
-  const DEFERRED_MODELS = [
-    '/models/baby_real.glb',
-    '/models/hospital_bed_opt.glb',
-    '/models/nursing_chair.glb',
-    '/models/ceiling_fan.glb',
-    '/models/desk_lamp_arm_01.glb',
-    '/models/drawer_cabinet.glb',
-    '/models/industrial_storage_cart.glb',
-    '/models/kira.glb',
-    '/models/medical_box.glb',
-    '/models/medical_tape.glb',
-    '/models/metal_office_desk.glb',
-    '/models/metal_trash_can.glb',
-    '/models/multi_cleaner_bottle.glb',
-    '/models/plant_house.glb',
-    '/models/potted_plant_01.glb',
-    '/models/potted_plant_02.glb',
-    '/models/side_table_01.glb',
-    '/models/sofa_velvet.glb',
-    '/models/steel_frame_shelves_01.glb',
-    '/models/throw_pillows_01.glb',
-    '/models/tree_small_02.glb',
-    '/models/water_bottle.glb',
-    '/models/wheelchair_01.glb',
-    '/models/wicker_basket_01.glb',
-  ];
-  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 2000));
-  idle(() => {
-    DEFERRED_MODELS.forEach((path) => useGLTF.preload(path));
-  });
-}
-
-// ── Preload only lobby-critical textures at startup; defer room textures ──
-const LOBBY_TEXTURES = [
-  '/textures/floor_marble_lobby.jpg',
-];
-
-LOBBY_TEXTURES.forEach((path) => {
-  useTexture.preload(path);
-});
+// ── Preload ONLY the player avatar at startup.
+//    All room-specific 3D models load on-demand via <Suspense> so mobile/iOS Safari
+//    never decodes 25+ GLB texture sets into memory simultaneously. ──
+useGLTF.preload('/models/megan_opt.glb');
+useTexture.preload('/textures/floor_marble_lobby.jpg');
 
 /** Error boundary to prevent white-screen crashes and offer safe return to Lobby */
 class RoomErrorBoundary extends React.Component {
@@ -213,10 +168,11 @@ export default function App() {
       {/* ── 3D Canvas (Isolated stacking context prevents Drei Html from escaping above UI) ── */}
       <div className="w-full h-full absolute inset-0 z-0 isolate" style={{ touchAction: 'none' }}>
         <Canvas
-          shadows
+          shadows={!IS_MOBILE_DEVICE}
+          dpr={IS_MOBILE_DEVICE ? [1, 1.35] : [1, 2]}
           gl={{
-            antialias: true,
-            powerPreference: 'high-performance',
+            antialias: !IS_MOBILE_DEVICE,
+            powerPreference: IS_MOBILE_DEVICE ? 'default' : 'high-performance',
             // preserveDrawingBuffer removed — halves GPU memory bandwidth
             stencil: false,
             depth: true,
@@ -229,7 +185,7 @@ export default function App() {
           <directionalLight
             position={[8, 12, 6]}
             intensity={1.1}
-            castShadow
+            castShadow={!IS_MOBILE_DEVICE}
             shadow-mapSize={[512, 512]}
             shadow-bias={-0.0001}
           />
@@ -241,8 +197,8 @@ export default function App() {
           <pointLight position={[-6, 6, -4]} intensity={0.35} color="#bae6fd" />
           <pointLight position={[6, 6, 4]} intensity={0.25} color="#fbcfe8" />
 
-          {/* Subtle Metaverse Stars in Lobby */}
-          {currentRoom === 'lobby' && <Stars radius={60} depth={25} count={400} factor={2} />}
+          {/* Subtle Metaverse Stars in Lobby (desktop only) */}
+          {currentRoom === 'lobby' && !IS_MOBILE_DEVICE && <Stars radius={60} depth={25} count={250} factor={2} />}
 
           {/* Current Room Scene with Error Boundary & Smooth Hospital Transition Fallback */}
           <RoomErrorBoundary room={currentRoom} onReset={() => useStore.getState().setRoom('lobby')}>

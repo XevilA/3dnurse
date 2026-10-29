@@ -35,5 +35,3 @@ export default function ExaminationLamp({
     </group>
   );
 }
-
-useGLTF.preload('/models/desk_lamp_arm_01.glb');

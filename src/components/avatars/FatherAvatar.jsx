@@ -113,5 +113,3 @@ const FatherAvatar = forwardRef(({
 
 FatherAvatar.displayName = 'FatherAvatar';
 export default FatherAvatar;
-
-useGLTF.preload('/models/soldier.glb');

@@ -50,6 +50,3 @@ export default function MedicineCabinet({
     </group>
   );
 }
-
-useGLTF.preload('/models/drawer_cabinet.glb');
-useGLTF.preload('/models/medical_box.glb');

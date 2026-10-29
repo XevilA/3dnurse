@@ -35,5 +35,3 @@ export default function HospitalSofa({
     </group>
   );
 }
-
-useGLTF.preload('/models/sofa_velvet.glb');

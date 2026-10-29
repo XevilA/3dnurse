@@ -35,5 +35,3 @@ export default function DoctorDesk({
     </group>
   );
 }
-
-useGLTF.preload('/models/metal_office_desk.glb');

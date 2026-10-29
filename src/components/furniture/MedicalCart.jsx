@@ -69,7 +69,3 @@ export default function MedicalCart({
     </group>
   );
 }
-
-useGLTF.preload('/models/industrial_storage_cart.glb');
-useGLTF.preload('/models/medical_box.glb');
-useGLTF.preload('/models/medical_tape.glb');

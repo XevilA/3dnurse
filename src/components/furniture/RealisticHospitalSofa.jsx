@@ -181,14 +181,13 @@ export default function RealisticHospitalSofa({
         {/* Folded Acrylic Informational Brochure Tent (From Photo) */}
         <group position={[0.12, 0.375, 0.04]} rotation={[0, -0.35, 0]}>
           {/* Clear Acrylic Body */}
-          <mesh position={[0, 0.07, 0]} castShadow>
+          <mesh position={[0, 0.07, 0]}>
             <boxGeometry args={[0.10, 0.14, 0.02]} />
-            <meshPhysicalMaterial
-              color="#ffffff"
-              transmission={0.85}
-              roughness={0.1}
+            <meshStandardMaterial
+              color="#e0f2fe"
+              roughness={0.12}
               transparent
-              opacity={0.8}
+              opacity={0.38}
             />
           </mesh>
           {/* Printed Health Poster Insert inside Acrylic */}

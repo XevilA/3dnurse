@@ -38,5 +38,3 @@ export default function HospitalNightstand({
     </group>
   );
 }
-
-useGLTF.preload('/models/side_table_01.glb');

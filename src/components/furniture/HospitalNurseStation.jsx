@@ -1,24 +1,33 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import RealisticNurse from '../characters/RealisticNurse';
 import RealisticComputerWorkstation from './RealisticComputerWorkstation';
 
-function usePlaqueTexture(drawFn, width = 720, height = 360, deps = []) {
-  return useMemo(() => {
+function usePlaqueTexture(drawFn, width = 640, height = 320, deps = []) {
+  const tex = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-    drawFn(ctx, width, height);
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
-    tex.needsUpdate = true;
-    return tex;
+    if (ctx) drawFn(ctx, width, height);
+    const t = new THREE.CanvasTexture(canvas);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.generateMipmaps = false;
+    t.minFilter = THREE.LinearFilter;
+    t.needsUpdate = true;
+    return t;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
+
+  useEffect(() => {
+    return () => {
+      tex.dispose();
+    };
+  }, [tex]);
+
+  return tex;
 }
 
 /**
@@ -356,13 +365,13 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
         <group position={[-0.35, 1.09, 2.15]} rotation={[0, 0.15, 0]}>
           <mesh position={[0, 0.08, 0]}>
             <boxGeometry args={[0.22, 0.16, 0.06]} />
-            <meshPhysicalMaterial color="#ffffff" transmission={0.7} roughness={0.1} transparent opacity={0.8} />
+            <meshStandardMaterial color="#e0f2fe" roughness={0.12} transparent opacity={0.38} />
           </mesh>
         </group>
         <group position={[0.35, 1.09, 2.15]} rotation={[0, -0.15, 0]}>
           <mesh position={[0, 0.08, 0]}>
             <boxGeometry args={[0.22, 0.16, 0.06]} />
-            <meshPhysicalMaterial color="#ffffff" transmission={0.7} roughness={0.1} transparent opacity={0.8} />
+            <meshStandardMaterial color="#e0f2fe" roughness={0.12} transparent opacity={0.38} />
           </mesh>
         </group>
       </group>

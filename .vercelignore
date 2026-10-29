@@ -10,11 +10,16 @@ extracted_docs/
 รายละเอียด/
 ปรับแก้/
 แบบทดสอบ/
+new/
 *.docx
 *.pdf
 test_and_capture.mjs
 *.mjs
 android-app/
+public/models/tree_small_02.glb
+public/models/hospital_bed.glb
+public/models/hospital_bed_opt.glb
+public/models/pregnant_megan_opt.glb
 public/models/megan.glb
 public/models/pregnant_megan.glb
 public/models/jennifer.glb

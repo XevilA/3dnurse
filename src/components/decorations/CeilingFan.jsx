@@ -45,5 +45,3 @@ export default function CeilingFan({
     </group>
   );
 }
-
-useGLTF.preload('/models/ceiling_fan.glb');

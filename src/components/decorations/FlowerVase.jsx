@@ -2,14 +2,12 @@ import React, { useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 
 /**
- * FlowerVase — Authentic 3D Glass Vase with Fresh Flowers (Khronos PBR)
- *
- * Perfect for hospital room bedside tables, nurse desks, and reception areas.
+ * FlowerVase — Authentic 3D Vase with Fresh Flowers (lightweight alpha glass, no transmission FBO)
  */
 export default function FlowerVase({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
-  scale = 1
+  scale = 1,
 }) {
   const { scene } = useGLTF('/models/flowers_vase.glb');
 
@@ -18,8 +16,14 @@ export default function FlowerVase({
     const cloned = scene.clone(true);
     cloned.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+        child.castShadow = false;
+        child.receiveShadow = false;
+        if (child.material && child.material.transmission > 0) {
+          child.material = child.material.clone();
+          child.material.transmission = 0;
+          child.material.transparent = true;
+          child.material.opacity = 0.42;
+        }
       }
     });
     return cloned;
@@ -35,5 +39,3 @@ export default function FlowerVase({
     </group>
   );
 }
-
-useGLTF.preload('/models/flowers_vase.glb');

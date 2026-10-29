@@ -35,5 +35,3 @@ export default function Pillows({
     </group>
   );
 }
-
-useGLTF.preload('/models/throw_pillows_01.glb');

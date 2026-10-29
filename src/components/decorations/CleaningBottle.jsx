@@ -26,5 +26,3 @@ export default function CleaningBottle({ position = [0, 0, 0], rotation = [0, 0,
     </group>
   );
 }
-
-useGLTF.preload('/models/multi_cleaner_bottle.glb');

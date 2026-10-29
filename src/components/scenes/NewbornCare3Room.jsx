@@ -212,13 +212,13 @@ function WheeledHospitalBassinet3D({ position = [0, 0, 0], rotation = [0, 0, 0] 
       ].map(([px, py, pz, args], wi) => (
         <mesh key={`tub_w_${wi}`} position={[px, py, pz]}>
           <boxGeometry args={args} />
-          <meshPhysicalMaterial
+          <meshStandardMaterial
             color="#e0f2fe"
-            transmission={0.86}
             transparent
-            opacity={0.55}
-            roughness={0.06}
-            ior={1.48}
+            opacity={0.34}
+            roughness={0.08}
+            metalness={0.08}
+            depthWrite={false}
           />
         </mesh>
       ))}

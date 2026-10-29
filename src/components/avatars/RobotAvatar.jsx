@@ -115,5 +115,3 @@ const RobotAvatar = forwardRef(({
 
 RobotAvatar.displayName = 'RobotAvatar';
 export default RobotAvatar;
-
-useGLTF.preload('/models/robot.glb');

@@ -865,19 +865,18 @@ const MotherAvatar = forwardRef(({
       <group ref={avatarRigRef} position={[0, 0, 0]}>
         <primitive object={clonedScene} rotation={[0, 0, 0]} />
 
-        {/* Real 46k-vertex Rigged 3D Newborn Infant nestled directly in Mother's Cradling Hands (kept mounted on player for 0ms instant toggle) */}
-        {showHeldBaby && isHoldingBabyOverride !== false && (
+        {/* Real Rigged 3D Newborn Infant nestled directly in Mother's Cradling Hands (mounted on-demand when holding baby to save 52k skinned vertices on mobile) */}
+        {showHeldBaby && isHoldingBabyOverride !== false && Boolean(isHoldingBaby) && (
           <group
             ref={heldBabyRef}
             position={[0, 1.165, 0.235]}
-            visible={Boolean(isHoldingBaby)}
           >
             <BabyAvatar
               pose="carried"
               position={[0, 0, 0]}
               rotation={[0, 0, 0]}
               scale={1.0}
-              active={Boolean(isHoldingBaby)}
+              active={true}
             />
           </group>
         )}

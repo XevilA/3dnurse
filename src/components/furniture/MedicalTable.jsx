@@ -50,6 +50,3 @@ export default function MedicalTable({ position = [0, 0, 0], rotation = [0, 0, 0
     </group>
   );
 }
-
-useGLTF.preload('/models/kira.glb');
-useGLTF.preload('/models/water_bottle.glb');
