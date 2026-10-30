@@ -66,9 +66,18 @@ function useDirectionalSignTexture(icon, title, subtitle, bgStart, bgEnd, border
 }
 
 export default function LobbyRoom() {
-  const setRoom = useStore((state) => state.setRoom);
   const hasCompletedPretest = useStore((state) => state.hasCompletedPretest);
+  const triggerPretestWarning = useStore((state) => state.triggerPretestWarning);
+  const requestRoomEntry = useStore((state) => state.requestRoomEntry);
   const openLightbox = useStore((state) => state.openLightbox);
+
+  const handleDirectionalSignClick = (roomInfo) => {
+    if (!hasCompletedPretest) {
+      triggerPretestWarning(roomInfo.roomKey);
+      return;
+    }
+    requestRoomEntry(roomInfo);
+  };
 
   const motherDirSignTex = useDirectionalSignTexture(
     '🤱',
@@ -535,7 +544,13 @@ export default function LobbyRoom() {
             position={[0, 3.25, 0.10]}
             onClick={(e) => {
               e.stopPropagation();
-              setRoom('motherCare1');
+              handleDirectionalSignClick({
+                roomKey: 'motherCare1',
+                roomNumber: 'Ward 101',
+                roomTitle: 'การดูแลร่างกายและการฟื้นตัวหลังคลอด',
+                icon: '🤱',
+                theme: 'mother',
+              });
             }}
           >
             <mesh castShadow>
@@ -552,7 +567,13 @@ export default function LobbyRoom() {
             position={[0, 2.18, 0.10]}
             onClick={(e) => {
               e.stopPropagation();
-              setRoom('newbornCare1');
+              handleDirectionalSignClick({
+                roomKey: 'newbornCare1',
+                roomNumber: 'Nursery 201',
+                roomTitle: 'การให้นมทารกแรกเกิด',
+                icon: '👶',
+                theme: 'newborn',
+              });
             }}
           >
             <mesh castShadow>

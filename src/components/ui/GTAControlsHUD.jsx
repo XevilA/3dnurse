@@ -221,7 +221,9 @@ export default function GTAControlsHUD() {
     }
   };
 
-  if (currentRoom === 'dressingRoom' || currentRoom === 'quiz') {
+  const isQuizMinimized = useStore((s) => s.isQuizMinimized);
+
+  if (currentRoom === 'dressingRoom' || (currentRoom === 'quiz' && !isQuizMinimized)) {
     return null;
   }
 

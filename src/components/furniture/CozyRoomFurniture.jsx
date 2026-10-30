@@ -613,7 +613,8 @@ export function CozySectionalSofaSet({
                 e.stopPropagation();
                 onClickTablet();
               }}
-              className="cursor-pointer bg-white/95 hover:bg-pink-50 text-pink-800 border-2 border-pink-400 px-3 py-1 rounded-full text-xs font-extrabold shadow-md whitespace-nowrap transition hover:scale-105"
+              className="cursor-pointer bg-white/95 hover:bg-pink-50 text-pink-800 border-2 border-pink-400 px-3 py-1.5 rounded-2xl text-xs font-extrabold shadow-md whitespace-normal text-center leading-snug transition hover:scale-105"
+              style={{ maxWidth: 'min(84vw, 320px)' }}
             >
               {tabletLabel}
             </button>

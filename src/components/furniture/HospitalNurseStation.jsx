@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
 import * as THREE from 'three';
+import ScreenPortal from '../ui/ScreenPortal';
 import RealisticNurse from '../characters/RealisticNurse';
 import RealisticComputerWorkstation from './RealisticComputerWorkstation';
 
@@ -222,109 +222,92 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
           />
         </group>
 
-        {/* Interactive HIS Medical Chart Modal */}
+        {/* Interactive HIS Medical Chart Modal (Responsive 2D ScreenPortal Overlay) */}
         {showHisChart && (
-          <Html position={[0, 1.6, 1.8]} center distanceFactor={8} zIndexRange={[100, 0]}>
-            <div style={{
-              width: '420px',
-              background: '#ffffff',
-              borderRadius: '16px',
-              padding: '20px 24px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              color: '#0f172a'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '24px' }}>🏥</span>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0369a1' }}>
-                      ระบบเวชระเบียนผู้ป่วยนอก (OPD HIS)
-                    </h3>
-                    <span style={{ fontSize: '12px', color: '#64748b' }}>โรงพยาบาลศูนย์แม่และเด็ก • ตรวจคัดกรอง</span>
+          <ScreenPortal>
+            <div
+              onClick={() => setShowHisChart(false)}
+              className="fixed inset-0 z-[95] bg-slate-900/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 pointer-events-auto"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-md max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto bg-white rounded-2xl p-4 sm:p-6 shadow-2xl border border-slate-200 text-slate-900"
+                style={{ fontFamily: 'system-ui, -apple-system, "Sarabun", sans-serif' }}
+              >
+                <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-3 mb-3.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-2xl shrink-0">🏥</span>
+                    <div className="min-w-0">
+                      <h3 className="m-0 text-sm sm:text-base font-extrabold text-sky-700 leading-snug">
+                        ระบบเวชระเบียนผู้ป่วยนอก (OPD HIS)
+                      </h3>
+                      <span className="text-xs text-slate-500">โรงพยาบาลศูนย์แม่และเด็ก • ตรวจคัดกรอง</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowHisChart(false)}
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm shrink-0 flex items-center justify-center cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="bg-sky-50 px-3.5 py-2.5 rounded-xl mb-3.5 border border-sky-200">
+                  <div className="text-[13px] font-bold text-sky-700">
+                    HN: 67-089421 • คุณสมใจ รักลูก
+                  </div>
+                  <div className="text-xs text-slate-600 mt-0.5">
+                    การวินิจฉัย: มารดาพักฟื้นหลังคลอดธรรมชาติ Day 3 • สิทธิ: ประกันสุขภาพถ้วนหน้า
                   </div>
                 </div>
+
+                {/* Vitals Grid */}
+                <div className="grid grid-cols-2 gap-2 mb-3.5">
+                  <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+                    <div className="text-[11px] text-slate-500">ความดันโลหิต (BP)</div>
+                    <div className="text-base sm:text-lg font-extrabold text-sky-600">
+                      118/76 <span className="text-[11px] font-normal">mmHg</span>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+                    <div className="text-[11px] text-slate-500">ชีพจร (HR)</div>
+                    <div className="text-base sm:text-lg font-extrabold text-sky-600">
+                      78 <span className="text-[11px] font-normal">bpm</span>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+                    <div className="text-[11px] text-slate-500">อุณหภูมิกาย (Temp)</div>
+                    <div className="text-base sm:text-lg font-extrabold text-sky-600">
+                      36.6 <span className="text-[11px] font-normal">°C</span>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+                    <div className="text-[11px] text-slate-500">ออกซิเจนในเลือด (SpO2)</div>
+                    <div className="text-base sm:text-lg font-extrabold text-emerald-600">
+                      99 <span className="text-[11px] font-normal">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Assessment Notes */}
+                <div className="text-xs leading-relaxed text-slate-700 bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-200 mb-3.5">
+                  <div className="font-bold text-slate-900 mb-1">บันทึกทางการพยาบาล:</div>
+                  <div>• แผลฝีเย็บแห้งดี ไม่บวมแดง ไม่มีเลือดออกผิดปกติ</div>
+                  <div>• น้ำนมเริ่มไหล เต้านมนุ่ม ไม่คัดตึง หัวนมปกติ</div>
+                  <div>• มารดาสดชื่น ทรงตัวได้ดี พร้อมรับคำแนะนำครบ 8 ห้องการเรียนรู้</div>
+                </div>
+
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowHisChart(false);
-                  }}
-                  style={{
-                    background: '#f1f5f9',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '28px',
-                    height: '28px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    color: '#64748b'
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div style={{ background: '#f0f9ff', padding: '10px 14px', borderRadius: '10px', marginBottom: '14px', border: '1px solid #bae6fd' }}>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#0369a1' }}>
-                  HN: 67-089421 • คุณสมใจ รักลูก
-                </div>
-                <div style={{ fontSize: '12px', color: '#475569', marginTop: '2px' }}>
-                  การวินิจฉัย: มารดาพักฟื้นหลังคลอดธรรมชาติ Day 3 • สิทธิ: ประกันสุขภาพถ้วนหน้า
-                </div>
-              </div>
-
-              {/* Vitals Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
-                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>ความดันโลหิต (BP)</div>
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7' }}>118/76 <span style={{ fontSize: '11px', fontWeight: 'normal' }}>mmHg</span></div>
-                </div>
-                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>ชีพจร (HR)</div>
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7' }}>78 <span style={{ fontSize: '11px', fontWeight: 'normal' }}>bpm</span></div>
-                </div>
-                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>อุณหภูมิกาย (Temp)</div>
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7' }}>36.6 <span style={{ fontSize: '11px', fontWeight: 'normal' }}>°C</span></div>
-                </div>
-                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>ออกซิเจนในเลือด (SpO2)</div>
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#16a34a' }}>99 <span style={{ fontSize: '11px', fontWeight: 'normal' }}>%</span></div>
-                </div>
-              </div>
-
-              {/* Assessment Notes */}
-              <div style={{ fontSize: '12px', lineHeight: '1.5', color: '#334155', background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
-                <div style={{ fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>บันทึกทางการพยาบาล:</div>
-                <div>• แผลฝีเย็บแห้งดี ไม่บวมแดง ไม่มีเลือดออกผิดปกติ</div>
-                <div>• น้ำนมเริ่มไหล เต้านมนุ่ม ไม่คัดตึง หัวนมปกติ</div>
-                <div>• มารดาสดชื่น ทรงตัวได้ดี พร้อมรับคำแนะนำ 10 ฐานการเรียนรู้</div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowHisChart(false);
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    background: '#0284c7',
-                    color: '#ffffff',
-                    border: 'none',
-                    fontWeight: 'bold',
-                    fontSize: '13px',
-                    cursor: 'pointer'
-                  }}
+                  type="button"
+                  onClick={() => setShowHisChart(false)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs sm:text-sm cursor-pointer transition"
                 >
                   ✓ รับใบคิว & เริ่มบทเรียน
                 </button>
               </div>
             </div>
-          </Html>
+          </ScreenPortal>
         )}
 
 

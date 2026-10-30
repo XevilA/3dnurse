@@ -1073,11 +1073,12 @@ export default function NewbornCare4Room() {
               e.stopPropagation();
               setActiveModal('practice');
             }}
-            className={`cursor-pointer px-4 py-1.5 rounded-full font-bold text-xs shadow-lg border border-white/90 whitespace-nowrap transition hover:scale-105 ${
+            className={`cursor-pointer px-4 py-1.5 rounded-2xl font-bold text-xs shadow-lg border border-white/90 whitespace-normal text-center leading-snug transition hover:scale-105 ${
               isPracticeComplete
                 ? 'bg-emerald-700/95 text-white'
                 : 'bg-amber-800/95 text-amber-50'
             }`}
+            style={{ maxWidth: 'min(84vw, 350px)' }}
           >
             {isPracticeComplete
               ? '✓ จัดเตียงทารกปลอดภัยแล้ว (ลูกนอนหงาย & ไม่มีของนุ่มในเตียง)'

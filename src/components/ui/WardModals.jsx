@@ -31,7 +31,7 @@ function Shell({ title, subtitle, onClose, children, maxWidth = 1180, footer }) 
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#fff', borderRadius: 22, width: '100%', maxWidth, maxHeight: 'calc(var(--app-h, 100dvh) - 20px)',
+          background: '#fff', borderRadius: 22, width: '100%', maxWidth, maxHeight: '100%',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
           boxShadow: '0 24px 70px rgba(0,0,0,0.5)', border: '3px solid #f48fb1',
         }}
@@ -78,7 +78,7 @@ function SlideLightbox({ room }) {
 
   return (
     <div style={overlay} onClick={() => finish(false)}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 1400, maxHeight: 'calc(var(--app-h, 100dvh) - 20px)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 1400, maxHeight: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
           <div style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(16px,2.4vw,24px)', textShadow: '0 2px 8px #000' }}>
             📖 {slide.title}
@@ -157,7 +157,7 @@ function FoodActivity({ room }) {
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="button" onClick={close} style={btn('#16a34a', '#fff')}>🚶 อยู่ในห้อง 3D ต่อ (ปิดหน้าต่าง)</button>
-              <button type="button" onClick={confirm} style={btn(PINK)}>📝 ทำแบบทดสอบทบทวน (3 ข้อ) ›</button>
+              <button type="button" onClick={confirm} style={btn(PINK)}>📝 ทำแบบทดสอบทบทวน ({getQuestionsByRoomKey(room).length} ข้อ) ›</button>
             </div>
           </div>
         }>
@@ -349,7 +349,7 @@ function BoothActivity({ room }) {
             {step === 3 && (
               <>
                 <button type="button" onClick={close} style={btn('#16a34a', '#fff')}>🚶 อยู่ในห้อง 3D ต่อ (ปิดหน้าต่าง)</button>
-                <button type="button" onClick={finish} style={btn(PINK)}>📝 ทำแบบทดสอบทบทวน (3 ข้อ) ›</button>
+                <button type="button" onClick={finish} style={btn(PINK)}>📝 ทำแบบทดสอบทบทวน ({getQuestionsByRoomKey(room).length} ข้อ) ›</button>
               </>
             )}
           </div>

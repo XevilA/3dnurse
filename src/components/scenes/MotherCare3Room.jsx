@@ -492,13 +492,16 @@ export default function MotherCare3Room() {
               background: 'linear-gradient(135deg, #ec4899, #be185d)',
               color: '#ffffff',
               border: '2px solid #ffffff',
-              borderRadius: '999px',
+              borderRadius: '18px',
               padding: '6px 14px',
               fontWeight: 800,
               fontSize: '12px',
               cursor: 'pointer',
               boxShadow: '0 4px 12px rgba(190,24,93,0.35)',
-              whiteSpace: 'nowrap',
+              whiteSpace: 'normal',
+              maxWidth: 'min(84vw, 340px)',
+              textAlign: 'center',
+              lineHeight: 1.35,
             }}
           >
             {seatedTarget?.id === 'room103_practice_sofa'
@@ -547,7 +550,7 @@ export default function MotherCare3Room() {
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: 'min(980px, 96vw)',
-                maxHeight: 'calc(var(--app-h, 100dvh) - 24px)',
+                maxHeight: 'calc(var(--app-h, 100dvh) - 32px)',
                 background: '#fffdf9',
                 borderRadius: '22px',
                 border: '3px solid #f472b6',
@@ -700,6 +703,7 @@ export default function MotherCare3Room() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
+                                gap: '10px',
                                 padding: '14px 18px',
                                 borderRadius: '14px',
                                 border: done ? '2.5px solid #16a34a' : '2px solid #f9a8d4',
@@ -721,7 +725,7 @@ export default function MotherCare3Room() {
                                 color: done ? '#fff' : '#be185d',
                                 fontSize: '14px',
                                 fontWeight: 900,
-                                shrink: 0,
+                                flexShrink: 0,
                               }}>
                                 {done ? '✓ ทำตามแล้ว' : 'กดฝึกทำตาม'}
                               </span>
@@ -869,7 +873,7 @@ export default function MotherCare3Room() {
                       </div>
                     )}
 
-                    <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                       <button
                         type="button"
                         onClick={checkAllScenarios}
@@ -931,7 +935,7 @@ export default function MotherCare3Room() {
                   <div>
                     {!quizFinished ? (
                       <div style={{ background: '#ffffff', padding: '20px', borderRadius: '18px', border: '2px solid #fbcfe8' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 800, color: '#9d174d' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 800, color: '#9d174d', flexWrap: 'wrap', gap: '6px' }}>
                           <span>แบบประเมินความรู้ การดูแลเต้านม</span>
                           <span>ข้อ {quizIndex + 1} / {room3Questions.length}</span>
                         </div>
@@ -953,8 +957,20 @@ export default function MotherCare3Room() {
                                 fontSize: '18px',
                                 fontWeight: 900,
                                 borderRadius: '14px',
-                                border: '2px solid #f472b6',
-                                background: quizShowFeedback && currentQ.answer === btn.val ? '#dcfce7' : '#fff1f2',
+                                border: quizShowFeedback
+                                  ? currentQ.answer === btn.val
+                                    ? '2.5px solid #16a34a'
+                                    : quizUserChoice === btn.val
+                                    ? '2.5px solid #dc2626'
+                                    : '2px solid #f472b6'
+                                  : '2px solid #f472b6',
+                                background: quizShowFeedback
+                                  ? currentQ.answer === btn.val
+                                    ? '#dcfce7'
+                                    : quizUserChoice === btn.val
+                                    ? '#fee2e2'
+                                    : '#fff1f2'
+                                  : '#fff1f2',
                                 color: '#831843',
                                 cursor: quizShowFeedback ? 'default' : 'pointer',
                               }}
@@ -964,9 +980,23 @@ export default function MotherCare3Room() {
                           ))}
                         </div>
                         {quizShowFeedback && (
-                          <div style={{ background: '#f0fdf4', border: '2px solid #86efac', padding: '14px', borderRadius: '14px' }}>
-                            <div style={{ fontWeight: 900, fontSize: '17px', color: '#166534', marginBottom: '6px' }}>
-                              {quizUserChoice === currentQ.answer ? '🎉 ถูกต้องค่ะ!' : `เฉลย: ${currentQ.answerText}`}
+                          <div
+                            style={{
+                              background: quizUserChoice === currentQ.answer ? '#f0fdf4' : '#fff1f2',
+                              border: `2px solid ${quizUserChoice === currentQ.answer ? '#86efac' : '#fda4af'}`,
+                              padding: '14px',
+                              borderRadius: '14px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: 900,
+                                fontSize: '17px',
+                                color: quizUserChoice === currentQ.answer ? '#166534' : '#be123c',
+                                marginBottom: '6px',
+                              }}
+                            >
+                              {quizUserChoice === currentQ.answer ? '🎉 ถูกต้องค่ะ!' : `⚠️ ยังไม่ถูกต้อง — เฉลย: ${currentQ.answerText}`}
                             </div>
                             <div style={{ fontSize: '15px', color: '#334155', marginBottom: '12px' }}>
                               💡 {currentQ.reason}

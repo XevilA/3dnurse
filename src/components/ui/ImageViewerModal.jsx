@@ -32,6 +32,7 @@ export default function ImageViewerModal() {
 
   // Keyboard shortcut: Escape to close, ArrowLeft/ArrowRight to navigate
   useEffect(() => {
+    if (!activeLightboxImage) return undefined;
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') closeLightbox();
       if (hasGallery && e.key === 'ArrowLeft') goPrev();
@@ -39,7 +40,8 @@ export default function ImageViewerModal() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLightboxImage, hasGallery, currentIndex, items]);
 
   if (!activeLightboxImage) return null;
 

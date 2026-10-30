@@ -34,7 +34,7 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
 export default function NewbornCare1Room() {
   const {
     completeModule,
-    completedModules,
+    learningProgress,
     setShowSuccessModal,
     isHoldingBaby,
     setHoldingBaby,
@@ -47,7 +47,6 @@ export default function NewbornCare1Room() {
 
   // ── TV Slides state (1/8 to 8/8, where 8/8 is Video) ──
   const [tvSlide, setTvSlide] = useState(0);
-  const [showTvModal, setShowTvModal] = useState(false);
 
   // ── Active popup / clicked object state (only shown when clicked) ──
   const [activeModal, setActiveModal] = useState(null);
@@ -57,7 +56,7 @@ export default function NewbornCare1Room() {
   // ── Breastfeeding selection state ──
   const [selectedHold, setSelectedHold] = useState('cradleHold');
   const [holdFeedback, setHoldFeedback] = useState(null);
-  const [missionCompleted, setMissionCompleted] = useState(Boolean(completedModules?.newbornCare1));
+  const [missionCompleted, setMissionCompleted] = useState(Boolean(learningProgress?.newbornCare1));
   const [missionCollapsed, setMissionCollapsed] = useState(false);
 
   const isMotherSeatedOnSofa = isSitting && seatedTarget?.id === 'nb1-nursing-sofa';
@@ -606,18 +605,22 @@ export default function NewbornCare1Room() {
               </div>
             </div>
 
-            {/* Slide Content Preview (Slides 1..7 = Image, Slide 8/8 = Playable YouTube Video) */}
+            {/* Slide Content Preview (Slides 1..7 = Image, Slide 8/8 = Clean Clickable Video Card opening 2D Lightbox) */}
             {currentSlide.isVideo ? (
-              <div className="my-1.5 flex-1 bg-slate-900 rounded-lg overflow-hidden border border-slate-700 flex flex-col">
-                <div className="flex-1 relative">
-                  <iframe
-                    className="w-full h-full"
-                    src="https://www.youtube.com/embed/G1muyuyuD60"
-                    title="ท่าอุ้มและการดูดนมที่ถูกวิธี"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+              <div
+                onClick={() => openTvLightbox(7)}
+                className="my-1.5 flex-1 bg-slate-900 rounded-lg overflow-hidden border border-slate-700 flex flex-col cursor-pointer group hover:border-sky-400 transition"
+              >
+                <div className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-sky-950 to-indigo-950 p-4 text-center">
+                  <div className="w-16 h-16 rounded-full bg-rose-600 group-hover:bg-rose-500 group-hover:scale-110 transition flex items-center justify-center text-white text-3xl shadow-xl border-2 border-white">
+                    ▶
+                  </div>
+                  <div className="mt-3 text-sm font-extrabold text-white">
+                    คลิปวีดีโอ: ท่าอุ้มและการดูดนมที่ถูกวิธี
+                  </div>
+                  <div className="mt-1 text-xs font-semibold text-sky-300">
+                    แตะที่หน้าจอเพื่อเปิดเล่นวิดีโอเต็มจออย่างชัดเจน
+                  </div>
                 </div>
                 <div className="bg-slate-950/95 px-2.5 py-1 flex items-center justify-between text-[10px] border-t border-slate-800">
                   <span className="text-amber-300 font-semibold truncate">
@@ -627,6 +630,7 @@ export default function NewbornCare1Room() {
                     href="https://www.youtube.com/watch?v=G1muyuyuD60"
                     target="_blank"
                     rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     className="bg-rose-600 hover:bg-rose-500 text-white px-2 py-0.5 rounded font-bold shrink-0 ml-2"
                   >
                     🔗 เปิดดูบน YouTube
@@ -1306,8 +1310,8 @@ export default function NewbornCare1Room() {
       {/* 1. Coffee Table Equipment Modal (Shown ONLY when table or items on table are clicked) */}
       {activeModal === 'tableItems' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-4 border-indigo-400">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-lg w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 shadow-2xl border-4 border-indigo-400">
               <div className="flex items-center justify-between border-b pb-3">
                 <h2 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
                   <span>🍼</span> อุปกรณ์สำหรับเก็บและป้อนนมทารก
@@ -1358,8 +1362,8 @@ export default function NewbornCare1Room() {
       {/* 2. Breastmilk Refrigerator Modal (Shown ONLY when refrigerator is clicked) */}
       {activeModal === 'fridge' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-4 border-amber-400 text-slate-800">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-md w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 shadow-2xl border-4 border-amber-400 text-slate-800">
               <div className="flex items-center justify-between border-b pb-3">
                 <h2 className="text-lg font-bold text-amber-900 flex items-center gap-2">
                   <span>🧊</span> 4. ตู้เย็นสำหรับเก็บน้ำนมแม่
@@ -1402,8 +1406,8 @@ export default function NewbornCare1Room() {
       {/* 3. Handwashing Sink Modal (Shown ONLY when sink is clicked) */}
       {activeModal === 'sink' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-sm w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-5 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
               <div className="text-3xl mb-1">🚰</div>
               <h3 className="text-base font-bold text-sky-900">อ่างล้างมือสำหรับคุณแม่</h3>
               <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
@@ -1423,8 +1427,8 @@ export default function NewbornCare1Room() {
       {/* 4. Hot Water Thermos & Cup Table Modal (Shown ONLY when clicked) */}
       {activeModal === 'kettleTable' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border-4 border-amber-400 text-slate-800 text-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-sm w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-5 shadow-2xl border-4 border-amber-400 text-slate-800 text-center">
               <div className="text-3xl mb-1">☕</div>
               <h3 className="text-base font-bold text-amber-900">โต๊ะวางของ กระติกน้ำร้อน และแก้วน้ำ</h3>
               <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
@@ -1444,8 +1448,8 @@ export default function NewbornCare1Room() {
       {/* 5. Nursery Corner Decor Modal (Shown ONLY when corner #4 is clicked) */}
       {activeModal === 'cornerDecor' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border-4 border-pink-400 text-slate-800">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-lg w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-5 shadow-2xl border-4 border-pink-400 text-slate-800">
               <div className="flex items-center justify-between border-b pb-2.5">
                 <h3 className="text-base font-bold text-pink-900">🧸 มุมของใช้และของตกแต่งห้องทารก (จุดที่ 4)</h3>
                 <button
@@ -1671,57 +1675,6 @@ export default function NewbornCare1Room() {
                     🎉 บันทึกความสำเร็จภารกิจ
                   </button>
                 )}
-              </div>
-            </div>
-          </div>
-        </ScreenPortal>
-      )}
-
-      {/* 7. Fullscreen TV Video Modal (for Slide 8/8) */}
-      {showTvModal && (
-        <ScreenPortal>
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
-            <div className="bg-slate-900 text-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border-4 border-sky-400 max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto">
-              <div className="flex items-center justify-between border-b border-slate-700 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">📺</span>
-                  <h2 className="text-lg font-bold text-sky-400">
-                    หน้า 8/8: คลิปวีดีโอ ท่าอุ้มและการดูดนมที่ถูกวิธี
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setShowTvModal(false)}
-                  className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <div className="aspect-video w-full rounded-xl overflow-hidden shadow-lg border border-slate-700">
-                  <iframe
-                    className="w-full h-full"
-                    src="https://www.youtube.com/embed/G1muyuyuD60"
-                    title="คลิปวีดีโอ1 ท่าอุ้มและการดูดนมที่ถูกวิธี"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-                <div className="bg-slate-800 p-3.5 rounded-xl text-xs text-slate-200 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-bold text-amber-300">ที่มา: กรมอนามัย กระทรวงสาธารณสุข</p>
-                    <p className="mt-0.5">“ใช้เพื่อการเรียนการศึกษาสำหรับให้ความรู้แก่มารดาหลังคลอด”</p>
-                  </div>
-                  <a
-                    href="https://www.youtube.com/watch?v=G1muyuyuD60"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg shrink-0 shadow"
-                  >
-                    🔗 เปิดดูบน YouTube
-                  </a>
-                </div>
               </div>
             </div>
           </div>

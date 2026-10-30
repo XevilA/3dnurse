@@ -847,7 +847,8 @@ export default function NewbornCare3Room() {
               e.stopPropagation();
               setActiveModal('orderingQuiz');
             }}
-            className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white border-2 border-white px-4 py-1.5 rounded-full text-xs font-extrabold shadow-lg whitespace-nowrap transition hover:scale-105"
+            className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white border-2 border-white px-4 py-1.5 rounded-2xl text-xs font-extrabold shadow-lg whitespace-normal text-center leading-snug transition hover:scale-105"
+            style={{ maxWidth: 'min(84vw, 330px)' }}
           >
             👶 เตียงเช็ดสะดือทารก & เปลี่ยนผ้าอ้อม (คลิกทำบททดสอบคุณแม่)
           </button>
@@ -1055,7 +1056,8 @@ export default function NewbornCare3Room() {
               setSelectedEquipId(1);
               setActiveModal('equipment');
             }}
-            className="cursor-pointer bg-white/95 hover:bg-amber-50 text-amber-900 border-2 border-amber-400 px-3 py-1 rounded-full text-xs font-extrabold shadow-md whitespace-nowrap transition hover:scale-105"
+            className="cursor-pointer bg-white/95 hover:bg-amber-50 text-amber-900 border-2 border-amber-400 px-3 py-1.5 rounded-2xl text-xs font-extrabold shadow-md whitespace-normal text-center leading-snug transition hover:scale-105"
+            style={{ maxWidth: 'min(84vw, 320px)' }}
           >
             🧴 อุปกรณ์เช็ดสะดือ: สำลีก้อน • ไม้พันสำลี • Alcohol 70%
           </button>

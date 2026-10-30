@@ -61,19 +61,20 @@ export const ROOM_COLLIDERS = {
     bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
     doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
-      // Hospital Patient Bed (backed against wall)
-      { minX: -5.2, maxX: -2.8, minZ: -7.8, maxZ: -5.2, name: 'เตียงพักฟื้นคุณแม่', seatId: 'room101_bed' },
-      // Bedside Nightstand
-      { minX: -6.5, maxX: -5.1, minZ: -8.3, maxZ: -6.9, name: 'โต๊ะข้างเตียง' },
-      // Newborn Bassinet / Crib (Rooming-in beside bed)
-      { minX: -2.8, maxX: -1.2, minZ: -7.3, maxZ: -5.7, name: 'เตียงนอนเด็กแรกเกิด' },
-      // Maternal Recovery & Gentle Mobilization Lounge
-      { minX: 4.4, maxX: 6.4, minZ: -7.5, maxZ: -5.5, name: 'เก้าอี้พักผ่อนคุณแม่' },
-      // Porcelain Sanitary Wash Station (flush against right wall)
-      { minX: 7.2, maxX: 8.3, minZ: 1.8, maxZ: 3.2, name: 'อ่างล้างมือปลอดเชื้อ' },
-      // Medicine Cabinet
-      { minX: 7.4, maxX: 8.3, minZ: -3.0, maxZ: -1.4, name: 'ตู้ยาและเวชภัณฑ์' },
-      { minX: 6.4, maxX: 8.5, minZ: 5.4, maxZ: 8.5, name: 'มุมพักผ่อน/ชั้นหนังสือ' },
+      // Hospital Patient Bed at [-5.4, 0, -6.0]
+      { minX: -6.25, maxX: -4.55, minZ: -7.15, maxZ: -4.85, name: 'เตียงพักฟื้นคุณแม่', seatId: 'room101_bed' },
+      // Bedside Nightstand at [-7.2, 0, -6.8]
+      { minX: -7.75, maxX: -6.65, minZ: -7.35, maxZ: -6.25, name: 'โต๊ะข้างเตียง' },
+      // Newborn Bassinet / Crib at [-3.4, 0, -6.0]
+      { minX: -4.05, maxX: -2.75, minZ: -6.65, maxZ: -5.35, name: 'เตียงนอนเด็กแรกเกิด' },
+      // Maternal Recovery Lounge & Side Table at [5.4, 0, -6.5] & [4.0, 0, -6.8]
+      { minX: 3.5, maxX: 6.2, minZ: -7.35, maxZ: -5.65, name: 'เก้าอี้พักผ่อนคุณแม่' },
+      // Porcelain Sanitary Wash Station (flush against right wall at [8.3, 0, 2.5])
+      { minX: 7.35, maxX: 8.55, minZ: 1.8, maxZ: 3.2, name: 'อ่างล้างมือปลอดเชื้อ' },
+      // Medicine Cabinet at [8.4, 0, -2.2]
+      { minX: 7.55, maxX: 8.55, minZ: -3.0, maxZ: -1.4, name: 'ตู้ยาและเวชภัณฑ์' },
+      // LoungeCorner at [7.4, 0, 6.2]
+      { minX: 6.4, maxX: 8.55, minZ: 5.2, maxZ: 8.55, name: 'มุมพักผ่อน/ชั้นหนังสือ' },
     ],
     circles: [
       { x: -7.5, z: 3.2, radius: 0.65, name: 'รถเข็นผู้ป่วย', seatId: 'ward101_wheelchair' },
@@ -89,18 +90,20 @@ export const ROOM_COLLIDERS = {
     bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
     doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
-      // Examination Bed
-      { minX: -5.2, maxX: -2.8, minZ: -7.8, maxZ: -5.2, name: 'เตียงตรวจแผลคุณแม่', seatId: 'room102_bed' },
-      // Sterile Wound Care Cart
-      { minX: -6.9, maxX: -5.5, minZ: -7.2, maxZ: -5.8, name: 'รถทำแผลปลอดเชื้อ' },
-      // Clinical Consultation & REEDA Station
-      { minX: 4.4, maxX: 6.4, minZ: -7.3, maxZ: -5.7, name: 'โต๊ะตรวจประเมิน REEDA' },
-      // Porcelain Wash Station (flush against right wall)
-      { minX: 7.2, maxX: 8.3, minZ: 1.8, maxZ: 3.2, name: 'อ่างล้างมือ' },
-      // Medicine Cabinet
-      { minX: 7.4, maxX: 8.3, minZ: -3.0, maxZ: -1.4, name: 'ตู้ยาและเวชภัณฑ์ทำแผล' },
-      { minX: 6.4, maxX: 8.5, minZ: 5.4, maxZ: 8.5, name: 'มุมพักผ่อน/ชั้นหนังสือ' },
-      { minX: 0.4, maxX: 3.6, minZ: 0.2, maxZ: 1.4, name: 'บูทดูแลแผลฝีเย็บ' },
+      // Examination Bed at [-5.4, 0, -6.0]
+      { minX: -6.25, maxX: -4.55, minZ: -7.15, maxZ: -4.85, name: 'เตียงตรวจแผลคุณแม่', seatId: 'room102_bed' },
+      // Sterile Wound Care Cart at [-7.2, 0, -6.5]
+      { minX: -7.8, maxX: -6.6, minZ: -7.15, maxZ: -5.85, name: 'รถทำแผลปลอดเชื้อ' },
+      // Clinical Consultation & REEDA Station at [5.4, 0, -6.5]
+      { minX: 4.45, maxX: 6.35, minZ: -7.25, maxZ: -5.75, name: 'โต๊ะตรวจประเมิน REEDA' },
+      // Porcelain Wash Station at [8.3, 0, 2.5]
+      { minX: 7.35, maxX: 8.55, minZ: 1.8, maxZ: 3.2, name: 'อ่างล้างมือ' },
+      // Medicine Cabinet at [8.4, 0, -2.2]
+      { minX: 7.55, maxX: 8.55, minZ: -3.0, maxZ: -1.4, name: 'ตู้ยาและเวชภัณฑ์ทำแผล' },
+      // LoungeCorner at [7.4, 0, 6.2]
+      { minX: 6.4, maxX: 8.55, minZ: 5.2, maxZ: 8.55, name: 'มุมพักผ่อน/ชั้นหนังสือ' },
+      // CareBooth at [2.0, 0, 1.0]
+      { minX: 0.45, maxX: 3.55, minZ: 0.2, maxZ: 1.6, name: 'บูทดูแลแผลฝีเย็บ' },
     ],
     circles: [
       { x: -7.5, z: 3.2, radius: 0.65, name: 'รถเข็นผู้ป่วย', seatId: 'ward102_wheelchair' },
@@ -109,49 +112,47 @@ export const ROOM_COLLIDERS = {
     ]
   },
 
-  // ── 4. Ward 103: Breastfeeding & Lactation Support (18x18m) ──
+  // ── 4. Ward 103: Breastfeeding & Lactation Support (18x18m — Cozy Sectional Sofa Layout) ──
   motherCare3: {
     bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
     doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
-      // Ergonomic Nursing Armchair
-      { minX: -4.8, maxX: -3.2, minZ: -7.3, maxZ: -5.7, name: 'เก้าอี้ให้นมบุตร', seatId: 'room103_nursing_chair' },
-      // Nightstand
-      { minX: -6.5, maxX: -5.1, minZ: -7.9, maxZ: -6.5, name: 'โต๊ะข้างเก้าอี้' },
-      // Baby Crib (Rooming-in)
-      { minX: -2.8, maxX: -1.2, minZ: -7.3, maxZ: -5.7, name: 'เตียงทารก' },
-      // Nursing Mother Rest Sofa
-      { minX: 4.4, maxX: 6.4, minZ: -7.5, maxZ: -5.5, name: 'โซฟาพักผ่อนให้นม', seatId: 'room103_sofa' },
-      // Medical Cart (Breast pumps)
-      { minX: 7.0, maxX: 8.3, minZ: -2.8, maxZ: -1.2, name: 'รถเข็นอุปกรณ์เต้านม' },
-      // Consultation Desk
-      { minX: 7.0, maxX: 8.3, minZ: 1.7, maxZ: 3.3, name: 'โต๊ะปรึกษาแพทย์' },
+      // Cozy L-Shaped Sectional Sofa Main Body at [0, 0, -0.2]
+      { minX: -1.65, maxX: 1.65, minZ: -0.7, maxZ: 0.3, name: 'โซฟาฝึกนวดเต้านม', seatId: 'room103_practice_sofa' },
+      // Chaise Lounge Extension on Left of Sofa
+      { minX: -1.65, maxX: -0.5, minZ: -0.7, maxZ: 1.25, name: 'โซฟาตัวแอลฝั่งซ้าย', seatId: 'room103_practice_sofa' },
+      // Low Oak Credenza behind Sofa at [3.6, 0, -2.2]
+      { minX: 2.8, maxX: 4.4, minZ: -2.55, maxZ: -1.85, name: 'ตู้ไม้ประดับโคมไฟอุ่น' },
     ],
     circles: [
-      { x: 7.5, z: -7.5, radius: 0.55, name: 'ต้นไม้' },
-      { x: -7.5, z: 6.5, radius: 0.55, name: 'ต้นไม้' },
-      { x: 8.3, z: 0.8, radius: 0.45, name: 'ถังขยะ' },
+      { x: 0.75, z: 1.38, radius: 0.72, name: 'โต๊ะกลางวางแท็บเล็ตสื่อการสอน' },
+      { x: -1.08, z: 1.72, radius: 0.40, name: 'สตูลพรมถัก' },
+      { x: -5.55, z: 2.25, radius: 0.65, name: 'มุมตะกร้าหวายและต้นไม้' },
+      { x: -7.6, z: -7.2, radius: 0.55, name: 'ต้นไม้ประดับมุมซ้าย' },
+      { x: 7.6, z: -7.2, radius: 0.55, name: 'ต้นไม้ประดับมุมขวา' },
+      { x: 7.5, z: 6.8, radius: 0.50, name: 'ต้นไม้ฟอกอากาศ' },
     ]
   },
 
-  // ── 5. Ward 104: Emergency Care & Postpartum Complications (18x18m) ──
+  // ── 5. Ward 104: Postpartum Complications & Danger Signs (18x18m — Cozy Sectional Sofa Layout) ──
   motherCare4: {
     bounds: { minX: -8.55, maxX: 8.55, minZ: -8.55, maxZ: 8.55 },
     doorways: [{ wall: 'minX', minSpan: 4.4, maxSpan: 7.2, thresholdLimit: -8.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
-      // Emergency Patient Bed with IV Stand
-      { minX: -6.6, maxX: -4.2, minZ: -7.2, maxZ: -4.8, name: 'เตียงฉุกเฉินผู้ป่วย', seatId: 'room104_bed' },
-      // Bedside Nightstand
-      { minX: -8.0, maxX: -6.4, minZ: -7.5, maxZ: -6.1, name: 'โต๊ะข้างเตียง' },
-      // Doctor Consultation Desk & Emergency Hotline
-      { minX: 7.0, maxX: 8.3, minZ: 1.7, maxZ: 3.3, name: 'โต๊ะแพทย์ฉุกเฉิน' },
-      // Medicine Cabinet
-      { minX: 7.4, maxX: 8.3, minZ: -3.0, maxZ: -1.4, name: 'ตู้ยาฉุกเฉิน' },
+      // Cozy L-Shaped Sectional Sofa Main Body at [0, 0, -0.2]
+      { minX: -1.65, maxX: 1.65, minZ: -0.7, maxZ: 0.3, name: 'โซฟาเรียนรู้สัญญาณอันตราย', seatId: 'room104_sofa' },
+      // Chaise Lounge Extension on Left of Sofa
+      { minX: -1.65, maxX: -0.5, minZ: -0.7, maxZ: 1.25, name: 'โซฟาตัวแอลฝั่งซ้าย', seatId: 'room104_sofa' },
+      // Low Oak Credenza behind Sofa at [3.6, 0, -2.2]
+      { minX: 2.8, maxX: 4.4, minZ: -2.55, maxZ: -1.85, name: 'ตู้ไม้ประดับโคมไฟอุ่น' },
     ],
     circles: [
-      { x: -7.5, z: 3.2, radius: 0.65, name: 'รถเข็นฉุกเฉิน', seatId: 'ward104_wheelchair' },
-      { x: 7.5, z: -7.5, radius: 0.55, name: 'ต้นไม้' },
-      { x: 8.3, z: 0.8, radius: 0.45, name: 'ถังขยะติดเชื้อ' },
+      { x: 0.75, z: 1.38, radius: 0.72, name: 'โต๊ะกลางวางแท็บเล็ตจำแนกอาการ' },
+      { x: -1.08, z: 1.72, radius: 0.40, name: 'สตูลพรมถัก' },
+      { x: -5.55, z: 2.25, radius: 0.65, name: 'มุมตะกร้าหวายและต้นไม้' },
+      { x: -7.6, z: -7.2, radius: 0.55, name: 'ต้นไม้ประดับมุมซ้าย' },
+      { x: 7.6, z: -7.2, radius: 0.55, name: 'ต้นไม้ประดับมุมขวา' },
+      { x: 7.5, z: 6.8, radius: 0.50, name: 'ต้นไม้ฟอกอากาศ' },
     ]
   },
 
@@ -160,20 +161,21 @@ export const ROOM_COLLIDERS = {
     bounds: { minX: -6.55, maxX: 6.55, minZ: -6.55, maxZ: 6.55 },
     doorways: [{ wall: 'minX', minSpan: 4.0, maxSpan: 6.5, thresholdLimit: -6.88, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
-      // Classic Wooden Baby Crib at [0.4, 0, -5.2] (1.5m x 0.95m) — prevents player walking inside crib
+      // Classic Wooden Baby Crib at [0.4, 0, -5.2] & Bedside Nightstand at [-1.2, 0, -5.2]
       { minX: -0.45, maxX: 1.25, minZ: -5.75, maxZ: -4.65, name: 'เตียงนอนทารก' },
+      { minX: -1.55, maxX: -0.85, minZ: -5.55, maxZ: -4.85, name: 'โต๊ะข้างเตียงทารก' },
       // Nursing Sofa at [-1.1, 0, -1.6]
-      { minX: -1.6, maxX: -0.6, minZ: -2.4, maxZ: -0.8, name: 'เก้าอี้โซฟาให้นมทารก', seatId: 'nb1-nursing-sofa' },
+      { minX: -1.55, maxX: -0.65, minZ: -2.35, maxZ: -0.85, name: 'เก้าอี้โซฟาให้นมทารก', seatId: 'nb1-nursing-sofa' },
       // Low Wooden Coffee Table at [-2.8, 0, -1.6]
-      { minX: -3.35, maxX: -2.25, minZ: -2.45, maxZ: -0.75, name: 'โต๊ะวางอุปกรณ์เก็บน้ำนมแม่' },
-      // North-East Nursery Dresser at [5.3, 0, -5.5]
-      { minX: 4.4, maxX: 6.2, minZ: -6.0, maxZ: -5.0, name: 'โต๊ะของใช้ทารก' },
-      // West Wall: Handwashing Sink (z=0.5), Kettle Table (z=1.75), Breastmilk Fridge (z=3.0)
-      { minX: -6.9, maxX: -5.95, minZ: -0.15, maxZ: 3.55, name: 'อ่างล้างมือ โต๊ะน้ำร้อน และตู้เย็นเก็บน้ำนม' },
+      { minX: -3.3, maxX: -2.3, minZ: -2.4, maxZ: -0.8, name: 'โต๊ะวางอุปกรณ์เก็บน้ำนมแม่' },
+      // South-East Nursery Dresser flush against East Wall at [6.50, 0, 4.75]
+      { minX: 6.05, maxX: 6.55, minZ: 3.95, maxZ: 5.55, name: 'โต๊ะของใช้ทารก' },
+      // South Wall: Breastmilk Fridge (x=-0.60), Kettle Table (x=0.75), Handwashing Sink (x=2.15) at z=6.47..6.54
+      { minX: -1.1, maxX: 2.75, minZ: 6.05, maxZ: 6.55, name: 'ตู้เย็นเก็บน้ำนม โต๊ะน้ำร้อน และอ่างล้างมือ' },
     ],
     circles: [
-      { x: 6.1, z: 5.8, radius: 0.45, name: 'แจกันดอกไม้มุมห้อง' },
-      { x: -6.48, z: -0.25, radius: 0.35, name: 'ถังขยะ' },
+      { x: 5.95, z: -5.95, radius: 0.45, name: 'แจกันดอกไม้มุมห้อง' },
+      { x: 3.05, z: 6.45, radius: 0.35, name: 'ถังขยะข้างอ่างล้างมือ' },
     ]
   },
 
@@ -182,20 +184,22 @@ export const ROOM_COLLIDERS = {
     bounds: { minX: -6.05, maxX: 6.05, minZ: -6.05, maxZ: 6.05 },
     doorways: [{ wall: 'minX', minSpan: 2.5, maxSpan: 5.1, thresholdLimit: -6.38, name: 'ประตูทางออกสู่โถงกลาง' }],
     boxes: [
-      // Baby Crib at North Wall [1.1, 0, -4.8] (1.5m x 0.95m)
+      // Baby Crib at North Wall [1.1, 0, -4.8]
       { minX: 0.25, maxX: 1.95, minZ: -5.35, maxZ: -4.25, name: 'เตียงนอนทารก' },
       // Mission Desk at [4.6, 0, -4.8]
-      { minX: 3.9, maxX: 5.3, minZ: -5.3, maxZ: -4.3, name: 'โต๊ะภารกิจ' },
-      // Mother's Sofa facing TV at [-3.3, 0, -2.8]
-      { minX: -3.8, maxX: -2.8, minZ: -3.5, maxZ: -2.1, name: 'โซฟาพักผ่อนชม TV', seatId: 'nb2-mother-sofa' },
-      // 2-Section Nursery Cabinet at [-6.05, 0, 0.85]
-      { minX: -6.4, maxX: -5.7, minZ: -0.35, maxZ: 2.05, name: 'ตู้ของใช้ทารก' },
+      { minX: 3.95, maxX: 5.25, minZ: -5.25, maxZ: -4.35, name: 'โต๊ะภารกิจ' },
       // Central Ergonomic Baby Bathing Table at [0.2, 0, -0.4]
-      { minX: -1.45, maxX: 2.55, minZ: -1.1, maxZ: 0.3, name: 'โต๊ะอ่างอาบน้ำทารก' },
+      { minX: -1.45, maxX: 2.15, minZ: -1.05, maxZ: 0.25, name: 'โต๊ะอ่างอาบน้ำทารก' },
+      // East Wall Decor Bookcase at [6.16, 0, 4.65]
+      { minX: 5.85, maxX: 6.05, minZ: 3.6, maxZ: 5.7, name: 'ชั้นตกแต่งสวยงามสำหรับทารก' },
+      // South Wall Baby Supplies Cabinet at [4.95, 0, 6.16]
+      { minX: 4.0, maxX: 5.9, minZ: 5.85, maxZ: 6.05, name: 'ตู้ของใช้ทารก' },
+      // South Wall Handwashing Sink [-3.6, 0, 5.5] & Cotton/NSS Table [-1.95, 0, 5.5]
+      { minX: -4.25, maxX: -1.35, minZ: 5.1, maxZ: 6.05, name: 'อ่างล้างมือและโต๊ะเตรียมสำลีเช็ดตา' },
+      // West Wall 2 Small Trash Bins at [-6.08, 0, 0.85]
+      { minX: -6.05, maxX: -5.75, minZ: 0.35, maxZ: 1.35, name: 'ถังขยะแยกประเภท' },
     ],
-    circles: [
-      { x: -5.55, z: 5.45, radius: 0.50, name: 'ถังขยะแยกประเภท' },
-    ]
+    circles: []
   },
 
   // ── 8. Newborn Room 3: Umbilical Cord Care (14x14m) ──

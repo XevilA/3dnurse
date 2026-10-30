@@ -352,8 +352,8 @@ export default function HUD() {
 
       {/* ── Pre-test Mandatory Enforcement Modal ── */}
       {showPretestWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border-4 border-amber-400 text-center animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm pointer-events-auto">
+          <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-md w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto shadow-2xl border-4 border-amber-400 text-center animate-fade-in">
             <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow">
               🔒
             </div>

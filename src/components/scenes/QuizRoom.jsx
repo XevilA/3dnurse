@@ -15,7 +15,7 @@ import MedicineCabinet from '../furniture/MedicineCabinet';
 import BabyAvatar from '../avatars/BabyAvatar';
 import BabyCrib from '../furniture/BabyCrib';
 
-import { ALL_QUIZ_QUESTIONS } from '../../data/quizData';
+import { ALL_QUIZ_QUESTIONS, ROOM_QUIZ_MAPPING } from '../../data/quizData';
 
 export default function QuizRoom() {
   const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby } = useStore();
@@ -24,6 +24,8 @@ export default function QuizRoom() {
   const posttestScore = useStore((s) => s.posttestScore);
   const setCompletedPretest = useStore((s) => s.setCompletedPretest);
   const setCompletedPosttest = useStore((s) => s.setCompletedPosttest);
+  const isQuizMinimized = useStore((s) => s.isQuizMinimized);
+  const setIsQuizMinimized = useStore((s) => s.setQuizMinimized);
   const [isPretestSubmission, setIsPretestSubmission] = useState(!hasCompletedPretest);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
@@ -32,7 +34,6 @@ export default function QuizRoom() {
   const [showResult, setShowResult] = useState(false);
   const [flashColor, setFlashColor] = useState(null);
   const [answersHistory, setAnswersHistory] = useState([]);
-  const [isQuizMinimized, setIsQuizMinimized] = useState(false);
 
   const questions = ALL_QUIZ_QUESTIONS;
   const currentQ = questions[currentQuestion] || questions[0];
@@ -182,13 +183,13 @@ export default function QuizRoom() {
       {isQuizMinimized && (
         <ScreenPortal>
           <div
-            className="fixed inset-x-0 z-30 flex justify-center px-4 pointer-events-none"
-            style={{ bottom: 'calc(max(0.75rem, env(safe-area-inset-bottom, 0px)) + 0.5rem)' }}
+            className="fixed right-2.5 sm:right-4 z-30 pointer-events-none"
+            style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 4.15rem)' }}
           >
             <button
               type="button"
               onClick={() => setIsQuizMinimized(false)}
-              className="pointer-events-auto flex items-center gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-extrabold text-xs sm:text-base shadow-2xl border-2 border-white active:scale-95 transition"
+              className="pointer-events-auto flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-extrabold text-xs sm:text-sm shadow-2xl border-2 border-white active:scale-95 transition"
             >
               <span>📝</span>
               <span>
@@ -533,14 +534,14 @@ export default function QuizRoom() {
 
                         {(() => {
                           const domainMap = [
-                            { key: 'motherCare1', title: 'Ward 101: การดูแลร่างกายและการฟื้นตัว', qIds: [5, 6, 8] },
-                            { key: 'motherCare2', title: 'Ward 102: การดูแลแผลฝีเย็บและผ่าคลอด', qIds: [2, 10] },
-                            { key: 'motherCare3', title: 'Ward 103: การดูแลเต้านมและการให้นมแม่', qIds: [3, 9, 14] },
-                            { key: 'motherCare4', title: 'Ward 104: สัญญาณอันตรายและภาวะแทรกซ้อน', qIds: [1, 4, 7] },
-                            { key: 'newbornCare1', title: 'Nursery 201: ท่าอุ้มและการเข้าเต้าทารก', qIds: [11, 17] },
-                            { key: 'newbornCare2', title: 'Nursery 202: การอาบน้ำและทำความสะอาด', qIds: [16, 18] },
-                            { key: 'newbornCare3', title: 'Nursery 203: การดูแลสายสะดือ (ภาพจำลอง)', qIds: [12, 19] },
-                            { key: 'newbornCare4', title: 'Nursery 204: สิ่งแวดล้อมปลอดภัย & Safe Sleep', qIds: [13, 15, 20] },
+                            { key: 'motherCare1', title: 'Ward 101: การดูแลร่างกายและการฟื้นตัว', qIds: ROOM_QUIZ_MAPPING.motherCare1 },
+                            { key: 'motherCare2', title: 'Ward 102: การดูแลแผลฝีเย็บและผ่าคลอด', qIds: ROOM_QUIZ_MAPPING.motherCare2 },
+                            { key: 'motherCare3', title: 'Ward 103: การดูแลเต้านม หัวนม และการเลี้ยงลูกด้วยนมแม่', qIds: ROOM_QUIZ_MAPPING.motherCare3 },
+                            { key: 'motherCare4', title: 'Ward 104: การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด', qIds: ROOM_QUIZ_MAPPING.motherCare4 },
+                            { key: 'newbornCare1', title: 'Nursery 201: การให้นมทารกและเตรียมอุปกรณ์', qIds: ROOM_QUIZ_MAPPING.newbornCare1 },
+                            { key: 'newbornCare2', title: 'Nursery 202: การอาบน้ำและทำความสะอาดทารก', qIds: ROOM_QUIZ_MAPPING.newbornCare2 },
+                            { key: 'newbornCare3', title: 'Nursery 203: การดูแลสายสะดือทารกแรกเกิด', qIds: ROOM_QUIZ_MAPPING.newbornCare3 },
+                            { key: 'newbornCare4', title: 'Nursery 204: สิ่งแวดล้อมปลอดภัย & Safe Sleep', qIds: ROOM_QUIZ_MAPPING.newbornCare4 },
                           ];
 
                           const deficits = domainMap.map((dm) => {

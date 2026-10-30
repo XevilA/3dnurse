@@ -1,8 +1,13 @@
 import React, { useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 
+const IS_MOBILE_PLANT =
+  typeof navigator !== 'undefined' &&
+  (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
 /**
- * RealPlant — Authentic 3D Plant Models (with mobile-safe shadow & lazy loading)
+ * RealPlant — Authentic 3D Plant Models (with mobile-safe memory & shadow budget)
  */
 export default function RealPlant({
   type = 'potted',
@@ -10,10 +15,11 @@ export default function RealPlant({
   rotation = [0, 0, 0],
   scale = 1,
 }) {
+  const effectiveType = IS_MOBILE_PLANT ? 'succulent' : type;
   const modelPath =
-    type === 'succulent'
+    effectiveType === 'succulent'
       ? '/models/potted_plant_02.glb'
-      : type === 'house'
+      : effectiveType === 'house'
       ? '/models/plant_house.glb'
       : '/models/potted_plant_01.glb';
 

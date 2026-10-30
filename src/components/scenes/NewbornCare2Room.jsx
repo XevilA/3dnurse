@@ -20,7 +20,7 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
 export default function NewbornCare2Room() {
   const {
     completeModule,
-    completedModules,
+    learningProgress,
     setShowSuccessModal,
     isHoldingBaby,
     setHoldingBaby,
@@ -91,9 +91,9 @@ export default function NewbornCare2Room() {
 
   // ── Derived Mission Progress ──
   const collectedCount = Object.values(collectedItems).filter(Boolean).length;
-  const isMission1Done = viewedSlides.size >= 8 || Boolean(completedModules?.newbornCare2);
-  const isMission2Done = collectedCount >= 6 || Boolean(completedModules?.newbornCare2);
-  const isMission3Done = step14SubStep >= 6 || Boolean(completedModules?.newbornCare2);
+  const isMission1Done = viewedSlides.size >= 8 || Boolean(learningProgress?.newbornCare2);
+  const isMission2Done = collectedCount >= 6 || Boolean(learningProgress?.newbornCare2);
+  const isMission3Done = step14SubStep >= 6 || Boolean(learningProgress?.newbornCare2);
 
   // ── Wall Posters Gallery (with Previous/Next buttons) ──
   const wallPosters = [
@@ -1145,8 +1145,8 @@ export default function NewbornCare2Room() {
       {/* A. AC Wall Switch Modal (Step 1) */}
       {activeModal === 'acSwitch' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-sm w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
               <div className="text-4xl mb-2">❄️</div>
               <h3 className="text-lg font-bold text-sky-950">สวิตช์ควบคุมเครื่องปรับอากาศ (แอร์)</h3>
               <div className={`mt-3 p-3 rounded-xl font-bold text-sm border-2 ${
@@ -1186,8 +1186,8 @@ export default function NewbornCare2Room() {
       {/* B. Handwashing Sink Modal (Step 2) */}
       {activeModal === 'sink' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border-4 border-teal-400 text-slate-800 text-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-sm w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 shadow-2xl border-4 border-teal-400 text-slate-800 text-center">
               <div className="text-4xl mb-2">🚰</div>
               <h3 className="text-lg font-bold text-teal-950">อ่างล้างมือทำความสะอาด</h3>
               <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
@@ -1223,8 +1223,8 @@ export default function NewbornCare2Room() {
       {/* C. Cotton Ball / Warm Water / 0.9% NSS Table Modal */}
       {activeModal === 'cottonTable' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-4 border-amber-400 text-slate-800">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-md w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 shadow-2xl border-4 border-amber-400 text-slate-800">
               <div className="flex items-center justify-between border-b pb-2.5">
                 <h3 className="text-base font-bold text-amber-950">
                   ⚪ โต๊ะเตรียมสำลี น้ำต้มสุกอุ่น และน้ำเกลือ 0.9% NSS
@@ -1364,8 +1364,8 @@ export default function NewbornCare2Room() {
       {/* E. Trash Bins Modal */}
       {activeModal === 'trash' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border-4 border-emerald-500 text-slate-800 text-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-sm w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-5 shadow-2xl border-4 border-emerald-500 text-slate-800 text-center">
               <div className="text-3xl mb-1">🗑️</div>
               <h3 className="text-base font-bold text-slate-900">ถังขยะแยกประเภท 2 ใบ (สีเขียว / สีแดง)</h3>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
@@ -1386,8 +1386,8 @@ export default function NewbornCare2Room() {
       {/* F. Baby Crib Modal */}
       {activeModal === 'crib' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-sm w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-5 shadow-2xl border-4 border-sky-400 text-slate-800 text-center">
               <div className="text-3xl mb-1">👶</div>
               <h3 className="text-base font-bold text-sky-950">เตียงทารก (Baby Crib)</h3>
               <p className="text-xs text-slate-600 mt-1.5">
@@ -1426,8 +1426,8 @@ export default function NewbornCare2Room() {
       {/* G. Mission Desk Modal */}
       {activeModal === 'missionDesk' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-4 border-teal-600 text-slate-800">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-lg w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 shadow-2xl border-4 border-teal-600 text-slate-800">
               <div className="flex items-center justify-between border-b pb-3">
                 <h2 className="text-lg font-bold text-teal-950">📋 ใบภารกิจประจำห้องอาบน้ำและเปลี่ยนผ้าอ้อมทารก</h2>
                 <button
@@ -1496,15 +1496,15 @@ export default function NewbornCare2Room() {
                 </button>
               </div>
 
-              {/* Step Progress Bar */}
-              <div className="mt-3 grid grid-cols-14 gap-1">
+              {/* Step Progress Bar (2 rows of 7 on phones for comfortable touch, 14 cols on sm+) */}
+              <div className="mt-3 grid grid-cols-7 sm:grid-cols-14 gap-1.5 sm:gap-1">
                 {Array.from({ length: 14 }, (_, idx) => {
                   const sNum = idx + 1;
                   return (
                     <button
                       key={sNum}
                       onClick={() => setWizardStep(sNum)}
-                      className={`h-6 rounded text-[10px] font-bold transition ${
+                      className={`h-7 sm:h-6 rounded-md text-[11px] sm:text-[10px] font-bold transition ${
                         wizardStep === sNum
                           ? 'bg-teal-600 text-white shadow'
                           : sNum < wizardStep
@@ -1951,7 +1951,7 @@ export default function NewbornCare2Room() {
                     alt="เช็ดตัวทารกให้แห้ง"
                     className="w-full h-44 object-contain bg-white rounded-xl p-1 border border-amber-200"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={() => {
                         setStep11DriedBody(true);
@@ -1981,11 +1981,11 @@ export default function NewbornCare2Room() {
                   </h3>
 
                   {/* Part A: Swaddle 1st time */}
-                  <div className="bg-white p-3 rounded-xl border border-sky-200 flex items-center gap-3">
+                  <div className="bg-white p-3 rounded-xl border border-sky-200 flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
                     <img
                       src="/images/rev/bath_step12_swaddle.jpg"
                       alt="ห่อตัวทารก"
-                      className="w-28 h-24 object-contain rounded border"
+                      className="w-28 h-24 object-contain rounded border shrink-0"
                     />
                     <div className="flex-1">
                       <div className="text-xs font-bold text-slate-900">12.1 หยิบผ้าห่อตัวและห่อตัวทารก (ครั้งที่ 1)</div>
@@ -2009,7 +2009,7 @@ export default function NewbornCare2Room() {
                       <div className="text-xs font-bold text-slate-900">
                         12.2 กดเลือกอุปกรณ์สำหรับเช็ดตาทารกให้ครบทั้ง 3 อย่าง:
                       </div>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {[
                           { k: 'cotton', label: '1. สำลี' },
                           { k: 'cup', label: '2. ถ้วยสะอาดขนาดเล็ก' },
@@ -2104,7 +2104,7 @@ export default function NewbornCare2Room() {
                     onClick={() => setStep13CordCleaned(true)}
                     className="cursor-pointer w-full h-52 object-contain bg-white rounded-xl p-1.5 border-2 border-teal-400 hover:scale-[1.01] transition"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={() => setStep13CordCleaned(true)}
                       className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow"

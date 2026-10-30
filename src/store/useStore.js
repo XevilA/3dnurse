@@ -129,6 +129,8 @@ const useStore = create((set, get) => ({
   // ── UI state ──
   showSuccessModal: false,
   successMessage: '',
+  isQuizMinimized: false,
+  setQuizMinimized: (val) => set({ isQuizMinimized: val }),
 
   // ── Actions ──
   setCompletedPretest: (score) => {
@@ -188,6 +190,7 @@ const useStore = create((set, get) => ({
         showSuccessModal: false,
         successMessage: '',
         wardModal: null,
+        isQuizMinimized: false,
       };
     }),
   setStep: (step) => set({ currentStep: step }),

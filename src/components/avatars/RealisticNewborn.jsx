@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -22,7 +22,7 @@ const SKIN_DARK = '#d98f7c';
 
 /* ── texture helpers ─────────────────────────────────────────────── */
 function useCanvasTexture(draw, w = 256, h = 256, repeat = [1, 1]) {
-  return useMemo(() => {
+  const tex = useMemo(() => {
     if (typeof document === 'undefined') return null;
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
@@ -35,6 +35,14 @@ function useCanvasTexture(draw, w = 256, h = 256, repeat = [1, 1]) {
     return t;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (tex) tex.dispose();
+    };
+  }, [tex]);
+
+  return tex;
 }
 
 const drawStars = (base, accent) => (g, w, h) => {

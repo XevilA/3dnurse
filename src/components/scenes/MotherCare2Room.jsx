@@ -179,7 +179,7 @@ export default function MotherCare2Room() {
       completeModule('motherCare2');
       setShowSuccessModal(
         true,
-        `ยินดีด้วย! คุณผ่านบทเรียนและการประเมินความรู้ห้องที่ 2 แล้ว (ได้ ${quizScore + (quizUserChoice === currentQ.answer ? 1 : 0)}/${room2Questions.length} คะแนน)`
+        `ยินดีด้วย! คุณผ่านบทเรียนและการประเมินความรู้ห้องที่ 2 แล้ว (ได้ ${quizScore}/${room2Questions.length} คะแนน)`
       );
     }
   };
@@ -196,7 +196,7 @@ export default function MotherCare2Room() {
       borderRadius: '24px',
       width: isModal ? '100%' : '880px',
       maxWidth: isModal ? '880px' : 'none',
-      maxHeight: isModal ? 'calc(var(--app-h, 100dvh) - 24px)' : 'none',
+      maxHeight: isModal ? 'calc(var(--app-h, 100dvh) - 32px)' : 'none',
       overflowY: isModal ? 'auto' : 'visible',
       boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
       border: '3px solid #f48fb1',
@@ -568,7 +568,7 @@ export default function MotherCare2Room() {
         <div>
           {!quizFinished ? (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '6px' }}>
                 <span style={{ background: '#fce4ec', color: '#c2185b', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
                   📋 แบบประเมิน: {currentQ.room}
                 </span>

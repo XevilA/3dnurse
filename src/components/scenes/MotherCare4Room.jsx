@@ -446,13 +446,16 @@ export default function MotherCare4Room() {
               background: 'linear-gradient(135deg, #e11d48, #be185d)',
               color: '#ffffff',
               border: '2px solid #ffffff',
-              borderRadius: '999px',
+              borderRadius: '18px',
               padding: '6px 14px',
               fontWeight: 800,
               fontSize: '12px',
               cursor: 'pointer',
               boxShadow: '0 4px 12px rgba(190,24,93,0.35)',
-              whiteSpace: 'nowrap',
+              whiteSpace: 'normal',
+              maxWidth: 'min(84vw, 340px)',
+              textAlign: 'center',
+              lineHeight: 1.35,
             }}
           >
             {seatedTarget?.id === 'room104_sofa'
@@ -500,7 +503,7 @@ export default function MotherCare4Room() {
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: 'min(980px, 96vw)',
-                maxHeight: 'calc(var(--app-h, 100dvh) - 24px)',
+                maxHeight: 'calc(var(--app-h, 100dvh) - 32px)',
                 background: '#fffdf9',
                 borderRadius: '22px',
                 border: '3px solid #f43f5e',
@@ -619,7 +622,7 @@ export default function MotherCare4Room() {
                               flexWrap: 'wrap',
                             }}
                           >
-                            <div style={{ flex: 1, minWidth: '280px' }}>
+                            <div style={{ flex: 1, minWidth: 'min(100%, 240px)' }}>
                               <div style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a' }}>
                                 {i + 1}. {item.text}
                               </div>
@@ -629,7 +632,7 @@ export default function MotherCare4Room() {
                                 </div>
                               )}
                             </div>
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                               <button
                                 type="button"
                                 onClick={() => handleClassify(item.id, 'normal')}
@@ -682,7 +685,7 @@ export default function MotherCare4Room() {
                       </div>
                     )}
 
-                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                       <button
                         type="button"
                         onClick={checkClassification}
@@ -754,7 +757,7 @@ export default function MotherCare4Room() {
                       คลิกที่แต่ละการ์ดเพื่อศึกษารายละเอียดอาการและแนวทางการดูแลตนเองเบื้องต้นก่อนไปโรงพยาบาล
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '14px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: '14px' }}>
                       {W104_GALLERY.slice(1).map((card, i) => {
                         const idx = i + 1;
                         const seen = reviewedCards.includes(idx);
@@ -841,7 +844,7 @@ export default function MotherCare4Room() {
                   <div>
                     {!quizFinished ? (
                       <div style={{ background: '#ffffff', padding: '20px', borderRadius: '18px', border: '2px solid #fecdd3' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 800, color: '#9f1239' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 800, color: '#9f1239', flexWrap: 'wrap', gap: '6px' }}>
                           <span>แบบประเมินความรู้ การสังเกตอาการผิดปกติหลังคลอด</span>
                           <span>ข้อ {quizIndex + 1} / {room4Questions.length}</span>
                         </div>
@@ -863,8 +866,20 @@ export default function MotherCare4Room() {
                                 fontSize: '18px',
                                 fontWeight: 900,
                                 borderRadius: '14px',
-                                border: '2px solid #f43f5e',
-                                background: quizShowFeedback && currentQ.answer === btn.val ? '#dcfce7' : '#fff1f2',
+                                border: quizShowFeedback
+                                  ? currentQ.answer === btn.val
+                                    ? '2.5px solid #16a34a'
+                                    : quizUserChoice === btn.val
+                                    ? '2.5px solid #dc2626'
+                                    : '2px solid #f43f5e'
+                                  : '2px solid #f43f5e',
+                                background: quizShowFeedback
+                                  ? currentQ.answer === btn.val
+                                    ? '#dcfce7'
+                                    : quizUserChoice === btn.val
+                                    ? '#fee2e2'
+                                    : '#fff1f2'
+                                  : '#fff1f2',
                                 color: '#881337',
                                 cursor: quizShowFeedback ? 'default' : 'pointer',
                               }}
@@ -874,9 +889,23 @@ export default function MotherCare4Room() {
                           ))}
                         </div>
                         {quizShowFeedback && (
-                          <div style={{ background: '#f0fdf4', border: '2px solid #86efac', padding: '14px', borderRadius: '14px' }}>
-                            <div style={{ fontWeight: 900, fontSize: '17px', color: '#166534', marginBottom: '6px' }}>
-                              {quizUserChoice === currentQ.answer ? '🎉 ถูกต้องค่ะ!' : `เฉลย: ${currentQ.answerText}`}
+                          <div
+                            style={{
+                              background: quizUserChoice === currentQ.answer ? '#f0fdf4' : '#fff1f2',
+                              border: `2px solid ${quizUserChoice === currentQ.answer ? '#86efac' : '#fda4af'}`,
+                              padding: '14px',
+                              borderRadius: '14px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: 900,
+                                fontSize: '17px',
+                                color: quizUserChoice === currentQ.answer ? '#166534' : '#be123c',
+                                marginBottom: '6px',
+                              }}
+                            >
+                              {quizUserChoice === currentQ.answer ? '🎉 ถูกต้องค่ะ!' : `⚠️ ยังไม่ถูกต้อง — เฉลย: ${currentQ.answerText}`}
                             </div>
                             <div style={{ fontSize: '15px', color: '#334155', marginBottom: '12px' }}>
                               💡 {currentQ.reason}
