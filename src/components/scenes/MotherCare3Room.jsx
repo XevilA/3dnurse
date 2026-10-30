@@ -267,9 +267,12 @@ export default function MotherCare3Room() {
         roomNumber=""
       />
 
-      {/* ── Top-Right Mission HUD (Portaled to document.body) ── */}
+      {/* ── Top-Right Mission HUD (Responsive across 320px–4K & iOS Safari visualViewport) ── */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border-2 border-pink-400 text-slate-800">
+        <div
+          className="fixed left-2.5 right-2.5 sm:left-auto sm:right-4 z-30 pointer-events-auto sm:max-w-xs sm:w-80 max-h-[calc(var(--app-h,100dvh)*0.34)] sm:max-h-[calc(var(--app-h,100dvh)-5.5rem)] overflow-y-auto bg-white/95 backdrop-blur-md rounded-2xl p-2.5 sm:p-3.5 shadow-2xl border-2 border-pink-400 text-slate-800"
+          style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 4.25rem)' }}
+        >
           <div
             onClick={() => setMissionCollapsed((v) => !v)}
             className={`flex items-center justify-between cursor-pointer select-none ${
@@ -544,10 +547,10 @@ export default function MotherCare3Room() {
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: 'min(980px, 96vw)',
-                maxHeight: '90vh',
+                maxHeight: 'calc(var(--app-h, 100dvh) - 24px)',
                 background: '#fffdf9',
-                borderRadius: '26px',
-                border: '4px solid #f472b6',
+                borderRadius: '22px',
+                border: '3px solid #f472b6',
                 boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -558,10 +561,12 @@ export default function MotherCare3Room() {
               <div
                 style={{
                   background: 'linear-gradient(90deg, #fce7f3 0%, #fbcfe8 50%, #fde68a 100%)',
-                  padding: '16px 24px',
+                  padding: 'clamp(10px, 2.5vw, 16px) clamp(12px, 3vw, 24px)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px',
                   borderBottom: '2px solid #f9a8d4',
                 }}
               >
@@ -571,16 +576,16 @@ export default function MotherCare3Room() {
                     color: '#fff',
                     padding: '4px 14px',
                     borderRadius: '999px',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: 900,
                   }}>
                     การดูแลเต้านม
                   </span>
-                  <h2 style={{ margin: '6px 0 0', fontSize: '24px', fontWeight: 900, color: '#831843' }}>
+                  <h2 style={{ margin: '6px 0 0', fontSize: 'clamp(16px, 3.2vw, 24px)', fontWeight: 900, color: '#831843' }}>
                     ฝึกปฏิบัติบนโซฟาและทำสถานการณ์จำลองการดูแลเต้านม
                   </h2>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     onClick={() => openGalleryAt(6)}
@@ -588,10 +593,10 @@ export default function MotherCare3Room() {
                       background: '#ffffff',
                       color: '#be185d',
                       border: '2px solid #f472b6',
-                      padding: '8px 14px',
+                      padding: '6px 12px',
                       borderRadius: '12px',
                       fontWeight: 800,
-                      fontSize: '14px',
+                      fontSize: 'clamp(12px, 2.2vw, 14px)',
                       cursor: 'pointer',
                     }}
                   >
@@ -604,23 +609,23 @@ export default function MotherCare3Room() {
                       background: '#be185d',
                       color: '#ffffff',
                       border: 'none',
-                      padding: '8px 16px',
+                      padding: '6px 14px',
                       borderRadius: '12px',
                       fontWeight: 900,
-                      fontSize: '15px',
+                      fontSize: 'clamp(12px, 2.4vw, 15px)',
                       cursor: 'pointer',
                     }}
                   >
-                    ✕ ปิดหน้าต่าง
+                    ✕ ปิด
                   </button>
                 </div>
               </div>
 
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: '10px', padding: '14px 24px 0', background: '#fff5f7' }}>
+              <div style={{ display: 'flex', gap: '6px', padding: '10px clamp(10px, 2.5vw, 24px) 0', background: '#fff5f7', flexWrap: 'wrap' }}>
                 {[
-                  { id: 'massage', label: '1. นั่งโซฟาฝึกนวดเต้านมทำตาม (4 ขั้นตอน)' },
-                  { id: 'scenarios', label: '2. สถานการณ์จำลองการดูแลเต้านม (4 สถานการณ์)' },
+                  { id: 'massage', label: '1. ฝึกนวดเต้านม (4 ขั้น)' },
+                  { id: 'scenarios', label: '2. สถานการณ์จำลอง (4 ข้อ)' },
                   { id: 'quiz', label: '3. แบบทดสอบท้ายห้อง' },
                 ].map((t) => (
                   <button
@@ -628,14 +633,14 @@ export default function MotherCare3Room() {
                     type="button"
                     onClick={() => setActiveTab(t.id)}
                     style={{
-                      flex: 1,
-                      padding: '12px 14px',
-                      borderRadius: '14px 14px 0 0',
+                      flex: '1 1 130px',
+                      padding: '9px 10px',
+                      borderRadius: '12px 12px 0 0',
                       border: 'none',
                       background: activeTab === t.id ? '#db2777' : '#fce7f3',
                       color: activeTab === t.id ? '#ffffff' : '#9d174d',
                       fontWeight: 900,
-                      fontSize: '16px',
+                      fontSize: 'clamp(12px, 2.2vw, 16px)',
                       cursor: 'pointer',
                     }}
                   >
@@ -645,9 +650,9 @@ export default function MotherCare3Room() {
               </div>
 
               {/* Body */}
-              <div style={{ padding: '22px 24px', overflowY: 'auto', flex: 1 }}>
+              <div style={{ padding: 'clamp(12px, 3vw, 22px)', overflowY: 'auto', flex: 1 }}>
                 {activeTab === 'massage' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', alignItems: 'start' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px', alignItems: 'start' }}>
                     <div
                       onClick={() => openGalleryAt(1)}
                       style={{
@@ -764,7 +769,7 @@ export default function MotherCare3Room() {
                       คำแนะนำ: อ่านสถานการณ์ทั้ง 4 ข้อ แล้วติ๊กเลือกวิธีจัดการที่เหมาะสมให้ครบทุกข้อตามหลักการดูแลเต้านม
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '14px' }}>
                       {W103_SCENARIOS.map((sc) => {
                         const picked = selectedOpts[sc.id] || [];
                         return (

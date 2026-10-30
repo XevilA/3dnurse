@@ -4,7 +4,8 @@ import { Html } from '@react-three/drei';
 
 function BodyPortal({ children }) {
   if (typeof document === 'undefined') return null;
-  return createPortal(children, document.body);
+  const target = document.getElementById('screen-portal-root') || document.body;
+  return createPortal(children, target);
 }
 
 /**

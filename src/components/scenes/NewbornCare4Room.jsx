@@ -258,7 +258,10 @@ export default function NewbornCare4Room() {
           TOP-RIGHT TRANSLUCENT MISSION HUD (Collapsible)
           ══════════════════════════════════════════════════════════════════════════ */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-amber-950/88 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border border-amber-400/50 text-amber-50">
+        <div
+          className="fixed left-2.5 right-2.5 sm:left-auto sm:right-4 z-30 pointer-events-auto sm:max-w-xs sm:w-80 max-h-[calc(var(--app-h,100dvh)*0.34)] sm:max-h-[calc(var(--app-h,100dvh)-5.5rem)] overflow-y-auto bg-amber-950/92 backdrop-blur-md rounded-2xl p-2.5 sm:p-3.5 shadow-2xl border border-amber-400/50 text-amber-50"
+          style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 4.25rem)' }}
+        >
           <div className={`flex items-center justify-between ${hudCollapsed ? '' : 'border-b border-amber-400/30 pb-1.5 mb-2'}`}>
             <span className="text-xs font-extrabold text-amber-200 tracking-wide flex items-center gap-1.5">
               🌙 ภารกิจห้องการนอนทารก (Nursery 204)
@@ -1098,7 +1101,7 @@ export default function NewbornCare4Room() {
             onClick={() => setActiveModal(null)}
           >
             <div
-              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 border-2 border-amber-300 text-slate-800"
+              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 border-2 border-amber-300 text-slate-800"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -1325,11 +1328,11 @@ export default function NewbornCare4Room() {
       {activeModal === 'quiz' && currentQ && (
         <ScreenPortal>
           <div
-            className="fixed inset-0 z-[95] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 pointer-events-auto"
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4 pointer-events-auto"
             onClick={() => setActiveModal(null)}
           >
             <div
-              className="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-5 sm:p-6 border-2 border-amber-300 text-slate-800"
+              className="bg-white rounded-3xl shadow-2xl max-w-xl w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 border-2 border-amber-300 text-slate-800"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">

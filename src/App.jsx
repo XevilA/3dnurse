@@ -164,7 +164,10 @@ export default function App() {
   }, [hasCompletedPretest, incrementPlayTime]);
 
   return (
-    <div className="w-screen h-screen h-[100dvh] relative bg-slate-900 overflow-hidden select-none">
+    <div
+      className="w-full relative bg-slate-900 overflow-hidden select-none"
+      style={{ height: 'var(--app-h, 100dvh)', transform: 'translateZ(0)' }}
+    >
       {/* ── 3D Canvas (Isolated stacking context prevents Drei Html from escaping above UI) ── */}
       <div className="w-full h-full absolute inset-0 z-0 isolate">
         <Canvas
@@ -209,7 +212,7 @@ export default function App() {
         </Canvas>
       </div>
 
-      {/* ── UI Overlays (z-20 to z-50) ── */}
+      {/* ── UI Overlays (z-20 to z-250) ── */}
       <GlobalUIErrorBoundary>
         <HUD />
         <GTAControlsHUD />
@@ -218,6 +221,7 @@ export default function App() {
         <RoomConfirmationModal />
         <ImageViewerModal />
         <DressingRoomOverlay />
+        <div id="screen-portal-root" className="contents" />
       </GlobalUIErrorBoundary>
 
       {/* ── Visual Asset Loader ── */}

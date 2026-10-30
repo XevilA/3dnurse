@@ -34,11 +34,11 @@ export default function RoomConfirmationModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm pointer-events-auto animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-black/75 backdrop-blur-sm pointer-events-auto animate-fade-in"
       onClick={cancelRoomEntry}
     >
       <div
-        className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl border-2 border-sky-300 text-center relative overflow-hidden"
+        className="bg-white rounded-3xl p-5 sm:p-7 max-w-sm w-full max-h-[calc(var(--app-h,100dvh)-2rem)] overflow-y-auto shadow-2xl border-2 border-sky-300 text-center relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Decorative Top Accent */}

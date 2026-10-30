@@ -293,7 +293,10 @@ export default function NewbornCare1Room() {
           MISSION HUD (Top-Right Translucent Box per bf_p6.jpg)
           ══════════════════════════════════════════════════════════════════════════ */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-72 bg-white/85 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-pink-200/90 text-slate-800">
+        <div
+          className="fixed left-2.5 right-2.5 sm:left-auto sm:right-4 z-30 pointer-events-auto sm:max-w-xs sm:w-72 max-h-[calc(var(--app-h,100dvh)*0.34)] sm:max-h-[calc(var(--app-h,100dvh)-5.5rem)] overflow-y-auto bg-white/90 backdrop-blur-md rounded-2xl p-2.5 sm:p-3.5 shadow-xl border border-pink-200/90 text-slate-800"
+          style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 4.25rem)' }}
+        >
           <div
             onClick={() => setMissionCollapsed((v) => !v)}
             className={`flex items-center justify-between cursor-pointer select-none ${
@@ -1541,8 +1544,8 @@ export default function NewbornCare1Room() {
       {/* 6. 4 Breastfeeding Holds Activity Modal (Per bf_p5.jpg) */}
       {activeModal === 'postureSelector' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl border-4 border-pink-400 max-h-[92vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-5 shadow-2xl border-4 border-pink-400 max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto">
               <div className="flex items-center justify-between border-b pb-2.5">
                 <div>
                   <h2 className="text-lg font-bold text-pink-900">🤱 ท่าให้นมทารก 4 ท่า (ขณะนั่งที่เก้าอี้โซฟา)</h2>
@@ -1677,8 +1680,8 @@ export default function NewbornCare1Room() {
       {/* 7. Fullscreen TV Video Modal (for Slide 8/8) */}
       {showTvModal && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-slate-900 text-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border-4 border-sky-400 max-h-[92vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-slate-900 text-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border-4 border-sky-400 max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-700 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">📺</span>

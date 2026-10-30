@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import MotherAvatar from '../avatars/MotherAvatar';
@@ -48,6 +48,8 @@ const BELLY_STAGES = [
 
 export default function DressingRoom() {
   const selectedCharacter = useStore((s) => s.selectedCharacter) || 'postpartum_mother';
+  const size = useThree((s) => s.size);
+  const isPortraitMobile = size.width < size.height;
 
   const [isAutoRotate, setIsAutoRotate] = useState(true);
   const turntableRef = useRef();
@@ -67,8 +69,12 @@ export default function DressingRoom() {
 
   return (
     <group>
-      {/* ── Studio Camera: Framed view of pregnant mother & wardrobe outfits ── */}
-      <PerspectiveCamera makeDefault position={[0, 1.15, 2.75]} fov={38} />
+      {/* ── Responsive Studio Camera: On portrait phones, frame full character cleanly above the bottom wardrobe panel ── */}
+      <PerspectiveCamera
+        makeDefault
+        position={isPortraitMobile ? [0, 0.86, 3.35] : [0, 1.15, 2.75]}
+        fov={isPortraitMobile ? 42 : 38}
+      />
 
       {/* ── Architectural Hospital Dressing Suite (18x18m) ── */}
       <HospitalRoomShell

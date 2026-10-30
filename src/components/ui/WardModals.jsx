@@ -20,7 +20,8 @@ const PINK = '#e91e63';
 const overlay = {
   position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(30, 10, 25, 0.78)',
   backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-  padding: 'clamp(6px, 2vw, 20px)', fontFamily: "'Sarabun','Noto Sans Thai',system-ui,-apple-system,sans-serif",
+  padding: 'max(8px, env(safe-area-inset-top, 0px)) clamp(8px, 2vw, 20px) max(10px, env(safe-area-inset-bottom, 0px))',
+  fontFamily: "'Sarabun','Noto Sans Thai',system-ui,-apple-system,sans-serif",
   pointerEvents: 'auto',
 };
 
@@ -30,7 +31,7 @@ function Shell({ title, subtitle, onClose, children, maxWidth = 1180, footer }) 
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#fff', borderRadius: 22, width: '100%', maxWidth, maxHeight: '96vh',
+          background: '#fff', borderRadius: 22, width: '100%', maxWidth, maxHeight: 'calc(var(--app-h, 100dvh) - 20px)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
           boxShadow: '0 24px 70px rgba(0,0,0,0.5)', border: '3px solid #f48fb1',
         }}
@@ -77,7 +78,7 @@ function SlideLightbox({ room }) {
 
   return (
     <div style={overlay} onClick={() => finish(false)}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 1400, maxHeight: '97vh', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 1400, maxHeight: 'calc(var(--app-h, 100dvh) - 20px)', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
           <div style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(16px,2.4vw,24px)', textShadow: '0 2px 8px #000' }}>
             📖 {slide.title}
@@ -94,7 +95,7 @@ function SlideLightbox({ room }) {
         <div style={{ overflow: 'auto', background: '#000', borderRadius: 16, flex: 1, border: '3px solid #f48fb1', textAlign: 'center' }}>
           <img
             src={slide.src} alt={slide.title} draggable={false}
-            style={{ width: `${zoom * 100}%`, maxWidth: zoom === 1 ? 'min(100%, calc(92vh * 1.5 - 120px))' : 'none', height: 'auto', display: 'block', margin: '0 auto' }}
+            style={{ width: `${zoom * 100}%`, maxWidth: zoom === 1 ? 'min(100%, calc(var(--app-h, 100dvh) * 1.38 - 120px))' : 'none', height: 'auto', display: 'block', margin: '0 auto' }}
           />
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>

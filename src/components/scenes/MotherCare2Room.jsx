@@ -192,11 +192,11 @@ export default function MotherCare2Room() {
   const renderProjectorBoardContent = (isModal = false) => (
     <div style={{
       background: 'rgba(255, 255, 255, 0.98)',
-      padding: isModal ? '20px' : '22px',
+      padding: isModal ? 'clamp(12px, 3vw, 20px)' : '22px',
       borderRadius: '24px',
       width: isModal ? '100%' : '880px',
       maxWidth: isModal ? '880px' : 'none',
-      maxHeight: isModal ? '88vh' : 'none',
+      maxHeight: isModal ? 'calc(var(--app-h, 100dvh) - 24px)' : 'none',
       overflowY: isModal ? 'auto' : 'visible',
       boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
       border: '3px solid #f48fb1',
@@ -704,9 +704,12 @@ export default function MotherCare2Room() {
         roomNumber="Wound Care Ward 102"
       />
 
-      {/* ── Top-Right Mission HUD (Portaled to document.body so user can explore 3D room freely) ── */}
+      {/* ── Top-Right Mission HUD (Responsive across 320px–4K & iOS Safari visualViewport) ── */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border-2 border-pink-400 text-slate-800">
+        <div
+          className="fixed left-2.5 right-2.5 sm:left-auto sm:right-4 z-30 pointer-events-auto sm:max-w-xs sm:w-80 max-h-[calc(var(--app-h,100dvh)*0.34)] sm:max-h-[calc(var(--app-h,100dvh)-5.5rem)] overflow-y-auto bg-white/95 backdrop-blur-md rounded-2xl p-2.5 sm:p-3.5 shadow-2xl border-2 border-pink-400 text-slate-800"
+          style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 4.25rem)' }}
+        >
           <div
             onClick={() => setMissionCollapsed((v) => !v)}
             className={`flex items-center justify-between cursor-pointer select-none ${

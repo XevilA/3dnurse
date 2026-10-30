@@ -288,7 +288,10 @@ export default function NewbornCare2Room() {
           TOP-RIGHT TRANSLUCENT MISSION HUD (Collapsible per client request)
           ══════════════════════════════════════════════════════════════════════════ */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/80 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-teal-200/90 text-slate-800">
+        <div
+          className="fixed left-2.5 right-2.5 sm:left-auto sm:right-4 z-30 pointer-events-auto sm:max-w-xs sm:w-80 max-h-[calc(var(--app-h,100dvh)*0.34)] sm:max-h-[calc(var(--app-h,100dvh)-5.5rem)] overflow-y-auto bg-white/88 backdrop-blur-md rounded-2xl p-2.5 sm:p-3.5 shadow-xl border border-teal-200/90 text-slate-800"
+          style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 4.25rem)' }}
+        >
           <div className={`flex items-center justify-between gap-1.5 ${missionCollapsed ? '' : 'border-b border-teal-200/70 pb-1.5 mb-2'}`}>
             <button
               type="button"
@@ -1255,8 +1258,8 @@ export default function NewbornCare2Room() {
       {/* D. 2-Section Nursery Cabinet Modal ("ชุดอุปกรณ์ของใช้และของตกแต่งทารก") */}
       {activeModal === 'cabinet' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl border-4 border-amber-400 max-h-[92vh] overflow-y-auto text-slate-800">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-5 shadow-2xl border-4 border-amber-400 max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto text-slate-800">
               <div className="flex items-center justify-between border-b pb-2.5">
                 <div>
                   <h2 className="text-lg font-bold text-amber-900">
@@ -1473,8 +1476,8 @@ export default function NewbornCare2Room() {
           ══════════════════════════════════════════════════════════════════════════ */}
       {activeModal === 'bathingWizard' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-4 border-teal-500 max-h-[92vh] overflow-y-auto text-slate-800">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border-4 border-teal-500 max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto text-slate-800">
               {/* Header */}
               <div className="flex items-center justify-between border-b pb-3">
                 <div>
@@ -2246,18 +2249,18 @@ export default function NewbornCare2Room() {
       {/* I. Fullscreen TV Modal */}
       {showTvModal && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-slate-900 text-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border-4 border-teal-400 max-h-[92vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-slate-900 text-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border-4 border-teal-400 max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-700 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">📺</span>
-                  <h2 className="text-lg font-bold text-teal-300">
+                  <h2 className="text-base sm:text-lg font-bold text-teal-300">
                     {tvSlidesData[tvSlide].title}
                   </h2>
                 </div>
                 <button
                   onClick={() => setShowTvModal(false)}
-                  className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold"
+                  className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold shrink-0"
                 >
                   ✕
                 </button>
@@ -2267,7 +2270,7 @@ export default function NewbornCare2Room() {
                 <img
                   src={tvSlidesData[tvSlide].img}
                   alt={tvSlidesData[tvSlide].title}
-                  className="w-full max-h-[64vh] object-contain rounded-xl bg-white p-2 border border-slate-700"
+                  className="w-full max-h-[calc(var(--app-h,100dvh)*0.55)] object-contain rounded-xl bg-white p-2 border border-slate-700"
                 />
               </div>
 

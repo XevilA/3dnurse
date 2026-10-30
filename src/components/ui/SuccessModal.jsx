@@ -8,8 +8,8 @@ export default function SuccessModal() {
   const completedCount = Object.keys(useStore((s) => s.learningProgress) || {}).length;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 text-center animate-bounce-in border-4 border-emerald-400">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-3.5 sm:p-4">
+      <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[calc(var(--app-h,100dvh)-2rem)] overflow-y-auto text-center animate-bounce-in border-4 border-emerald-400">
         {/* Celebration emoji */}
         <div className="text-6xl mb-4">🎉</div>
 

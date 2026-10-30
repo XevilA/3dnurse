@@ -269,9 +269,12 @@ export default function MotherCare4Room() {
         roomNumber=""
       />
 
-      {/* ── Top-Right Mission HUD (Portaled to document.body) ── */}
+      {/* ── Top-Right Mission HUD (Responsive across 320px–4K & iOS Safari visualViewport) ── */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border-2 border-rose-400 text-slate-800">
+        <div
+          className="fixed left-2.5 right-2.5 sm:left-auto sm:right-4 z-30 pointer-events-auto sm:max-w-xs sm:w-80 max-h-[calc(var(--app-h,100dvh)*0.34)] sm:max-h-[calc(var(--app-h,100dvh)-5.5rem)] overflow-y-auto bg-white/95 backdrop-blur-md rounded-2xl p-2.5 sm:p-3.5 shadow-2xl border-2 border-rose-400 text-slate-800"
+          style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 4.25rem)' }}
+        >
           <div
             onClick={() => setMissionCollapsed((v) => !v)}
             className={`flex items-center justify-between cursor-pointer select-none ${
@@ -497,10 +500,10 @@ export default function MotherCare4Room() {
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: 'min(980px, 96vw)',
-                maxHeight: '90vh',
+                maxHeight: 'calc(var(--app-h, 100dvh) - 24px)',
                 background: '#fffdf9',
-                borderRadius: '26px',
-                border: '4px solid #f43f5e',
+                borderRadius: '22px',
+                border: '3px solid #f43f5e',
                 boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -511,10 +514,12 @@ export default function MotherCare4Room() {
               <div
                 style={{
                   background: 'linear-gradient(90deg, #ffe4e6 0%, #fecdd3 50%, #fef3c7 100%)',
-                  padding: '16px 24px',
+                  padding: 'clamp(10px, 2.5vw, 16px) clamp(12px, 3vw, 24px)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px',
                   borderBottom: '2px solid #fda4af',
                 }}
               >
@@ -524,12 +529,12 @@ export default function MotherCare4Room() {
                     color: '#fff',
                     padding: '4px 14px',
                     borderRadius: '999px',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: 900,
                   }}>
                     การสังเกตอาการผิดปกติหลังคลอด
                   </span>
-                  <h2 style={{ margin: '6px 0 0', fontSize: '23px', fontWeight: 900, color: '#881337' }}>
+                  <h2 style={{ margin: '6px 0 0', fontSize: 'clamp(16px, 3.2vw, 23px)', fontWeight: 900, color: '#881337' }}>
                     การสังเกตอาการผิดปกติและอาการแทรกซ้อนหลังคลอด
                   </h2>
                 </div>
@@ -540,22 +545,22 @@ export default function MotherCare4Room() {
                     background: '#be185d',
                     color: '#ffffff',
                     border: 'none',
-                    padding: '8px 16px',
+                    padding: '6px 14px',
                     borderRadius: '12px',
                     fontWeight: 900,
-                    fontSize: '15px',
+                    fontSize: 'clamp(12px, 2.4vw, 15px)',
                     cursor: 'pointer',
                   }}
                 >
-                  ✕ ปิดหน้าต่าง
+                  ✕ ปิด
                 </button>
               </div>
 
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: '10px', padding: '14px 24px 0', background: '#fff1f2' }}>
+              <div style={{ display: 'flex', gap: '6px', padding: '10px clamp(10px, 2.5vw, 24px) 0', background: '#fff1f2', flexWrap: 'wrap' }}>
                 {[
-                  { id: 'classify', label: '1. กิจกรรมสังเกตอาการผิดปกติ (จำแนกอาการ)' },
-                  { id: 'review', label: '2. ทบทวนภาวะแทรกซ้อน 5 อาการสำคัญ & ฝึกดูแลตนเอง' },
+                  { id: 'classify', label: '1. จำแนกอาการปกติ/ผิดปกติ' },
+                  { id: 'review', label: '2. ทบทวน 5 อาการสำคัญ' },
                   { id: 'quiz', label: '3. แบบทดสอบท้ายห้อง' },
                 ].map((t) => (
                   <button
@@ -563,14 +568,14 @@ export default function MotherCare4Room() {
                     type="button"
                     onClick={() => setActiveTab(t.id)}
                     style={{
-                      flex: 1,
-                      padding: '12px 14px',
-                      borderRadius: '14px 14px 0 0',
+                      flex: '1 1 130px',
+                      padding: '9px 10px',
+                      borderRadius: '12px 12px 0 0',
                       border: 'none',
                       background: activeTab === t.id ? '#e11d48' : '#ffe4e6',
                       color: activeTab === t.id ? '#ffffff' : '#9f1239',
                       fontWeight: 900,
-                      fontSize: '15px',
+                      fontSize: 'clamp(12px, 2.2vw, 15px)',
                       cursor: 'pointer',
                     }}
                   >
@@ -580,7 +585,7 @@ export default function MotherCare4Room() {
               </div>
 
               {/* Body */}
-              <div style={{ padding: '22px 24px', overflowY: 'auto', flex: 1 }}>
+              <div style={{ padding: 'clamp(12px, 3vw, 22px)', overflowY: 'auto', flex: 1 }}>
                 {activeTab === 'classify' && (
                   <div>
                     <div style={{

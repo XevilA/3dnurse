@@ -181,11 +181,14 @@ export default function QuizRoom() {
       {/* Minimized Pill to Re-open Quiz Card after viewing 3D Hall */}
       {isQuizMinimized && (
         <ScreenPortal>
-          <div className="fixed inset-x-0 bottom-14 z-30 flex justify-center px-4 pointer-events-none">
+          <div
+            className="fixed inset-x-0 z-30 flex justify-center px-4 pointer-events-none"
+            style={{ bottom: 'calc(max(0.75rem, env(safe-area-inset-bottom, 0px)) + 0.5rem)' }}
+          >
             <button
               type="button"
               onClick={() => setIsQuizMinimized(false)}
-              className="pointer-events-auto flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-extrabold text-sm sm:text-base shadow-2xl border-2 border-white active:scale-95 transition"
+              className="pointer-events-auto flex items-center gap-2.5 px-5 sm:px-6 py-3 sm:py-3.5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-extrabold text-xs sm:text-base shadow-2xl border-2 border-white active:scale-95 transition"
             >
               <span>📝</span>
               <span>
@@ -201,9 +204,15 @@ export default function QuizRoom() {
       {/* Native 2D Screen-Space Quiz Overlay — Zero CSS matrix3d skew, 100% accurate iPhone touch targets, never blocked by 3D character */}
       {!isQuizMinimized && (
         <ScreenPortal>
-          <div className="fixed inset-x-0 top-11 sm:top-14 bottom-2 sm:bottom-4 z-30 flex items-center justify-center px-2.5 sm:px-6 py-1.5 pointer-events-none">
+          <div
+            className="fixed inset-x-0 z-30 flex items-center justify-center px-2.5 sm:px-6 pointer-events-none"
+            style={{
+              top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 2.45rem)',
+              bottom: 'max(0.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.35rem))',
+            }}
+          >
             <div
-              className="pointer-events-auto w-full max-w-[760px] max-h-full overflow-y-auto bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 flex flex-col justify-between shadow-2xl border-[3px] border-violet-600"
+              className="pointer-events-auto w-full max-w-[760px] max-h-full overflow-y-auto bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-7 flex flex-col justify-between shadow-2xl border-[3px] border-violet-600"
               style={{
                 fontFamily: 'system-ui, -apple-system, "Sarabun", sans-serif',
                 WebkitOverflowScrolling: 'touch',

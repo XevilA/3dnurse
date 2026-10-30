@@ -71,7 +71,7 @@ export default function HUD() {
         }}>
 
         {/* Left: Back button if inside a room, or App branding if in lobby */}
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 md:flex-initial mr-1.5">
           {currentRoom !== 'lobby' ? (
             <button
               type="button"
@@ -85,11 +85,11 @@ export default function HUD() {
           ) : (
             <span className="text-xl sm:text-2xl shrink-0">🏥</span>
           )}
-          <div className="min-w-0">
-            <h1 className="text-xs sm:text-sm font-bold text-blue-900 leading-tight truncate max-w-[130px] xs:max-w-[190px] sm:max-w-none">
+          <div className="min-w-0 bg-white/88 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none px-2.5 py-1 sm:p-0 rounded-full sm:rounded-none shadow-sm sm:shadow-none">
+            <h1 className="text-[11px] sm:text-sm font-bold text-blue-950 sm:text-blue-900 leading-tight truncate">
               {ROOM_TITLES[currentRoom] || 'Postpartum & Newborn Care'}
             </h1>
-            <p className="text-[9px] sm:text-xs text-blue-700 hidden xs:block">Learning Metaverse</p>
+            <p className="text-[9px] sm:text-xs text-blue-700 hidden sm:block">Learning Metaverse</p>
           </div>
         </div>
 
@@ -106,20 +106,18 @@ export default function HUD() {
           </button>
         </div>
 
-        {/* Right: Wardrobe Button + Progress & Menu */}
+        {/* Right: Wardrobe Button (hidden when already inside dressingRoom) + Progress & Menu */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setRoom('dressingRoom')}
-            className={`flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full font-bold text-[11px] sm:text-xs shadow-md transition transform hover:scale-105 active:scale-95 cursor-pointer ${
-              currentRoom === 'dressingRoom'
-                ? 'bg-pink-600 text-white ring-2 ring-pink-300'
-                : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white'
-            }`}
-          >
-            <span>👗</span>
-            <span className="hidden xs:inline">แต่งตัว/เปลี่ยนชุด</span>
-          </button>
+          {currentRoom !== 'dressingRoom' && (
+            <button
+              type="button"
+              onClick={() => setRoom('dressingRoom')}
+              className="flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full font-bold text-[11px] sm:text-xs shadow-md transition transform hover:scale-105 active:scale-95 cursor-pointer bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
+            >
+              <span>👗</span>
+              <span className="hidden sm:inline">แต่งตัว/เปลี่ยนชุด</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setShowNav(true)}
@@ -150,11 +148,15 @@ export default function HUD() {
           />
 
           <div
-            className="fixed sm:absolute top-12 left-3 right-3 sm:left-auto sm:right-4 z-50 sm:w-96 max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-blue-200 overflow-hidden pointer-events-auto transition-all flex flex-col"
+            className="fixed sm:absolute left-2.5 right-2.5 sm:left-auto sm:right-4 z-50 sm:w-96 bg-white rounded-2xl shadow-2xl border border-blue-200 overflow-hidden pointer-events-auto transition-all flex flex-col"
+            style={{
+              top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 2.65rem)',
+              maxHeight: 'calc(var(--app-h, 100dvh) - max(0.375rem, env(safe-area-inset-top, 0px)) - max(0.75rem, env(safe-area-inset-bottom, 0px)) - 3.25rem)',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🗺️</span>
                 <div>
@@ -174,7 +176,7 @@ export default function HUD() {
             </div>
 
             {/* Content List */}
-            <div className="p-3 max-h-[75vh] overflow-y-auto space-y-3">
+            <div className="p-3 flex-1 min-h-0 overflow-y-auto space-y-3">
               {/* Highlight Pre-test First if not completed */}
               <div>
                 <button

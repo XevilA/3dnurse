@@ -441,7 +441,10 @@ export default function NewbornCare3Room() {
           TOP-RIGHT TRANSLUCENT MISSION HUD (Collapsible)
           ══════════════════════════════════════════════════════════════════════════ */}
       <ScreenPortal>
-        <div className="fixed top-20 right-4 z-30 pointer-events-auto max-w-xs w-80 bg-white/88 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-amber-200/90 text-slate-800">
+        <div
+          className="fixed left-2.5 right-2.5 sm:left-auto sm:right-4 z-30 pointer-events-auto sm:max-w-xs sm:w-80 max-h-[calc(var(--app-h,100dvh)*0.34)] sm:max-h-[calc(var(--app-h,100dvh)-5.5rem)] overflow-y-auto bg-white/92 backdrop-blur-md rounded-2xl p-2.5 sm:p-3.5 shadow-xl border border-amber-200/90 text-slate-800"
+          style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 4.25rem)' }}
+        >
           <div className={`flex items-center justify-between ${hudCollapsed ? '' : 'border-b border-amber-200/70 pb-1.5 mb-2'}`}>
             <span className="text-xs font-extrabold text-amber-900 tracking-wide flex items-center gap-1.5">
               🩹 ภารกิจห้องดูแลสายสะดือ (Nursery 203)
@@ -1093,8 +1096,8 @@ export default function NewbornCare3Room() {
       {/* 1. Equipment Details Modal (Shown when clicking items on the dressing cart) */}
       {activeModal === 'equipment' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border-4 border-amber-400 max-h-[92vh] overflow-y-auto text-slate-800">
+          <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border-4 border-amber-400 max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto text-slate-800">
               <div className="flex items-center justify-between border-b pb-3">
                 <h2 className="text-lg font-bold text-amber-950 flex items-center gap-2">
                   <span>🩹</span> อุปกรณ์เช็ดทำความสะอาดสายสะดือทารก
@@ -1158,8 +1161,8 @@ export default function NewbornCare3Room() {
       {/* 2. Mother's Ordering Test Modal ("บททดสอบ ของคุณแม่: ให้เรียงภาพขั้นตอน การเช็ดสะดือ เมื่อเริ่มแห้ง" — nb34_p4..5) */}
       {activeModal === 'orderingQuiz' && (
         <ScreenPortal>
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[95] flex items-center justify-center p-4 pointer-events-auto">
-            <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-4 border-amber-500 max-h-[92vh] overflow-y-auto text-slate-800">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto">
+            <div className="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border-4 border-amber-500 max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto text-slate-800">
               <div className="flex items-center justify-between border-b pb-3">
                 <div>
                   <span className="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider">

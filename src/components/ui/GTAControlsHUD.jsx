@@ -294,7 +294,10 @@ export default function GTAControlsHUD() {
       </div>
 
       {/* Mobile view (< 640px): Compact, Sleek Non-overlapping Pill */}
-      <div className="sm:hidden absolute top-12 left-2 z-20 pointer-events-auto">
+      <div
+        className="sm:hidden absolute left-2.5 z-20 pointer-events-auto"
+        style={{ top: 'calc(max(0.375rem, env(safe-area-inset-top, 0px)) + 2.35rem)' }}
+      >
         <button
           type="button"
           onClick={() => setIsStatusExpanded(!isStatusExpanded)}
@@ -351,12 +354,15 @@ export default function GTAControlsHUD() {
         </div>
       )}
 
-      {/* ── Dedicated Device Mode Switcher (PC vs Mobile Toggle) ── */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs shadow-2xl">
+      {/* ── Dedicated Device Mode Switcher (PC vs Mobile Toggle) — Sits cleanly at safe-area bottom ── */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-1 sm:gap-1.5 bg-black/75 backdrop-blur-md px-2.5 sm:px-3 py-1 rounded-full border border-white/20 text-[10px] sm:text-xs shadow-2xl whitespace-nowrap"
+        style={{ bottom: 'max(0.45rem, env(safe-area-inset-bottom, 0px))' }}
+      >
         <button
           type="button"
           onClick={() => setDeviceMode('pc')}
-          className={`px-2.5 py-0.5 rounded-full font-bold transition text-[11px] flex items-center gap-1 cursor-pointer ${
+          className={`px-2 sm:px-2.5 py-0.5 rounded-full font-bold transition text-[10px] sm:text-[11px] flex items-center gap-1 cursor-pointer ${
             !isMobile
               ? 'bg-cyan-500 text-white shadow-md ring-1 ring-cyan-300'
               : 'text-white/60 hover:text-white'
@@ -369,7 +375,7 @@ export default function GTAControlsHUD() {
         <button
           type="button"
           onClick={() => setDeviceMode('mobile')}
-          className={`px-2.5 py-0.5 rounded-full font-bold transition text-[11px] flex items-center gap-1 cursor-pointer ${
+          className={`px-2 sm:px-2.5 py-0.5 rounded-full font-bold transition text-[10px] sm:text-[11px] flex items-center gap-1 cursor-pointer ${
             isMobile
               ? 'bg-pink-500 text-white shadow-md ring-1 ring-pink-300'
               : 'text-white/60 hover:text-white'
@@ -382,7 +388,7 @@ export default function GTAControlsHUD() {
         <button
           type="button"
           onClick={() => setControlsVisible(!controlsVisible)}
-          className="text-white/70 hover:text-white px-1.5 py-0.5 text-[11px] font-medium transition cursor-pointer flex items-center gap-1"
+          className="text-white/70 hover:text-white px-1.5 py-0.5 text-[10px] sm:text-[11px] font-medium transition cursor-pointer flex items-center gap-1"
           title={controlsVisible ? 'ซ่อนปุ่มควบคุม' : 'แสดงปุ่มควบคุม'}
         >
           <span>{controlsVisible ? '👁️' : '🚫'}</span>
@@ -391,17 +397,20 @@ export default function GTAControlsHUD() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          📱 1. MOBILE ONLY CONTROLS (Only visible in Mobile resolution / Touch mode)
+          📱 1. MOBILE ONLY CONTROLS (Positioned above bottom mode switcher — zero overlap!)
           ══════════════════════════════════════════════════════════════════════════ */}
       {isMobile && controlsVisible && (
         <>
           {/* ── Left Thumb Zone: Virtual Analog Joystick + Sprint Toggle ── */}
-          <div className="absolute left-3 sm:left-6 z-30 pointer-events-auto flex flex-col items-center gap-2" style={{ bottom: 'max(2.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.5rem))' }}>
+          <div
+            className="absolute left-2.5 sm:left-6 z-30 pointer-events-auto flex flex-col items-center gap-1.5"
+            style={{ bottom: 'calc(max(0.45rem, env(safe-area-inset-bottom, 0px)) + 2.65rem)' }}
+          >
             {/* Quick Sprint Toggle */}
             <button
               type="button"
               onClick={handleSprintToggle}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition shadow-lg border flex items-center gap-1 cursor-pointer active:scale-95 ${
+              className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition shadow-lg border flex items-center gap-1 cursor-pointer active:scale-95 ${
                 isSprintLocked
                   ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-black border-yellow-200 ring-2 ring-yellow-400/60 font-black'
                   : 'bg-black/70 backdrop-blur-md text-yellow-300 border-yellow-400/40'
@@ -416,7 +425,10 @@ export default function GTAControlsHUD() {
           </div>
 
           {/* ── Right Thumb Zone: Action Button Cluster ── */}
-          <div className="absolute right-3 sm:right-6 z-30 pointer-events-auto flex flex-col items-end gap-2.5" style={{ bottom: 'max(2.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.5rem))' }}>
+          <div
+            className="absolute right-2.5 sm:right-6 z-30 pointer-events-auto flex flex-col items-end gap-2"
+            style={{ bottom: 'calc(max(0.45rem, env(safe-area-inset-bottom, 0px)) + 2.65rem)' }}
+          >
             {/* Camera Perspective Toggle Button */}
             <button
               type="button"

@@ -65,11 +65,15 @@ export default function ImageViewerModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[250] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md pointer-events-auto animate-fade-in"
+      className="fixed inset-0 z-[250] flex items-center justify-center px-2.5 sm:px-6 bg-black/85 backdrop-blur-md pointer-events-auto animate-fade-in"
+      style={{
+        paddingTop: 'max(0.625rem, env(safe-area-inset-top, 0px))',
+        paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom, 0px))',
+      }}
       onClick={closeLightbox}
     >
       <div
-        className="relative bg-white text-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border-2 border-white/40"
+        className="relative bg-white text-slate-800 rounded-2xl sm:rounded-3xl max-w-4xl w-full max-h-full flex flex-col shadow-2xl overflow-hidden border-2 border-white/40"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -130,7 +134,7 @@ export default function ImageViewerModal() {
                 <img
                   src={src}
                   alt={title || 'Clinical poster'}
-                  className="max-h-[62vh] w-auto max-w-full object-contain rounded-xl shadow-md transition-transform hover:scale-[1.02]"
+                  className="max-h-[calc(var(--app-h,100dvh)*0.48)] sm:max-h-[calc(var(--app-h,100dvh)*0.6)] w-auto max-w-full object-contain rounded-xl shadow-md transition-transform hover:scale-[1.02]"
                 />
               </div>
             )
