@@ -1,8 +1,24 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Html, useTexture } from '@react-three/drei';
+import { RoundedBox, useGLTF, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+import { CANVAS_THAI_FONT, fillCenteredText, whenFontsReady } from '../../utils/canvasText';
+import BillboardLabel3D from '../ui/BillboardLabel3D';
+import RealPlant from '../decorations/RealPlant';
+import FlowerVase from '../decorations/FlowerVase';
+import {
+  RealisticThrowPillow3D,
+  RealisticNursingPillow3D,
+  RealisticIPad3D,
+  RealisticBookStack3D,
+  RealisticOpenBook3D,
+  RealisticFoldedClothStack3D,
+  RealisticWickerTraySet3D,
+  RealisticCeramicMug3D,
+  RealisticKnittedPouf3D,
+  RealisticPlushToy3D,
+} from './RealisticProps3D';
 
-const THAI_FONT = '"Sarabun","Noto Sans Thai","Thonburi","Ayuthaya",system-ui,sans-serif';
+const THAI_FONT = CANVAS_THAI_FONT;
 
 function roundRect2D(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -28,12 +44,16 @@ export function usePosterTitleTexture({
   widthPx = 768,
   heightPx = 136,
 }) {
-  const tex = useMemo(() => {
+  const { tex, redraw } = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = widthPx;
     canvas.height = heightPx;
     const ctx = canvas.getContext('2d');
     const s = heightPx / 180;
+    const t = new THREE.CanvasTexture(canvas);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.generateMipmaps = false;
+    t.minFilter = THREE.LinearFilter;
 
     const draw = () => {
       if (!ctx) return;
@@ -56,9 +76,8 @@ export function usePosterTitleTexture({
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(badge, 18 * s + bw / 2, heightPx / 2 + 1);
+        fillCenteredText(ctx, badge, 18 * s + bw / 2, heightPx / 2 + 1, bw - 16 * s);
         textStartX = 18 * s + bw + 18 * s;
       }
 
@@ -73,29 +92,21 @@ export function usePosterTitleTexture({
         ctx.font = `700 ${Math.round(27 * s)}px ${THAI_FONT}`;
         ctx.fillText(subtitle, textStartX, heightPx * 0.74, widthPx - textStartX - 24 * s);
       }
+
+      t.needsUpdate = true;
     };
 
     draw();
-    const t = new THREE.CanvasTexture(canvas);
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.generateMipmaps = false;
-    t.minFilter = THREE.LinearFilter;
-    t.needsUpdate = true;
-    return t;
+    return { tex: t, redraw: draw };
   }, [title, subtitle, badge, bgColor, textColor, accentColor, widthPx, heightPx]);
 
   useEffect(() => {
-    let alive = true;
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        if (alive) tex.needsUpdate = true;
-      });
-    }
+    const cancelFonts = whenFontsReady(redraw);
     return () => {
-      alive = false;
+      cancelFonts();
       tex.dispose();
     };
-  }, [tex]);
+  }, [tex, redraw]);
 
   return tex;
 }
@@ -218,6 +229,7 @@ export function FramedImagePoster3D({
   accentColor = '#d97706',
   headerColor = '',
   backlit = true,
+  contain = false,
   onClick,
   children,
 }) {
@@ -236,8 +248,23 @@ export function FramedImagePoster3D({
   const hasHeader = Boolean(title || resolvedBadge);
   const headerH = hasHeader ? Math.min(0.46, height * 0.17) : 0;
   const imgH = hasHeader ? height - headerH - 0.08 : height - 0.08;
+  const imgW = width - 0.08;
   const imgY = hasHeader ? -headerH / 2 - 0.01 : 0;
   const headerY = height / 2 - headerH / 2 - 0.03;
+
+  const [fitW, fitH] = useMemo(() => {
+    if (!contain || !tex?.image?.width || !tex?.image?.height) {
+      return [imgW, imgH];
+    }
+    const aspect = tex.image.width / tex.image.height;
+    let w = imgW;
+    let h = w / aspect;
+    if (h > imgH) {
+      h = imgH;
+      w = h * aspect;
+    }
+    return [w, h];
+  }, [contain, tex, imgW, imgH]);
 
   const headerTex = usePosterTitleTexture({
     title,
@@ -258,6 +285,7 @@ export function FramedImagePoster3D({
   }, [hovered, onClick]);
 
   const handleClick = (e) => {
+    if (e.delta > 10) return;
     if (onClick) {
       e.stopPropagation();
       onClick(e);
@@ -317,7 +345,7 @@ export function FramedImagePoster3D({
 
       {/* ภาพโปสเตอร์ 3D Mesh แนบสนิทในกรอบ */}
       <mesh position={[0, imgY, 0.043]}>
-        <planeGeometry args={[width - 0.08, imgH]} />
+        <planeGeometry args={[fitW, fitH]} />
         <meshBasicMaterial map={tex} toneMapped={false} />
       </mesh>
 
@@ -336,6 +364,7 @@ export function CozySectionalSofaSet({
   onClickSofa,
   onClickTablet,
   tabletLabel = '📋 คลิกแท็บเล็ตเพื่อทำกิจกรรม',
+  ipadMode = 'danger',
 }) {
   const wovenRugTex = useWovenRugTexture('weave');
 
@@ -352,7 +381,7 @@ export function CozySectionalSofaSet({
         <meshStandardMaterial color="#cbb69d" roughness={0.95} />
       </mesh>
 
-      {/* ── 2. โซฟาตัว L ผ้าบุนุ่มสีเทาอมเบจ (L-Shaped Sectional Sofa) ── */}
+      {/* ── 2. โซฟาตัว L ผ้าบุนุ่มขอบมนสมจริง (Sculpted Plush L-Shaped Sectional Sofa) ── */}
       <group
         position={[0, 0, -0.2]}
         onClick={(e) => {
@@ -362,127 +391,171 @@ export function CozySectionalSofaSet({
           }
         }}
       >
-        {/* ฐานไม้และขาโซฟาไม้โอ๊ค */}
+        {/* ฐานไม้และขาโซฟาไม้โอ๊คทรงสอบพร้อมแหวนทองเหลือง */}
         {[
           [-1.55, -0.42],
           [1.55, -0.42],
           [-1.55, 1.35],
-          [-0.45, 1.35],
-          [1.55, 0.45],
+          [-0.55, 1.35],
+          [1.55, 0.42],
         ].map(([lx, lz], idx) => (
-          <mesh key={idx} position={[lx, 0.07, lz]} castShadow>
-            <cylinderGeometry args={[0.04, 0.03, 0.14, 12]} />
-            <meshStandardMaterial color="#8c5a32" roughness={0.5} />
-          </mesh>
+          <group key={idx} position={[lx, 0.07, lz]}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.04, 0.026, 0.14, 16]} />
+              <meshStandardMaterial color="#8c5a32" roughness={0.45} />
+            </mesh>
+            <mesh position={[0, -0.06, 0]}>
+              <cylinderGeometry args={[0.027, 0.025, 0.018, 16]} />
+              <meshStandardMaterial color="#d4a373" metalness={0.55} roughness={0.28} />
+            </mesh>
+          </group>
         ))}
 
-        {/* โครงฐานโซฟาตัวหลัก (3 ที่นั่ง) */}
-        <mesh position={[0, 0.24, 0]} castShadow receiveShadow>
-          <boxGeometry args={[3.3, 0.22, 0.98]} />
-          <meshStandardMaterial color="#8f8377" roughness={0.85} />
-        </mesh>
+        {/* โครงฐานโซฟาตัวหลัก (ขอบมนหุ้มผ้าทอ) */}
+        <RoundedBox
+          args={[3.3, 0.22, 0.98]}
+          radius={0.042}
+          smoothness={4}
+          position={[0, 0.24, 0]}
+          castShadow
+          receiveShadow
+        >
+          <meshStandardMaterial color="#8f8377" roughness={0.86} />
+        </RoundedBox>
 
-        {/* เบาะนั่งโซฟาฝั่งขวาและกลาง */}
-        <mesh position={[0.55, 0.4, 0.02]} castShadow receiveShadow>
-          <boxGeometry args={[2.15, 0.16, 0.92]} />
-          <meshStandardMaterial color="#9e9286" roughness={0.82} />
-        </mesh>
-
-        {/* ส่วนยื่นโซฟาเบดตัว L ฝั่งซ้าย (Chaise Lounge Extension) */}
-        <mesh position={[-1.08, 0.24, 0.48]} castShadow receiveShadow>
-          <boxGeometry args={[1.12, 0.22, 1.92]} />
-          <meshStandardMaterial color="#8f8377" roughness={0.85} />
-        </mesh>
-        <mesh position={[-1.08, 0.4, 0.5]} castShadow receiveShadow>
-          <boxGeometry args={[1.08, 0.16, 1.86]} />
-          <meshStandardMaterial color="#9e9286" roughness={0.82} />
-        </mesh>
-
-        {/* พนักพิงหลังโซฟา */}
-        <mesh position={[0, 0.72, -0.42]} castShadow receiveShadow>
-          <boxGeometry args={[3.3, 0.68, 0.2]} />
-          <meshStandardMaterial color="#8a7e72" roughness={0.85} />
-        </mesh>
-        {/* หมอนพิงหลัง 3 ใบ */}
-        {[-1.02, 0.02, 1.04].map((bx, i) => (
-          <mesh key={i} position={[bx, 0.72, -0.26]} castShadow>
-            <boxGeometry args={[0.98, 0.48, 0.16]} />
-            <meshStandardMaterial color="#a69a8e" roughness={0.82} />
-          </mesh>
+        {/* เบาะนั่งโซฟาฝั่งกลางและขวา (แบ่ง 2 เบาะหนานุ่มขอบมนมีตะเข็บ) */}
+        {[0.02, 1.07].map((cx, cIdx) => (
+          <RoundedBox
+            key={cIdx}
+            args={[1.05, 0.17, 0.92]}
+            radius={0.052}
+            smoothness={5}
+            position={[cx, 0.405, 0.02]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial color="#a19589" roughness={0.82} />
+          </RoundedBox>
         ))}
 
-        {/* ที่วางแขนซ้าย-ขวา */}
-        <mesh position={[-1.68, 0.52, -0.02]} castShadow>
-          <boxGeometry args={[0.18, 0.48, 0.98]} />
-          <meshStandardMaterial color="#8a7e72" roughness={0.85} />
-        </mesh>
-        <mesh position={[1.68, 0.52, -0.02]} castShadow>
-          <boxGeometry args={[0.18, 0.48, 0.98]} />
-          <meshStandardMaterial color="#8a7e72" roughness={0.85} />
-        </mesh>
+        {/* ส่วนยื่นโซฟาเบดตัว L ฝั่งซ้าย (Plush Chaise Lounge Extension) */}
+        <RoundedBox
+          args={[1.12, 0.22, 1.92]}
+          radius={0.042}
+          smoothness={4}
+          position={[-1.08, 0.24, 0.48]}
+          castShadow
+          receiveShadow
+        >
+          <meshStandardMaterial color="#8f8377" roughness={0.86} />
+        </RoundedBox>
+        <RoundedBox
+          args={[1.08, 0.17, 1.86]}
+          radius={0.055}
+          smoothness={5}
+          position={[-1.08, 0.405, 0.50]}
+          castShadow
+          receiveShadow
+        >
+          <meshStandardMaterial color="#a19589" roughness={0.82} />
+        </RoundedBox>
 
-        {/* ── หมอนอิงสีพาสเทล 3 สีตามภาพตัวอย่าง (เขียวเซจ, เหลืองมัสตาร์ด, ชมพูพีช) ── */}
+        {/* พนักพิงหลังโซฟาขอบมน */}
+        <RoundedBox
+          args={[3.34, 0.68, 0.2]}
+          radius={0.048}
+          smoothness={4}
+          position={[0, 0.72, -0.42]}
+          castShadow
+          receiveShadow
+        >
+          <meshStandardMaterial color="#8a7e72" roughness={0.86} />
+        </RoundedBox>
+
+        {/* หมอนพิงหลังหนานุ่มทรงโค้งมน 3 ใบ */}
+        {[-1.04, 0.0, 1.04].map((bx, i) => (
+          <RoundedBox
+            key={i}
+            args={[1.01, 0.50, 0.19]}
+            radius={0.068}
+            smoothness={5}
+            position={[bx, 0.73, -0.25]}
+            rotation={[-0.08, 0, 0]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial color="#aba094" roughness={0.82} />
+          </RoundedBox>
+        ))}
+
+        {/* ที่วางแขนซ้าย-ขวาขอบโค้งมน */}
+        {[-1.68, 1.68].map((ax, idx) => (
+          <RoundedBox
+            key={idx}
+            args={[0.2, 0.49, 0.98]}
+            radius={0.055}
+            smoothness={4}
+            position={[ax, 0.52, -0.02]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial color="#8a7e72" roughness={0.85} />
+          </RoundedBox>
+        ))}
+
+        {/* ── หมอนอิงผ้าทอ 3D สมจริงจากโมเดลผ้าพับย่น (Poly Haven Sculpted Cloth Mesh + Normal Map) ── */}
         {/* หมอนอิงสีเขียวเซจ (Sage Green) */}
-        <mesh position={[-1.18, 0.68, -0.12]} rotation={[0.18, 0.15, -0.08]} castShadow>
-          <boxGeometry args={[0.42, 0.4, 0.13]} />
-          <meshStandardMaterial color="#6b8e78" roughness={0.8} />
-        </mesh>
-        {/* หมอนอิงสีเหลืองมัสตาร์ด (Warm Ochre/Mustard) */}
-        <mesh position={[-0.72, 0.64, -0.1]} rotation={[0.12, -0.1, 0.05]} castShadow>
-          <boxGeometry args={[0.38, 0.34, 0.12]} />
-          <meshStandardMaterial color="#d4943a" roughness={0.8} />
-        </mesh>
-        {/* หมอนอิงสีชมพูพีช (Soft Terracotta Pink) */}
-        <mesh position={[1.22, 0.68, -0.1]} rotation={[0.15, -0.2, 0.08]} castShadow>
-          <boxGeometry args={[0.44, 0.4, 0.13]} />
-          <meshStandardMaterial color="#e29587" roughness={0.8} />
-        </mesh>
+        <RealisticThrowPillow3D
+          color="#6e9981"
+          variant={0}
+          position={[-1.20, 0.65, -0.10]}
+          rotation={[-0.14, 0.22, -0.06]}
+          scale={0.88}
+        />
+        {/* หมอนอิงสีเหลืองมัสตาร์ด (Warm Ochre / Mustard) */}
+        <RealisticThrowPillow3D
+          color="#e0a03f"
+          variant={1}
+          position={[-0.74, 0.62, -0.07]}
+          rotation={[-0.12, -0.15, 0.05]}
+          scale={0.80}
+        />
+        {/* หมอนอิงสีชมพูพีช (Soft Blush Terracotta) */}
+        <RealisticThrowPillow3D
+          color="#e79a8c"
+          variant={0}
+          position={[1.24, 0.65, -0.08]}
+          rotation={[-0.14, -0.24, 0.07]}
+          scale={0.90}
+        />
 
-        {/* ── หมอนรองให้นมรูปตัว U (C-Shaped Nursing Pillow) บนโซฟาฝั่งขวา ── */}
-        <group position={[0.92, 0.51, 0.12]} rotation={[Math.PI / 2, 0, -0.3]}>
-          <mesh castShadow>
-            <torusGeometry args={[0.22, 0.085, 16, 28, Math.PI * 1.45]} />
-            <meshStandardMaterial color="#fff8f0" roughness={0.75} />
-          </mesh>
-        </group>
+        {/* ── หมอนรองให้นมรูปตัว U (Seamless Boppy Nursing Pillow ไร้รอยตัดเปิดปลาย) ── */}
+        <RealisticNursingPillow3D
+          position={[1.08, 0.56, 0.14]}
+          rotation={[0, -0.35, 0]}
+          scale={0.96}
+        />
 
-        {/* ── ผ้าอ้อมผ้าสาลูพับ 3 ผืน + แพมเพิสวางบนส่วน Chaise Lounge ฝั่งซ้าย ── */}
-        <group position={[-1.05, 0.48, 0.68]} rotation={[0, 0.2, 0]}>
-          {/* ผ้าอ้อมผืนที่ 1 (ล่าง - ชมพูอ่อน) */}
-          <mesh position={[0, 0.02, 0]} castShadow>
-            <boxGeometry args={[0.42, 0.04, 0.34]} />
-            <meshStandardMaterial color="#ffe4e6" roughness={0.8} />
-          </mesh>
-          {/* ผ้าอ้อมผืนที่ 2 (กลาง - ขาวขลิบฟ้า) */}
-          <mesh position={[0.01, 0.06, -0.01]} rotation={[0, -0.08, 0]} castShadow>
-            <boxGeometry args={[0.4, 0.04, 0.32]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.8} />
-          </mesh>
-          <mesh position={[0.01, 0.062, 0.14]} rotation={[0, -0.08, 0]}>
-            <boxGeometry args={[0.4, 0.042, 0.03]} />
-            <meshStandardMaterial color="#38bdf8" />
-          </mesh>
-          {/* ผ้าอ้อมผืนที่ 3 (บน - ครีมอ่อนขลิบชมพู) */}
-          <mesh position={[-0.01, 0.1, 0.01]} rotation={[0, 0.06, 0]} castShadow>
-            <boxGeometry args={[0.38, 0.04, 0.3]} />
-            <meshStandardMaterial color="#fffbeb" roughness={0.8} />
-          </mesh>
-          <mesh position={[-0.01, 0.102, 0.14]} rotation={[0, 0.06, 0]}>
-            <boxGeometry args={[0.38, 0.042, 0.03]} />
-            <meshStandardMaterial color="#f472b6" />
-          </mesh>
-        </group>
+        {/* ── ชุดหนังสือคู่มือคุณแม่ปกแข็ง + หนังสือเปิดกาง + ผ้าอ้อมผ้าสาลูพับนุ่มบน Chaise Lounge ── */}
+        <RealisticBookStack3D
+          position={[-1.12, 0.49, 0.52]}
+          rotation={[0, 0.22, 0]}
+          scale={0.92}
+          withOpenTop={true}
+        />
+        <RealisticFoldedClothStack3D
+          position={[-1.02, 0.49, 1.02]}
+          rotation={[0, -0.15, 0]}
+          scale={0.88}
+        />
       </group>
 
-      {/* ── 3. สตูลพรมถักกลมสีเขียวอ่อน (Sage Knitted Pouf Ottoman) หน้าโซฟาตัว L ── */}
-      <mesh position={[-1.08, 0.18, 1.72]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.36, 0.38, 0.32, 24]} />
-        <meshStandardMaterial color="#a3b899" roughness={0.9} />
-      </mesh>
+      {/* ── 3. สตูลพรมถักกลมสีเขียวเซจ (Sculpted Cable-Knit Pouf Ottoman) หน้าโซฟาตัว L ── */}
+      <RealisticKnittedPouf3D position={[-1.08, 0, 1.80]} color="#a3b899" />
 
-      {/* ── 4. โต๊ะกลางกลมท็อปสีขาว ขาไม้โอ๊ค + แท็บเล็ตสื่อการสอน + ตะกร้าผ้าอ้อม + ขวดนม + แก้วน้ำ + แจกันดอกเดซี่ ── */}
+      {/* ── 4. โต๊ะกลางกลมท็อปขาวขาไม้โอ๊ค + iPad Pro พร้อมขาตั้ง Smart Folio & Apple Pencil + ตะกร้าหวาย + แก้วชา + แจกันดอกไม้จริง ── */}
       <group
-        position={[0.75, 0, 1.38]}
+        position={[0.80, 0, 1.56]}
         onClick={(e) => {
           if (onClickTablet) {
             e.stopPropagation();
@@ -490,135 +563,65 @@ export function CozySectionalSofaSet({
           }
         }}
       >
-        {/* ท็อปโต๊ะกลมสีขาวนวล */}
+        {/* ท็อปโต๊ะกลมสีขาวนวลขอบมน (Top surface y = 0.443) */}
         <mesh position={[0, 0.42, 0]} castShadow receiveShadow>
-          <cylinderGeometry args={[0.68, 0.68, 0.045, 36]} />
-          <meshStandardMaterial color="#fdfbf7" roughness={0.3} />
+          <cylinderGeometry args={[0.68, 0.67, 0.045, 44]} />
+          <meshStandardMaterial color="#fdfbf7" roughness={0.25} />
         </mesh>
-        {/* ขาโต๊ะไม้โอ๊คเฉียง */}
+        <mesh position={[0, 0.42, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.675, 0.022, 14, 44]} />
+          <meshStandardMaterial color="#f5f0e6" roughness={0.28} />
+        </mesh>
+
+        {/* ขาโต๊ะไม้โอ๊คทรงสอบเฉียงสแกนดิเนเวีย */}
         {[
-          [-0.36, -0.36],
-          [0.36, -0.36],
-          [-0.36, 0.36],
-          [0.36, 0.36],
-        ].map(([lx, lz], idx) => (
-          <mesh key={idx} position={[lx, 0.21, lz]} castShadow>
-            <cylinderGeometry args={[0.03, 0.022, 0.42, 12]} />
-            <meshStandardMaterial color="#9c6644" roughness={0.5} />
+          [-0.36, -0.36, -0.1, 0.1],
+          [0.36, -0.36, -0.1, -0.1],
+          [-0.36, 0.36, 0.1, 0.1],
+          [0.36, 0.36, 0.1, -0.1],
+        ].map(([lx, lz, rx, rz], idx) => (
+          <mesh key={idx} position={[lx, 0.21, lz]} rotation={[rx, 0, rz]} castShadow>
+            <cylinderGeometry args={[0.03, 0.02, 0.425, 16]} />
+            <meshStandardMaterial color="#9c6644" roughness={0.46} />
           </mesh>
         ))}
 
-        {/* แท็บเล็ต / iPad ตั้งบนโต๊ะกลม (ตามภาพตัวอย่างมุมขวาล่าง) */}
-        <group position={[-0.12, 0.56, 0.08]} rotation={[-0.25, -0.3, 0]}>
-          <mesh castShadow>
-            <boxGeometry args={[0.36, 0.25, 0.018]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.25} />
-          </mesh>
-          <mesh position={[0, 0, 0.011]}>
-            <planeGeometry args={[0.33, 0.22]} />
-            <meshBasicMaterial color="#fdf2f8" />
-          </mesh>
-          {/* ขาตั้งแท็บเล็ต */}
-          <mesh position={[0, -0.06, -0.06]} rotation={[0.5, 0, 0]}>
-            <boxGeometry args={[0.14, 0.14, 0.015]} />
-            <meshStandardMaterial color="#475569" />
-          </mesh>
-        </group>
+        {/* iPad Pro + Smart Folio Stand + Apple Pencil วางแนบบนท็อปโต๊ะ หันหน้าจอคมชัดสู่ผู้เรียน */}
+        <RealisticIPad3D
+          position={[-0.15, 0.443, 0.10]}
+          rotation={[0, -0.38, 0]}
+          scale={1.06}
+          mode={ipadMode}
+          folioColor={ipadMode === 'breastfeeding' ? '#9d174d' : '#334155'}
+          onClick={onClickTablet}
+        />
 
-        {/* ถาดตะกร้าผ้าอ้อมสำเร็จรูป (แพมเพิส) + ผ้าอ้อมพับ + ขวดนมบนโต๊ะ */}
-        <group position={[0.04, 0.45, -0.32]} rotation={[0, 0.2, 0]}>
-          {/* ถาดไม้ขอบมน */}
-          <mesh position={[0, 0.015, 0]} castShadow>
-            <boxGeometry args={[0.38, 0.03, 0.24]} />
-            <meshStandardMaterial color="#d4a373" roughness={0.5} />
-          </mesh>
-          {/* พับผ้าอ้อมผ้าสาลู 2 ผืนบนถาด */}
-          <mesh position={[-0.08, 0.045, 0]} castShadow>
-            <boxGeometry args={[0.16, 0.035, 0.18]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.8} />
-          </mesh>
-          <mesh position={[-0.08, 0.08, 0]} castShadow>
-            <boxGeometry args={[0.15, 0.035, 0.17]} />
-            <meshStandardMaterial color="#fce7f3" roughness={0.8} />
-          </mesh>
-          {/* แพมเพิสพับพร้อมแถบกาวสีฟ้า */}
-          <mesh position={[0.08, 0.05, 0.02]} castShadow>
-            <boxGeometry args={[0.13, 0.045, 0.16]} />
-            <meshStandardMaterial color="#f8fafc" roughness={0.7} />
-          </mesh>
-          <mesh position={[0.08, 0.074, 0.02]}>
-            <boxGeometry args={[0.132, 0.008, 0.04]} />
-            <meshStandardMaterial color="#38bdf8" />
-          </mesh>
-          {/* ขวดนมทารก */}
-          <group position={[0.12, 0.03, -0.06]}>
-            <mesh position={[0, 0.06, 0]} castShadow>
-              <cylinderGeometry args={[0.028, 0.03, 0.11, 14]} />
-              <meshStandardMaterial color="#fffbeb" roughness={0.2} />
-            </mesh>
-            <mesh position={[0, 0.125, 0]}>
-              <cylinderGeometry args={[0.026, 0.028, 0.025, 14]} />
-              <meshStandardMaterial color="#f472b6" />
-            </mesh>
-            <mesh position={[0, 0.15, 0]}>
-              <sphereGeometry args={[0.016, 10, 10]} />
-              <meshStandardMaterial color="#fbbf24" roughness={0.4} />
-            </mesh>
-          </group>
-        </group>
+        {/* ตะกร้าหวายแท้ (Poly Haven GLB) พร้อมผ้าอ้อมผ้าสาลูพับ แพมเพิส และขวดนมวัดสเกล */}
+        <RealisticWickerTraySet3D
+          position={[0.08, 0.443, -0.26]}
+          rotation={[0, 0.24, 0]}
+          scale={0.94}
+        />
 
-        {/* แก้วเซรามิกสีเขียวพาสเทลบนจานรองไม้ */}
-        <group position={[-0.36, 0.45, -0.14]}>
-          <mesh position={[0, 0.01, 0]}>
-            <cylinderGeometry args={[0.065, 0.065, 0.015, 16]} />
-            <meshStandardMaterial color="#b07d4f" />
-          </mesh>
-          <mesh position={[0, 0.055, 0]} castShadow>
-            <cylinderGeometry args={[0.045, 0.04, 0.08, 16]} />
-            <meshStandardMaterial color="#84a98c" roughness={0.35} />
-          </mesh>
-        </group>
+        {/* แก้วเซรามิกสีเขียวเซจมีหูจับ + น้ำชาสมุนไพรอุ่นบนจานรองไม้โอ๊ค */}
+        <RealisticCeramicMug3D position={[-0.41, 0.443, -0.15]} rotation={[0, 0.5, 0]} />
 
-        {/* แจกันดอกเดซี่สีขาวด้านขวาของโต๊ะ */}
-        <group position={[0.32, 0.45, 0.08]}>
-          <mesh position={[0, 0.09, 0]} castShadow>
-            <cylinderGeometry args={[0.065, 0.08, 0.18, 16]} />
-            <meshStandardMaterial color="#f5ebe0" roughness={0.4} />
-          </mesh>
-          {[
-            [0, 0.22, 0],
-            [-0.05, 0.2, 0.03],
-            [0.05, 0.21, -0.02],
-            [0.02, 0.24, 0.04],
-          ].map(([fx, fy, fz], i) => (
-            <group key={i} position={[fx, fy, fz]}>
-              <mesh>
-                <sphereGeometry args={[0.04, 10, 10]} />
-                <meshStandardMaterial color="#ffffff" />
-              </mesh>
-              <mesh position={[0, 0.02, 0]}>
-                <sphereGeometry args={[0.018, 8, 8]} />
-                <meshStandardMaterial color="#f59e0b" />
-              </mesh>
-            </group>
-          ))}
-        </group>
+        {/* แจกันแก้วจัดช่อดอกไม้สด 3D สมจริง (Poly Haven GLB) */}
+        <FlowerVase position={[0.36, 0.415, 0.12]} scale={0.92} />
 
-        {/* ป้ายคลิกแท็บเล็ตบนโต๊ะ */}
+        {/* ป้ายคลิกแท็บเล็ตบนโต๊ะ (3D WebGL depth-buffered ไม่ลอยทับตัวละคร) */}
         {onClickTablet && (
-          <Html position={[-0.1, 0.95, 0]} center zIndexRange={[15, 0]}>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClickTablet();
-              }}
-              className="cursor-pointer bg-white/95 hover:bg-pink-50 text-pink-800 border-2 border-pink-400 px-3 py-1.5 rounded-2xl text-xs font-extrabold shadow-md whitespace-normal text-center leading-snug transition hover:scale-105"
-              style={{ maxWidth: 'min(84vw, 320px)' }}
-            >
-              {tabletLabel}
-            </button>
-          </Html>
+          <BillboardLabel3D
+            position={[-0.08, 0.78, 0]}
+            text={tabletLabel}
+            bg="#ffffff"
+            textColor="#9d174d"
+            borderColor="#f472b6"
+            width={1.75}
+            height={0.34}
+            pill={false}
+            onClick={onClickTablet}
+          />
         )}
       </group>
     </group>
@@ -626,108 +629,193 @@ export function CozySectionalSofaSet({
 }
 
 /**
- * CozyRoomDecorCorners — ของตกแต่งมุมห้องอบอุ่นตามภาพตัวอย่าง:
- * 1) มุมซ้ายหน้า: พรมสานกลม + ตะกร้าหวายมีผ้าพาด + กระถางต้นไม้ใบเขียว
- * 2) มุมซ้ายใน: พรมกลม + ตุ๊กตากระต่ายน้อย + กระถางต้นไม้
- * 3) มุมขวาหลังโซฟา: ตู้ไม้เตี้ย + โคมไฟตั้งโต๊ะแสงสีส้มอุ่น + ต้นไม้ฟอกอากาศ
+ * CozyRoomDecorCorners — ของตกแต่งมุมห้องอบอุ่นสมจริงระดับโมเดล 3D ละเอียด:
+ * 1) มุมซ้ายหน้า: พรมสานกลม + ตะกร้าหวายสานแท้ (GLB) มีผ้าห่มพับพาด + ต้นไม้ใบจริง (GLB)
+ * 2) มุมซ้ายใน: พรมกลม + ตุ๊กตากระต่ายผ้าขนปุยผูกโบว์ + หนังสือคู่มือเปิดกาง
+ * 3) ด้านขวาหลังโซฟา: ตู้ไซด์บอร์ดไม้โอ๊คสแกนดิเนเวียมีบานเปิด/ขาไม้สอบ + โคมไฟเซรามิก + กองหนังสือ + ต้นไม้จริง (GLB)
  */
 export function CozyRoomDecorCorners() {
+  const { scene: wickerScene } = useGLTF('/models/wicker_basket_01.glb');
+  const hamperBasket = useMemo(() => {
+    if (!wickerScene) return null;
+    const c = wickerScene.clone(true);
+    c.traverse((ch) => {
+      if (ch.isMesh) {
+        ch.castShadow = true;
+        ch.receiveShadow = true;
+      }
+    });
+    return c;
+  }, [wickerScene]);
+
   return (
     <group>
-      {/* ── 1. มุมซ้ายหน้า: พรมสานกลม + ตะกร้าหวายใส่ผ้าห่ม + กระถางต้นไม้ ── */}
-      <group position={[-5.4, 0, 2.2]}>
-        {/* พรมสานกลมสีเบจ */}
+      {/* ── 1. มุมซ้ายหน้า: พรมสานกลม + ตะกร้าหวายแท้ใส่ผ้าห่ม + ต้นไม้ใบจริง 3D (ขยับพ้นแนวโปสเตอร์ผนังซ้ายและประตู) ── */}
+      <group position={[-6.0, 0, 4.42]}>
+        {/* พรมสานกลมสีเบจพร้อมขอบเย็บ */}
         <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <circleGeometry args={[1.15, 32]} />
+          <circleGeometry args={[1.15, 36]} />
           <meshStandardMaterial color="#d9c3a9" roughness={0.95} />
         </mesh>
-        {/* ตะกร้าหวายสาน */}
-        <mesh position={[0.15, 0.24, -0.15]} castShadow>
-          <cylinderGeometry args={[0.28, 0.24, 0.46, 20]} />
-          <meshStandardMaterial color="#b88b5a" roughness={0.85} />
+        <mesh position={[0, 0.014, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[1.03, 1.14, 36]} />
+          <meshStandardMaterial color="#c2a88b" roughness={0.95} />
         </mesh>
-        {/* ผ้าขนหนูสีครีมพาดขอบตะกร้า */}
-        <mesh position={[0.28, 0.35, -0.05]} rotation={[0.2, 0, -0.35]} castShadow>
-          <boxGeometry args={[0.18, 0.32, 0.22]} />
-          <meshStandardMaterial color="#f5ebe0" roughness={0.8} />
-        </mesh>
-        {/* กระถางต้นไม้สีขาวทรงสูง + พุ่มใบไม้สีเขียวสด */}
-        <group position={[-0.45, 0, 0.25]}>
-          <mesh position={[0, 0.26, 0]} castShadow>
-            <cylinderGeometry args={[0.24, 0.18, 0.52, 20]} />
-            <meshStandardMaterial color="#f8fafc" roughness={0.3} />
-          </mesh>
-          <mesh position={[0, 0.85, 0]} castShadow>
-            <sphereGeometry args={[0.45, 16, 16]} />
-            <meshStandardMaterial color="#3f6212" roughness={0.7} />
-          </mesh>
-          <mesh position={[0.15, 1.15, -0.1]} castShadow>
-            <sphereGeometry args={[0.35, 14, 14]} />
-            <meshStandardMaterial color="#4d7c0f" roughness={0.7} />
-          </mesh>
+
+        {/* ตะกร้าหวายสาน 3D (Poly Haven GLB) + ผ้าห่มนุ่มพับซ้อนด้านใน */}
+        <group position={[0.20, 0, -0.15]}>
+          {hamperBasket ? (
+            <primitive object={hamperBasket} scale={[1.55, 3.6, 1.85]} position={[0, 0, 0]} />
+          ) : (
+            <mesh position={[0, 0.22, 0]} castShadow>
+              <cylinderGeometry args={[0.28, 0.24, 0.44, 24]} />
+              <meshStandardMaterial color="#b88b5a" roughness={0.85} />
+            </mesh>
+          )}
+          <RoundedBox args={[0.38, 0.16, 0.28]} radius={0.045} position={[0, 0.34, 0]} castShadow>
+            <meshStandardMaterial color="#faf3e8" roughness={0.88} />
+          </RoundedBox>
+          <RoundedBox
+            args={[0.22, 0.26, 0.06]}
+            radius={0.025}
+            position={[0.18, 0.30, 0.08]}
+            rotation={[0.15, 0.2, -0.38]}
+            castShadow
+          >
+            <meshStandardMaterial color="#fde8e8" roughness={0.86} />
+          </RoundedBox>
         </group>
+
+        {/* กระถางต้นไม้ใบเขียว 3D สมจริง (RealPlant GLB) */}
+        <RealPlant type="potted" position={[-0.48, 0, 0.26]} scale={0.95} />
       </group>
 
-      {/* ── 2. มุมซ้ายใน: พรมกลม + ตุ๊กตากระต่ายน้อย + ต้นไม้ประดับ ── */}
+      {/* ── 2. มุมซ้ายใน: พรมกลม + ตุ๊กตากระต่ายผ้าผูกโบว์ + หนังสือคู่มือเปิดกาง ── */}
       <group position={[-4.2, 0, -4.8]}>
         <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <circleGeometry args={[0.95, 28]} />
+          <circleGeometry args={[0.98, 32]} />
           <meshStandardMaterial color="#e6d5c3" roughness={0.95} />
         </mesh>
-        {/* ตุ๊กตากระต่ายน้อยนั่งบนพรม */}
-        <group position={[0.2, 0, 0.1]} rotation={[0, 0.4, 0]}>
-          <mesh position={[0, 0.14, 0]} castShadow>
-            <sphereGeometry args={[0.12, 14, 14]} />
-            <meshStandardMaterial color="#ebd8d0" roughness={0.85} />
-          </mesh>
-          <mesh position={[0, 0.3, 0]} castShadow>
-            <sphereGeometry args={[0.095, 14, 14]} />
-            <meshStandardMaterial color="#ebd8d0" roughness={0.85} />
-          </mesh>
-          <mesh position={[-0.04, 0.44, 0]} rotation={[0, 0, 0.15]}>
-            <cylinderGeometry args={[0.02, 0.025, 0.16, 10]} />
-            <meshStandardMaterial color="#f5ebe0" />
-          </mesh>
-          <mesh position={[0.04, 0.44, 0]} rotation={[0, 0, -0.15]}>
-            <cylinderGeometry args={[0.02, 0.025, 0.16, 10]} />
-            <meshStandardMaterial color="#f5ebe0" />
-          </mesh>
-        </group>
+        <mesh position={[0, 0.014, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.86, 0.97, 32]} />
+          <meshStandardMaterial color="#cfb9a1" roughness={0.95} />
+        </mesh>
+
+        {/* ตุ๊กตากระต่ายน้อย 3D สมจริง */}
+        <RealisticPlushToy3D
+          kind="bunny"
+          position={[0.22, 0.012, 0.08]}
+          rotation={[0, 0.42, 0]}
+          scale={1.08}
+        />
+
+        {/* หนังสือคู่มือเปิดกางวางข้างตุ๊กตากระต่ายบนพรม */}
+        <RealisticOpenBook3D
+          position={[-0.26, 0.015, 0.14]}
+          rotation={[0, -0.35, 0]}
+          width={0.38}
+          depth={0.26}
+          coverColor="#db2777"
+        />
       </group>
 
-      {/* ── 3. ด้านขวาหลังโซฟา: ตู้ไม้โอ๊คเตี้ย + โคมไฟตั้งโต๊ะแสงสีส้มอุ่น + ต้นไม้ ── */}
+      {/* ── 3. ด้านขวาหลังโซฟา: ตู้ไซด์บอร์ดไม้โอ๊คสแกนดิเนเวีย + โคมไฟเซรามิก + กองหนังสือ + ต้นไม้จริง ── */}
       <group position={[3.6, 0, -2.2]} rotation={[0, -0.25, 0]}>
-        <mesh position={[0, 0.42, 0]} castShadow receiveShadow>
-          <boxGeometry args={[1.6, 0.76, 0.52]} />
-          <meshStandardMaterial color="#a47148" roughness={0.5} />
-        </mesh>
-        {/* โคมไฟตั้งโต๊ะแสงอบอุ่น */}
-        <group position={[0.42, 0.8, 0]}>
-          <mesh position={[0, 0.14, 0]}>
-            <cylinderGeometry args={[0.03, 0.08, 0.28, 12]} />
-            <meshStandardMaterial color="#7f5539" />
+        {/* ขาตู้ไม้โอ๊คทรงสอบเฉียง 4 มุม */}
+        {[
+          [-0.72, -0.20, -0.06, 0.08],
+          [0.72, -0.20, -0.06, -0.08],
+          [-0.72, 0.20, 0.06, 0.08],
+          [0.72, 0.20, 0.06, -0.08],
+        ].map(([lx, lz, rx, rz], idx) => (
+          <mesh key={idx} position={[lx, 0.11, lz]} rotation={[rx, 0, rz]} castShadow>
+            <cylinderGeometry args={[0.028, 0.018, 0.22, 14]} />
+            <meshStandardMaterial color="#7f5539" roughness={0.45} />
           </mesh>
-          <mesh position={[0, 0.34, 0]}>
-            <cylinderGeometry args={[0.16, 0.22, 0.24, 18]} />
+        ))}
+
+        {/* โครงตู้ไม้โอ๊คขอบมน */}
+        <RoundedBox
+          args={[1.64, 0.56, 0.52]}
+          radius={0.024}
+          smoothness={3}
+          position={[0, 0.49, 0]}
+          castShadow
+          receiveShadow
+        >
+          <meshStandardMaterial color="#a47148" roughness={0.48} />
+        </RoundedBox>
+        {/* ท็อปไม้โอ๊คแผ่นบนยื่นขอบมน */}
+        <RoundedBox
+          args={[1.70, 0.036, 0.56]}
+          radius={0.014}
+          smoothness={3}
+          position={[0, 0.78, 0]}
+          castShadow
+          receiveShadow
+        >
+          <meshStandardMaterial color="#b88458" roughness={0.4} />
+        </RoundedBox>
+
+        {/* บานตู้ลูกฟักสีครีมขาวซ้าย-ขวา พร้อมมือจับทองเหลือง */}
+        {[-0.41, 0.41].map((dx, idx) => (
+          <group key={idx} position={[dx, 0.49, 0.264]}>
+            <RoundedBox args={[0.75, 0.47, 0.018]} radius={0.01} smoothness={2} castShadow>
+              <meshStandardMaterial color="#faf6f0" roughness={0.35} />
+            </RoundedBox>
+            <RoundedBox args={[0.65, 0.37, 0.008]} radius={0.006} smoothness={2} position={[0, 0, 0.008]}>
+              <meshStandardMaterial color="#f2e9dc" roughness={0.42} />
+            </RoundedBox>
+            <mesh
+              position={[idx === 0 ? 0.28 : -0.28, 0, 0.022]}
+              rotation={[Math.PI / 2, 0, 0]}
+            >
+              <cylinderGeometry args={[0.014, 0.01, 0.022, 14]} />
+              <meshStandardMaterial color="#d4a373" metalness={0.7} roughness={0.25} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* โคมไฟตั้งโต๊ะฐานเซรามิกทรงแจกัน + โป๊ะผ้าลินินแสงอบอุ่น */}
+        <group position={[0.52, 0.798, 0]}>
+          <mesh position={[0, 0.012, 0]}>
+            <cylinderGeometry args={[0.08, 0.085, 0.024, 20]} />
+            <meshStandardMaterial color="#7f5539" roughness={0.45} />
+          </mesh>
+          <mesh position={[0, 0.12, 0]} scale={[1, 1.25, 1]} castShadow>
+            <sphereGeometry args={[0.085, 20, 18]} />
+            <meshStandardMaterial color="#ede0d4" roughness={0.32} />
+          </mesh>
+          <mesh position={[0, 0.24, 0]}>
+            <cylinderGeometry args={[0.012, 0.012, 0.08, 12]} />
+            <meshStandardMaterial color="#d4a373" metalness={0.75} roughness={0.22} />
+          </mesh>
+          <mesh position={[0, 0.35, 0]} castShadow>
+            <cylinderGeometry args={[0.14, 0.20, 0.23, 24, 1, true]} />
             <meshStandardMaterial
               color="#fef3c7"
               emissive="#f59e0b"
-              emissiveIntensity={0.65}
+              emissiveIntensity={0.62}
+              roughness={0.75}
+              side={THREE.DoubleSide}
             />
           </mesh>
-          <pointLight position={[0, 0.4, 0]} color="#ffd8a8" intensity={0.6} distance={5} />
-        </group>
-        {/* กระถางต้นไม้บนตู้ไม้ */}
-        <group position={[-0.4, 0.8, 0]}>
-          <mesh position={[0, 0.1, 0]}>
-            <cylinderGeometry args={[0.09, 0.07, 0.18, 14]} />
-            <meshStandardMaterial color="#d4a373" />
+          <mesh position={[0, 0.33, 0]}>
+            <sphereGeometry args={[0.036, 12, 12]} />
+            <meshBasicMaterial color="#fffbeb" />
           </mesh>
-          <mesh position={[0, 0.26, 0]}>
-            <sphereGeometry args={[0.16, 12, 12]} />
-            <meshStandardMaterial color="#3f6212" roughness={0.7} />
-          </mesh>
+          <pointLight position={[0, 0.36, 0]} color="#ffd8a8" intensity={0.65} distance={5} />
         </group>
+
+        {/* กองหนังสือคู่มือคุณแม่และทารกปกแข็งวางตรงกลางตู้ไซด์บอร์ด */}
+        <RealisticBookStack3D
+          position={[0.0, 0.798, 0.02]}
+          rotation={[0, -0.12, 0]}
+          scale={0.86}
+        />
+
+        {/* ต้นไม้ฟอกอากาศใบจริง 3D บนตู้ไม้ (RealPlant GLB แทนทรงกลมเขียว) */}
+        <RealPlant type="succulent" position={[-0.50, 0.855, 0]} scale={0.58} />
       </group>
     </group>
   );
@@ -747,14 +835,19 @@ export function WallMountedTV3D({
   accentColor = '#ec4899',
   onClick,
 }) {
-  const screenTex = useMemo(() => {
+  const { screenTex, redrawScreen } = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = 600;
     const ctx = canvas.getContext('2d');
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
 
     const draw = () => {
       if (!ctx) return;
+      ctx.clearRect(0, 0, 1024, 600);
       const grad = ctx.createLinearGradient(0, 0, 1024, 600);
       grad.addColorStop(0, '#0f172a');
       grad.addColorStop(0.5, '#1e1b4b');
@@ -774,9 +867,8 @@ export function WallMountedTV3D({
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.font = `900 26px ${THAI_FONT}`;
-      ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(badge, 512, 93);
+      fillCenteredText(ctx, badge, 512, 93, 296);
 
       // Play button circle
       ctx.fillStyle = '#ffffff';
@@ -795,35 +887,34 @@ export function WallMountedTV3D({
       // Title & subtitle
       ctx.fillStyle = '#ffffff';
       ctx.font = `900 42px ${THAI_FONT}`;
-      ctx.fillText(title, 512, 390, 900);
+      fillCenteredText(ctx, title, 512, 390, 900);
 
       ctx.fillStyle = '#fbcfe8';
       ctx.font = `700 28px ${THAI_FONT}`;
-      ctx.fillText(subtitle, 512, 455, 900);
+      fillCenteredText(ctx, subtitle, 512, 455, 900);
 
       // Bottom pill
       ctx.fillStyle = 'rgba(255,255,255,0.16)';
-      roundRect2D(ctx, 312, 495, 400, 50, 25);
+      roundRect2D(ctx, 292, 495, 440, 50, 25);
       ctx.fill();
       ctx.fillStyle = '#fde047';
       ctx.font = `800 24px ${THAI_FONT}`;
-      ctx.fillText('▶ คลิกที่จอทีวีเพื่อเปิดดูสื่อการสอน', 512, 521);
+      fillCenteredText(ctx, '▶ คลิกที่จอทีวีเพื่อเปิดดูสื่อการสอน', 512, 521, 412);
+
+      tex.needsUpdate = true;
     };
 
     draw();
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.generateMipmaps = false;
-    tex.minFilter = THREE.LinearFilter;
-    tex.needsUpdate = true;
-    return tex;
+    return { screenTex: tex, redrawScreen: draw };
   }, [title, subtitle, badge, accentColor]);
 
   useEffect(() => {
+    const cancelFonts = whenFontsReady(redrawScreen);
     return () => {
+      cancelFonts();
       screenTex.dispose();
     };
-  }, [screenTex]);
+  }, [screenTex, redrawScreen]);
 
   const [hovered, setHovered] = useState(false);
   useEffect(() => {

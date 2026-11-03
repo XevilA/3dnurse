@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
+import BillboardLabel3D from '../ui/BillboardLabel3D';
 
 /**
  * InteractiveSeat — Gamified 3D Seating System
@@ -108,31 +108,20 @@ export default function InteractiveSeat({
       {/* 3D Furniture Model */}
       {children}
 
-      {/* ── Gamified 3D Interaction Prompt (2D screen-aligned so touch hit-testing is always exact on iOS) ── */}
-      {isNearby && (
-        <Html position={[0, seatOffset[1] + 0.85, 0]} center zIndexRange={[20, 0]}>
-          <button
-            type="button"
-            onClick={handleSeatClick}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl font-bold text-xs shadow-2xl backdrop-blur-md cursor-pointer select-none transition transform hover:scale-105 active:scale-95 border-2 pointer-events-auto"
-            style={{
-              background: type === 'wheelchair'
-                ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
-                : 'linear-gradient(135deg, #db2777 0%, #be185d 100%)',
-              color: 'white',
-              borderColor: 'white',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-            }}
-          >
-            <span className="text-base">
-              {type === 'wheelchair' ? '♿' : type === 'sofa' ? '🛋️' : type === 'bed' ? '🛏️' : '🪑'}
-            </span>
-            <div className="flex flex-col text-left">
-              <span className="text-[10px] text-yellow-300 font-mono tracking-wider">แตะเพื่อนั่ง / กด [F]</span>
-              <span className="text-xs whitespace-nowrap">{name}</span>
-            </div>
-          </button>
-        </Html>
+      {/* ── Gamified 3D Interaction Prompt (100% WebGL depth-buffered so it never overlaps character head) ── */}
+      {isNearby && id !== 'room103_practice_sofa' && id !== 'room104_sofa' && (
+        <BillboardLabel3D
+          position={[0, seatOffset[1] + 0.88, 0]}
+          text={`${type === 'wheelchair' ? '♿' : type === 'sofa' ? '🛋️' : type === 'bed' ? '🛏️' : '🪑'} แตะเพื่อนั่ง / กด [F]`}
+          subtext={name}
+          bg={type === 'wheelchair' ? '#0284c7' : '#db2777'}
+          bgEnd={type === 'wheelchair' ? '#0369a1' : '#be185d'}
+          subtextColor="#fef08a"
+          width={1.55}
+          height={0.42}
+          pill={false}
+          onClick={handleSeatClick}
+        />
       )}
 
       {/* Subtle floor glowing halo when nearby */}

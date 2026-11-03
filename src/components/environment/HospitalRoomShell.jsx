@@ -124,6 +124,7 @@ export default function HospitalRoomShell({
   doorZ = null,
   windowWall = 'none', // default 'none' so custom room windows & posters never collide
   cozyMode = true, // Warm residential-hospital interior (wood floor, wood baseboards, warm cove ceiling)
+  wallColor = null, // Optional soft off-white wallpaper override (e.g. '#f8fafc' for Ward 101 & 102)
   roomTitle = 'ห้องบริบาลมารดาและทารก',
   roomNumber = 'Room 101',
 }) {
@@ -133,12 +134,12 @@ export default function HospitalRoomShell({
   const colors = useMemo(() => {
     if (isWarmWoodRoom) {
       return {
-        wallUpper: '#faf4ed',
-        wallLower: '#f3e9dc',
+        wallUpper: wallColor || '#faf4ed',
+        wallLower: wallColor || '#f3e9dc',
         bumperRail: '#c89b6e',
         baseboard: '#9c6b3f',
         door: '#e6ccb2',
-        lightTint: '#fff3e0',
+        lightTint: wallColor ? '#ffffff' : '#fff3e0',
       };
     }
     switch (theme) {
@@ -180,7 +181,7 @@ export default function HospitalRoomShell({
           lightTint: '#fff0f5',
         };
     }
-  }, [theme, isWarmWoodRoom]);
+  }, [theme, isWarmWoodRoom, wallColor]);
 
   // Procedural oak wood plank texture for Mother & Newborn rooms (skipped completely in Lobby/Quiz)
   const warmWoodPlankTex = useWarmWoodPlankTexture(

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import ScreenPortal from '../ui/ScreenPortal';
+import BillboardLabel3D from '../ui/BillboardLabel3D';
 import PlayerController from '../player/PlayerController';
 import NursingChair from '../furniture/NursingChair';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
@@ -14,6 +14,7 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
 import MedicineCabinet from '../furniture/MedicineCabinet';
 import BabyAvatar from '../avatars/BabyAvatar';
 import BabyCrib from '../furniture/BabyCrib';
+import { WindowWithCurtains } from '../ward/WardKit';
 
 import { ALL_QUIZ_QUESTIONS, ROOM_QUIZ_MAPPING } from '../../data/quizData';
 
@@ -128,6 +129,14 @@ export default function QuizRoom() {
       <RealTree position={[10.5, 0, -10]} scale={0.85} />
       <RealPlant type="potted" position={[-5.5, 0, -9]} scale={1.1} />
       <RealPlant type="house" position={[5.5, 0, -9]} scale={1.0} />
+
+      {/* หน้าต่างกระจกใสบานใหญ่เห็นวิวสวนภายนอกรอบโถงสอบ (ด้านหน้าและซ้าย-ขวา เหนือบัวผนัง ไม่มี Z-fighting) */}
+      <WindowWithCurtains position={[-7.2, 4.05, -12.74]} width={4.2} height={3.0} />
+      <WindowWithCurtains position={[7.2, 4.05, -12.74]} width={4.2} height={3.0} />
+      <WindowWithCurtains position={[-12.74, 4.05, -3.5]} rotation={[0, Math.PI / 2, 0]} width={3.8} height={2.9} />
+      <WindowWithCurtains position={[-12.74, 4.05, 4.2]} rotation={[0, Math.PI / 2, 0]} width={3.8} height={2.9} />
+      <WindowWithCurtains position={[12.74, 4.05, -3.5]} rotation={[0, -Math.PI / 2, 0]} width={3.8} height={2.9} />
+      <WindowWithCurtains position={[12.74, 4.05, 4.2]} rotation={[0, -Math.PI / 2, 0]} width={3.8} height={2.9} />
 
       {/* Real Velvet Sofas for Examinee Waiting Area */}
       <InteractiveSeat
@@ -647,23 +656,15 @@ export default function QuizRoom() {
             <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
-        <Html position={[0, 1.35, 0]} center distanceFactor={12}>
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setHoldingBaby(!isHoldingBaby);
-            }}
-            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg"
-            style={{
-              background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
-              color: 'white',
-              border: '2px solid white',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อยหลับอยู่ (คลิกอุ้ม)'}
-          </div>
-        </Html>
+        <BillboardLabel3D
+          position={[0, 1.32, 0]}
+          text={isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อยหลับอยู่ (คลิกอุ้ม)'}
+          bg={isHoldingBaby ? '#10b981' : '#ec4899'}
+          width={1.52}
+          height={0.30}
+          pill={true}
+          onClick={() => setHoldingBaby(!isHoldingBaby)}
+        />
       </group>
 
       {/* ── GTA-Style Player Character in Quiz Room ── */}

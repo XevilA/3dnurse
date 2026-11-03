@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import ScreenPortal from '../ui/ScreenPortal';
+import BillboardLabel3D from '../ui/BillboardLabel3D';
 import PlayerController from '../player/PlayerController';
 import HospitalBed from '../furniture/HospitalBed';
 import HospitalNightstand from '../furniture/HospitalNightstand';
@@ -15,16 +15,27 @@ import MedicineCabinet from '../furniture/MedicineCabinet';
 import Pillows from '../decorations/Pillows';
 import HospitalTrashBin from '../decorations/HospitalTrashBin';
 import BabyAvatar from '../avatars/BabyAvatar';
+import MotherAvatar from '../avatars/MotherAvatar';
 import BabyCrib from '../furniture/BabyCrib';
 import NursingChair from '../furniture/NursingChair';
+import { FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
 import { FoodTray, WaterJug } from '../furniture/BabyProps';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
-import { WallBoard, TitleSign, WallScreen, WindowWithCurtains, DiningTable, LoungeCorner, useEnterToActivate } from '../ward/WardKit';
+import {
+  WallBoard,
+  TitleSign,
+  WallScreen,
+  ProjectorScreenBoard,
+  WindowWithCurtains,
+  DiningTable,
+  LoungeCorner,
+  useEnterToActivate,
+} from '../ward/WardKit';
 import { WARD101_BOARDS } from '../ward/wardData';
 
 export default function MotherCare1Room() {
-  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby, openWardModal, wardFlow, learningProgress } = useStore();
+  const { setRoom, completeModule, setShowSuccessModal, isHoldingBaby, setHoldingBaby, openWardModal, openLightbox, wardFlow, learningProgress } = useStore();
   const ROOM = 'motherCare1';
   const flow = wardFlow[ROOM] || {};
   const slideSeen = !!flow.slide;
@@ -35,6 +46,29 @@ export default function MotherCare1Room() {
   const [activeTab, setActiveTab] = useState(0); // 0: พักผ่อน, 1: โภชนาการ, 2: ล้างมือ, 3: เคลื่อนไหว, 4: แบบประเมิน
   const [isBoardFullScreen, setIsBoardFullScreen] = useState(false);
   const [missionCollapsed, setMissionCollapsed] = useState(false);
+
+  const ward101Posters = [
+    {
+      src: '/images/ward/ward101_selfcare_poster.jpg',
+      title: 'การดูแลตนเองระหว่างพักรักษาหลังคลอด',
+      badge: 'Ward 101 • โปสเตอร์ให้ความรู้',
+      hideDetails: true,
+    },
+    {
+      src: '/images/ward/ward101_foodtable.jpg',
+      title: 'โภชนาการและอาหารสำหรับคุณแม่หลังคลอด',
+      badge: 'Ward 101 • โภชนาการหลังคลอด',
+      description: 'รับประทานอาหารครบ 5 หมู่ เน้นโปรตีน ธาตุเหล็ก แคลเซียม ผักผลไม้สด และดื่มน้ำสะอาดอย่างน้อยวันละ 8–10 แก้ว เพื่อช่วยฟื้นฟูร่างกายและกระตุ้นการสร้างน้ำนมแม่ (สำหรับกิจกรรมเลือกเมนูอาหาร ให้ทำที่โต๊ะอาหารค่ะ)',
+    },
+  ];
+
+  const openWard101Poster = (idx) => {
+    openLightbox({
+      ...ward101Posters[idx],
+      items: ward101Posters,
+      currentIndex: idx,
+    });
+  };
 
   // ── กิจกรรม 1: พักผ่อนและขอความช่วยเหลือ ──
   const [act1Cards, setAct1Cards] = useState([
@@ -102,7 +136,7 @@ export default function MotherCare1Room() {
 
   // ── กิจกรรม 3: การล้างมือและการดูแลความสะอาด ──
   const washOrder = [
-    { stepNum: 1, text: '1. เปียกมือด้วยน้ำสะอาดที่ไหลผ่าน' },
+    { stepNum: 1, text: '1. ล้างมือด้วยน้ำสะอาดที่ไหลผ่าน' },
     { stepNum: 2, text: '2. ใช้สบู่และฟอกถูให้ทั่ว (ฝ่ามือ ซอกนิ้ว หลังมือ ข้อมือ) อย่างน้อย 20 วินาที' },
     { stepNum: 3, text: '3. ล้างฟองสบู่ออกด้วยน้ำสะอาดไหลผ่าน' },
     { stepNum: 4, text: '4. เช็ดมือให้แห้งสนิทด้วยผ้าสะอาดหรือกระดาษเช็ดมือ' },
@@ -745,6 +779,7 @@ export default function MotherCare1Room() {
     <group>
       <HospitalRoomShell
         theme="mother"
+        wallColor="#f8fafc"
         roomTitle="ห้องบริบาลมารดา 1: การดูแลร่างกายและการฟื้นตัวหลังคลอด"
         roomNumber="Ward 101"
       />
@@ -849,63 +884,100 @@ export default function MotherCare1Room() {
         </ScreenPortal>
       )}
 
-      {/* ── ป้ายและบอร์ดผนัง (ติดผนังด้านใน z = -8.76 อย่างแนบสนิท ไม่ชนกรอบโปรเจกเตอร์) ── */}
-      <TitleSign position={[-6.3, 4.9, -8.76]} width={4.4} height={2.0} line1={B.title.line1} line2={B.title.line2} />
-      <WallBoard position={[-6.3, 2.5, -8.76]} width={3.2} height={2.6} title={B.goals.title} items={B.goals.items} />
-      <WallBoard position={[4.1, 3.4, -8.76]} width={2.85} height={3.6} title={B.selfCare.title} items={B.selfCare.items} />
-      <WallBoard position={[7.2, 3.4, -8.76]} width={2.85} height={3.6} title={B.recovery.title} items={B.recovery.items} accent="#26a69a" />
-      {/* จอสไลด์ความรู้ Zone 1 ติดผนังฝั่งขวา (ไม่ซ้อนทับหลังโปรเจกเตอร์) */}
-      <WallScreen position={[8.72, 3.3, -5.6]} rotation={[0, -Math.PI / 2, 0]} width={3.4} src={'/images/ward/zone1_slide.jpg'} room={ROOM} label="Zone 1" />
-      <WindowWithCurtains position={[-8.78, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
+      {/* ── ป้ายและบอร์ดผนัง (ติดผนังด้านใน z = -8.76 อย่างแนบสนิท ไม่ชนกรอบโปรเจกเตอร์และหัวเตียง) ── */}
+      <TitleSign position={[-6.1, 5.02, -8.76]} width={4.4} height={1.88} line1={B.title.line1} line2={B.title.line2} />
+      <WallBoard position={[-6.1, 2.66, -8.76]} width={3.2} height={2.48} title={B.goals.title} items={B.goals.items} />
+
+      {/* ฝั่งขวาของผนังเหนือ: เหลือเฉพาะโปสเตอร์ภาพประกอบ "การดูแลตนเองระหว่างพักรักษา" เพียงแผ่นเดียวตามคอมเมนต์ (อัตราส่วน 2:3 แท้ 100%) */}
+      <FramedImagePoster3D
+        position={[4.95, 3.52, -8.76]}
+        rotation={[0, 0, 0]}
+        width={2.88}
+        height={4.28}
+        src="/images/ward/ward101_selfcare_poster.jpg"
+        title=""
+        badgeText=""
+        frameColor="#f472b6"
+        accentColor="#ec4899"
+        onClick={() => openWard101Poster(0)}
+      />
+
+      {/* จอสไลด์ความรู้ Zone 1 ติดผนังฝั่งขวา (ขยายกรอบใหญ่ชัดเจน อ่านง่าย) */}
+      <WallScreen position={[8.72, 3.38, -5.55]} rotation={[0, -Math.PI / 2, 0]} width={4.5} src={'/images/ward/zone1_slide.jpg'} room={ROOM} label="Zone 1" />
+
+      {/* ภาพโภชนาการและอาหารคุณแม่หลังคลอด แปะติดผนังฝั่งขวาเหนือตู้และกระจกอ่างล้างมือ — คลิกเพื่อดูภาพขยายใหญ่ (ส่วนกิจกรรมทำที่โต๊ะอาหาร) */}
+      <FramedImagePoster3D
+        position={[8.74, 3.68, -0.05]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={4.24}
+        height={2.80}
+        src="/images/ward/ward101_foodtable.jpg"
+        title=""
+        badgeText=""
+        onClick={() => openWard101Poster(1)}
+      />
+
+      {/* หน้าต่างกระจกใสเห็นวิวสวนธรรมชาติภายนอก (ผนังซ้าย & ผนังด้านหลังทิศใต้บานใหญ่) */}
+      <WindowWithCurtains position={[-8.76, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
+      <WindowWithCurtains position={[-0.3, 2.85, 8.76]} rotation={[0, Math.PI, 0]} width={7.2} height={3.3} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          🏥 INTERACTIVE PROJECTOR LEARNING BOARD (Framed Cleanly on North Wall Projector Screen)
+          🏥 INTERACTIVE PROJECTOR LEARNING BOARD (3D พอดีกรอบ 100% ทุกอุปกรณ์ ไม่เลื่อน/ไม่ล้นกรอบ)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group
+      <ProjectorScreenBoard
         position={[-0.65, 3.05, -8.76]}
-        onClick={(e) => {
-          if (e.delta > 10) return;
-          e.stopPropagation();
-          setIsBoardFullScreen(true);
-        }}
-      >
-        {/* Projector Top Housing Roller Bar */}
-        <mesh position={[0, 1.92, 0.04]} castShadow>
-          <boxGeometry args={[4.75, 0.14, 0.14]} />
-          <meshStandardMaterial color="#334155" metalness={0.5} roughness={0.3} />
-        </mesh>
-        {/* Clean Projector Screen Bezel & Matte White Canvas */}
-        <mesh position={[0, 0, -0.02]} castShadow>
-          <boxGeometry args={[4.56, 3.72, 0.05]} />
-          <meshStandardMaterial color="#8d5a3a" roughness={0.45} />
-        </mesh>
-        <mesh position={[0, 0, 0.012]}>
-          <planeGeometry args={[4.36, 3.52]} />
-          <meshBasicMaterial color="#fff9fb" />
-        </mesh>
-      </group>
-      {!isBoardFullScreen && (
-        <Html position={[-0.65, 3.05, -8.68]} center transform scale={0.19} zIndexRange={[15, 0]}>
-          <div className="relative">
-            {renderProjectorBoardContent(false)}
-            {/* On Mobile/Tablet, tapping anywhere on the distant 3D wall board opens the crisp Full-Screen 2D Modal */}
-            <button
-              type="button"
-              onClick={() => setIsBoardFullScreen(true)}
-              aria-label="ขยายกระดานกิจกรรมเต็มจอ"
-              className="lg:hidden absolute inset-0 z-30 bg-transparent cursor-pointer"
-            />
-          </div>
-        </Html>
-      )}
+        badge="🏥 Ward 101 • Zone 1"
+        title="การดูแลร่างกายและการฟื้นตัวหลังคลอด"
+        subtitle="เรียนรู้ผ่าน 4 กิจกรรมโต้ตอบและแบบประเมินความเข้าใจประจำห้อง"
+        activities={[
+          {
+            icon: '🛌',
+            title: '1. การพักผ่อนและขอความช่วยเหลือ',
+            desc: 'แยกแยะพฤติกรรมที่ควรทำและควรหลีกเลี่ยงในช่วงฟื้นตัว',
+            done: !!act1Feedback?.pass,
+          },
+          {
+            icon: '🥗',
+            title: '2. โภชนาการและน้ำดื่มหลังคลอด',
+            desc: 'เลือกอาหารครบหมู่ เสริมสร้างเนื้อเยื่อและน้ำนมแม่',
+            done: !!act2Feedback?.pass,
+          },
+          {
+            icon: '🧼',
+            title: '3. การล้างมือและสุขอนามัย',
+            desc: 'ล้างมือ 4 ขั้นตอนในจังหวะสำคัญก่อนดูแลลูกน้อย',
+            done: !!act3Feedback?.pass,
+          },
+          {
+            icon: '🚶‍♀️',
+            title: '4. การเริ่มเคลื่อนไหวอย่างเหมาะสม',
+            desc: 'บริหารร่างกายเบา ๆ หลีกเลี่ยงการยกของหนัก',
+            done: !!act4Feedback?.pass,
+          },
+        ]}
+        quizDone={!!(quizFinished || flow.quiz)}
+        onOpen={() => setIsBoardFullScreen(true)}
+        hideButton={isBoardFullScreen}
+      />
 
       <LoungeCorner position={[7.4, 0, 6.2]} rotation={[0, -Math.PI / 2, 0]} />
       <DiningTable position={[1.5, 0, 1.5]} locked={false} onActivate={startActivity} />
 
+      {/* คุณแม่หลังคลอดนั่งรับประทานอาหารที่เก้าอี้โต๊ะกลม 1 คน ("คุณแม่นั่ง 1 คน" + หันเข้าหาโต๊ะ) */}
+      <MotherAvatar
+        position={[1.5 + Math.cos(5.1) * 1.72, 0, 1.5 + Math.sin(5.1) * 1.72]}
+        rotation={[0, -5.1 - Math.PI / 2, 0]}
+        characterOverride="postpartum_mother"
+        outfitOverride="pink"
+        isSittingOverride={true}
+        isHoldingBabyOverride={false}
+        showHeldBaby={false}
+      />
+
       {/* ── REAL 3D CLINICAL ASSETS & ARCHITECTURE ── */}
       <RealPlant type="potted" position={[7.5, 0, -7.5]} scale={1.1} />
-      <RealPlant type="succulent" position={[-7.5, 0, 6.5]} scale={1.2} />
-      <MedicineCabinet position={[8.4, 0, -2.2]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} />
+      <RealPlant type="succulent" position={[-7.85, 0, 7.95]} scale={1.2} />
+      <MedicineCabinet position={[8.4, 0, -2.2]} rotation={[0, -Math.PI / 2, 0]} scale={0.95} withMedicalBox={true} withBooks={true} />
 
       {/* Drivable Hospital Wheelchair parked neatly along entrance wall */}
       <InteractiveSeat
@@ -920,12 +992,12 @@ export default function MotherCare1Room() {
         <HospitalWheelchair position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1.1} />
       </InteractiveSeat>
 
-      {/* ── 1. Hospital Patient Bed with Soft Pillows (กิจกรรม 1: พักผ่อนและขอความช่วยเหลือ) ── */}
+      {/* ── 1. Hospital Patient Bed pushed flush against North wall ("ชิดผนัง") ── */}
       <InteractiveSeat
         id="room101_bed"
         name="เตียงพักฟื้นคุณแม่"
         type="bed"
-        position={[-5.4, 0, -6.0]}
+        position={[-5.35, 0, -7.56]}
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.68, 0]}
       >
@@ -936,8 +1008,8 @@ export default function MotherCare1Room() {
         </group>
       </InteractiveSeat>
 
-      {/* ── 2. Bedside Nightstand with Hydration & Nutrition (กิจกรรม 2: โภชนาการและน้ำดื่ม) ── */}
-      <group position={[-7.2, 0, -6.8]} onClick={() => setActiveTab(1)}>
+      {/* ── 2. Bedside Nightstand flush against North wall beside bed ── */}
+      <group position={[-7.05, 0, -8.32]} onClick={() => setActiveTab(1)}>
         <HospitalNightstand position={[0, 0, 0]} scale={1.05}>
           <FlowerVase position={[0.12, 0.82, 0.08]} scale={0.65} />
           {/* Clean Glass Water Pitcher */}
@@ -948,30 +1020,22 @@ export default function MotherCare1Room() {
         </HospitalNightstand>
       </group>
 
-      {/* ── 3. Newborn Bassinet at Bedside (Rooming-in next to mother's bed) ── */}
-      <group position={[-3.4, 0, -6.0]} rotation={[0, -0.15, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
+      {/* ── 3. Newborn Bassinet flush against North wall beside mother's bed ── */}
+      <group position={[-3.70, 0, -7.90]} rotation={[0, 0, 0]} onClick={() => setHoldingBaby(!isHoldingBaby)}>
         <BabyCrib position={[0, 0, 0]} scale={0.9}>
           {!isHoldingBaby && (
             <BabyAvatar pose="sleeping" scale={1.0} withBlanket={true} />
           )}
         </BabyCrib>
-        <Html position={[0, 1.25, 0]} center zIndexRange={[15, 0]}>
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setHoldingBaby(!isHoldingBaby);
-            }}
-            className="cursor-pointer select-none px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg"
-            style={{
-              background: isHoldingBaby ? 'rgba(16, 185, 129, 0.95)' : 'rgba(236, 72, 153, 0.95)',
-              color: 'white',
-              border: '2px solid white',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อย (คลิกอุ้ม)'}
-          </div>
-        </Html>
+        <BillboardLabel3D
+          position={[0, 1.28, 0]}
+          text={isHoldingBaby ? '🧸 วางลูกน้อยลงเปล' : '👶 ลูกน้อย (คลิกอุ้ม)'}
+          bg={isHoldingBaby ? '#10b981' : '#ec4899'}
+          width={1.32}
+          height={0.30}
+          pill={true}
+          onClick={() => setHoldingBaby(!isHoldingBaby)}
+        />
       </group>
 
       {/* ── 4. Porcelain Sanitary Wash Station (กิจกรรม 3: การล้างมือ 4 ขั้นตอน) ── */}
@@ -987,32 +1051,16 @@ export default function MotherCare1Room() {
         {/* Soft supportive cushion on the chair */}
         <Pillows position={[0, 0.42, 0.05]} scale={0.65} />
       </group>
-      {/* Side table with warm nutrition/water carafe & folded baby diapers beside the chair */}
+      {/* Side table with warm nutrition tray & water carafe placed cleanly without mesh clipping */}
       <group position={[4.0, 0, -6.8]}>
-        <HospitalNightstand position={[0, 0, 0]} scale={0.85}>
-          <mesh position={[-0.12, 0.90, -0.05]} castShadow>
-            <cylinderGeometry args={[0.06, 0.07, 0.22, 20]} />
-            <meshStandardMaterial color="#f0fdf4" roughness={0.12} transparent opacity={0.45} />
-          </mesh>
-          {/* กองผ้าอ้อมพับสำหรับลูกน้อยบนโต๊ะข้างเก้าอี้ให้นม */}
-          {[
-            { y: 0.80, color: '#ffffff' },
-            { y: 0.84, color: '#fce7f3' },
-            { y: 0.88, color: '#e0f2fe' },
-          ].map((d, i) => (
-            <mesh key={i} position={[0.10, d.y, 0.04]} rotation={[0, i * 0.1, 0]} castShadow>
-              <boxGeometry args={[0.22, 0.036, 0.18]} />
-              <meshStandardMaterial color={d.color} roughness={0.85} />
-            </mesh>
-          ))}
-        </HospitalNightstand>
+        <HospitalNightstand position={[0, 0, 0]} scale={0.85} />
       </group>
 
       <PlayerController initialPosition={[0, 0, 3]} />
 
-      {/* ── โภชนาการ: ถาดอาหาร + กระบอกน้ำ (Zone 1 ref) ── */}
-      <FoodTray position={[4.0, 0.80, -6.8]} rotation={[0, 0.3, 0]} />
-      <WaterJug position={[4.25, 0.80, -7.05]} />
+      {/* ── โภชนาการ: ถาดอาหาร + กระบอกน้ำวางบนโต๊ะข้างเก้าอี้ให้นมอย่างเป็นระเบียบ ── */}
+      <FoodTray position={[3.93, 0.72, -6.78]} rotation={[0, 0.25, 0]} />
+      <WaterJug position={[4.19, 0.72, -6.86]} />
     </group>
   );
 }

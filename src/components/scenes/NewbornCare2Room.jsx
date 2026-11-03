@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Html } from '@react-three/drei';
+import React, { useState, useMemo, useEffect } from 'react';
+import * as THREE from 'three';
 import ScreenPortal from '../ui/ScreenPortal';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
@@ -9,6 +9,56 @@ import { BathThermometer } from '../furniture/BabyProps';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import Pillows from '../decorations/Pillows';
 import InteractiveSeat from '../furniture/InteractiveSeat';
+import { WindowWithCurtains } from '../ward/WardKit';
+import { FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
+import InteractiveSmartTv3D from '../furniture/InteractiveSmartTv3D';
+import { CANVAS_THAI_FONT, fillCenteredText, whenFontsReady } from '../../utils/canvasText';
+
+function useMissionPaperTexture() {
+  const { tex, paint } = useMemo(() => {
+    const W = 512;
+    const H = 360;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d');
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+
+    const draw = () => {
+      if (!ctx) return;
+      ctx.fillStyle = '#fffbeb';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#0f766e';
+      ctx.lineWidth = 12;
+      ctx.strokeRect(14, 14, W - 28, H - 28);
+
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#134e4a';
+      ctx.font = `900 58px ${CANVAS_THAI_FONT}`;
+      fillCenteredText(ctx, '📋 ภารกิจ', W / 2, H * 0.42, W - 70);
+
+      ctx.fillStyle = '#475569';
+      ctx.font = `700 32px ${CANVAS_THAI_FONT}`;
+      fillCenteredText(ctx, 'คลิกเพื่อดูรายละเอียด', W / 2, H * 0.72, W - 70);
+      t.needsUpdate = true;
+    };
+
+    draw();
+    return { tex: t, paint: draw };
+  }, []);
+
+  useEffect(() => {
+    const cancel = whenFontsReady(paint);
+    return () => {
+      cancel();
+      tex.dispose();
+    };
+  }, [tex, paint]);
+
+  return tex;
+}
 
 /**
  * NewbornCare2Room — ห้องที่ 2: การอาบน้ำและการดูแลความสะอาดทารก การเปลี่ยนผ้าอ้อม (Nursery 202)
@@ -18,6 +68,7 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
  * - "อธิบายเพิ่มเติมการให้ทารกอาบน้ำเปลี่ยนผ้าอ้อม.pdf" (bath_extra_p1..9)
  */
 export default function NewbornCare2Room() {
+  const missionPaperTex = useMissionPaperTexture();
   const {
     completeModule,
     learningProgress,
@@ -385,57 +436,31 @@ export default function NewbornCare2Room() {
              - Baby Crib
              - Top-Right Mission Desk (โต๊ะกับกระดาษ เขียนว่า ภารกิจ — ไม่มีเก้าอี้)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Wall Poster 1 — Flush against North Wall */}
-      <group position={[-1.1, 2.75, -6.42]}>
-        <mesh
-          castShadow
-          onClick={(e) => {
-            e.stopPropagation();
-            openWallPoster(0);
-          }}
-        >
-          <boxGeometry args={[2.1, 1.45, 0.03]} />
-          <meshStandardMaterial color="#0f766e" roughness={0.35} />
-        </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
-          <div
-            className="select-none bg-white p-1.5 rounded-lg border-2 border-teal-500 shadow-md overflow-hidden"
-            style={{ width: '380px', pointerEvents: 'none' }}
-          >
-            <img
-              src="/images/rev/bath_equip_poster.jpg"
-              alt="อุปกรณ์อาบน้ำ 37-38 C"
-              style={{ width: '100%', height: '205px', objectFit: 'contain', backgroundColor: '#f0fdfa', borderRadius: '6px' }}
-            />
-          </div>
-        </Html>
-      </group>
+      {/* Wall Poster 1 — 100% 3D WebGL Mesh Flush against North Wall z = -6.28 (ไม่จมผนัง -6.30 และไม่ลอยทับหัวตัวละคร) */}
+      <FramedImagePoster3D
+        position={[-1.1, 2.75, -6.28]}
+        width={2.10}
+        height={1.36}
+        contain={true}
+        backlit={false}
+        src="/images/rev/bath_equip_poster.jpg"
+        frameColor="#0f766e"
+        accentColor="#14b8a6"
+        onClick={() => openWallPoster(0)}
+      />
 
-      {/* Wall Poster 2 — Flush against North Wall */}
-      <group position={[1.8, 2.75, -6.42]}>
-        <mesh
-          castShadow
-          onClick={(e) => {
-            e.stopPropagation();
-            openWallPoster(1);
-          }}
-        >
-          <boxGeometry args={[2.1, 1.45, 0.03]} />
-          <meshStandardMaterial color="#0d9488" roughness={0.35} />
-        </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
-          <div
-            className="select-none bg-white p-1.5 rounded-lg border-2 border-teal-600 shadow-md overflow-hidden"
-            style={{ width: '380px', pointerEvents: 'none' }}
-          >
-            <img
-              src="/references/room2/img_007.png"
-              alt="ขั้นตอนการอาบน้ำ"
-              style={{ width: '100%', height: '205px', objectFit: 'contain', backgroundColor: '#f0fdfa', borderRadius: '6px' }}
-            />
-          </div>
-        </Html>
-      </group>
+      {/* Wall Poster 2 — 100% 3D WebGL Mesh Flush against North Wall z = -6.28 */}
+      <FramedImagePoster3D
+        position={[1.8, 2.75, -6.28]}
+        width={2.10}
+        height={1.36}
+        contain={true}
+        backlit={false}
+        src="/references/room2/img_007.png"
+        frameColor="#0d9488"
+        accentColor="#14b8a6"
+        onClick={() => openWallPoster(1)}
+      />
 
       {/* ── Sittable Mother's Sofa facing TV (Sittable both alone and while holding baby) ── */}
       <InteractiveSeat
@@ -546,15 +571,19 @@ export default function NewbornCare2Room() {
           <boxGeometry args={[0.52, 0.02, 0.38]} />
           <meshStandardMaterial color="#ffffff" roughness={0.5} />
         </mesh>
-        <Html position={[0, 0.82, 0]} rotation={[-Math.PI / 2, 0, 0]} center transform scale={0.18} style={{ pointerEvents: 'none' }}>
-          <div
-            className="select-none bg-amber-50 border-2 border-teal-700 rounded-lg px-4 py-2 shadow text-center"
-            style={{ width: '160px', pointerEvents: 'none' }}
-          >
-            <div className="text-base font-extrabold text-teal-900">📋 ภารกิจ</div>
-            <div className="text-[10px] font-semibold text-slate-600">คลิกเพื่อดูรายละเอียด</div>
-          </div>
-        </Html>
+        {/* แผ่นกระดาษภารกิจ 3D CanvasTexture บนโต๊ะ (ไม่ใช้ <Html transform> จึงไม่ลอยทับตัวละคร) */}
+        <mesh
+          position={[0, 0.812, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          onClick={(e) => {
+            if (e.delta > 10) return;
+            e.stopPropagation();
+            setActiveModal('missionDesk');
+          }}
+        >
+          <planeGeometry args={[0.48, 0.34]} />
+          <meshBasicMaterial map={missionPaperTex} toneMapped={false} />
+        </mesh>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -564,9 +593,9 @@ export default function NewbornCare2Room() {
              - AC Switch Button next to TV ("ตรงเลข 6 ปุ่มปิด/เปิดแอร์ เอากรอบเขียวออก")
              - 2-Section Nursery Cabinet ("ชุดอุปกรณ์ของใช้และของตกแต่งทารก")
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Air Conditioner Unit above TV */}
+      {/* Air Conditioner Unit above TV (Flush against West inner wall x = -6.30) */}
       <group
-        position={[-6.28, 4.15, -2.8]}
+        position={[-6.13, 4.15, -2.8]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -589,9 +618,9 @@ export default function NewbornCare2Room() {
         </mesh>
       </group>
 
-      {/* Wall Switch for Air Conditioner next to TV (Location #6, flush on West Wall, no green border) */}
+      {/* Wall Switch for Air Conditioner next to TV (Location #6, flush on West inner wall x = -6.28) */}
       <group
-        position={[-6.42, 1.55, -0.85]}
+        position={[-6.28, 1.55, -0.85]}
         rotation={[0, Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -612,75 +641,27 @@ export default function NewbornCare2Room() {
         </mesh>
       </group>
 
-      {/* Wall-Mounted TV Screen — Full-image display without side text box per pdf4_bath_p1.png */}
-      <group position={[-6.4, 2.65, -2.8]} rotation={[0, Math.PI / 2, 0]}>
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[3.2, 1.9, 0.06]} />
-          <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.2} />
-        </mesh>
-        <mesh position={[0, 0, 0.035]}>
-          <planeGeometry args={[3.05, 1.75]} />
-          <meshStandardMaterial color="#0f172a" roughness={0.1} />
-        </mesh>
-        <Html position={[0, 0, 0.045]} center transform scale={0.24}>
-          <div
-            className="select-none bg-slate-900 text-white rounded-lg p-2.5 shadow-2xl flex flex-col justify-between"
-            style={{ width: '540px', height: '320px', border: '3px solid #00897b' }}
-          >
-            <div className="flex items-center justify-between border-b border-slate-700 pb-1">
-              <span className="font-bold text-teal-300 text-xs flex items-center gap-1">
-                📺 สื่อให้ความรู้การอาบน้ำทารก ({tvSlide + 1}/8)
-              </span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => openTvGallery(tvSlide)}
-                  className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow cursor-pointer"
-                >
-                  🔍 ขยายภาพ
-                </button>
-                <button
-                  onClick={() => setShowTvModal(true)}
-                  className="bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-0.5 rounded text-[11px] font-bold shadow cursor-pointer"
-                >
-                  📖 ดูเต็มจอ
-                </button>
-              </div>
-            </div>
-
-            <div
-              className="my-1 flex-1 min-h-0 bg-white p-1 rounded border border-slate-700 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-teal-400 transition overflow-hidden"
-              onClick={() => openTvGallery(tvSlide)}
-              title="คลิกเพื่อขยายภาพพร้อมปุ่ม ก่อนหน้า/ถัดไป"
-            >
-              <img
-                src={tvSlidesData[tvSlide].img}
-                alt={tvSlidesData[tvSlide].title}
-                className="w-full h-full object-contain rounded"
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
-              <button
-                disabled={tvSlide === 0}
-                onClick={() => handleSelectSlide(tvSlide - 1)}
-                className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-xs rounded font-bold cursor-pointer"
-              >
-                ◀ ก่อนหน้า
-              </button>
-              <span className="text-[11px] text-slate-400">
-                เรียนรู้แล้ว: {viewedSlides.size}/8 หน้า {viewedSlides.size >= 8 && '✓'}
-              </span>
-              <button
-                disabled={tvSlide === tvSlidesData.length - 1}
-                onClick={() => handleSelectSlide(tvSlide + 1)}
-                className="px-2.5 py-1 bg-teal-600 hover:bg-teal-500 disabled:opacity-40 text-xs rounded font-bold cursor-pointer"
-              >
-                ถัดไป ▶
-              </button>
-            </div>
-          </div>
-        </Html>
-      </group>
+      {/* Wall-Mounted 100% 3D WebGL Smart TV Screen (Flush against West inner wall x = -6.27, ไม่จมกำแพง -6.30) */}
+      <InteractiveSmartTv3D
+        position={[-6.27, 2.65, -2.8]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={3.2}
+        height={1.9}
+        headerTitle={`📺 สื่อให้ความรู้การอาบน้ำทารก (${tvSlide + 1}/8)`}
+        accentColor="#14b8a6"
+        slide={tvSlidesData[tvSlide]}
+        slideIndex={tvSlide}
+        totalSlides={tvSlidesData.length}
+        whiteSlideBg={true}
+        footerText={`เรียนรู้แล้ว: ${viewedSlides.size}/8 หน้า${viewedSlides.size >= 8 ? ' ✓' : ''}`}
+        zoomLabel="🔍 ขยายภาพ"
+        secondaryLabel="📖 ดูเต็มจอ"
+        secondaryColor="#0d9488"
+        onOpenFullscreen={() => openTvGallery(tvSlide)}
+        onSecondaryAction={() => setShowTvModal(true)}
+        onPrev={() => handleSelectSlide(tvSlide - 1)}
+        onNext={() => handleSelectSlide(tvSlide + 1)}
+      />
 
       {/* ── 2 Small Trash Bins (Green / Red) on West Wall where old cabinet was removed (pdf4_bath_p1.png ①) ── */}
       <group
@@ -761,9 +742,9 @@ export default function NewbornCare2Room() {
              - Realistic Handwashing Sink (South Wall)
              - Adjacent Small Table with Cotton ball pack / Warm water / 0.9% NSS bottle
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* ── UNIT ① (EAST WALL, South-East Corner): ชั้นตกแต่งสวยงามสำหรับทารก ── */}
+      {/* ── UNIT ① (EAST WALL, South-East Corner): ชั้นตกแต่งสวยงามสำหรับทารก (ไม่จมผนัง +6.30) ── */}
       <group
-        position={[6.16, 0, 4.65]}
+        position={[6.08, 0, 4.65]}
         rotation={[0, -Math.PI / 2, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -908,9 +889,9 @@ export default function NewbornCare2Room() {
         </mesh>
       </group>
 
-      {/* ── UNIT ② (SOUTH WALL, South-East Corner): ตู้ของใช้ทารก 1..5 (Click to prepare items) ── */}
+      {/* ── UNIT ② (SOUTH WALL, South-East Corner): ตู้ของใช้ทารก 1..5 (ไม่จมผนัง +6.30) ── */}
       <group
-        position={[4.95, 0, 6.16]}
+        position={[4.95, 0, 6.06]}
         rotation={[0, Math.PI, 0]}
         onClick={(e) => {
           e.stopPropagation();
@@ -1094,46 +1075,36 @@ export default function NewbornCare2Room() {
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          5. EAST WALL (RIGHT — FLUSH AGAINST WALL x = 6.42):
-             - Window with Roman Blinds
+          5. EAST & SOUTH WALLS (FLUSH AGAINST INNER WALL ±6.26):
+             - Clear Architectural Glass Outdoor View Windows with Curtains
              - Wall Poster 3 (การเช็ดตา & ซับตัว) flush against East Wall
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[6.42, 2.7, 0.4]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh castShadow>
-          <boxGeometry args={[3.2, 2.3, 0.06]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.3} />
-        </mesh>
-        <mesh position={[0, 0, -0.01]}>
-          <planeGeometry args={[3.0, 2.1]} />
-          <meshStandardMaterial color="#bae6fd" transparent opacity={0.45} roughness={0.1} />
-        </mesh>
-      </group>
+      <WindowWithCurtains
+        position={[6.26, 2.7, 0.55]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={2.7}
+        height={2.25}
+      />
+      <WindowWithCurtains
+        position={[1.35, 2.7, 6.26]}
+        rotation={[0, Math.PI, 0]}
+        width={3.3}
+        height={2.3}
+      />
 
-      {/* Wall Poster 3 — Flush against East Wall */}
-      <group position={[6.42, 2.75, -2.6]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh
-          castShadow
-          onClick={(e) => {
-            e.stopPropagation();
-            openWallPoster(2);
-          }}
-        >
-          <boxGeometry args={[2.0, 1.4, 0.03]} />
-          <meshStandardMaterial color="#0f766e" roughness={0.35} />
-        </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
-          <div
-            className="select-none bg-white p-1.5 rounded-lg border-2 border-teal-500 shadow-md overflow-hidden"
-            style={{ width: '360px', pointerEvents: 'none' }}
-          >
-            <img
-              src="/references/room2/img_008.jpeg"
-              alt="การเช็ดตา"
-              style={{ width: '100%', height: '195px', objectFit: 'contain', backgroundColor: '#f0fdfa', borderRadius: '6px' }}
-            />
-          </div>
-        </Html>
-      </group>
+      {/* Wall Poster 3 — 100% 3D WebGL Mesh Flush against East inner wall x = 6.28 (ไม่จมผนัง 6.30) */}
+      <FramedImagePoster3D
+        position={[6.28, 2.75, -2.6]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={2.02}
+        height={1.32}
+        contain={true}
+        backlit={false}
+        src="/references/room2/img_008.jpeg"
+        frameColor="#0f766e"
+        accentColor="#14b8a6"
+        onClick={() => openWallPoster(2)}
+      />
 
       {/* 3D Player Controller */}
       <PlayerController initialPosition={[-4.2, 0, 3.2]} initialRotation={Math.PI} />

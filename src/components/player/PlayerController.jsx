@@ -7,7 +7,7 @@ import MotherAvatar from '../avatars/MotherAvatar';
 import FatherAvatar from '../avatars/FatherAvatar';
 import RobotAvatar from '../avatars/RobotAvatar';
 import BabyAvatar from '../avatars/BabyAvatar';
-import { resolveMovement, ROOM_COLLIDERS } from '../../physics/collisionSystem';
+import { resolveMovement, resolveStandUpPosition, ROOM_COLLIDERS } from '../../physics/collisionSystem';
 
 /**
  * PlayerController — True GTA 3rd-Person Character Controller
@@ -65,6 +65,7 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   const stepTime = useRef(0);
   const lastSyncTime = useRef(0);
   const lastSyncedPos = useRef([initialPosition[0], initialPosition[1], initialPosition[2]]);
+  const prevSeatedRef = useRef(null);
 
   // Camera Orbit Angles (GTA Style)
   const cameraYaw = useRef(0);
@@ -91,7 +92,9 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
   // ── Sync Position when Switching Rooms or Teleporting ──
   const [initX, initY, initZ] = initialPosition;
   useEffect(() => {
+    prevSeatedRef.current = null;
     pos.current.set(initX, initY, initZ);
+    lastSyncedPos.current = [initX, initY, initZ];
     characterRotationY.current = initialRotation;
     targetRotationY.current = initialRotation;
   }, [currentRoom, initX, initY, initZ, initialRotation]);
@@ -110,9 +113,10 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
     return unsub;
   }, []);
 
-  // Seamless snap to seat cushion when sitting down (Wheelchair, Sofa, Bed, Chair)
+  // Seamless snap to seat cushion when sitting down & clean collision-free dismount when standing up
   useEffect(() => {
     if (isSitting && seatedTarget) {
+      prevSeatedRef.current = seatedTarget;
       const rotY = typeof seatedTarget.rotationY === 'number' ? seatedTarget.rotationY : 0;
       const ox = seatedTarget.seatOffset?.[0] || 0;
       const oz = seatedTarget.seatOffset?.[2] || 0;
@@ -120,14 +124,31 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
       const targetZ = seatedTarget.position[2] - ox * Math.sin(rotY) + oz * Math.cos(rotY);
       pos.current.x = targetX;
       pos.current.z = targetZ;
+      lastSyncedPos.current = [targetX, pos.current.y, targetZ];
+      setPlayerPosition([targetX, pos.current.y, targetZ]);
       if (typeof seatedTarget.rotationY === 'number') {
         targetRotationY.current = seatedTarget.rotationY;
         characterRotationY.current = seatedTarget.rotationY;
         // Swing camera to a flattering 3/4 front view for sofas/chairs/beds, or behind for drivable wheelchairs
         cameraYaw.current = seatedTarget.isDrivable ? rotY + Math.PI : rotY + 0.32;
       }
+    } else if (!isSitting && prevSeatedRef.current) {
+      const lastSeat = prevSeatedRef.current;
+      prevSeatedRef.current = null;
+      const nearParkedSpot =
+        !lastSeat.isDrivable ||
+        Math.hypot(pos.current.x - lastSeat.position[0], pos.current.z - lastSeat.position[2]) < 0.85;
+      if (nearParkedSpot) {
+        const dismount = resolveStandUpPosition(lastSeat, currentRoom);
+        if (dismount) {
+          pos.current.x = dismount.x;
+          pos.current.z = dismount.z;
+          lastSyncedPos.current = [dismount.x, pos.current.y, dismount.z];
+          setPlayerPosition([dismount.x, pos.current.y, dismount.z]);
+        }
+      }
     }
-  }, [isSitting, seatedTarget]);
+  }, [isSitting, seatedTarget, currentRoom, setPlayerPosition]);
 
   // ── Mouse & Touch Camera Orbit Listeners ──
   useEffect(() => {
@@ -612,10 +633,10 @@ export default function PlayerController({ initialPosition = [0, 0, 3], initialR
         />
       </group>
 
-      {/* GTA Character Indicator Ring on Floor (Visible in 3rd Person) */}
+      {/* GTA Character Indicator Ring on Floor (Visible in 3rd Person, matched tightly to 0.26m character radius) */}
       {cameraMode === '3rdPerson' && (
         <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.45, 0.55, 32]} />
+          <ringGeometry args={[0.31, 0.38, 32]} />
           <meshBasicMaterial
             color={isSitting ? '#10b981' : '#00e5ff'}
             transparent

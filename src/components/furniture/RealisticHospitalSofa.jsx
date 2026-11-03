@@ -1,6 +1,12 @@
-import React, { useMemo } from 'react';
+import React from 'react';
+import { RoundedBox } from '@react-three/drei';
 import RealPlant from '../decorations/RealPlant';
-import FlowerVase from '../decorations/FlowerVase';
+import {
+  RealisticThrowPillow3D,
+  RealisticFoldedClothStack3D,
+  RealisticBabyBottle3D,
+  RealisticBook3D,
+} from './RealisticProps3D';
 
 /**
  * RealisticHospitalSofa Component
@@ -55,42 +61,44 @@ export default function RealisticHospitalSofa({
           </group>
         ))}
 
-        {/* ── Seat Cushions (Warm Alabaster Cream / Ivory - 3 Modular Pads) ── */}
+        {/* ── Seat Cushions (Warm Alabaster Cream / Ivory - 3 Plush Rounded Modular Pads) ── */}
         {[-0.78, 0, 0.78].map((sx, sIdx) => (
           <group key={`seat_${sIdx}`} position={[sx, 0.31, 0.04]}>
-            {/* Main High-Density Foam Seat Cushion */}
-            <mesh castShadow receiveShadow>
-              <boxGeometry args={[0.74, 0.18, 0.74]} />
-              <meshStandardMaterial color="#faf6f0" roughness={0.7} />
-            </mesh>
-            {/* Subtle Seat Piping Seam */}
-            <mesh position={[0, 0.088, 0]}>
-              <boxGeometry args={[0.745, 0.012, 0.745]} />
-              <meshStandardMaterial color="#f0ece4" roughness={0.8} />
-            </mesh>
+            <RoundedBox args={[0.75, 0.18, 0.75]} radius={0.042} smoothness={4} castShadow receiveShadow>
+              <meshStandardMaterial color="#faf6f0" roughness={0.72} />
+            </RoundedBox>
           </group>
         ))}
 
         {/* ── Backrest Support Frame (Blonde Oak Back Panel) ── */}
-        <mesh position={[0, 0.52, -0.38]} castShadow receiveShadow>
-          <boxGeometry args={[2.5, 0.62, 0.08]} />
+        <RoundedBox args={[2.5, 0.62, 0.08]} radius={0.02} smoothness={3} position={[0, 0.52, -0.38]} castShadow receiveShadow>
           <meshStandardMaterial color="#d4a373" roughness={0.45} />
-        </mesh>
+        </RoundedBox>
 
-        {/* ── Backrest Pillows (Soothing Muted Dusty Rose / Blush Terracotta - 3 Units) ── */}
+        {/* ── Backrest Pillows (Soothing Muted Dusty Rose / Blush Terracotta - 3 Plush Rounded Units) ── */}
         {[-0.78, 0, 0.78].map((bx, bIdx) => (
-          <group key={`back_${bIdx}`} position={[bx, 0.54, -0.28]} rotation={[-0.08, 0, 0]}>
-            <mesh castShadow receiveShadow>
-              <boxGeometry args={[0.73, 0.44, 0.16]} />
-              <meshStandardMaterial color="#df988d" roughness={0.75} />
-            </mesh>
-            {/* Soft Tufting / Crease Accent */}
-            <mesh position={[0, 0, 0.082]}>
-              <boxGeometry args={[0.62, 0.008, 0.01]} />
-              <meshStandardMaterial color="#cc857a" roughness={0.85} />
-            </mesh>
+          <group key={`back_${bIdx}`} position={[bx, 0.54, -0.27]} rotation={[-0.08, 0, 0]}>
+            <RoundedBox args={[0.74, 0.45, 0.17]} radius={0.055} smoothness={4} castShadow receiveShadow>
+              <meshStandardMaterial color="#df988d" roughness={0.76} />
+            </RoundedBox>
           </group>
         ))}
+
+        {/* Sculpted Poly Haven Accent Throw Pillows on Lobby Sofa */}
+        <RealisticThrowPillow3D
+          color="#f5ebe0"
+          variant={0}
+          position={[-0.92, 0.54, -0.11]}
+          rotation={[-0.14, 0.24, -0.06]}
+          scale={0.74}
+        />
+        <RealisticThrowPillow3D
+          color="#84a98c"
+          variant={1}
+          position={[0.88, 0.54, -0.11]}
+          rotation={[-0.14, -0.22, 0.05]}
+          scale={0.74}
+        />
 
         {/* ── L-Shape / Corner Sectional Extension (Matching Photo Foreground) ── */}
         {isRight && (
@@ -166,68 +174,29 @@ export default function RealisticHospitalSofa({
           <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.05} />
         </mesh>
 
-        {/* Small White Ceramic Potted Succulent Plant (From Photo) */}
-        <group position={[-0.08, 0.375, -0.06]}>
-          <mesh position={[0, 0.04, 0]} castShadow>
-            <cylinderGeometry args={[0.045, 0.035, 0.08, 16]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.25} />
-          </mesh>
-          <mesh position={[0, 0.08, 0]}>
-            <sphereGeometry args={[0.055, 12, 12]} />
-            <meshStandardMaterial color="#4ade80" roughness={0.65} />
-          </mesh>
-        </group>
+        {/* Authentic 3D Potted Succulent Plant (RealPlant GLB) */}
+        <RealPlant type="succulent" position={[-0.12, 0.405, -0.10]} scale={0.35} />
 
-        {/* Folded Acrylic Informational Brochure Tent (From Photo) */}
-        <group position={[0.12, 0.375, 0.04]} rotation={[0, -0.35, 0]}>
-          {/* Clear Acrylic Body */}
-          <mesh position={[0, 0.07, 0]}>
-            <boxGeometry args={[0.10, 0.14, 0.02]} />
-            <meshStandardMaterial
-              color="#e0f2fe"
-              roughness={0.12}
-              transparent
-              opacity={0.38}
-            />
-          </mesh>
-          {/* Printed Health Poster Insert inside Acrylic */}
-          <mesh position={[0, 0.07, 0.002]}>
-            <planeGeometry args={[0.085, 0.12]} />
-            <meshBasicMaterial color="#ec4899" />
-          </mesh>
-        </group>
+        {/* Hardcover Maternal Care Guidebook on Lobby Table */}
+        <RealisticBook3D
+          position={[0.14, 0.373, 0.08]}
+          rotation={[0, -0.35, 0]}
+          width={0.18}
+          height={0.026}
+          depth={0.23}
+          color="#be185d"
+          accent="#fce7f3"
+          title="คู่มือคุณแม่หลังคลอด"
+          subtitle="คลินิกบริบาลมารดาและทารก"
+        />
 
-        {/* กองผ้าอ้อมพับและขวดนมบนโต๊ะรับรองสำหรับคุณแม่และทารก */}
-        {[
-          { y: 0.39, color: '#ffffff', trim: '#f472b6' },
-          { y: 0.422, color: '#fce7f3', trim: '#ec4899' },
-          { y: 0.454, color: '#e0f2fe', trim: '#38bdf8' },
-        ].map((d, i) => (
-          <group key={i} position={[-0.08, d.y, 0.14]} rotation={[0, 0.15 + i * 0.08, 0]}>
-            <mesh castShadow>
-              <boxGeometry args={[0.20, 0.03, 0.16]} />
-              <meshStandardMaterial color={d.color} roughness={0.85} />
-            </mesh>
-            <mesh position={[0, 0, 0.081]}>
-              <boxGeometry args={[0.18, 0.012, 0.006]} />
-              <meshStandardMaterial color={d.trim} roughness={0.6} />
-            </mesh>
-          </group>
-        ))}
-        <group position={[0.14, 0.375, -0.14]}>
-          <mesh position={[0, 0.055, 0]} castShadow>
-            <cylinderGeometry args={[0.032, 0.035, 0.11, 16]} />
-            <meshStandardMaterial color="#fffbeb" roughness={0.2} />
-          </mesh>
-          <mesh position={[0, 0.12, 0]}>
-            <cylinderGeometry args={[0.034, 0.034, 0.022, 16]} />
-            <meshStandardMaterial color="#f472b6" roughness={0.4} />
-          </mesh>
-          <mesh position={[0, 0.145, 0]}>
-            <coneGeometry args={[0.018, 0.035, 14]} />
-            <meshStandardMaterial color="#fcd34d" roughness={0.4} />
-          </mesh>
-        </group>
+        {/* Soft U-Folded Muslin Linens & Graduated Baby Feeding Bottle */}
+        <RealisticFoldedClothStack3D
+          position={[-0.12, 0.373, 0.14]}
+          rotation={[0, 0.18, 0]}
+          scale={0.72}
+        />
+        <RealisticBabyBottle3D position={[0.15, 0.373, -0.14]} scale={0.88} />
       </group>
     </group>
   );

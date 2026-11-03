@@ -3,31 +3,43 @@ import { useFrame } from '@react-three/fiber';
 import { Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
+import { CANVAS_THAI_FONT, fillCenteredText, whenFontsReady } from '../../utils/canvasText';
 
 let _sharedLockBannerTex = null;
 function getSharedLockBannerTex() {
   if (_sharedLockBannerTex) return _sharedLockBannerTex;
   const canvas = document.createElement('canvas');
-  canvas.width = 640;
-  canvas.height = 76;
+  canvas.width = 768;
+  canvas.height = 88;
   const ctx = canvas.getContext('2d');
-  if (ctx) {
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+
+  const draw = () => {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#dc2626';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 4;
     ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
     ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '900 22px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('🔒 ห้องล็อค • ต้องทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน', canvas.width / 2, canvas.height / 2);
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.generateMipmaps = false;
-  tex.minFilter = THREE.LinearFilter;
-  tex.needsUpdate = true;
+    ctx.font = `900 25px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(
+      ctx,
+      '🔒 ห้องล็อค • ต้องทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน',
+      canvas.width / 2,
+      canvas.height / 2,
+      canvas.width - 28
+    );
+    tex.needsUpdate = true;
+  };
+
+  draw();
+  whenFontsReady(draw);
   _sharedLockBannerTex = tex;
   return tex;
 }
@@ -174,17 +186,26 @@ export default function WalkableRoomPortal({
     return textures.door;
   }, [textures.door]);
 
-  const headerSignTex = useMemo(() => {
+  const { headerSignTex, redrawHeaderSign } = useMemo(() => {
     const canvas = document.createElement('canvas');
-    canvas.width = 768;
-    canvas.height = 176;
+    canvas.width = 1024;
+    canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    if (ctx) {
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+
+    const draw = () => {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.strokeStyle = isLocked ? '#ef4444' : themeConfig.primary;
-      ctx.lineWidth = 8;
-      ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+      ctx.lineWidth = 10;
+      ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
 
       // Top badge pill
       const badgeColor = isLocked
@@ -193,48 +214,45 @@ export default function WalkableRoomPortal({
         ? '#d97706'
         : themeConfig.primary;
       ctx.fillStyle = badgeColor;
-      ctx.fillRect(16, 11, canvas.width - 32, 44);
+      ctx.fillRect(18, 14, canvas.width - 36, 58);
 
       ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = '900 23px "Sarabun", system-ui, -apple-system, sans-serif';
+      ctx.font = `900 31px ${CANVAS_THAI_FONT}`;
       const badgeLabel = isLocked
         ? `🔒 ${roomNumber} (ล็อค — ทำ Pre-test ที่ Hall 301 ก่อน)`
         : roomKey === 'quiz' && !hasCompletedPretest
         ? `⭐ จุดเริ่มต้น: ${roomNumber} • ทำ Pre-test 20 ข้อ`
-        : `${icon || ''} ${roomNumber}${isCompleted ? '  ✅ ผ่านแล้ว' : ''}`;
-      ctx.fillText(badgeLabel, canvas.width / 2, 33, canvas.width - 44);
+        : `${icon || ''} ${roomNumber}${isCompleted ? '  ✅ ผ่านแล้ว' : ''}`.trim();
+      fillCenteredText(ctx, badgeLabel, canvas.width / 2, 43, canvas.width - 68);
 
-      // Room title
+      // Room title (enlarged & dead-center across iOS/iPadOS Safari & Desktop)
       ctx.fillStyle = '#0f172a';
-      ctx.font = '900 33px "Sarabun", system-ui, -apple-system, sans-serif';
-      ctx.fillText(roomTitle || '', canvas.width / 2, 96, canvas.width - 36);
+      ctx.font = `900 46px ${CANVAS_THAI_FONT}`;
+      fillCenteredText(ctx, roomTitle || '', canvas.width / 2, 136, canvas.width - 52);
 
       // Subtitle action hint
       ctx.fillStyle = isLocked ? '#dc2626' : themeConfig.text;
-      ctx.font = '800 18px "Sarabun", system-ui, -apple-system, sans-serif';
+      ctx.font = `800 24px ${CANVAS_THAI_FONT}`;
       const subLabel = isLocked
         ? '⚠️ กรุณาทำแบบทดสอบก่อนเรียน (Pre-test) ที่ Hall 301 ก่อน'
         : '🚪 เดินเข้าใกล้เพื่อให้ประตูเปิดอัตโนมัติ หรือคลิกที่ป้ายเพื่อเข้าห้อง ➜';
-      ctx.fillText(subLabel, canvas.width / 2, 143, canvas.width - 36);
-    }
+      fillCenteredText(ctx, subLabel, canvas.width / 2, 208, canvas.width - 52);
 
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 2;
-    tex.generateMipmaps = false;
-    tex.minFilter = THREE.LinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.needsUpdate = true;
-    return tex;
+      tex.needsUpdate = true;
+    };
+
+    draw();
+    return { headerSignTex: tex, redrawHeaderSign: draw };
   }, [isLocked, roomKey, hasCompletedPretest, roomNumber, roomTitle, icon, isCompleted, themeConfig.primary, themeConfig.text]);
 
   useEffect(() => {
+    const cancelFonts = whenFontsReady(redrawHeaderSign);
     return () => {
+      cancelFonts();
       headerSignTex.dispose();
     };
-  }, [headerSignTex]);
+  }, [headerSignTex, redrawHeaderSign]);
 
   const lockBannerTex = isLocked ? getSharedLockBannerTex() : null;
 
@@ -531,22 +549,22 @@ export default function WalkableRoomPortal({
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          5. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้อง 3D แท้ติดผนัง ไม่ลอย)
+          5. SLEEK BACKLIT LED DIRECTORY SIGN (ป้ายไฟชื่อห้อง 3D แท้ติดผนัง ขนาดใหญ่ชัดเจน ข้อความตรงกลาง 100%)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[0, 2.82, 0.03]} onClick={handleEnter}>
+      <group position={[0, 2.88, 0.03]} onClick={handleEnter}>
         {/* Main Sign Box */}
         <mesh castShadow>
-          <boxGeometry args={[2.36, 0.54, 0.05]} />
+          <boxGeometry args={[2.72, 0.68, 0.05]} />
           <meshStandardMaterial color="#ffffff" roughness={0.15} metalness={0.08} />
         </mesh>
         {/* Stainless Steel Perimeter Trim */}
         <mesh position={[0, 0, -0.005]}>
-          <boxGeometry args={[2.42, 0.58, 0.04]} />
+          <boxGeometry args={[2.78, 0.73, 0.04]} />
           <meshStandardMaterial map={configuredMetal} color="#94a3b8" metalness={0.8} roughness={0.3} />
         </mesh>
         {/* 3D Sign Face Texture (แนบติดกรอบป้ายบนกำแพง 100% ไม่ใช้ Html transform) */}
         <mesh position={[0, 0, 0.027]}>
-          <planeGeometry args={[2.32, 0.52]} />
+          <planeGeometry args={[2.66, 0.65]} />
           <meshBasicMaterial map={headerSignTex} toneMapped={false} />
         </mesh>
       </group>

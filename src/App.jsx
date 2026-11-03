@@ -78,8 +78,8 @@ class RoomErrorBoundary extends React.Component {
       const errMsg = this.state.error?.message || String(this.state.error);
       return (
         <group position={[0, 1.5, 0]}>
-          <Html center>
-            <div className="p-6 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-rose-400 text-center max-w-sm pointer-events-auto">
+          <Html center style={{ width: 'max-content' }}>
+            <div className="p-6 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border-2 border-rose-400 text-center min-w-[280px] max-w-sm pointer-events-auto">
               <div className="text-3xl mb-2">⚠️</div>
               <div className="text-rose-700 font-bold text-base mb-1">เกิดข้อผิดพลาดในการโหลดห้อง</div>
               <p className="text-gray-600 text-xs mb-2">ระบบรักษาความปลอดภัยพร้อมพาท่านกลับสู่ล็อบบี้หลัก</p>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import ScreenPortal from '../ui/ScreenPortal';
+import BillboardLabel3D from '../ui/BillboardLabel3D';
 import PlayerController from '../player/PlayerController';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import RealPlant from '../decorations/RealPlant';
@@ -15,81 +15,53 @@ import {
 } from '../furniture/CozyRoomFurniture';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
-// ── ข้อมูลโปสเตอร์ผนังทั้ง 3 ด้าน (ตามไฟล์สมุดโน้ตไม่มีชื่อ 2.pdf และ IMG_7528.JPG) ──
+// ── ข้อมูลโปสเตอร์ผนังทั้ง 3 ด้าน (อัปเดตภาพตรง คมชัด ไร้พื้นหลัง ตามไฟล์ แก้ไข-30) ──
 const W103_GALLERY = [
   {
-    src: '/images/rev/w103_col1.jpg',
-    title: 'ผนังที่ 1: 1. การดูแลเต้านม',
-    badge: 'ผนังที่ 1',
-    description: 'สังเกตความปกติของเต้านม (ปกติ, บวม, แดง ร้อน, เจ็บ กดเจ็บ), การทำความสะอาดเต้านม และการประเมินเต้านมด้วยตนเอง',
+    src: '/images/rev/w103_wall1_left_straight.jpg',
+    title: 'ผนังที่ 1 (ซ้าย): 1. การดูแลเต้านม — สังเกตความปกติของเต้านม',
+    badge: 'ผนังที่ 1 • ส่วนที่ 1',
+    description: 'สังเกตความปกติของเต้านม (ปกติ, บวม, แดง ร้อน, เจ็บ กดเจ็บ)',
     details: [
       'สังเกตความปกติของเต้านม: ปกติ / บวม / แดง ร้อน / เจ็บ กดเจ็บ',
+    ],
+  },
+  {
+    src: '/images/rev/w103_clean_assess.jpg',
+    title: 'ผนังที่ 1 (ขวา): การทำความสะอาดเต้านม & การประเมินเต้านมด้วยตนเอง',
+    badge: 'ผนังที่ 1 • ส่วนที่ 2',
+    description: 'วิธีทำความสะอาดเต้านมอย่างอ่อนโยนและการตรวจประเมินเต้านมด้วยตนเองอย่างสม่ำเสมอ',
+    details: [
       'การทำความสะอาดเต้านม: อาบน้ำด้วยน้ำสะอาด, ไม่ถูแรง, เช็ดให้แห้ง, ไม่ใช้สบู่/แอลกอฮอล์บริเวณหัวนม',
       'การประเมินเต้านมด้วยตนเอง: คลำหาก้อน, สังเกตผิวหนัง, ดูหัวนมและทิศทางการไหลของน้ำนม, สอบถามเมื่อมีความผิดปกติ',
     ],
   },
   {
-    src: '/images/rev/w103_col2.jpg',
-    title: 'ผนังที่ 2: 2. การนวดเต้านมและกระตุ้นการไหลของน้ำนม',
+    src: '/images/rev/w103_wall2_massage_v2.jpg',
+    title: 'ผนังที่ 2: การนวดเต้านมและบีบน้ำนมด้วยมือ (4 ขั้นตอน)',
     badge: 'ผนังที่ 2',
     description: 'นวดเบา ๆ วันละ 2–3 ครั้ง หรือก่อนให้นม/เมื่อรู้สึกคัดตึง',
     details: [
-      '1. ใช้นิ้วมือวนเบา ๆ จากฐานเต้านมเข้าหาหัวนม',
-      '2. นวดจากด้านนอกเข้าหาลานหัวนม',
-      '3. ใช้นิ้วหัวแม่มือและนิ้วชี้คลึงเบา ๆ รอบลานหัวนม',
-      '4. เคล้น/บีบเบา ๆ เข้าหาหัวนมเพื่อช่วยระบายน้ำนม',
+      '1. ประคองเต้านม: วางมือด้านบนและด้านล่าง ขยับมือสวนทางกันเบา ๆ โดยไม่ให้เจ็บ',
+      '2. นวดวนเบา ๆ: ไม่กดลึกหรือขยี้ก้อนแข็ง',
+      '3. ลูบเต้านมเบา ๆ: ใช้มือประคองเต้า อีกมือลูบผิวเบา ๆ หากเต้าบวมให้ลูบไปทางรักแร้และอกด้านบน',
+      '4. บีบน้ำนมด้วยมือ: วางนิ้วหัวแม่มือกับนิ้วชี้ห่างฐานหัวนมประมาณ 3–4 ซม. กดเข้าหาหน้าอก → บีบ → คลาย ไม่ดึงหรือบีบหัวนม',
     ],
   },
   {
-    src: '/images/rev/w103_prob1.jpg',
-    title: 'ผนังที่ 3 (รูปที่ 1): เต้านมคัดตึง (Breast engorgement)',
-    badge: 'ผนังที่ 3 • รูปที่ 1/4',
-    description: 'อาการ: เต้านมแข็ง ตึง เจ็บ, รู้สึกร้อนหนัก, ลูกดูดไม่สะดวก',
+    src: '/images/rev/w103_problems_all.jpg',
+    title: 'ผนังที่ 3: ปัญหาเต้านมที่พบบ่อยและการดูแลเบื้องต้น (4 อาการ)',
+    badge: 'ผนังที่ 3',
+    description: 'เต้านมคัดตึง, หัวนมเจ็บ/หัวนมแตก, ท่อน้ำนมอุดตัน และเต้านมอักเสบ พร้อมอาการและวิธีจัดการดูแลตนเอง',
     details: [
-      'ให้ลูกดูดบ่อยขึ้น',
-      'ประคบอุ่นก่อนให้นม 5–10 นาที',
-      'นวดเบา ๆ และระบายน้ำนม',
-      'สวมเสื้อในที่รองรับ ไม่รัดแน่น',
+      '1. เต้านมคัดตึง (Breast engorgement): ให้ลูกดูดบ่อยขึ้น ประคบอุ่นก่อนให้นม 5–10 นาที นวดเบา ๆ และระบายน้ำนม',
+      '2. หัวนมเจ็บ / หัวนมแตก (Nipple pain / cracked nipple): ตรวจและแก้ท่าให้นม ใช้น้ำนมแม่ทาเคลือบหัวนม ปล่อยให้แห้ง',
+      '3. ท่อน้ำนมอุดตัน (Blocked duct): ให้ลูกดูดบ่อย นวดเบา ๆ จากด้านนอกเข้าหาหัวนม ประคบอุ่นก่อนให้นม',
+      '4. เต้านมอักเสบ (Mastitis): พักผ่อน ดื่มน้ำมาก ๆ ระบายน้ำนมต่อเนื่อง และพบแพทย์ทันทีเมื่อมีไข้/ปวดแดงร้อน',
     ],
   },
   {
-    src: '/images/rev/w103_prob2.jpg',
-    title: 'ผนังที่ 3 (รูปที่ 2): หัวนมเจ็บ / หัวนมแตก (Nipple pain / cracked nipple)',
-    badge: 'ผนังที่ 3 • รูปที่ 2/4',
-    description: 'อาการ: เจ็บแสบขณะให้นม, หัวนมแดง แห้ง แตก, อาจมีเลือดออก',
-    details: [
-      'ตรวจและแก้ท่าให้นม/การเข้าเต้า',
-      'บีบน้ำนมทาลานหัวนม',
-      'ปล่อยให้แห้ง ลดการเสียดสี',
-      'หากไม่ดีขึ้น ควรพบแพทย์',
-    ],
-  },
-  {
-    src: '/images/rev/w103_prob3.jpg',
-    title: 'ผนังที่ 3 (รูปที่ 3): ท่อน้ำนมอุดตัน (Blocked duct)',
-    badge: 'ผนังที่ 3 • รูปที่ 3/4',
-    description: 'อาการ: คลำพบก้อนแข็ง, เจ็บเป็นจุด, อาจมีผิวหนังแดงเล็กน้อย',
-    details: [
-      'ให้ลูกดูดบ่อย กระตุ้นการไหล',
-      'นวดเบา ๆ จากด้านนอกเข้าหาหัวนม',
-      'ประคบอุ่นก่อนให้นม',
-      'หากมีไข้ ปวดมาก ควรพบแพทย์',
-    ],
-  },
-  {
-    src: '/images/rev/w103_prob4.jpg',
-    title: 'ผนังที่ 3 (รูปที่ 4): เต้านมอักเสบ (Mastitis)',
-    badge: 'ผนังที่ 3 • รูปที่ 4/4',
-    description: 'อาการ: เต้านมแดง ร้อน บวม, เจ็บมาก, อาจมีไข้ อ่อนเพลีย',
-    details: [
-      'พักผ่อน ดื่มน้ำมาก ๆ',
-      'ให้ลูกดูดต่อเนื่อง/ระบายน้ำนม',
-      'รับประทานยาตามแพทย์สั่ง',
-      'พบแพทย์ทันที',
-    ],
-  },
-  {
-    src: '/images/rev/w103_scenarios.jpg',
+    src: '/images/rev/w103_scenarios_v2.jpg',
     title: 'สถานการณ์จำลอง: การดูแลเต้านม (4 สถานการณ์)',
     badge: 'สถานการณ์จำลอง',
     description: 'ฝึกวิเคราะห์และเลือกวิธีจัดการปัญหาเต้านมทั้ง 4 สถานการณ์อย่างเหมาะสม',
@@ -116,7 +88,7 @@ const W103_SCENARIOS = [
     prompt: 'เลือกวิธีจัดการที่เหมาะสม',
     options: [
       { id: 's2_1', text: 'จัดท่าให้นมและการเข้าเต้าที่ถูกต้อง', correct: true },
-      { id: 's2_2', text: 'ทาน้ำนมแม่หรือครีมบำรุง', correct: true },
+      { id: 's2_2', text: 'ใช้น้ำนมแม่ทาเคลือบหัวนม', correct: true },
       { id: 's2_3', text: 'ใช้แอลกอฮอล์เช็ดหัวนม', correct: false },
     ],
   },
@@ -144,10 +116,10 @@ const W103_SCENARIOS = [
 ];
 
 const MASSAGE_STEPS = [
-  { id: 1, title: 'ขั้นตอนที่ 1', desc: 'ใช้นิ้วมือวนเบา ๆ จากฐานเต้านมเข้าหาหัวนม' },
-  { id: 2, title: 'ขั้นตอนที่ 2', desc: 'นวดจากด้านนอกเข้าหาลานหัวนม' },
-  { id: 3, title: 'ขั้นตอนที่ 3', desc: 'ใช้นิ้วหัวแม่มือและนิ้วชี้คลึงเบา ๆ รอบลานหัวนม' },
-  { id: 4, title: 'ขั้นตอนที่ 4', desc: 'เคล้น/บีบเบา ๆ เข้าหาหัวนมเพื่อช่วยระบายน้ำนม' },
+  { id: 1, title: 'ขั้นตอนที่ 1 ประคองเต้านม', desc: 'วางมือด้านบนและด้านล่าง ขยับมือสวนทางกันเบา ๆ โดยไม่ให้เจ็บ' },
+  { id: 2, title: 'ขั้นตอนที่ 2 นวดวนเบา ๆ', desc: 'นวดวนเบา ๆ รอบเต้านม ไม่กดลึกหรือขยี้ก้อนแข็ง' },
+  { id: 3, title: 'ขั้นตอนที่ 3 ลูบเต้านมเบา ๆ', desc: 'ใช้มือประคองเต้า อีกมือลูบผิวเบา ๆ หากเต้าบวมให้ลูบไปทางรักแร้และอกด้านบน' },
+  { id: 4, title: 'ขั้นตอนที่ 4 บีบน้ำนมด้วยมือ', desc: 'วางนิ้วหัวแม่มือกับนิ้วชี้ห่างฐานหัวนมประมาณ 3–4 ซม. กดเข้าหาหน้าอก → บีบ → คลาย ไม่ดึงหรือบีบหัวนม' },
 ];
 
 export default function MotherCare3Room() {
@@ -248,7 +220,7 @@ export default function MotherCare3Room() {
       id: 'room103_practice_sofa',
       name: 'โซฟาฝึกนวดเต้านมและทำสถานการณ์จำลอง',
       type: 'sofa',
-      position: [0, 0, -0.2],
+      position: [0.5, 0, -0.2],
       rotationY: 0,
       seatOffset: [0, 0.46, 0.15],
       isDrivable: false,
@@ -263,6 +235,7 @@ export default function MotherCare3Room() {
       <HospitalRoomShell
         theme="mother"
         cozyMode={true}
+        doorZ={6.65}
         roomTitle="การดูแลเต้านม"
         roomNumber=""
       />
@@ -312,7 +285,7 @@ export default function MotherCare3Room() {
                 onClick={() => openGalleryAt(0)}
                 className="w-full p-2 rounded-xl border border-pink-200 bg-pink-50 hover:bg-pink-100 text-left font-semibold flex items-center justify-between transition cursor-pointer"
               >
-                <span>🖼️ 1. ดูโปสเตอร์ความรู้รอบห้อง (7 ภาพ)</span>
+                <span>🖼️ 1. ดูโปสเตอร์ความรู้รอบห้อง (5 ภาพ)</span>
                 <span className="font-bold text-pink-700">เปิดดู ▶</span>
               </button>
 
@@ -355,118 +328,89 @@ export default function MotherCare3Room() {
       {/* แสงไฟโทนอบอุ่นสบายตาในห้อง */}
       <pointLight position={[0, 4.2, 0.5]} intensity={0.75} color="#ffd8a8" distance={14} />
 
-      {/* ป้ายชื่อห้องด้านบนผนังกลาง (ติดผนังด้านใน z = -8.78 อย่างแนบสนิท) */}
+      {/* ป้ายชื่อห้องด้านบนผนังกลาง (ติดผนังด้านใน z = -8.78 เหนือกรอบโปสเตอร์อย่างไม่ซ้อนทับ) */}
       <TitleSign
-        position={[0, 5.2, -8.78]}
-        width={5.4}
-        height={1.35}
+        position={[0, 5.52, -8.78]}
+        width={5.2}
+        height={1.15}
         line1="ZONE 1 การดูแลเต้านม"
         line2="การดูแลเต้านมและกระตุ้นการไหลของน้ำนม"
       />
 
-      {/* หน้าต่างบานใหญ่พร้อมผ้าม่านโทนอบอุ่น ติดผนังด้านใน z = -8.78 */}
-      <WindowWithCurtains position={[-6.0, 2.8, -8.78]} width={3.1} height={2.8} />
-      <WindowWithCurtains position={[6.0, 2.8, -8.78]} width={3.1} height={2.8} />
+      {/* หน้าต่างกระจกใสบานใหญ่เห็นวิวสวนภายนอกพร้อมผ้าม่าน ติดผนังด้านใน z = ±8.76 */}
+      <WindowWithCurtains position={[-6.82, 2.8, -8.76]} width={2.25} height={2.75} />
+      <WindowWithCurtains position={[6.82, 2.8, -8.76]} width={2.25} height={2.75} />
+      <WindowWithCurtains position={[0, 2.85, 8.76]} rotation={[0, Math.PI, 0]} width={6.4} height={3.1} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 1 (ซ้าย X = -8.78): แผงไม้ไฟซ่อน แปะภาพ "1 การดูแลเต้านม" 2 กรอบคู่กัน (ซ้าย-ขวา)
-          ตรงตามผังหน้า 1 ของ สมุดโน้ตไม่มีชื่อ(1).pdf
+          ผนังที่ 1 (ซ้าย X = -8.78): ภาพตรง คมชัด ไร้พื้นหลัง พอดีกรอบสัดส่วนจริง 100%
+          - ซ้าย: 1. การดูแลเต้านม — สังเกตความปกติของเต้านม (ดัด perspective ตรง 100%)
+          - ขวา: การทำความสะอาดเต้านม & การประเมินเต้านมด้วยตนเอง (IMG_8524.JPG)
           ══════════════════════════════════════════════════════════════════════════ */}
       <WoodFramedBacklitPanel
-        position={[-8.78, 2.75, 0]}
+        position={[-8.78, 2.75, -1.55]}
         rotation={[0, Math.PI / 2, 0]}
-        width={9.2}
-        height={4.3}
+        width={9.4}
+        height={4.2}
       >
         <FramedImagePoster3D
-          position={[-2.35, 0.15, 0.02]}
-          width={4.2}
-          height={2.6}
-          src="/images/rev/w103_wall1_left.jpg"
-          title="1. การดูแลเต้านม — สังเกตความปกติของเต้านม"
-          badgeText="🔍 คลิกขยาย"
-          headerColor="#db2777"
+          position={[-2.30, 0, 0.02]}
+          width={4.36}
+          height={2.66}
+          src="/images/rev/w103_wall1_left_straight.jpg"
+          title=""
+          badgeText=""
           onClick={() => openGalleryAt(0)}
         />
         <FramedImagePoster3D
-          position={[2.25, 0, 0.02]}
-          width={3.9}
-          height={3.6}
-          src="/images/rev/w103_wall1_right.jpg"
-          title="การทำความสะอาดเต้านม & การประเมินด้วยตนเอง"
-          badgeText="🔍 คลิกขยาย"
-          headerColor="#be185d"
-          onClick={() => openGalleryAt(0)}
-        />
-      </WoodFramedBacklitPanel>
-
-      {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 2 (กลาง Z = -8.78): "2 การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
-          แปะหัวข้อด้านบน + รูปขั้นตอน 1, 2, 3, 4 จัดเรียง 2x2 ให้สวยงามตามคอมเมนต์ลูกค้า
-          ══════════════════════════════════════════════════════════════════════════ */}
-      <WoodFramedBacklitPanel
-        position={[0, 2.42, -8.78]}
-        rotation={[0, 0, 0]}
-        width={5.4}
-        height={4.15}
-      >
-        <FramedImagePoster3D
-          position={[0, 1.42, 0.02]}
-          width={3.7}
-          height={1.08}
-          src="/images/rev/w103_wall2_header.jpg"
-          title="2. การนวดเต้านมและกระตุ้นการไหลของน้ำนม"
-          badgeText="🔍 ขยาย"
-          headerColor="#0284c7"
+          position={[2.32, 0, 0.02]}
+          width={4.18}
+          height={3.58}
+          src="/images/rev/w103_clean_assess.jpg"
+          title=""
+          badgeText=""
           onClick={() => openGalleryAt(1)}
         />
-        {[
-          { step: 1, pos: [-1.25, 0.12, 0.02], label: '1. วนเบา ๆ จากฐานเข้าหาหัวนม', img: '/images/rev/w103_wall2_step1.jpg' },
-          { step: 2, pos: [1.25, 0.12, 0.02], label: '2. นวดจากด้านนอกเข้าหาลานหัวนม', img: '/images/rev/w103_wall2_step2.jpg' },
-          { step: 3, pos: [-1.25, -1.30, 0.02], label: '3. คลึงเบา ๆ รอบลานหัวนม', img: '/images/rev/w103_wall2_step3.jpg' },
-          { step: 4, pos: [1.25, -1.30, 0.02], label: '4. เคล้น/บีบเบา ๆ ระบายน้ำนม', img: '/images/rev/w103_wall2_step4.jpg' },
-        ].map((card) => (
-          <FramedImagePoster3D
-            key={card.step}
-            position={card.pos}
-            width={2.15}
-            height={1.3}
-            src={card.img}
-            title={card.label}
-            badgeText="🔍 ขยาย"
-            headerColor="#0369a1"
-            onClick={() => openGalleryAt(1)}
-          />
-        ))}
       </WoodFramedBacklitPanel>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          ผนังที่ 3 (ขวา X = +8.78): กรอบไม้ไฟซ่อน LED ติดผนัง แปะรูป 1, 2, 3, 4 จัดเรียง 2x2 ด้วย 3D Mesh แท้
+          ผนังที่ 2 (กลาง Z = -8.78): ภาพใหม่ 4 ขั้นตอนการนวดเต้านมและบีบน้ำนมด้วยมือ (1024x576 สัดส่วน 16:9 เป๊ะ ขยายขนาดใหญ่ตามคอมเมนต์ "ขอขยายใหญ่ๆ")
+          ══════════════════════════════════════════════════════════════════════════ */}
+      <WoodFramedBacklitPanel
+        position={[0, 2.58, -8.78]}
+        rotation={[0, 0, 0]}
+        width={7.80}
+        height={4.54}
+      >
+        <FramedImagePoster3D
+          position={[0, 0, 0.02]}
+          width={7.36}
+          height={4.14}
+          src="/images/rev/w103_wall2_massage_v2.jpg"
+          title=""
+          badgeText=""
+          onClick={() => openGalleryAt(2)}
+        />
+      </WoodFramedBacklitPanel>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          ผนังที่ 3 (ขวา X = +8.78): โปสเตอร์ปัญหาเต้านม 4 อาการแผ่นเดียว คมชัด ตรง ไร้พื้นหลัง (IMG_8528.JPG)
           ══════════════════════════════════════════════════════════════════════════ */}
       <WoodFramedBacklitPanel
         position={[8.78, 2.75, 0]}
         rotation={[0, -Math.PI / 2, 0]}
-        width={7.6}
-        height={4.9}
+        width={4.0}
+        height={4.95}
       >
-        {[
-          { idx: 2, pos: [-1.82, 1.12, 0.02], label: '1. เต้านมคัดตึง', img: '/images/rev/w103_prob1.jpg' },
-          { idx: 3, pos: [1.82, 1.12, 0.02], label: '2. หัวนมเจ็บ / หัวนมแตก', img: '/images/rev/w103_prob2.jpg' },
-          { idx: 4, pos: [-1.82, -1.12, 0.02], label: '3. ท่อน้ำนมอุดตัน', img: '/images/rev/w103_prob3.jpg' },
-          { idx: 5, pos: [1.82, -1.12, 0.02], label: '4. เต้านมอักเสบ', img: '/images/rev/w103_prob4.jpg' },
-        ].map((card) => (
-          <FramedImagePoster3D
-            key={card.idx}
-            position={card.pos}
-            width={3.4}
-            height={2.05}
-            src={card.img}
-            title={card.label}
-            badgeText="🔍 ขยาย"
-            headerColor="#ea580c"
-            onClick={() => openGalleryAt(card.idx)}
-          />
-        ))}
+        <FramedImagePoster3D
+          position={[0, 0, 0.02]}
+          width={3.56}
+          height={4.64}
+          src="/images/rev/w103_problems_all.jpg"
+          title=""
+          badgeText=""
+          onClick={() => openGalleryAt(3)}
+        />
       </WoodFramedBacklitPanel>
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -481,34 +425,20 @@ export default function MotherCare3Room() {
         rotation={[0, 0, 0]}
         seatOffset={[0, 0.46, 0.15]}
       >
-        <Html position={[0, 1.88, 0]} center zIndexRange={[20, 0]}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSitAndPractice();
-            }}
-            style={{
-              background: 'linear-gradient(135deg, #ec4899, #be185d)',
-              color: '#ffffff',
-              border: '2px solid #ffffff',
-              borderRadius: '18px',
-              padding: '6px 14px',
-              fontWeight: 800,
-              fontSize: '12px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(190,24,93,0.35)',
-              whiteSpace: 'normal',
-              maxWidth: 'min(84vw, 340px)',
-              textAlign: 'center',
-              lineHeight: 1.35,
-            }}
-          >
-            {seatedTarget?.id === 'room103_practice_sofa'
-              ? '🤱 กำลังนั่งบนโซฟา — คลิกเพื่อเปิดฝึกนวดเต้านม & สถานการณ์จำลอง'
-              : '🛋️ คลิกนั่งโซฟาเพื่อฝึกนวดเต้านม & ทำสถานการณ์จำลอง 4 ข้อ'}
-          </button>
-        </Html>
+        <BillboardLabel3D
+          position={[0, 1.56, -0.38]}
+          text={
+            seatedTarget?.id === 'room103_practice_sofa'
+              ? '🤱 กำลังนั่งบนโซฟา — คลิกเปิดฝึกนวดเต้านม & สถานการณ์จำลอง'
+              : '🛋️ คลิกนั่งโซฟาเพื่อฝึกนวดเต้านม & ทำสถานการณ์จำลอง 4 ข้อ'
+          }
+          bg="#ec4899"
+          bgEnd="#be185d"
+          width={2.15}
+          height={0.36}
+          pill={false}
+          onClick={handleSitAndPractice}
+        />
       </InteractiveSeat>
 
       <CozySectionalSofaSet
@@ -518,6 +448,7 @@ export default function MotherCare3Room() {
           setActiveTab('scenarios');
         }}
         tabletLabel="📋 คลิกแท็บเล็ตบนโต๊ะ: ทำสถานการณ์จำลอง 4 ข้อ"
+        ipadMode="breastfeeding"
       />
 
       {/* ของตกแต่งมุมห้องอบอุ่นตามภาพตัวอย่าง (ตะกร้าหวายบนพรมกลม, ตู้ไม้โคมไฟอุ่น, ตุ๊กตากระต่าย, ต้นไม้) */}
@@ -591,7 +522,7 @@ export default function MotherCare3Room() {
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <button
                     type="button"
-                    onClick={() => openGalleryAt(6)}
+                    onClick={() => openGalleryAt(4)}
                     style={{
                       background: '#ffffff',
                       color: '#be185d',
@@ -655,25 +586,25 @@ export default function MotherCare3Room() {
               {/* Body */}
               <div style={{ padding: 'clamp(12px, 3vw, 22px)', overflowY: 'auto', flex: 1 }}>
                 {activeTab === 'massage' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px', alignItems: 'start' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div
-                      onClick={() => openGalleryAt(1)}
+                      onClick={() => openGalleryAt(2)}
                       style={{
-                        background: '#f0f9ff',
+                        background: '#e0f2fe',
                         borderRadius: '18px',
-                        border: '2px solid #bae6fd',
+                        border: '2.5px solid #38bdf8',
                         padding: '10px',
-                        cursor: 'pointer',
+                        cursor: 'zoom-in',
                         textAlign: 'center',
                       }}
                     >
                       <img
-                        src="/images/rev/w103_col2.jpg"
+                        src="/images/rev/w103_wall2_massage_v2.jpg"
                         alt="การนวดเต้านม 4 ขั้นตอน"
-                        style={{ width: '100%', maxHeight: '380px', objectFit: 'contain', borderRadius: '12px' }}
+                        style={{ width: '100%', maxHeight: '520px', objectFit: 'contain', borderRadius: '12px', display: 'block', margin: '0 auto' }}
                       />
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#0369a1', marginTop: '6px' }}>
-                        🔍 คลิกที่ภาพเพื่อขยายใหญ่
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#0369a1', marginTop: '8px' }}>
+                        🔍 คลิกที่ภาพเพื่อเปิดดูภาพขยายใหญ่เต็มจอ (ซูมขยายได้)
                       </div>
                     </div>
 

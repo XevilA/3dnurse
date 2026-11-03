@@ -1,20 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import useStore from '../../store/useStore';
 
 /**
  * ImageViewerModal (Lightbox)
  * Full-screen responsive modal for examining educational posters and visual details clearly.
- * Addresses client request: "ภาพโปสเตอร์ที่ติดข้างผนัง อยากให้เป็น กดที่ภาพแล้วภาพขยายใหญ่ เพื่อที่จะได้อ่านชัดเจน"
+ * Supports tap-to-zoom and +/- zoom controls so mobile & desktop users can read every detail clearly.
  */
 export default function ImageViewerModal() {
   const activeLightboxImage = useStore((s) => s.activeLightboxImage);
   const openLightbox = useStore((s) => s.openLightbox);
   const closeLightbox = useStore((s) => s.closeLightbox);
+  const [zoom, setZoom] = useState(1);
 
   const items = activeLightboxImage?.items || null;
   const currentIndex = typeof activeLightboxImage?.currentIndex === 'number' ? activeLightboxImage.currentIndex : 0;
   const onIndexChange = activeLightboxImage?.onIndexChange;
   const hasGallery = Array.isArray(items) && items.length > 1;
+
+  // Reset zoom whenever image or slide index changes
+  useEffect(() => {
+    setZoom(1);
+  }, [activeLightboxImage?.src, currentIndex]);
 
   const goPrev = () => {
     if (!hasGallery) return;
@@ -75,12 +81,12 @@ export default function ImageViewerModal() {
       onClick={closeLightbox}
     >
       <div
-        className="relative bg-white text-slate-800 rounded-2xl sm:rounded-3xl max-w-4xl w-full max-h-full flex flex-col shadow-2xl overflow-hidden border-2 border-white/40"
+        className="relative bg-white text-slate-800 rounded-2xl sm:rounded-3xl max-w-5xl w-full max-h-full flex flex-col shadow-2xl overflow-hidden border-2 border-white/40"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-gradient-to-r from-slate-50 via-sky-50 to-pink-50 border-b border-slate-200">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center justify-between gap-2 px-3.5 sm:px-6 py-3 bg-gradient-to-r from-slate-50 via-sky-50 to-pink-50 border-b border-slate-200">
+          <div className="flex items-center gap-2 min-w-0">
             {badgeText && (
               <span className="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-black bg-pink-600 text-white shadow-sm shrink-0">
                 {badgeText}
@@ -90,17 +96,40 @@ export default function ImageViewerModal() {
               {title || 'สื่อการสอนทางคลินิก (ขยายใหญ่)'}
             </h3>
           </div>
-          <button
-            type="button"
-            onClick={closeLightbox}
-            className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 active:scale-95 flex items-center justify-center text-slate-700 font-bold transition cursor-pointer shrink-0 ml-2"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {!isVideo && src && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setZoom((z) => Math.max(1, +(z - 0.5).toFixed(1)))}
+                  disabled={zoom <= 1}
+                  className="px-2.5 py-1 rounded-full bg-white hover:bg-slate-100 disabled:opacity-40 border border-slate-300 text-slate-800 text-xs font-black transition cursor-pointer shadow-xs"
+                  title="ย่อขนาดภาพ"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setZoom((z) => (z >= 2.5 ? 1 : +(z + 0.5).toFixed(1)))}
+                  className="px-2.5 sm:px-3 py-1 rounded-full bg-pink-600 hover:bg-pink-700 text-white text-xs font-black transition cursor-pointer shadow-xs"
+                  title="ขยายขนาดภาพให้ใหญ่ขึ้น"
+                >
+                  {zoom > 1 ? `🔍 ${Math.round(zoom * 100)}%` : '＋ ขยายรูปใหญ่'}
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={closeLightbox}
+              className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 active:scale-95 flex items-center justify-center text-slate-700 font-bold transition cursor-pointer shrink-0 ml-1"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-4">
           {/* Main Visual Image / Video Graphic */}
           {isVideo && videoUrl ? (
             <div className="w-full space-y-3">
@@ -132,12 +161,37 @@ export default function ImageViewerModal() {
             </div>
           ) : (
             src && (
-              <div className="w-full flex items-center justify-center bg-slate-950/5 rounded-2xl p-2 border border-slate-200 overflow-hidden">
-                <img
-                  src={src}
-                  alt={title || 'Clinical poster'}
-                  className="max-h-[calc(var(--app-h,100dvh)*0.48)] sm:max-h-[calc(var(--app-h,100dvh)*0.6)] w-auto max-w-full object-contain rounded-xl shadow-md transition-transform hover:scale-[1.02]"
-                />
+              <div className="w-full space-y-1.5">
+                <div
+                  className={`w-full bg-slate-950/5 rounded-2xl p-1.5 sm:p-2 border border-slate-200 ${
+                    zoom > 1 ? 'overflow-auto max-h-[calc(var(--app-h,100dvh)*0.74)]' : 'flex items-center justify-center overflow-hidden'
+                  }`}
+                >
+                  <img
+                    src={src}
+                    alt={title || 'Clinical poster'}
+                    onClick={() => setZoom((z) => (z > 1 ? 1 : 1.75))}
+                    style={
+                      zoom > 1
+                        ? { width: `${zoom * 100}%`, maxWidth: 'none', height: 'auto' }
+                        : undefined
+                    }
+                    className={
+                      zoom > 1
+                        ? 'block mx-auto rounded-xl shadow-md cursor-zoom-out'
+                        : `${
+                            !descText && (!detailsList || detailsList.length === 0)
+                              ? 'max-h-[calc(var(--app-h,100dvh)*0.76)]'
+                              : 'max-h-[calc(var(--app-h,100dvh)*0.62)] sm:max-h-[calc(var(--app-h,100dvh)*0.70)]'
+                          } w-auto max-w-full object-contain rounded-xl shadow-md transition-transform hover:scale-[1.01] cursor-zoom-in`
+                    }
+                  />
+                </div>
+                <div className="text-center text-[11px] font-bold text-slate-500">
+                  {zoom > 1
+                    ? '👆 เลื่อนนิ้วเพื่อดูรายละเอียดรอบภาพ • แตะที่ภาพอีกครั้งเพื่อย่อกลับขนาดปกติ'
+                    : '🔍 แตะที่ภาพ หรือกดปุ่ม "＋ ขยายรูปใหญ่" ด้านบนเพื่อซูมอ่านรายละเอียดขนาดใหญ่'}
+                </div>
               </div>
             )
           )}

@@ -4,28 +4,36 @@ import * as THREE from 'three';
 import ScreenPortal from '../ui/ScreenPortal';
 import RealisticNurse from '../characters/RealisticNurse';
 import RealisticComputerWorkstation from './RealisticComputerWorkstation';
+import { CANVAS_THAI_FONT, fillCenteredText, whenFontsReady } from '../../utils/canvasText';
 
 function usePlaqueTexture(drawFn, width = 640, height = 320, deps = []) {
-  const tex = useMemo(() => {
+  const { tex, redraw } = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-    if (ctx) drawFn(ctx, width, height);
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     t.generateMipmaps = false;
     t.minFilter = THREE.LinearFilter;
-    t.needsUpdate = true;
-    return t;
+    const paint = () => {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
+      drawFn(ctx, width, height);
+      t.needsUpdate = true;
+    };
+    paint();
+    return { tex: t, redraw: paint };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   useEffect(() => {
+    const cancelFonts = whenFontsReady(redraw);
     return () => {
+      cancelFonts();
       tex.dispose();
     };
-  }, [tex]);
+  }, [tex, redraw]);
 
   return tex;
 }
@@ -51,27 +59,25 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
     ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 8;
     ctx.strokeRect(4, 4, w - 8, h - 8);
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#0f172a';
-    ctx.font = '900 54px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('เคาน์เตอร์พยาบาล', w / 2, h * 0.42);
+    ctx.font = `900 54px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(ctx, 'เคาน์เตอร์พยาบาล', w / 2, h * 0.41, w - 48);
     ctx.fillStyle = '#475569';
-    ctx.font = '700 34px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('Nurse Station', w / 2, h * 0.75);
+    ctx.font = `700 34px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(ctx, 'Nurse Station', w / 2, h * 0.76, w - 48);
   }, 800, 180, []);
 
   const welcomePlaqueTex = usePlaqueTexture((ctx, w, h) => {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, w, h);
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#0f172a';
-    ctx.font = '900 88px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('ยินดีต้อนรับ', w / 2, h * 0.40);
+    ctx.font = `900 88px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(ctx, 'ยินดีต้อนรับ', w / 2, h * 0.40, w - 48);
     ctx.fillStyle = '#e11d48';
-    ctx.font = '800 50px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('เราพร้อมดูแลคุณ ❤️', w / 2, h * 0.76);
+    ctx.font = `800 50px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(ctx, 'เราพร้อมดูแลคุณ ❤️', w / 2, h * 0.76, w - 48);
   }, 900, 320, []);
 
   const newbornWallSignTex = usePlaqueTexture((ctx, w, h) => {
@@ -84,16 +90,15 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
     ctx.strokeStyle = '#f59e0b';
     ctx.lineWidth = 14;
     ctx.strokeRect(7, 7, w - 14, h - 14);
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '68px system-ui, sans-serif';
-    ctx.fillText('👶🌸', w / 2, h * 0.27);
+    fillCenteredText(ctx, '👶🌸', w / 2, h * 0.27);
     ctx.fillStyle = '#be185d';
-    ctx.font = '900 66px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('ห้องดูแลทารก', w / 2, h * 0.58);
+    ctx.font = `900 66px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(ctx, 'ห้องดูแลทารก', w / 2, h * 0.58, w - 56);
     ctx.fillStyle = '#9d174d';
-    ctx.font = '700 38px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('Newborn Care Room', w / 2, h * 0.82);
+    ctx.font = `700 38px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(ctx, 'Newborn Care Room', w / 2, h * 0.82, w - 56);
   }, 720, 440, []);
 
   const motherWallSignTex = usePlaqueTexture((ctx, w, h) => {
@@ -106,16 +111,15 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
     ctx.strokeStyle = '#f472b6';
     ctx.lineWidth = 14;
     ctx.strokeRect(7, 7, w - 14, h - 14);
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '68px system-ui, sans-serif';
-    ctx.fillText('🤱💖', w / 2, h * 0.27);
+    fillCenteredText(ctx, '🤱💖', w / 2, h * 0.27);
     ctx.fillStyle = '#be185d';
-    ctx.font = '900 66px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('ห้องดูแลคุณแม่', w / 2, h * 0.58);
+    ctx.font = `900 66px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(ctx, 'ห้องดูแลคุณแม่', w / 2, h * 0.58, w - 56);
     ctx.fillStyle = '#9d174d';
-    ctx.font = '700 38px "Sarabun", system-ui, -apple-system, sans-serif';
-    ctx.fillText('Maternal Care Room', w / 2, h * 0.82);
+    ctx.font = `700 38px ${CANVAS_THAI_FONT}`;
+    fillCenteredText(ctx, 'Maternal Care Room', w / 2, h * 0.82, w - 56);
   }, 720, 440, []);
 
   useFrame(({ clock }) => {
@@ -441,8 +445,8 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
           {/* Red Cross Circular Emblem (Centered above nurses, clearly visible) */}
           <group position={[0, 3.55, 0.08]}>
             {/* White Circular Badge */}
-            <mesh castShadow>
-              <cylinderGeometry args={[0.42, 0.42, 0.03, 32]} rotation={[Math.PI / 2, 0, 0]} />
+            <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+              <cylinderGeometry args={[0.42, 0.42, 0.03, 32]} />
               <meshStandardMaterial color="#ffffff" roughness={0.2} />
             </mesh>
             {/* Red Border Ring */}
@@ -468,26 +472,26 @@ export default function HospitalNurseStation({ position = [0, 0, -3.8], rotation
           </mesh>
         </group>
 
-        {/* ── Left Wall Section: Newborn Care Room Sign (3D Mesh ติดผนัง ไม่ลอย) ── */}
-        <group position={[-2.45, 2.75, 0.08]}>
+        {/* ── Left Wall Section: Newborn Care Room Sign (Centered cleanly in left bay, zero slat overlap) ── */}
+        <group position={[-2.76, 2.75, 0.08]}>
           <mesh castShadow>
-            <boxGeometry args={[1.65, 1.05, 0.05]} />
+            <boxGeometry args={[1.54, 1.00, 0.05]} />
             <meshStandardMaterial color="#b07d4b" roughness={0.35} />
           </mesh>
           <mesh position={[0, 0, 0.027]}>
-            <planeGeometry args={[1.55, 0.95]} />
+            <planeGeometry args={[1.44, 0.90]} />
             <meshBasicMaterial map={newbornWallSignTex} toneMapped={false} />
           </mesh>
         </group>
 
-        {/* ── Right Wall Section: Maternal Care Room Sign (3D Mesh ติดผนัง ไม่ลอย) ── */}
-        <group position={[2.45, 2.75, 0.08]}>
+        {/* ── Right Wall Section: Maternal Care Room Sign (Centered cleanly in right bay, zero slat overlap) ── */}
+        <group position={[2.76, 2.75, 0.08]}>
           <mesh castShadow>
-            <boxGeometry args={[1.65, 1.05, 0.05]} />
+            <boxGeometry args={[1.54, 1.00, 0.05]} />
             <meshStandardMaterial color="#b07d4b" roughness={0.35} />
           </mesh>
           <mesh position={[0, 0, 0.027]}>
-            <planeGeometry args={[1.55, 0.95]} />
+            <planeGeometry args={[1.44, 0.90]} />
             <meshBasicMaterial map={motherWallSignTex} toneMapped={false} />
           </mesh>
         </group>

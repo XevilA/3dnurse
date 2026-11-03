@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Html } from '@react-three/drei';
 import useStore from '../../store/useStore';
 import ScreenPortal from '../ui/ScreenPortal';
 import PlayerController from '../player/PlayerController';
@@ -18,7 +17,16 @@ import DoctorDesk from '../furniture/DoctorDesk';
 import { DiaperStack, BabyBottle, CottonJar, IcePack } from '../furniture/BabyProps';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 
-import { WallBoard, TitleSign, WallScreen, WindowWithCurtains, CareBooth, LoungeCorner, useEnterToActivate } from '../ward/WardKit';
+import {
+  WallBoard,
+  TitleSign,
+  WallScreen,
+  ProjectorScreenBoard,
+  WindowWithCurtains,
+  CareBooth,
+  LoungeCorner,
+  useEnterToActivate,
+} from '../ward/WardKit';
 import { WARD102_BOARDS } from '../ward/wardData';
 
 export default function MotherCare2Room() {
@@ -36,12 +44,12 @@ export default function MotherCare2Room() {
 
   // ── กิจกรรม 1: ทำความสะอาดแผลฝีเย็บ (เรียงลำดับ 6 ขั้นตอน) ──
   const initialSteps = [
-    { id: 3, text: 'ทำความสะอาดจากด้านหน้าไปด้านหลัง (จากช่องคลอดไปทวารหนัก)', correctOrder: 3 },
-    { id: 1, text: 'ล้างมือให้สะอาดด้วยสบู่และน้ำไหล', correctOrder: 1 },
-    { id: 5, text: 'เปลี่ยนผ้าอนามัยทุก 3–4 ชั่วโมง หรือเมื่อชุ่ม', correctOrder: 5 },
-    { id: 2, text: 'ใช้น้ำสะอาดหรือน้ำเกลือจากขวด Peri-bottle ชะล้างแผล', correctOrder: 2 },
-    { id: 6, text: 'สังเกตลักษณะแผลและการเปลี่ยนแปลงของน้ำคาวปลา', correctOrder: 6 },
-    { id: 4, text: 'ซับให้แห้งอย่างเบามือด้วยผ้าหรือทิชชูสะอาด', correctOrder: 4 },
+    { id: 3, text: 'เช็ดทำความสะอาดจากด้านหน้าไปด้านหลัง โดยเริ่มจากบริเวณช่องคลอดไปทางทวารหนัก', correctOrder: 3 },
+    { id: 1, text: 'ล้างมือให้สะอาดด้วยสบู่และน้ำก่อนทำความสะอาดแผล', correctOrder: 1 },
+    { id: 5, text: 'เปลี่ยนผ้าอนามัยทุก 3–4 ชั่วโมง หรือเมื่อผ้าอนามัยเปียกชุ่ม', correctOrder: 5 },
+    { id: 2, text: 'ใช้น้ำสะอาดหรือน้ำเกลือใส่ขวด Peri-bottle ฉีดล้างบริเวณแผลฝีเย็บ', correctOrder: 2 },
+    { id: 6, text: 'สังเกตแผลฝีเย็บว่ามีอาการบวม แดง หรือมีหนองหรือไม่ และสังเกตสี กลิ่น และปริมาณของน้ำคาวปลา', correctOrder: 6 },
+    { id: 4, text: 'ใช้ผ้าสะอาดหรือกระดาษทิชชูซับบริเวณแผลให้แห้งเบา ๆ ไม่ถูหรือเช็ดแรง', correctOrder: 4 },
   ];
 
   const [userOrder, setUserOrder] = useState(initialSteps);
@@ -63,12 +71,12 @@ export default function MotherCare2Room() {
     if (isCorrect) {
       setAct1Feedback({
         pass: true,
-        msg: '✓ ถูกต้องทั้งหมด! ลำดับการทำความสะอาดแผลเริ่มจากล้างมือ ใช้น้ำสะอาด ชะล้างจากหน้าไปหลัง ซับแห้ง เปลี่ยนผ้าอนามัย และสังเกตแผล (White & Atchan 2022)'
+        msg: '✓ ถูกต้องทั้งหมด! ลำดับที่ถูกต้องเริ่มจาก 1) ล้างมือก่อนทำความสะอาดแผล → 2) ฉีดล้างด้วยขวด Peri-bottle → 3) เช็ดทำความสะอาดจากด้านหน้าไปด้านหลัง → 4) ซับบริเวณแผลให้แห้งเบา ๆ → 5) เปลี่ยนผ้าอนามัย → 6) สังเกตแผลฝีเย็บและน้ำคาวปลา (White & Atchan 2022)'
       });
     } else {
       setAct1Feedback({
         pass: false,
-        msg: '✕ ลำดับยังไม่ถูกต้อง: ต้องเริ่มจากล้างมือก่อนเสมอ และทำความสะอาดจากด้านหน้าไปด้านหลังเพื่อป้องกันเชื้อโรคจากทวารหนัก'
+        msg: '✕ ลำดับยังไม่ถูกต้อง: ต้องเรียงตามลำดับ 1) ล้างมือก่อนทำความสะอาดแผล → 2) ฉีดล้างบริเวณแผลด้วยขวด Peri-bottle → 3) เช็ดจากด้านหน้าไปด้านหลัง → 4) ซับแผลให้แห้งเบา ๆ → 5) เปลี่ยนผ้าอนามัย → 6) สังเกตแผลฝีเย็บและน้ำคาวปลา'
       });
     }
   };
@@ -700,6 +708,7 @@ export default function MotherCare2Room() {
     <group>
       <HospitalRoomShell
         theme="mother"
+        wallColor="#f8fafc"
         roomTitle="ห้องบริบาลมารดา 2: การดูแลแผลหลังคลอด (แผลฝีเย็บและแผลผ่าตัด)"
         roomNumber="Wound Care Ward 102"
       />
@@ -809,50 +818,49 @@ export default function MotherCare2Room() {
       <WallBoard position={[-6.3, 2.5, -8.76]} width={3.2} height={2.6} title={B.goals.title} items={B.goals.items} />
       <WallBoard position={[4.1, 3.4, -8.76]} width={2.85} height={3.6} title={B.howTo.title} items={B.howTo.items} numbered />
       <WallBoard position={[7.2, 3.4, -8.76]} width={2.85} height={3.6} title={B.warning.title} items={B.warning.items} accent="#e53935" />
-      {/* จอสไลด์ความรู้ Zone 2 ติดผนังฝั่งขวา (ไม่ซ้อนทับหลังโปรเจกเตอร์) */}
-      <WallScreen position={[8.72, 3.3, -5.6]} rotation={[0, -Math.PI / 2, 0]} width={3.4} src="/images/ward/zone2_slide.jpg" room={ROOM} label="Zone 2" />
-      <WindowWithCurtains position={[-8.78, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
+      {/* จอสไลด์ความรู้ Zone 2 ติดผนังฝั่งขวา (ขยายขนาดใหญ่อ่านง่ายชัดเจน) */}
+      <WallScreen position={[8.72, 3.38, -5.55]} rotation={[0, -Math.PI / 2, 0]} width={4.6} src="/images/ward/zone2_slide.jpg" room={ROOM} label="Zone 2" />
+      <WindowWithCurtains position={[-8.76, 2.6, -2.5]} rotation={[0, Math.PI / 2, 0]} />
+      <WindowWithCurtains position={[-0.3, 2.85, 8.76]} rotation={[0, Math.PI, 0]} width={7.2} height={3.3} />
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          🩹 INTERACTIVE PROJECTOR LEARNING BOARD (Framed Cleanly on North Wall Projector Screen)
+          🩹 INTERACTIVE PROJECTOR LEARNING BOARD (3D พอดีกรอบ 100% ทุกอุปกรณ์ ไม่เลื่อน/ไม่ล้นกรอบ)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group
+      <ProjectorScreenBoard
         position={[-0.65, 3.05, -8.76]}
-        onClick={(e) => {
-          if (e.delta > 10) return;
-          e.stopPropagation();
-          setIsBoardFullScreen(true);
-        }}
-      >
-        {/* Projector Top Housing Roller Bar */}
-        <mesh position={[0, 1.92, 0.04]} castShadow>
-          <boxGeometry args={[4.75, 0.14, 0.14]} />
-          <meshStandardMaterial color="#334155" metalness={0.5} roughness={0.3} />
-        </mesh>
-        {/* Clean Projector Screen Bezel & Matte White Canvas */}
-        <mesh position={[0, 0, -0.02]} castShadow>
-          <boxGeometry args={[4.56, 3.72, 0.05]} />
-          <meshStandardMaterial color="#8d5a3a" roughness={0.45} />
-        </mesh>
-        <mesh position={[0, 0, 0.012]}>
-          <planeGeometry args={[4.36, 3.52]} />
-          <meshBasicMaterial color="#fff9fb" />
-        </mesh>
-      </group>
-      {!isBoardFullScreen && (
-        <Html position={[-0.65, 3.05, -8.68]} center transform scale={0.19} zIndexRange={[15, 0]}>
-          <div className="relative">
-            {renderProjectorBoardContent(false)}
-            {/* On Mobile/Tablet, tapping anywhere on the distant 3D wall board opens the crisp Full-Screen 2D Modal */}
-            <button
-              type="button"
-              onClick={() => setIsBoardFullScreen(true)}
-              aria-label="ขยายกระดานกิจกรรมเต็มจอ"
-              className="lg:hidden absolute inset-0 z-30 bg-transparent cursor-pointer"
-            />
-          </div>
-        </Html>
-      )}
+        badge="🩹 Ward 102 • Zone 2"
+        title="การดูแลแผลหลังคลอด (แผลฝีเย็บและแผลผ่าตัด)"
+        subtitle="เรียนรู้ผ่าน 4 กิจกรรมโต้ตอบและแบบประเมินความเข้าใจประจำห้อง"
+        activities={[
+          {
+            icon: '🚿',
+            title: '1. ทำความสะอาดแผลฝีเย็บ',
+            desc: 'ฝึกเรียงลำดับขั้นตอนทำความสะอาดจากหน้าไปหลัง 6 ขั้นตอน',
+            done: !!act1Feedback?.pass,
+          },
+          {
+            icon: '🧊',
+            title: '2. การลดอาการปวดและบวม',
+            desc: 'เลือกวิธีประคบเย็นและบรรเทาปวดอย่างปลอดภัยตามหลักฐานเชิงประจักษ์',
+            done: !!act2Feedback?.pass,
+          },
+          {
+            icon: '🚻',
+            title: '3. การขับถ่ายและการปัสสาวะ',
+            desc: 'แยกพฤติกรรมดูแลตนเองออกจากอาการผิดปกติที่ต้องแจ้งแพทย์',
+            done: !!act3Feedback?.pass,
+          },
+          {
+            icon: '🔎',
+            title: '4. ฝึกสังเกตลักษณะแผล (REEDA)',
+            desc: 'สังเกตรอยแดง บวม ฟกช้ำ สิ่งคัดหลั่ง และการชิดของขอบแผล',
+            done: !!selectedReeda,
+          },
+        ]}
+        quizDone={!!(quizFinished || flow.quiz)}
+        onOpen={() => setIsBoardFullScreen(true)}
+        hideButton={isBoardFullScreen}
+      />
 
       <LoungeCorner position={[7.4, 0, 6.2]} rotation={[0, -Math.PI / 2, 0]} />
       <CareBooth position={[2.0, 0, 1.0]} locked={false} onActivate={startActivity} />
@@ -914,9 +922,9 @@ export default function MotherCare2Room() {
       <CottonJar position={[5.0, 0.82, -6.7]} />
       <BabyBottle position={[4.7, 0.82, -6.3]} rotation={[0, 0.8, 0]} />
 
-      {/* ── ประคบเย็น (Zone 2 ref: cold compress/ice pack) ── */}
-      <IcePack position={[-6.8, 0.88, -6.2]} rotation={[0, 0.5, 0]} />
-      <IcePack position={[-7.0, 0.88, -6.8]} rotation={[0, -0.3, 0]} />
+      {/* ── ประคบเย็นวางบนชั้นบนรถทำแผลปลอดเชื้อ [-7.2, 0, -6.5] อย่างพอดี ไม่ลอยพ้นขอบ ── */}
+      <IcePack position={[-7.08, 0.99, -6.40]} rotation={[0, 0.5, 0]} />
+      <IcePack position={[-7.32, 0.99, -6.62]} rotation={[0, -0.3, 0]} />
 
       <PlayerController initialPosition={[0, 0, 3]} />
     </group>

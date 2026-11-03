@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Html } from '@react-three/drei';
+import React, { useState, useMemo, useEffect } from 'react';
+import { RoundedBox } from '@react-three/drei';
+import * as THREE from 'three';
 import useStore from '../../store/useStore';
 import ScreenPortal from '../ui/ScreenPortal';
+import BillboardLabel3D from '../ui/BillboardLabel3D';
 import PlayerController from '../player/PlayerController';
 import BabyAvatar from '../avatars/BabyAvatar';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
@@ -10,6 +12,113 @@ import Pillows from '../decorations/Pillows';
 import HospitalNightstand from '../furniture/HospitalNightstand';
 import { DiaperStack, BabyBottle, CottonJar, HospitalBin, BabyShelf } from '../furniture/BabyProps';
 import InteractiveSeat from '../furniture/InteractiveSeat';
+import { WindowWithCurtains } from '../ward/WardKit';
+import { FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
+import InteractiveSmartTv3D from '../furniture/InteractiveSmartTv3D';
+import { CANVAS_THAI_FONT, fillCenteredText } from '../../utils/canvasText';
+import {
+  RealisticNursingPillow3D,
+  RealisticFoldedClothStack3D,
+  RealisticBookStack3D,
+} from '../furniture/RealisticProps3D';
+
+function useFloralFrameTexture() {
+  const tex = useMemo(() => {
+    const W = 520;
+    const H = 380;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d');
+    if (ctx) {
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, '#fff1f2');
+      g.addColorStop(0.5, '#fffbeb');
+      g.addColorStop(1, '#fdf2f8');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#fda4af';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(8, 8, W - 16, H - 16);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(24, 24, W - 48, H - 84);
+
+      // Curved stems
+      ctx.strokeStyle = '#84a98c';
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(55, 272);
+      ctx.quadraticCurveTo(185, 165, 275, 152);
+      ctx.quadraticCurveTo(365, 138, 458, 78);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#a3b18a';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(135, 260);
+      ctx.quadraticCurveTo(225, 208, 325, 194);
+      ctx.quadraticCurveTo(400, 182, 445, 160);
+      ctx.stroke();
+
+      // Leaves
+      const drawLeaf = (lx, ly, rot, col) => {
+        ctx.save();
+        ctx.translate(lx, ly);
+        ctx.rotate(rot);
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 28, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      };
+      drawLeaf(158, 188, -0.48, '#a3b18a');
+      drawLeaf(248, 126, -0.32, '#84a98c');
+      drawLeaf(358, 170, 0.35, '#a3b18a');
+
+      // Blossoms
+      const drawFlower = (fx, fy, petals, rx, ry, pCol, cCol, cr) => {
+        ctx.save();
+        ctx.translate(fx, fy);
+        for (let i = 0; i < petals; i++) {
+          ctx.save();
+          ctx.rotate((i * Math.PI * 2) / petals);
+          ctx.fillStyle = pCol;
+          ctx.beginPath();
+          ctx.ellipse(0, -ry, rx, ry, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        ctx.fillStyle = cCol;
+        ctx.beginPath();
+        ctx.arc(0, 0, cr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      };
+      drawFlower(266, 144, 6, 19, 28, '#f4acb7', '#fcbf49', 15);
+      drawFlower(145, 218, 5, 15, 23, '#ffcad4', '#f77f00', 12);
+      drawFlower(384, 132, 6, 15, 23, '#fde68a', '#fb8500', 13);
+
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#881337';
+      ctx.font = `800 24px ${CANVAS_THAI_FONT}`;
+      fillCenteredText(ctx, '🌸 ภาพดอกไม้ประดับมุมผ่อนคลาย', W / 2, H - 34, W - 64);
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    return t;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      tex.dispose();
+    };
+  }, [tex]);
+
+  return tex;
+}
 
 /**
  * NewbornCare1Room — ห้องที่ 1: การให้นมและการอุ้มจัดท่าทารก (Nursery 201)
@@ -32,6 +141,7 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
  * - Top-right translucent Mission HUD ("ให้นมทารกให้ถูกต้องเหมาะสม").
  */
 export default function NewbornCare1Room() {
+  const floralArtTex = useFloralFrameTexture();
   const {
     completeModule,
     learningProgress,
@@ -384,86 +494,58 @@ export default function NewbornCare1Room() {
              - 3 Framed Educational Wall Posters (with Previous/Next in Lightbox)
              - Baby Crib with sleeping baby (NO floating label; click to interact)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* Wall Poster 1: "4 Key Signs" — Flush against North Wall */}
-      <group position={[-4.2, 2.75, -6.92]} rotation={[0, 0, 0]}>
-        <mesh
-          castShadow
-          receiveShadow
-          onClick={(e) => {
-            e.stopPropagation();
-            openWallPoster(0);
-          }}
-        >
-          <boxGeometry args={[2.15, 1.5, 0.03]} />
-          <meshStandardMaterial color="#b45309" roughness={0.35} />
-        </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
-          <div
-            className="select-none bg-white p-1.5 rounded-lg border-2 border-amber-500 shadow-md overflow-hidden"
-            style={{ width: '400px', pointerEvents: 'none' }}
-          >
-            <img
-              src="/references/room1/img_006.png"
-              alt="4 Key Signs"
-              style={{ width: '100%', height: '215px', objectFit: 'contain', backgroundColor: '#fffbeb', borderRadius: '6px' }}
-            />
-          </div>
-        </Html>
-      </group>
+      {/* Wall Poster 1: "4 Key Signs" — 100% 3D WebGL Mesh Flush against North Wall z = -6.78 (ไม่จมผนัง -6.80) */}
+      <FramedImagePoster3D
+        position={[-4.25, 2.75, -6.78]}
+        width={2.12}
+        height={1.36}
+        contain={true}
+        backlit={false}
+        src="/references/room1/img_006.png"
+        frameColor="#b45309"
+        accentColor="#f59e0b"
+        onClick={() => openWallPoster(0)}
+      />
 
-      {/* Wall Poster 2: "4 Key Points" — Flush against North Wall */}
-      <group position={[-1.7, 2.75, -6.92]} rotation={[0, 0, 0]}>
-        <mesh
-          castShadow
-          receiveShadow
-          onClick={(e) => {
-            e.stopPropagation();
-            openWallPoster(1);
-          }}
-        >
-          <boxGeometry args={[2.15, 1.5, 0.03]} />
-          <meshStandardMaterial color="#0284c7" roughness={0.35} />
-        </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
-          <div
-            className="select-none bg-white p-1.5 rounded-lg border-2 border-sky-500 shadow-md overflow-hidden"
-            style={{ width: '400px', pointerEvents: 'none' }}
-          >
-            <img
-              src="/references/room1/img_010.jpeg"
-              alt="4 Key Points"
-              style={{ width: '100%', height: '215px', objectFit: 'contain', backgroundColor: '#f0f9ff', borderRadius: '6px' }}
-            />
-          </div>
-        </Html>
-      </group>
+      {/* Wall Poster 2: "4 Key Points" — 100% 3D WebGL Mesh Flush against North Wall z = -6.78 */}
+      <FramedImagePoster3D
+        position={[-1.72, 2.75, -6.78]}
+        width={2.12}
+        height={1.36}
+        contain={true}
+        backlit={false}
+        src="/references/room1/img_010.jpeg"
+        frameColor="#0284c7"
+        accentColor="#38bdf8"
+        onClick={() => openWallPoster(1)}
+      />
 
-      {/* Wall Poster 3: "ท่าให้นมทารก 4 ท่า" (/images/rev/bf_4holds.jpg sized cleanly with object-contain) */}
-      <group position={[1.1, 2.75, -6.92]} rotation={[0, 0, 0]}>
-        <mesh
-          castShadow
-          receiveShadow
-          onClick={(e) => {
-            e.stopPropagation();
-            openWallPoster(2);
-          }}
-        >
-          <boxGeometry args={[2.65, 1.55, 0.03]} />
-          <meshStandardMaterial color="#be185d" roughness={0.35} />
-        </mesh>
-        <Html position={[0, 0, 0.02]} center transform scale={0.22} style={{ pointerEvents: 'none' }}>
-          <div
-            className="select-none bg-white p-1.5 rounded-lg border-2 border-pink-500 shadow-md overflow-hidden"
-            style={{ width: '490px', pointerEvents: 'none' }}
-          >
-            <img
-              src="/images/rev/bf_4holds.jpg"
-              alt="ท่าให้นมทารก 4 ท่า"
-              style={{ width: '100%', height: '220px', objectFit: 'contain', backgroundColor: '#fdf2f8', borderRadius: '6px' }}
-            />
-          </div>
-        </Html>
-      </group>
+      {/* Wall Poster 3: "ท่าให้นมทารก 4 ท่า" — 100% 3D WebGL Mesh Flush against North Wall z = -6.78 */}
+      <FramedImagePoster3D
+        position={[1.05, 2.75, -6.78]}
+        width={2.52}
+        height={1.48}
+        contain={true}
+        backlit={false}
+        src="/images/rev/bf_4holds.jpg"
+        frameColor="#be185d"
+        accentColor="#ec4899"
+        onClick={() => openWallPoster(2)}
+      />
+
+      {/* หน้าต่างกระจกใสเห็นวิวสวนธรรมชาติภายนอก (ผนังด้านเหนือ & ผนังด้านใต้โปร่งสบายตา) */}
+      <WindowWithCurtains
+        position={[4.55, 2.75, -6.76]}
+        rotation={[0, 0, 0]}
+        width={2.7}
+        height={2.25}
+      />
+      <WindowWithCurtains
+        position={[-3.95, 2.75, 6.76]}
+        rotation={[0, Math.PI, 0]}
+        width={3.3}
+        height={2.3}
+      />
 
       {/* ── Classic Wooden Baby Crib against North Wall (Click to pick up / place baby; NO permanent floating badge) ── */}
       <group
@@ -517,38 +599,34 @@ export default function NewbornCare1Room() {
           </group>
         )}
 
-        {/* Crib Action Popup — ONLY shown when Crib is clicked */}
+        {/* Crib Action Popup — 100% 3D WebGL Billboard Plaque (ไม่ลอยทับหัวตัวละคร) */}
         {activeModal === 'cribPrompt' && (
-          <Html position={[0, 1.55, 0]} center zIndexRange={[20, 0]}>
-            <div
-              className="bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-2xl border-2 border-pink-400 w-64 text-center"
-              style={{ minWidth: '250px', whiteSpace: 'nowrap' }}
-            >
-              <div className="text-xs font-extrabold text-pink-900 mb-2">
-                👶 เตียงนอนทารก (Baby Crib)
-              </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const nextHold = !isHoldingBaby;
-                  setHoldingBaby(nextHold);
-                  setActiveModal(null);
-                }}
-                className="w-full py-2 px-3 rounded-xl text-xs font-bold text-white shadow bg-pink-600 hover:bg-pink-500 transition"
-              >
-                {isHoldingBaby ? 'วางทารกลงในเตียง' : '🤱 อุ้มทารกขึ้นมาจากเตียง'}
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveModal(null);
-                }}
-                className="mt-1.5 text-[11px] text-slate-500 hover:text-slate-700 font-semibold"
-              >
-                ปิดป้าย
-              </button>
-            </div>
-          </Html>
+          <group position={[0, 1.38, 0]}>
+            <BillboardLabel3D
+              position={[0, 0.14, 0]}
+              text={isHoldingBaby ? '🧸 คลิกวางทารกลงในเตียง' : '🤱 คลิกอุ้มทารกขึ้นมาจากเตียง'}
+              bg="#db2777"
+              bgEnd="#be185d"
+              width={1.68}
+              height={0.32}
+              pill={true}
+              onClick={() => {
+                setHoldingBaby(!isHoldingBaby);
+                setActiveModal(null);
+              }}
+            />
+            <BillboardLabel3D
+              position={[0, -0.18, 0]}
+              text="✕ ปิดป้าย"
+              bg="#ffffff"
+              textColor="#475569"
+              borderColor="#cbd5e1"
+              width={0.82}
+              height={0.24}
+              pill={true}
+              onClick={() => setActiveModal(null)}
+            />
+          </group>
         )}
       </group>
 
@@ -565,123 +643,31 @@ export default function NewbornCare1Room() {
                  (b) Realistic Utility Table with Hot Water Thermos & Cup (z = 2.4)
                  (c) Realistic 2-Door Breastmilk Refrigerator (z = 3.85)
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[-6.88, 2.55, -1.6]} rotation={[0, Math.PI / 2, 0]}>
-        {/* TV Frame */}
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[3.7, 2.2, 0.06]} />
-          <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.2} />
-        </mesh>
-        <mesh position={[0, 0, 0.035]}>
-          <planeGeometry args={[3.55, 2.05]} />
-          <meshStandardMaterial color="#0f172a" roughness={0.1} />
-        </mesh>
-
-        {/* TV Interactive Display (1/8 to 8/8) */}
-        <Html position={[0, 0, 0.045]} center transform scale={0.24}>
-          <div
-            className="select-none bg-slate-950 text-white rounded-lg p-3 shadow-2xl flex flex-col justify-between"
-            style={{ width: '570px', height: '345px', border: '3px solid #38bdf8' }}
-          >
-            {/* Top Bar */}
-            <div className="flex items-center justify-between border-b border-slate-700 pb-1.5 px-1">
-              <span className="font-bold text-sky-400 text-xs flex items-center gap-1.5">
-                📺 สื่อให้ความรู้การให้นมบุตร ({tvSlide + 1}/{tvSlidesData.length})
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openTvLightbox(tvSlide)}
-                  className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-0.5 rounded text-[11px] font-semibold shadow"
-                >
-                  🔍 ขยายเต็มจอ
-                </button>
-                <button
-                  onClick={() => setTvSlide(7)}
-                  className={`px-2.5 py-0.5 rounded text-[11px] font-bold shadow flex items-center gap-1 ${
-                    tvSlide === 7 ? 'bg-amber-500 text-slate-950' : 'bg-rose-600 hover:bg-rose-500 text-white'
-                  }`}
-                >
-                  ▶ หน้า 8/8 วีดีโอ
-                </button>
-              </div>
-            </div>
-
-            {/* Slide Content Preview (Slides 1..7 = Image, Slide 8/8 = Clean Clickable Video Card opening 2D Lightbox) */}
-            {currentSlide.isVideo ? (
-              <div
-                onClick={() => openTvLightbox(7)}
-                className="my-1.5 flex-1 bg-slate-900 rounded-lg overflow-hidden border border-slate-700 flex flex-col cursor-pointer group hover:border-sky-400 transition"
-              >
-                <div className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-sky-950 to-indigo-950 p-4 text-center">
-                  <div className="w-16 h-16 rounded-full bg-rose-600 group-hover:bg-rose-500 group-hover:scale-110 transition flex items-center justify-center text-white text-3xl shadow-xl border-2 border-white">
-                    ▶
-                  </div>
-                  <div className="mt-3 text-sm font-extrabold text-white">
-                    คลิปวีดีโอ: ท่าอุ้มและการดูดนมที่ถูกวิธี
-                  </div>
-                  <div className="mt-1 text-xs font-semibold text-sky-300">
-                    แตะที่หน้าจอเพื่อเปิดเล่นวิดีโอเต็มจออย่างชัดเจน
-                  </div>
-                </div>
-                <div className="bg-slate-950/95 px-2.5 py-1 flex items-center justify-between text-[10px] border-t border-slate-800">
-                  <span className="text-amber-300 font-semibold truncate">
-                    “ใช้เพื่อการเรียนการศึกษาสำหรับให้ความรู้แก่มารดาหลังคลอด”
-                  </span>
-                  <a
-                    href="https://www.youtube.com/watch?v=G1muyuyuD60"
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-rose-600 hover:bg-rose-500 text-white px-2 py-0.5 rounded font-bold shrink-0 ml-2"
-                  >
-                    🔗 เปิดดูบน YouTube
-                  </a>
-                </div>
-              </div>
-            ) : (
-              <div
-                className="my-1.5 flex-1 relative bg-slate-900 rounded-lg overflow-hidden border border-slate-800 cursor-pointer flex items-center justify-center group"
-                onClick={() => openTvLightbox(tvSlide)}
-              >
-                <img
-                  src={currentSlide.img}
-                  alt={currentSlide.title}
-                  className="w-full h-full object-contain p-1 group-hover:scale-105 transition"
-                />
-                <div className="absolute bottom-1 inset-x-2 bg-black/65 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] text-sky-200 text-center truncate">
-                  {currentSlide.title} (คลิกเพื่อขยายใหญ่)
-                </div>
-              </div>
-            )}
-
-            {/* Bottom Controls — Citation ONLY displayed on Slide 8/8 per requirement */}
-            <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between text-[10px] px-1">
-              <button
-                disabled={tvSlide === 0}
-                onClick={() => setTvSlide((s) => Math.max(0, s - 1))}
-                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 rounded font-bold"
-              >
-                ◀ ก่อนหน้า
-              </button>
-              <div className="text-slate-300 text-[10px] text-center truncate px-2 font-medium">
-                {tvSlide === 7 ? (
-                  <span className="text-amber-300">
-                    ที่มา: กรมอนามัย (https://www.youtube.com/watch?v=G1muyuyuD60)
-                  </span>
-                ) : (
-                  <span className="text-slate-400">สไลด์แผ่นที่ {tvSlide + 1} จาก 8</span>
-                )}
-              </div>
-              <button
-                disabled={tvSlide === tvSlidesData.length - 1}
-                onClick={() => setTvSlide((s) => Math.min(tvSlidesData.length - 1, s + 1))}
-                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 disabled:opacity-30 rounded font-bold"
-              >
-                ถัดไป ▶
-              </button>
-            </div>
-          </div>
-        </Html>
-      </group>
+      {/* 100% 3D WebGL Smart TV (ติดผนังใน x = -6.77 ไม่จมกำแพง -6.80 และไม่ลอยทับหัวตัวละคร) */}
+      <InteractiveSmartTv3D
+        position={[-6.77, 2.55, -1.6]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={3.7}
+        height={2.2}
+        headerTitle={`📺 สื่อให้ความรู้การให้นมบุตร (${tvSlide + 1}/${tvSlidesData.length})`}
+        accentColor="#38bdf8"
+        slide={currentSlide}
+        slideIndex={tvSlide}
+        totalSlides={tvSlidesData.length}
+        footerText={
+          tvSlide === 7
+            ? 'ที่มา: กรมอนามัย (youtube.com/watch?v=G1muyuyuD60)'
+            : `สไลด์แผ่นที่ ${tvSlide + 1} จาก ${tvSlidesData.length}`
+        }
+        zoomLabel="🔍 ขยายเต็มจอ"
+        secondaryLabel="▶ หน้า 8/8 วีดีโอ"
+        secondaryActive={tvSlide === 7}
+        secondaryColor="#e11d48"
+        onOpenFullscreen={() => openTvLightbox(tvSlide)}
+        onSecondaryAction={() => setTvSlide(7)}
+        onPrev={() => setTvSlide((s) => Math.max(0, s - 1))}
+        onNext={() => setTvSlide((s) => Math.min(tvSlidesData.length - 1, s + 1))}
+      />
 
       {/* ── (a) Realistic Handwashing Sink (South Wall middle-left per ภาพที่ 4 ①, flush against wall z = 6.90) ── */}
       <group
@@ -919,34 +905,34 @@ export default function NewbornCare1Room() {
           {/* Nursing Cushion neatly tucked at side corner of Sofa */}
           <Pillows position={[-0.45, 0.46, -0.18]} scale={0.52} />
 
-          {/* When Mother is Seated with Baby, show floating action bar above her head (never covering face) */}
+          {/* When Mother is Seated with Baby, show 3D WebGL action plaques behind backrest (never overlapping head) */}
           {isMotherSeatedOnSofa && activeModal !== 'postureSelector' && (
-            <Html position={[0, 1.92, 0]} center zIndexRange={[20, 0]}>
-              <div
-                className="flex flex-col items-center gap-1.5 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl shadow-xl border-2 border-pink-400"
-                style={{ minWidth: '250px', whiteSpace: 'nowrap' }}
-              >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isHoldingBaby) setHoldingBaby(true);
-                    setActiveModal('postureSelector');
-                  }}
-                  className="w-full px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-pink-600 hover:bg-pink-500 shadow whitespace-nowrap"
-                >
-                  🤱 เลือกท่าให้นมทารก (4 ท่า)
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    standUp();
-                  }}
-                  className="w-full px-3 py-1 rounded-lg text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 whitespace-nowrap"
-                >
-                  🚶‍♀️ ลุกออกจากโซฟา
-                </button>
-              </div>
-            </Html>
+            <group position={[0, 1.62, -0.35]}>
+              <BillboardLabel3D
+                position={[0, 0.16, 0]}
+                text="🤱 เลือกท่าให้นมทารก (4 ท่า)"
+                bg="#db2777"
+                bgEnd="#be185d"
+                width={1.65}
+                height={0.32}
+                pill={true}
+                onClick={() => {
+                  if (!isHoldingBaby) setHoldingBaby(true);
+                  setActiveModal('postureSelector');
+                }}
+              />
+              <BillboardLabel3D
+                position={[0, -0.18, 0]}
+                text="🚶‍♀️ ลุกออกจากโซฟา"
+                bg="#f8fafc"
+                textColor="#334155"
+                borderColor="#cbd5e1"
+                width={1.25}
+                height={0.26}
+                pill={true}
+                onClick={() => standUp()}
+              />
+            </group>
           )}
         </group>
       </InteractiveSeat>
@@ -975,68 +961,169 @@ export default function NewbornCare1Room() {
           </mesh>
         ))}
 
-        {/* Item 1: แก้วเล็กสำหรับเก็บนมแม่ (Click to view details) */}
+        {/* Item 1: แก้ว/ภาชนะเก็บน้ำนมแม่ปลอดเชื้อพร้อมสเกล ml ฉลากวันเวลา และฝาเกลียวชมพู (Click to view details) */}
         <group
-          position={[-0.42, 0.42, 0]}
+          position={[-0.42, 0.41, 0]}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedTableItem(1);
             setActiveModal('tableItems');
           }}
         >
-          <mesh castShadow>
-            <cylinderGeometry args={[0.055, 0.048, 0.11, 20]} />
-            <meshStandardMaterial color="#ffffff" transparent opacity={0.85} roughness={0.1} />
+          {/* Clear Graduated Breastmilk Storage Cup */}
+          <mesh position={[0, 0.058, 0]} castShadow>
+            <cylinderGeometry args={[0.054, 0.047, 0.115, 24]} />
+            <meshStandardMaterial color="#f8fafc" transparent opacity={0.48} roughness={0.08} metalness={0.08} />
           </mesh>
-          <mesh position={[0, 0.06, 0]}>
-            <cylinderGeometry args={[0.06, 0.06, 0.018, 20]} />
-            <meshStandardMaterial color="#ec4899" roughness={0.3} />
+          {/* Creamy Expressed Breastmilk Inside */}
+          <mesh position={[0, 0.044, 0]}>
+            <cylinderGeometry args={[0.049, 0.044, 0.078, 22]} />
+            <meshStandardMaterial color="#fff8dc" roughness={0.22} />
+          </mesh>
+          {/* White Date/Volume Label & Graduation Marks */}
+          <mesh position={[0, 0.058, 0.051]}>
+            <boxGeometry args={[0.046, 0.052, 0.002]} />
+            <meshBasicMaterial color="#ffffff" />
+          </mesh>
+          {[0.032, 0.050, 0.068, 0.086].map((gy, idx) => (
+            <mesh key={idx} position={[0.032, gy, 0.042]}>
+              <boxGeometry args={[0.014, 0.002, 0.002]} />
+              <meshBasicMaterial color="#db2777" />
+            </mesh>
+          ))}
+          {/* Ribbed Leakproof Screw Lid */}
+          <mesh position={[0, 0.122, 0]} castShadow>
+            <cylinderGeometry args={[0.058, 0.058, 0.02, 24]} />
+            <meshStandardMaterial color="#ec4899" roughness={0.32} />
+          </mesh>
+          <mesh position={[0, 0.134, 0]}>
+            <cylinderGeometry args={[0.042, 0.046, 0.006, 22]} />
+            <meshStandardMaterial color="#f472b6" roughness={0.3} />
           </mesh>
         </group>
 
-        {/* Item 2: ถ้วย/แก้วสำหรับป้อนนมทารก (Click to view details) */}
+        {/* Item 2: ถ้วยป้อนนมทารกทางการแพทย์ขอบมนป้อนง่ายพร้อมสเกลวัดและฝาปิด (Click to view details) */}
         <group
-          position={[0, 0.42, 0]}
+          position={[0.0, 0.41, 0]}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedTableItem(2);
             setActiveModal('tableItems');
           }}
         >
-          <mesh castShadow>
-            <cylinderGeometry args={[0.05, 0.038, 0.095, 20]} />
-            <meshStandardMaterial color="#e0f2fe" transparent opacity={0.9} roughness={0.1} />
+          {/* Translucent Neonatal Feeding Cup */}
+          <mesh position={[0, 0.048, 0]} castShadow>
+            <cylinderGeometry args={[0.048, 0.036, 0.095, 24]} />
+            <meshStandardMaterial color="#e0f2fe" transparent opacity={0.55} roughness={0.08} />
           </mesh>
-          <mesh position={[0, 0.052, 0]}>
-            <cylinderGeometry args={[0.054, 0.054, 0.015, 20]} />
-            <meshStandardMaterial color="#0284c7" roughness={0.3} />
+          {/* Smooth Rolled Sipping Rim for Infant Lip */}
+          <mesh position={[0, 0.096, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.048, 0.004, 12, 24]} />
+            <meshStandardMaterial color="#bae6fd" roughness={0.18} />
+          </mesh>
+          {/* Warm Breastmilk Inside Feeding Cup */}
+          <mesh position={[0, 0.036, 0]}>
+            <cylinderGeometry args={[0.041, 0.033, 0.058, 22]} />
+            <meshStandardMaterial color="#fff8dc" roughness={0.22} />
+          </mesh>
+          {[0.026, 0.044, 0.062, 0.080].map((gy, idx) => (
+            <mesh key={idx} position={[0, gy, 0.044]}>
+              <boxGeometry args={[0.016, 0.002, 0.002]} />
+              <meshBasicMaterial color="#0284c7" />
+            </mesh>
+          ))}
+          {/* Hygienic Blue Snap Lid Resting Beside Cup */}
+          <mesh position={[0.078, 0.008, 0.02]} castShadow>
+            <cylinderGeometry args={[0.051, 0.051, 0.014, 22]} />
+            <meshStandardMaterial color="#0284c7" roughness={0.32} />
           </mesh>
         </group>
 
-        {/* Item 3: ไซริงค์สำหรับเก็บน้ำนม + ถุงซิป (Click to view details) */}
+        {/* Item 3: ไซริงค์ป้อนนมเหลือง (Colostrum Syringe) + ถุงซิปเก็บน้ำนมแม่พร้อมแถบซิปล็อกคู่ (Click to view details) */}
         <group
-          position={[0.42, 0.42, 0]}
+          position={[0.42, 0.41, 0]}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedTableItem(3);
             setActiveModal('tableItems');
           }}
         >
-          {/* Syringe */}
-          <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0.02, -0.1]} castShadow>
-            <cylinderGeometry args={[0.018, 0.018, 0.16, 16]} />
-            <meshStandardMaterial color="#f8fafc" transparent opacity={0.85} />
-          </mesh>
-          <mesh rotation={[0, 0, Math.PI / 2]} position={[0.09, 0.02, -0.1]}>
-            <cylinderGeometry args={[0.012, 0.012, 0.06, 12]} />
-            <meshStandardMaterial color="#a855f7" />
-          </mesh>
-          {/* Pre-sterilized Milk Zip Bags */}
-          <mesh position={[0, 0.015, 0.1]} rotation={[-0.05, 0.15, 0]} castShadow>
-            <boxGeometry args={[0.2, 0.025, 0.24]} />
-            <meshStandardMaterial color="#e9d5ff" transparent opacity={0.85} />
-          </mesh>
+          {/* Detailed Oral Feeding Syringe */}
+          <group position={[-0.02, 0.022, -0.11]} rotation={[0, 0.12, Math.PI / 2]}>
+            {/* Clear Barrel + Golden Colostrum Fluid */}
+            <mesh castShadow>
+              <cylinderGeometry args={[0.016, 0.016, 0.14, 18]} />
+              <meshStandardMaterial color="#f8fafc" transparent opacity={0.5} roughness={0.1} />
+            </mesh>
+            <mesh position={[0, -0.022, 0]}>
+              <cylinderGeometry args={[0.0135, 0.0135, 0.075, 16]} />
+              <meshStandardMaterial color="#fde68a" roughness={0.25} />
+            </mesh>
+            {/* Rubber Piston Seal */}
+            <mesh position={[0, 0.018, 0]}>
+              <cylinderGeometry args={[0.0145, 0.0145, 0.01, 16]} />
+              <meshStandardMaterial color="#1e293b" roughness={0.6} />
+            </mesh>
+            {/* Finger Flange Wings */}
+            <RoundedBox args={[0.052, 0.005, 0.024]} radius={0.002} position={[0, 0.07, 0]}>
+              <meshStandardMaterial color="#e2e8f0" roughness={0.3} />
+            </RoundedBox>
+            {/* Purple Plunger Rod & Thumb Disc */}
+            <mesh position={[0, 0.095, 0]}>
+              <cylinderGeometry args={[0.007, 0.007, 0.09, 12]} />
+              <meshStandardMaterial color="#9333ea" roughness={0.35} />
+            </mesh>
+            <mesh position={[0, 0.14, 0]}>
+              <cylinderGeometry args={[0.018, 0.018, 0.005, 16]} />
+              <meshStandardMaterial color="#7e22ce" roughness={0.35} />
+            </mesh>
+            {/* Oral Tip Nozzle */}
+            <mesh position={[0, -0.082, 0]}>
+              <cylinderGeometry args={[0.004, 0.006, 0.024, 12]} />
+              <meshStandardMaterial color="#e2e8f0" roughness={0.25} />
+            </mesh>
+          </group>
+
+          {/* Pre-Sterilized Double-Zip Breastmilk Storage Pouches (2 Bags) */}
+          {[-0.02, 0.022].map((by, bIdx) => (
+            <group
+              key={bIdx}
+              position={[bIdx * 0.02, 0.016 + bIdx * 0.022, 0.10 + bIdx * 0.015]}
+              rotation={[0, 0.14 - bIdx * 0.22, 0]}
+            >
+              {/* Translucent Pouch Film Outline */}
+              <RoundedBox args={[0.17, 0.014, 0.23]} radius={0.006} smoothness={3} castShadow>
+                <meshStandardMaterial color="#f3e8ff" transparent opacity={0.65} roughness={0.15} />
+              </RoundedBox>
+              {/* Creamy Breastmilk Pouch Fill */}
+              <RoundedBox args={[0.14, 0.018, 0.14]} radius={0.008} smoothness={3} position={[0, 0.002, 0.02]}>
+                <meshStandardMaterial color="#fffbeb" roughness={0.28} />
+              </RoundedBox>
+              {/* Double Zip-Lock Purple Seal Strips */}
+              <mesh position={[0, 0.009, -0.078]}>
+                <boxGeometry args={[0.165, 0.003, 0.006]} />
+                <meshBasicMaterial color="#9333ea" />
+              </mesh>
+              <mesh position={[0, 0.009, -0.068]}>
+                <boxGeometry args={[0.165, 0.003, 0.005]} />
+                <meshBasicMaterial color="#ec4899" />
+              </mesh>
+              {/* White Write-On Name/Date Header Label */}
+              <mesh position={[0, 0.009, -0.096]} rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[0.15, 0.024]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+            </group>
+          ))}
         </group>
+
+        {/* คู่มือการให้นมแม่ปกแข็งวางมุมโต๊ะ */}
+        <RealisticBookStack3D
+          position={[-0.56, 0.41, -0.26]}
+          rotation={[0, 0.35, 0]}
+          scale={0.72}
+          withOpenTop={false}
+        />
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -1072,29 +1159,33 @@ export default function NewbornCare1Room() {
             <boxGeometry args={[1.62, 0.05, 0.74]} />
             <meshStandardMaterial color="#d4a373" roughness={0.35} />
           </mesh>
-          {/* U-Shaped Nursing Pillow on Table */}
-          <mesh position={[-0.42, 1.0, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-            <torusGeometry args={[0.18, 0.075, 16, 28, Math.PI * 1.45]} />
-            <meshStandardMaterial color="#fbcfe8" roughness={0.8} />
-          </mesh>
-          {/* Folded Stack of Pastel Baby Clothes & Diapers */}
-          <mesh position={[0.08, 0.97, 0]} castShadow>
-            <boxGeometry args={[0.32, 0.07, 0.26]} />
-            <meshStandardMaterial color="#fef08a" roughness={0.75} />
-          </mesh>
-          <mesh position={[0.08, 1.04, 0]} castShadow>
-            <boxGeometry args={[0.3, 0.06, 0.24]} />
-            <meshStandardMaterial color="#bae6fd" roughness={0.75} />
-          </mesh>
-          <mesh position={[0.08, 1.1, 0]} castShadow>
-            <boxGeometry args={[0.28, 0.06, 0.22]} />
-            <meshStandardMaterial color="#fbcfe8" roughness={0.75} />
-          </mesh>
-          {/* Wipes Box & Baby Care Basket */}
-          <mesh position={[0.5, 1.0, 0]} castShadow>
-            <boxGeometry args={[0.28, 0.14, 0.22]} />
-            <meshStandardMaterial color="#e6ccb2" roughness={0.6} />
-          </mesh>
+          {/* Seamless U-Shaped Nursing Pillow on Dresser Table */}
+          <RealisticNursingPillow3D
+            position={[-0.42, 1.01, 0]}
+            rotation={[0, 0.2, 0]}
+            scale={0.84}
+            color="#fce7f3"
+            pipingColor="#ec4899"
+          />
+          {/* Soft U-Folded Pastel Baby Clothes & Muslin Cloths */}
+          <RealisticFoldedClothStack3D
+            position={[0.08, 0.94, 0]}
+            scale={0.96}
+            colors={[
+              { body: '#fef9c3', trim: '#f59e0b' },
+              { body: '#e0f2fe', trim: '#38bdf8' },
+              { body: '#fce7f3', trim: '#ec4899' },
+            ]}
+          />
+          {/* Baby Wipes Dispenser Box with Flip Lid */}
+          <group position={[0.5, 0.99, 0]}>
+            <RoundedBox args={[0.26, 0.11, 0.19]} radius={0.022} smoothness={3} castShadow>
+              <meshStandardMaterial color="#fff8f0" roughness={0.45} />
+            </RoundedBox>
+            <RoundedBox args={[0.14, 0.016, 0.10]} radius={0.008} position={[0, 0.058, 0]}>
+              <meshStandardMaterial color="#f472b6" roughness={0.35} />
+            </RoundedBox>
+          </group>
           {/* ── Feeding Props on Dresser — ขวดนม, ผ้าอ้อม, สำลี ── */}
           <BabyBottle position={[-0.55, 1.03, 0.08]} rotation={[0, 0.5, 0]} />
           <BabyBottle position={[-0.55, 1.03, -0.10]} rotation={[0, -0.3, 0]} color="#bbf7d0" />
@@ -1102,8 +1193,8 @@ export default function NewbornCare1Room() {
           <CottonJar position={[0.72, 1.01, 0]} />
         </group>
 
-        {/* (2) ภาพดอกไม้สวยงาม (Mounted flush on South Wall z = 6.86 — ปรับแก้ห้องให้นมทารก หน้า 3 ภาพที่ 5 & 6) */}
-        <group position={[5.45, 2.25, 6.86]} rotation={[0, Math.PI, 0]}>
+        {/* (2) ภาพดอกไม้สวยงาม (Mounted flush on South inner wall z = 6.77, ไม่จมผนัง 6.80) */}
+        <group position={[5.45, 2.25, 6.77]} rotation={[0, Math.PI, 0]}>
           {/* กรอบภาพดอกไม้สวยงาม */}
           <mesh
             castShadow
@@ -1116,81 +1207,21 @@ export default function NewbornCare1Room() {
             <boxGeometry args={[1.15, 0.85, 0.03]} />
             <meshStandardMaterial color="#d4a373" roughness={0.4} />
           </mesh>
-          <Html position={[0, 0, 0.02]} center transform scale={0.16} style={{ pointerEvents: 'none' }}>
-            <div
-              className="select-none bg-gradient-to-br from-rose-50 via-amber-50/70 to-pink-50 p-2 rounded border-2 border-rose-300 shadow text-center"
-              style={{ width: '260px', pointerEvents: 'none' }}
-            >
-              <svg viewBox="0 0 280 150" className="w-full h-36 rounded bg-white/80 border border-rose-100">
-                <path
-                  d="M25 132 Q95 78 145 72 T255 36"
-                  fill="none"
-                  stroke="#84a98c"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M70 125 Q120 100 175 94 T245 80"
-                  fill="none"
-                  stroke="#a3b18a"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-                <ellipse cx="82" cy="90" rx="16" ry="7" transform="rotate(-28 82 90)" fill="#a3b18a" />
-                <ellipse cx="132" cy="58" rx="17" ry="7" transform="rotate(-18 132 58)" fill="#84a98c" />
-                <ellipse cx="195" cy="82" rx="16" ry="7" transform="rotate(20 195 82)" fill="#a3b18a" />
-                <g transform="translate(142, 68)">
-                  {[0, 60, 120, 180, 240, 300].map((deg) => (
-                    <ellipse
-                      key={deg}
-                      cx="0"
-                      cy="-16"
-                      rx="10.5"
-                      ry="16"
-                      transform={`rotate(${deg})`}
-                      fill="#f4acb7"
-                      opacity="0.95"
-                    />
-                  ))}
-                  <circle cx="0" cy="0" r="8.5" fill="#fcbf49" />
-                </g>
-                <g transform="translate(75, 106)">
-                  {[0, 72, 144, 216, 288].map((deg) => (
-                    <ellipse
-                      key={deg}
-                      cx="0"
-                      cy="-12"
-                      rx="8"
-                      ry="12.5"
-                      transform={`rotate(${deg})`}
-                      fill="#ffcad4"
-                      opacity="0.95"
-                    />
-                  ))}
-                  <circle cx="0" cy="0" r="6.5" fill="#f77f00" />
-                </g>
-                <g transform="translate(208, 62)">
-                  {[0, 60, 120, 180, 240, 300].map((deg) => (
-                    <ellipse
-                      key={deg}
-                      cx="0"
-                      cy="-12.5"
-                      rx="8.5"
-                      ry="13"
-                      transform={`rotate(${deg})`}
-                      fill="#fde68a"
-                      opacity="0.95"
-                    />
-                  ))}
-                  <circle cx="0" cy="0" r="7" fill="#fb8500" />
-                </g>
-              </svg>
-              <div className="text-[10px] font-bold text-rose-900 mt-1">🌸 2. ภาพดอกไม้สวยงาม</div>
-            </div>
-          </Html>
+          {/* ภาพดอกไม้ 3D CanvasTexture แนบสนิทในกรอบ (ไม่ใช้ <Html transform>) */}
+          <mesh
+            position={[0, 0, 0.018]}
+            onClick={(e) => {
+              if (e.delta > 10) return;
+              e.stopPropagation();
+              setActiveModal('cornerDecor');
+            }}
+          >
+            <planeGeometry args={[1.05, 0.75]} />
+            <meshBasicMaterial map={floralArtTex} toneMapped={false} />
+          </mesh>
         </group>
         {/* Framed Botanical Art beside main floral frame on South Wall */}
-        <group position={[4.45, 2.25, 6.86]} rotation={[0, Math.PI, 0]}>
+        <group position={[4.45, 2.25, 6.77]} rotation={[0, Math.PI, 0]}>
           <mesh castShadow>
             <boxGeometry args={[0.6, 0.78, 0.03]} />
             <meshStandardMaterial color="#f5ebe0" roughness={0.4} />
@@ -1245,8 +1276,8 @@ export default function NewbornCare1Room() {
           </mesh>
         </group>
 
-        {/* (4) ที่แขวนของ (Wooden Pegboard / Wall Hanger with Hanging Baby Items on East Wall x = 6.86) */}
-        <group position={[6.86, 1.58, 3.35]} rotation={[0, -Math.PI / 2, 0]}>
+        {/* (4) ที่แขวนของ (Wooden Pegboard / Wall Hanger with Hanging Baby Items on East inner wall x = 6.77) */}
+        <group position={[6.77, 1.58, 3.35]} rotation={[0, -Math.PI / 2, 0]}>
           <mesh castShadow>
             <boxGeometry args={[0.85, 0.55, 0.03]} />
             <meshStandardMaterial color="#e6ccb2" roughness={0.45} />

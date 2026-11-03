@@ -11,15 +11,29 @@ import InteractiveSeat from '../furniture/InteractiveSeat';
 import HospitalRoomShell from '../environment/HospitalRoomShell';
 import WalkableRoomPortal from '../environment/WalkableRoomPortal';
 import { FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
+import { CANVAS_THAI_FONT, fillRightText, whenFontsReady } from '../../utils/canvasText';
 
-function useDirectionalSignTexture(icon, title, subtitle, bgStart, bgEnd, borderColor, textColor, arrowColor) {
+function useDirectionalSignTexture(
+  icon,
+  title,
+  subtitle,
+  bgStart,
+  bgEnd,
+  borderColor,
+  textColor,
+  arrowColor,
+  arrowDir = 'right'
+) {
   const tex = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 768;
     canvas.height = 200;
     const ctx = canvas.getContext('2d');
 
-    if (ctx) {
+    const draw = () => {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       const g = ctx.createLinearGradient(0, 0, canvas.width, 0);
       g.addColorStop(0, bgStart);
       g.addColorStop(1, bgEnd);
@@ -32,32 +46,41 @@ function useDirectionalSignTexture(icon, title, subtitle, bgStart, bgEnd, border
 
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'left';
-      ctx.font = '68px system-ui, sans-serif';
+      ctx.font = `68px ${CANVAS_THAI_FONT}`;
       ctx.fillText(icon, 30, canvas.height / 2);
 
       ctx.fillStyle = textColor;
-      ctx.font = '900 46px "Sarabun", system-ui, -apple-system, sans-serif';
+      ctx.font = `900 46px ${CANVAS_THAI_FONT}`;
       ctx.fillText(title, 124, canvas.height * 0.39);
 
-      ctx.font = '700 24px "Sarabun", system-ui, -apple-system, sans-serif';
+      ctx.font = `700 24px ${CANVAS_THAI_FONT}`;
       ctx.fillText(subtitle, 124, canvas.height * 0.72);
 
-      ctx.textAlign = 'right';
       ctx.fillStyle = arrowColor;
-      ctx.font = '900 58px system-ui, sans-serif';
-      ctx.fillText('➔', canvas.width - 34, canvas.height / 2);
-    }
+      ctx.font = `900 62px ${CANVAS_THAI_FONT}`;
+      fillRightText(ctx, arrowDir === 'left' ? '⬅' : '➔', canvas.width - 34, canvas.height / 2);
+    };
+
+    draw();
 
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     t.generateMipmaps = false;
     t.minFilter = THREE.LinearFilter;
     t.needsUpdate = true;
+    t.__redraw = () => {
+      draw();
+      t.needsUpdate = true;
+    };
     return t;
-  }, [icon, title, subtitle, bgStart, bgEnd, borderColor, textColor, arrowColor]);
+  }, [icon, title, subtitle, bgStart, bgEnd, borderColor, textColor, arrowColor, arrowDir]);
 
   useEffect(() => {
+    const cancel = whenFontsReady(() => {
+      if (tex && tex.__redraw) tex.__redraw();
+    });
     return () => {
+      cancel();
       tex.dispose();
     };
   }, [tex]);
@@ -98,7 +121,8 @@ export default function LobbyRoom() {
     '#e0f2fe',
     '#38bdf8',
     '#0369a1',
-    '#0284c7'
+    '#0284c7',
+    'left'
   );
 
   return (
@@ -134,61 +158,68 @@ export default function LobbyRoom() {
       <HospitalNurseStation position={[0, 0, -4.2]} scale={1.08} />
 
       {/* ══════════════════════════════════════════════════════════════════════════════
-          🖼️ FLANKING PINK MOTHER & BABY FRAMED POSTERS WITH FLORAL GARLANDS
-          (3D Mesh แท้ติดผนังฉากหลังเคาน์เตอร์พยาบาล ไม่ลอย 100%)
+          🖼️ FLANKING MOTHER & BABY FRAMED POSTERS WITH FLORAL GARLANDS (อัปเดตภาพคู่ซ้าย-ขวาใหม่ตามคอมเมนต์ลูกค้า)
+          - ซ้าย (sideIdx === 0): ภาพครอบครัวพ่อแม่ลูกกรอบชมพูโบว์ชมพู (/images/rev/lobby_poster_baby_v2.jpg)
+          - ขวา (sideIdx === 1): ภาพคุณแม่อุ้มลูกน้อยกรอบชมพูโบว์ชมพู (/images/rev/lobby_poster_mother_v2.jpg)
           ══════════════════════════════════════════════════════════════════════════════ */}
-      {[-5.35, 5.35].map((px, sideIdx) => (
-        <group key={`lobby_flank_${sideIdx}`} position={[px, 0, -5.20]}>
-          {/* Architectural Backing Panel Connected Flush to Nurse Station Backdrop */}
-          <mesh position={[0, 2.5, 0]} castShadow receiveShadow>
-            <boxGeometry args={[3.5, 5.0, 0.15]} />
-            <meshStandardMaterial color="#fffaf4" roughness={0.3} />
-          </mesh>
-          {/* Vertical Warm Oak Wood Slats on Outer Edge */}
-          {[-1.56, -1.40, 1.40, 1.56].map((sx, si) => (
-            <mesh key={`slat_${si}`} position={[sx, 2.5, 0.06]} castShadow>
-              <boxGeometry args={[0.06, 4.9, 0.08]} />
-              <meshStandardMaterial color="#b07d4b" roughness={0.45} />
+      {[-5.35, 5.35].map((px, sideIdx) => {
+        const posterSrc =
+          sideIdx === 0
+            ? '/images/rev/lobby_poster_baby_v2.jpg'
+            : '/images/rev/lobby_poster_mother_v2.jpg';
+        return (
+          <group key={`lobby_flank_${sideIdx}`} position={[px, 0, -5.20]}>
+            {/* Architectural Backing Panel Connected Flush to Nurse Station Backdrop */}
+            <mesh position={[0, 2.5, 0]} castShadow receiveShadow>
+              <boxGeometry args={[3.5, 5.0, 0.15]} />
+              <meshStandardMaterial color="#fffaf4" roughness={0.3} />
             </mesh>
-          ))}
-          {/* Pink & White Floral Garland at Bottom of Frame */}
-          {[-0.85, -0.5, -0.18, 0.18, 0.5, 0.85].map((fx, fi) => (
-            <group key={`fl_gar_${fi}`} position={[fx, 0.88, 0.14]}>
-              <mesh>
-                <sphereGeometry args={[0.13, 12, 12]} />
-                <meshStandardMaterial color={fi % 2 === 0 ? '#f9a8d4' : '#ffffff'} roughness={0.7} />
+            {/* Vertical Warm Oak Wood Slats on Outer Edge */}
+            {[-1.56, -1.40, 1.40, 1.56].map((sx, si) => (
+              <mesh key={`slat_${si}`} position={[sx, 2.5, 0.06]} castShadow>
+                <boxGeometry args={[0.06, 4.9, 0.08]} />
+                <meshStandardMaterial color="#b07d4b" roughness={0.45} />
               </mesh>
-              <mesh position={[0.06, -0.04, 0.03]}>
-                <sphereGeometry args={[0.08, 10, 10]} />
-                <meshStandardMaterial color="#4d7c0f" roughness={0.8} />
-              </mesh>
-            </group>
-          ))}
+            ))}
+            {/* Pink & White Floral Garland at Bottom of Frame */}
+            {[-0.85, -0.5, -0.18, 0.18, 0.5, 0.85].map((fx, fi) => (
+              <group key={`fl_gar_${fi}`} position={[fx, 0.88, 0.14]}>
+                <mesh>
+                  <sphereGeometry args={[0.13, 12, 12]} />
+                  <meshStandardMaterial color={fi % 2 === 0 ? '#f9a8d4' : '#ffffff'} roughness={0.7} />
+                </mesh>
+                <mesh position={[0.06, -0.04, 0.03]}>
+                  <sphereGeometry args={[0.08, 10, 10]} />
+                  <meshStandardMaterial color="#4d7c0f" roughness={0.8} />
+                </mesh>
+              </group>
+            ))}
 
-          {/* 3D WebGL Poster Mesh Mounted Flush on the Architectural Backing Wall */}
-          <FramedImagePoster3D
-            position={[0, 2.65, 0.09]}
-            width={2.36}
-            height={3.16}
-            src="/images/rev/lobby_mother_baby_poster.jpg"
-            title={sideIdx === 0 ? 'สุขภาพดี เริ่มได้ที่นี่' : 'ดูแลด้วยหัวใจ ทุกช่วงชีวิต'}
-            badgeText="🔍 คลิกขยาย"
-            headerColor="#e11d48"
-            onClick={() =>
-              openLightbox({
-                src: '/images/rev/lobby_mother_baby_poster.jpg',
-                title:
-                  sideIdx === 0
-                    ? 'สุขภาพดี เริ่มได้ที่นี่: การบริบาลสุขภาพมารดาและทารกแรกเกิด'
-                    : 'ดูแลด้วยหัวใจ ทุกช่วงของชีวิต: ศูนย์การเรียนรู้แม่และเด็ก',
-                badge: 'โปสเตอร์ต้อนรับหน้าเคาน์เตอร์พยาบาล',
-                description:
-                  'ปกป้องดูแลคุณแม่หลังคลอดและทารกแรกเกิดด้วยความรัก ความอบอุ่น และมาตรฐานทางการพยาบาลครบวงจร',
-              })
-            }
-          />
-        </group>
-      ))}
+            {/* 3D WebGL Poster Mesh พอดีกรอบสัดส่วน 4:5 (2.40 x 3.00) เต็มเฟรมไม่ถูกแถบข้อความบีบ */}
+            <FramedImagePoster3D
+              position={[0, 2.66, 0.09]}
+              width={2.52}
+              height={2.86}
+              contain={true}
+              src={posterSrc}
+              title=""
+              badgeText=""
+              onClick={() =>
+                openLightbox({
+                  src: posterSrc,
+                  title:
+                    sideIdx === 0
+                      ? 'ครอบครัวอบอุ่น: การมีส่วนร่วมของครอบครัวในการดูแลแม่และทารกหลังคลอด'
+                      : 'สายใยรักแม่ลูก: การโอบอุ้มดูแลมารดาหลังคลอดและทารกแรกเกิดด้วยความอบอุ่น',
+                  badge: sideIdx === 0 ? 'โปสเตอร์ต้อนรับ (ฝั่งลูก)' : 'โปสเตอร์ต้อนรับ (ฝั่งแม่)',
+                  description:
+                    'ปกป้องดูแลคุณแม่หลังคลอดและทารกแรกเกิดด้วยความรัก ความอบอุ่น และมาตรฐานทางการพยาบาลครบวงจร',
+                })
+              }
+            />
+          </group>
+        );
+      })}
 
       {/* ══════════════════════════════════════════════════════════════════════════════
           🛋️ MODERN HOSPITAL WAITING LOUNGES (Exact Pink & Cream Modular Sofas from Photo)
@@ -272,6 +303,7 @@ export default function LobbyRoom() {
       {/* ═══════════════════════════════════════════════════════════════════════════════
           🌸 WING 1 (WEST / LEFT WALL): โซนการดูแลตนเองของมารดา (Mother Care Wards 101-104)
           Portals attached flush against the inner wall surface at X = -10.78 (ไม่ลอย)
+          + โปสเตอร์ภาพหน้าห้องแม่ครบทั้ง 4 ห้อง (สัดส่วน 2:3 1024x1536 คลิกขยายใหญ่ได้)
           ═══════════════════════════════════════════════════════════════════════════════ */}
       <WalkableRoomPortal
         roomKey="motherCare1"
@@ -282,22 +314,27 @@ export default function LobbyRoom() {
         position={[-10.78, 0, -6.6]}
         rotation={[0, Math.PI / 2, 0]}
       />
-
-      {/* Hallway Decorative Architectural Panels (Zero canvas/texture overhead for iOS Safari stability) */}
-      <group position={[-10.74, 2.35, -4.4]} rotation={[0, Math.PI / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1.5, 1.9, 0.04]} />
-          <meshStandardMaterial color="#8c5a32" roughness={0.42} />
-        </mesh>
-        <mesh position={[0, 0, 0.024]}>
-          <boxGeometry args={[1.34, 1.74, 0.015]} />
-          <meshStandardMaterial color="#fff1f2" roughness={0.35} />
-        </mesh>
-        <mesh position={[0, 0.05, 0.035]}>
-          <planeGeometry args={[1.12, 1.36]} />
-          <meshStandardMaterial color="#fbcfe8" roughness={0.5} />
-        </mesh>
-      </group>
+      <FramedImagePoster3D
+        position={[-10.75, 1.54, -4.82]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={1.08}
+        height={1.58}
+        contain={true}
+        backlit={false}
+        frameColor="#8c5a32"
+        accentColor="#ec4899"
+        src="/images/rev/lobby_front_w101.jpg"
+        title=""
+        badgeText=""
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_front_w101.jpg',
+            title: 'Ward 101: การดูแลร่างกายและการฟื้นตัวหลังคลอด',
+            badge: 'หน้าห้องแม่ 1 (Ward 101)',
+            description: 'การพักผ่อนให้เพียงพอ ดื่มน้ำสะอาด รับประทานอาหารครบ 5 หมู่ การบริหารร่างกายเบา ๆ และการทำความสะอาดร่างกายหลังคลอด',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="motherCare2"
@@ -308,21 +345,27 @@ export default function LobbyRoom() {
         position={[-10.78, 0, -2.2]}
         rotation={[0, Math.PI / 2, 0]}
       />
-
-      <group position={[-10.74, 2.35, 0.0]} rotation={[0, Math.PI / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1.5, 1.9, 0.04]} />
-          <meshStandardMaterial color="#8c5a32" roughness={0.42} />
-        </mesh>
-        <mesh position={[0, 0, 0.024]}>
-          <boxGeometry args={[1.34, 1.74, 0.015]} />
-          <meshStandardMaterial color="#fff1f2" roughness={0.35} />
-        </mesh>
-        <mesh position={[0, 0.05, 0.035]}>
-          <planeGeometry args={[1.12, 1.36]} />
-          <meshStandardMaterial color="#f9a8d4" roughness={0.5} />
-        </mesh>
-      </group>
+      <FramedImagePoster3D
+        position={[-10.75, 1.54, -0.42]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={1.08}
+        height={1.58}
+        contain={true}
+        backlit={false}
+        frameColor="#8c5a32"
+        accentColor="#ec4899"
+        src="/images/rev/lobby_front_w102.jpg"
+        title=""
+        badgeText=""
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_front_w102.jpg',
+            title: 'Ward 102: การดูแลแผลหลังคลอด',
+            badge: 'หน้าห้องแม่ 2 (Ward 102)',
+            description: 'การดูแลทำความสะอาดแผลฝีเย็บและแผลผ่าตัดคลอดอย่างถูกวิธี เพื่อป้องกันการติดเชื้อและส่งเสริมการหายของแผล',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="motherCare3"
@@ -333,21 +376,27 @@ export default function LobbyRoom() {
         position={[-10.78, 0, 2.2]}
         rotation={[0, Math.PI / 2, 0]}
       />
-
-      <group position={[-10.74, 2.35, 4.4]} rotation={[0, Math.PI / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1.5, 1.9, 0.04]} />
-          <meshStandardMaterial color="#8c5a32" roughness={0.42} />
-        </mesh>
-        <mesh position={[0, 0, 0.024]}>
-          <boxGeometry args={[1.34, 1.74, 0.015]} />
-          <meshStandardMaterial color="#fff1f2" roughness={0.35} />
-        </mesh>
-        <mesh position={[0, 0.05, 0.035]}>
-          <planeGeometry args={[1.12, 1.36]} />
-          <meshStandardMaterial color="#fbcfe8" roughness={0.5} />
-        </mesh>
-      </group>
+      <FramedImagePoster3D
+        position={[-10.75, 1.54, 3.98]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={1.08}
+        height={1.58}
+        contain={true}
+        backlit={false}
+        frameColor="#8c5a32"
+        accentColor="#ec4899"
+        src="/images/rev/lobby_front_w103.jpg"
+        title=""
+        badgeText=""
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_front_w103.jpg',
+            title: 'Ward 103: การดูแลเต้านมและหัวนมหลังคลอด',
+            badge: 'หน้าห้องแม่ 3 (Ward 103)',
+            description: 'การทำความสะอาดมือและเต้านม การเลือกชุดชั้นในพยุงเต้านม และการดูแลหัวนมอย่างเหมาะสมสำหรับการให้นมบุตร',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="motherCare4"
@@ -358,10 +407,32 @@ export default function LobbyRoom() {
         position={[-10.78, 0, 6.6]}
         rotation={[0, Math.PI / 2, 0]}
       />
+      <FramedImagePoster3D
+        position={[-10.75, 1.54, 8.32]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={1.08}
+        height={1.58}
+        contain={true}
+        backlit={false}
+        frameColor="#8c5a32"
+        accentColor="#ec4899"
+        src="/images/rev/lobby_front_w104.jpg"
+        title=""
+        badgeText=""
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_front_w104.jpg',
+            title: 'Ward 104: การสังเกตอาการผิดปกติหลังคลอด',
+            badge: 'หน้าห้องแม่ 4 (Ward 104)',
+            description: 'สัญญาณอันตรายหลังคลอดที่ต้องรีบมาพบแพทย์ เช่น มีไข้สูง ปวดศีรษะรุนแรง เลือดออกมากผิดปกติ หรือเต้านมอักเสบปวดบวมแดง',
+          })
+        }
+      />
 
       {/* ═══════════════════════════════════════════════════════════════════════════════
           👶 WING 2 (EAST / RIGHT WALL): โซนการดูแลทารกแรกเกิด (Newborn Care Nurseries 201-204)
           Portals attached flush against the inner wall surface at X = +10.78 (ไม่ลอย)
+          + โปสเตอร์ภาพหน้าห้องทารก 4 ห้อง (สัดส่วน 2:3 1024x1536 คลิกขยายใหญ่ได้)
           ═══════════════════════════════════════════════════════════════════════════════ */}
       <WalkableRoomPortal
         roomKey="newbornCare1"
@@ -372,21 +443,27 @@ export default function LobbyRoom() {
         position={[10.78, 0, -6.6]}
         rotation={[0, -Math.PI / 2, 0]}
       />
-
-      <group position={[10.74, 2.35, -4.4]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1.5, 1.9, 0.04]} />
-          <meshStandardMaterial color="#8c5a32" roughness={0.42} />
-        </mesh>
-        <mesh position={[0, 0, 0.024]}>
-          <boxGeometry args={[1.34, 1.74, 0.015]} />
-          <meshStandardMaterial color="#f0f9ff" roughness={0.35} />
-        </mesh>
-        <mesh position={[0, 0.05, 0.035]}>
-          <planeGeometry args={[1.12, 1.36]} />
-          <meshStandardMaterial color="#bae6fd" roughness={0.5} />
-        </mesh>
-      </group>
+      <FramedImagePoster3D
+        position={[10.75, 1.54, -4.82]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={1.08}
+        height={1.58}
+        contain={true}
+        backlit={false}
+        frameColor="#8c5a32"
+        accentColor="#0284c7"
+        src="/images/rev/lobby_front_nb201.jpg"
+        title=""
+        badgeText=""
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_front_nb201.jpg',
+            title: 'Nursery 201: การให้นมทารกแรกเกิดและการอุ้มเรอ',
+            badge: 'หน้าห้องทารก 1 (Nursery 201)',
+            description: 'การจัดท่าอุ้มให้นมบุตรอย่างถูกวิธี 4 ท่าหลัก การเข้าเต้าอย่างมีประสิทธิภาพ และการอุ้มไล่ลมหลังอิ่มนม',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="newbornCare2"
@@ -397,21 +474,27 @@ export default function LobbyRoom() {
         position={[10.78, 0, -2.2]}
         rotation={[0, -Math.PI / 2, 0]}
       />
-
-      <group position={[10.74, 2.35, 0.0]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1.5, 1.9, 0.04]} />
-          <meshStandardMaterial color="#8c5a32" roughness={0.42} />
-        </mesh>
-        <mesh position={[0, 0, 0.024]}>
-          <boxGeometry args={[1.34, 1.74, 0.015]} />
-          <meshStandardMaterial color="#f0f9ff" roughness={0.35} />
-        </mesh>
-        <mesh position={[0, 0.05, 0.035]}>
-          <planeGeometry args={[1.12, 1.36]} />
-          <meshStandardMaterial color="#7dd3fc" roughness={0.5} />
-        </mesh>
-      </group>
+      <FramedImagePoster3D
+        position={[10.75, 1.54, -0.42]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={1.08}
+        height={1.58}
+        contain={true}
+        backlit={false}
+        frameColor="#8c5a32"
+        accentColor="#0284c7"
+        src="/images/rev/lobby_front_nb202.jpg"
+        title=""
+        badgeText=""
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_front_nb202.jpg',
+            title: 'Nursery 202: การอาบน้ำและการเปลี่ยนผ้าอ้อมทารก',
+            badge: 'หน้าห้องทารก 2 (Nursery 202)',
+            description: 'ขั้นตอนการสระผม อาบน้ำ เช็ดตัวห่อตัวให้อบอุ่น และการสวมผ้าอ้อมให้ทารกแรกเกิดอย่างปลอดภัย',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="newbornCare3"
@@ -422,21 +505,27 @@ export default function LobbyRoom() {
         position={[10.78, 0, 2.2]}
         rotation={[0, -Math.PI / 2, 0]}
       />
-
-      <group position={[10.74, 2.35, 4.4]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh>
-          <boxGeometry args={[1.5, 1.9, 0.04]} />
-          <meshStandardMaterial color="#8c5a32" roughness={0.42} />
-        </mesh>
-        <mesh position={[0, 0, 0.024]}>
-          <boxGeometry args={[1.34, 1.74, 0.015]} />
-          <meshStandardMaterial color="#f0f9ff" roughness={0.35} />
-        </mesh>
-        <mesh position={[0, 0.05, 0.035]}>
-          <planeGeometry args={[1.12, 1.36]} />
-          <meshStandardMaterial color="#bae6fd" roughness={0.5} />
-        </mesh>
-      </group>
+      <FramedImagePoster3D
+        position={[10.75, 1.54, 3.98]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={1.08}
+        height={1.58}
+        contain={true}
+        backlit={false}
+        frameColor="#8c5a32"
+        accentColor="#0284c7"
+        src="/images/rev/lobby_front_nb203.jpg"
+        title=""
+        badgeText=""
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_front_nb203.jpg',
+            title: 'Nursery 203: การดูแลสายสะดือทารกแรกเกิด',
+            badge: 'หน้าห้องทารก 3 (Nursery 203)',
+            description: 'การเช็ดทำความสะอาดสายสะดือทารกแรกเกิดอย่างถูกวิธี การพับขอบผ้าอ้อมใต้สะดือ และการสังเกตสัญญาณผิดปกติของสะดือ',
+          })
+        }
+      />
 
       <WalkableRoomPortal
         roomKey="newbornCare4"
@@ -446,6 +535,27 @@ export default function LobbyRoom() {
         theme="newborn"
         position={[10.78, 0, 6.6]}
         rotation={[0, -Math.PI / 2, 0]}
+      />
+      <FramedImagePoster3D
+        position={[10.75, 1.54, 8.32]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={1.08}
+        height={1.58}
+        contain={true}
+        backlit={false}
+        frameColor="#8c5a32"
+        accentColor="#0284c7"
+        src="/images/rev/lobby_front_nb204.jpg"
+        title=""
+        badgeText=""
+        onClick={() =>
+          openLightbox({
+            src: '/images/rev/lobby_front_nb204.jpg',
+            title: 'Nursery 204: สภาพแวดล้อมที่ปลอดภัยสำหรับทารก',
+            badge: 'หน้าห้องทารก 4 (Nursery 204)',
+            description: 'การจัดเตียงนอนและสภาพแวดล้อมห้องนอนทารกที่ปลอดภัย อากาศถ่ายเท แสงไฟอ่อนโยน ปราศจากยุง ควันบุหรี่ และสิ่งของเสี่ยงอันตรายบนที่นอน',
+          })
+        }
       />
 
       {/* ═══════════════════════════════════════════════════════════════════════════════
@@ -467,7 +577,7 @@ export default function LobbyRoom() {
       <WalkableRoomPortal
         roomKey="dressingRoom"
         roomNumber="Suite 001"
-        roomTitle="ห้องแต่งตัว & สรีระคุณแม่ (Maternity Studio)"
+        roomTitle="ห้องแต่งตัวคุณแม่หลังคลอด (Postpartum Studio)"
         icon="👗"
         theme="mother"
         position={[5.4, 0, -10.78]}
@@ -483,32 +593,67 @@ export default function LobbyRoom() {
 
       <RealPlant type="potted" position={[-4.8, 0, -6.2]} scale={1.15} />
       <RealPlant type="house" position={[4.8, 0, -6.2]} scale={1.05} />
-      <RealPlant type="succulent" position={[-10.1, 0, 0]} scale={1.2} />
-      <RealPlant type="succulent" position={[10.1, 0, 0]} scale={1.2} />
+      <RealPlant type="succulent" position={[-10.1, 0, 0.78]} scale={1.2} />
+      <RealPlant type="succulent" position={[10.1, 0, 0.78]} scale={1.2} />
 
       {/* ── Panoramic Garden Glass Window & Welcome Zone Directional Wall (South Wall Z = +10.78 ติดผนังด้านใน 100%) ── */}
       <group position={[0, 0, 10.78]} rotation={[0, Math.PI, 0]}>
-        {/* 3D Panoramic Garden Window Frame & View (3D Mesh แท้ติดผนัง ไม่ลอย) */}
+        {/* หน้าต่างกระจกพาโนรามาชมวิวสวนขนาดกว้างเต็มผืนผนัง ("ปรับวิว ขอบกว้างกว่านี้ค่ะ" + กระจกใสสะท้อนแสงจริง) */}
         <FramedImagePoster3D
-          position={[-2.2, 2.55, 0.02]}
-          width={9.8}
-          height={3.6}
+          position={[-2.45, 2.55, 0.02]}
+          width={12.0}
+          height={4.86}
           src="/images/rev/lobby_garden_window.jpg"
-          title="โซนต้อนรับและสวนธรรมชาติบำบัด (Welcome & Healing Garden Zone)"
-          badgeText="🔍 คลิกชมภาพใหญ่"
-          headerColor="#059669"
+          frameColor="#334155"
+          backlit={false}
+          title=""
+          badgeText=""
           onClick={() =>
             openLightbox({
               src: '/images/rev/lobby_garden_window.jpg',
               title: 'โซนต้อนรับและสวนธรรมชาติบำบัด (Welcome & Healing Garden Zone)',
               badge: 'โซนต้อนรับ',
-              description: 'บรรยากาศโซนต้อนรับอบอุ่น ผ่อนคลาย มองเห็นสวนสีเขียวธรรมชาติ พร้อมป้ายบอกทางไปห้องดูแลคุณแม่และห้องดูแลทารก',
+              description: 'บรรยากาศโซนต้อนรับอบอุ่น ผ่อนคลาย มองเห็นสวนสีเขียวธรรมชาติผ่านกระจกบานกว้าง พร้อมป้ายบอกทางไปห้องดูแลคุณแม่และห้องดูแลทารก',
             })
           }
-        />
+        >
+          {/* แผ่นกระจกใสสะท้อนแสงด้านหน้าภาพสวน (Architectural Clear Glass Curtain Wall) */}
+          <mesh position={[0, 0, 0.052]}>
+            <planeGeometry args={[11.92, 4.78]} />
+            <meshStandardMaterial
+              color="#bae6fd"
+              transparent
+              opacity={0.16}
+              roughness={0.04}
+              metalness={0.35}
+            />
+          </mesh>
+          {/* เส้นแสงสะท้อนเฉียงบนบานกระจกพาโนรามา */}
+          {[-4.2, -1.2, 1.8, 4.6].map((gx, gi) => (
+            <mesh key={`lob_glint_${gi}`} position={[gx, 0.1, 0.055]} rotation={[0, 0, -0.32]}>
+              <planeGeometry args={[0.38, 4.35]} />
+              <meshBasicMaterial color="#ffffff" transparent opacity={0.14} />
+            </mesh>
+          ))}
+          {/* เสาซี่ลูกฟักกระจกอลูมิเนียมสถาปัตย์ 4 ช่อง + คานขวางบน + ธรณีหน้าต่างล่าง */}
+          {[-3.0, 0, 3.0].map((mx) => (
+            <mesh key={`lob_mul_${mx}`} position={[mx, 0, 0.06]}>
+              <boxGeometry args={[0.07, 4.78, 0.05]} />
+              <meshStandardMaterial color="#334155" metalness={0.65} roughness={0.25} />
+            </mesh>
+          ))}
+          <mesh position={[0, 1.48, 0.06]}>
+            <boxGeometry args={[11.92, 0.065, 0.05]} />
+            <meshStandardMaterial color="#334155" metalness={0.65} roughness={0.25} />
+          </mesh>
+          <mesh position={[0, -2.42, 0.08]}>
+            <boxGeometry args={[12.16, 0.11, 0.15]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.3} />
+          </mesh>
+        </FramedImagePoster3D>
 
         {/* Vertical Warm Oak Wood Slat Feature Wall Column behind Directional Signs */}
-        <group position={[5.8, 0, 0]}>
+        <group position={[6.15, 0, 0]}>
           <mesh position={[0, 2.55, 0.02]} castShadow receiveShadow>
             <boxGeometry args={[4.2, 4.9, 0.08]} />
             <meshStandardMaterial color="#f5ebe0" roughness={0.5} />

@@ -29,10 +29,10 @@ const CRADLE_STANDING_OVERRIDES = {
 
 /**
  * Builds a rigged THREE.SkinnedMesh A-Line Midi Dress Skirt (+ Waist Sash Belt)
- * bound directly to Megan's `Ch22_Pants.skeleton` so it bends naturally with
- * her hips, thighs, and knees during walking, sitting, and baby cradling.
+ * AND anatomically tapered bare female lower legs (`Ch22_BareLegs`) bound directly
+ * to Megan's `Ch22_Pants.skeleton` so `Ch22_Pants` can be 100% hidden in dress/nurse modes.
  */
-function createSkinnedDressMeshes(pantsMesh, { isNurse = false } = {}) {
+function createSkinnedDressMeshes(pantsMesh, bodyMesh, { isNurse = false } = {}) {
   const skeleton = pantsMesh.skeleton;
   const bones = skeleton.bones;
 
@@ -49,6 +49,8 @@ function createSkinnedDressMeshes(pantsMesh, { isNurse = false } = {}) {
   const bRUp = findIdx('RightUpLeg');
   const bLLeg = findIdx('LeftLeg');
   const bRLeg = findIdx('RightLeg');
+  const bLFoot = findIdx('LeftFoot');
+  const bRFoot = findIdx('RightFoot');
 
   // Determine whether LeftUpLeg sits on +X or -X in bind space
   const lMat = skeleton.boneInverses[bLUp]
@@ -57,9 +59,9 @@ function createSkinnedDressMeshes(pantsMesh, { isNurse = false } = {}) {
   const leftSign = lMat.elements[12] >= 0 ? 1 : -1;
 
   const topY = 1.135;
-  const hemY = isNurse ? 0.43 : 0.35; // Knee-length clinical nurse dress vs midi postpartum dress
+  const hemY = isNurse ? 0.42 : 0.35; // Knee-length clinical nurse dress vs midi postpartum dress
   const flareX = isNurse ? 0.255 : 0.305;
-  const flareZ = isNurse ? 0.205 : 0.245;
+  const flareZ = isNurse ? 0.205 : 0.235;
 
   const radialSegs = 36;
   const heightSegs = 14;
@@ -96,17 +98,18 @@ function createSkinnedDressMeshes(pantsMesh, { isNurse = false } = {}) {
       normals.push(nx / nLen, ny / nLen, nz / nLen);
       uvs.push(u, 1 - t);
 
-      // Compute smooth anatomical bone weights
+      // Compute smooth anatomical bone weights so skirt drapes cleanly over lap & knees when seated
       if (y >= 1.02) {
         const wSpine = Math.min(0.65, ((y - 1.02) / 0.12) * 0.65);
         skinIndices.push(bHips, bSpine, 0, 0);
         skinWeights.push(1 - wSpine, wSpine, 0, 0);
       } else {
-        const legTotal = Math.min(0.88, Math.pow((1.02 - y) / (1.02 - hemY), 0.88) * 0.88);
+        const legTotal = Math.min(0.96, Math.pow((1.02 - y) / (1.02 - hemY), 0.55) * 0.96);
         const wHips = 1 - legTotal;
         // Smooth left-right crossfade across center seam so skirt never splits
         const sideRatio = THREE.MathUtils.clamp(0.5 + (x * leftSign) / 0.22, 0.08, 0.92);
-        const kneeBlend = y < 0.52 ? THREE.MathUtils.clamp((0.52 - y) / 0.2, 0, 0.35) : 0;
+        const kneeBlend =
+          y < 0.58 ? THREE.MathUtils.clamp((0.58 - y) / (0.58 - hemY), 0, 1) * 0.82 : 0;
 
         const wLTotal = legTotal * sideRatio;
         const wRTotal = legTotal * (1 - sideRatio);
@@ -115,10 +118,17 @@ function createSkinnedDressMeshes(pantsMesh, { isNurse = false } = {}) {
           const domUp = sideRatio >= 0.5 ? bLUp : bRUp;
           const domLeg = sideRatio >= 0.5 ? bLLeg : bRLeg;
           const otherUp = sideRatio >= 0.5 ? bRUp : bLUp;
+          const otherLeg = sideRatio >= 0.5 ? bRLeg : bLLeg;
           const domW = Math.max(wLTotal, wRTotal);
           const othW = Math.min(wLTotal, wRTotal);
-          skinIndices.push(bHips, domUp, domLeg, otherUp);
-          skinWeights.push(wHips, domW * (1 - kneeBlend), domW * kneeBlend, othW);
+          // Normalize across dominant thigh/shin + opposite leg + hips (4 bones max)
+          const w1 = wHips + othW * (1 - kneeBlend);
+          const w2 = domW * (1 - kneeBlend);
+          const w3 = domW * kneeBlend;
+          const w4 = othW * kneeBlend;
+          const sum = w1 + w2 + w3 + w4 || 1;
+          skinIndices.push(wHips >= othW * (1 - kneeBlend) ? bHips : otherUp, domUp, domLeg, otherLeg);
+          skinWeights.push(w1 / sum, w2 / sum, w3 / sum, w4 / sum);
         } else {
           skinIndices.push(bHips, bLUp, bRUp, 0);
           skinWeights.push(wHips, wLTotal, wRTotal, 0);
@@ -204,14 +214,105 @@ function createSkinnedDressMeshes(pantsMesh, { isNurse = false } = {}) {
   beltMesh.castShadow = true;
   beltMesh.frustumCulled = false;
 
+  // Anatomically tapered bare female calves & ankles (`Ch22_BareLegs`) from knee down to ankle cuff
+  // Replaces baggy `Ch22_Pants` completely when wearing a dress so there are zero inner pants!
+  const legStations = [
+    // [y, cxAbs, cz, rx, rz, wUp, wLeg, wFoot]
+    [0.548, 0.1180, -0.0022, 0.002, 0.002, 0.22, 0.78, 0.00], // closed top cap tucked above knee inside dress
+    [0.545, 0.1182, -0.0024, 0.044, 0.045, 0.20, 0.80, 0.00],
+    [0.524, 0.1196, -0.0030, 0.045, 0.046, 0.06, 0.94, 0.00], // knee joint
+    [0.465, 0.1232, -0.0088, 0.043, 0.045, 0.00, 1.00, 0.00], // upper shin
+    [0.395, 0.1275, -0.0175, 0.046, 0.050, 0.00, 1.00, 0.00], // natural calf curve
+    [0.310, 0.1328, -0.0245, 0.041, 0.044, 0.00, 1.00, 0.00], // mid-lower calf taper
+    [0.220, 0.1384, -0.0300, 0.035, 0.037, 0.00, 0.95, 0.05], // slim lower leg
+    [0.140, 0.1434, -0.0325, 0.032, 0.034, 0.00, 0.82, 0.18], // slim ankle above shoe
+    [0.086, 0.1467, -0.0330, 0.033, 0.034, 0.00, 0.50, 0.50], // seamless match with Ch22_Body ankle cuff
+    [0.062, 0.1475, -0.0350, 0.031, 0.032, 0.00, 0.20, 0.80], // tucked inside shoe/foot
+  ];
+  const legRadSegs = 20;
+  const legStride = legRadSegs + 1;
+  const legPos = [];
+  const legNorm = [];
+  const legUvs = [];
+  const legSkinIdx = [];
+  const legSkinW = [];
+  const legIndices = [];
+
+  [-1, 1].forEach((sideSign, legIdx) => {
+    const isLeft = sideSign === leftSign;
+    const bUp = isLeft ? bLUp : bRUp;
+    const bLeg = isLeft ? bLLeg : bRLeg;
+    const bFoot = isLeft ? bLFoot : bRFoot;
+    const baseVertex = legIdx * legStations.length * legStride;
+
+    legStations.forEach(([ly, cxAbs, cz, rx, rz, wUp, wLeg, wFoot], rIdx) => {
+      const vCoord = rIdx / (legStations.length - 1);
+      const cx = sideSign * cxAbs;
+      for (let s = 0; s <= legRadSegs; s++) {
+        const uCoord = s / legRadSegs;
+        const theta = uCoord * Math.PI * 2;
+        const sinT = Math.sin(theta);
+        const cosT = Math.cos(theta);
+        // Subtle shin-front vs calf-back organic contour
+        const shinContour = cosT > 0 ? 1 - 0.06 * cosT : 1 + 0.04 * (-cosT);
+        const px = cx + sinT * rx;
+        const pz = cz + cosT * rz * shinContour;
+        legPos.push(px, ly, pz);
+
+        if (rIdx === 0) {
+          legNorm.push(0, 1, 0);
+        } else {
+          const nLen = Math.hypot(sinT * rz, cosT * rx) || 1;
+          legNorm.push((sinT * rz) / nLen, 0.04, (cosT * rx) / nLen);
+        }
+        // Map UVs directly inside Ch22_Body's clean ankle skin patch [0.86..0.96, 0.725..0.750]
+        legUvs.push(0.86 + uCoord * 0.10, 0.725 + vCoord * 0.025);
+        legSkinIdx.push(bUp, bLeg, bFoot, 0);
+        legSkinW.push(wUp, wLeg, wFoot, 0);
+      }
+    });
+
+    for (let r = 0; r < legStations.length - 1; r++) {
+      for (let s = 0; s < legRadSegs; s++) {
+        const a = baseVertex + r * legStride + s;
+        const b = a + legStride;
+        const c = b + 1;
+        const d = a + 1;
+        legIndices.push(a, b, d, b, c, d);
+      }
+    }
+  });
+
+  const bareLegsGeo = new THREE.BufferGeometry();
+  bareLegsGeo.setIndex(legIndices);
+  bareLegsGeo.setAttribute('position', new THREE.Float32BufferAttribute(legPos, 3));
+  bareLegsGeo.setAttribute('normal', new THREE.Float32BufferAttribute(legNorm, 3));
+  bareLegsGeo.setAttribute('uv', new THREE.Float32BufferAttribute(legUvs, 2));
+  bareLegsGeo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(legSkinIdx, 4));
+  bareLegsGeo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(legSkinW, 4));
+
+  const bareLegsMat = new THREE.MeshStandardMaterial({
+    map: bodyMesh?.material?.map || null,
+    color: '#f5d0a9',
+    roughness: 0.75,
+    metalness: 0.0,
+  });
+  const bareLegsMesh = new THREE.SkinnedMesh(bareLegsGeo, bareLegsMat);
+  bareLegsMesh.name = 'Ch22_BareLegs';
+  bareLegsMesh.castShadow = true;
+  bareLegsMesh.receiveShadow = true;
+  bareLegsMesh.frustumCulled = false;
+
   if (pantsMesh.parent) {
     pantsMesh.parent.add(skirtMesh);
     pantsMesh.parent.add(beltMesh);
+    pantsMesh.parent.add(bareLegsMesh);
   }
   skirtMesh.bind(skeleton, pantsMesh.bindMatrix.clone());
   beltMesh.bind(skeleton, pantsMesh.bindMatrix.clone());
+  bareLegsMesh.bind(skeleton, pantsMesh.bindMatrix.clone());
 
-  return { skirtMesh, beltMesh };
+  return { skirtMesh, beltMesh, bareLegsMesh };
 }
 
 /**
@@ -290,17 +391,21 @@ const MotherAvatar = forwardRef(({
   const isNurse = selectedCharacter === 'nurse';
   const isDressStyle = selectedCharacter === 'postpartum_dress' || isNurse;
 
-  // Clone active scene cleanly and attach rigged dress skirt when in dress or nurse mode
+  // Clone active scene cleanly and attach rigged dress skirt + bare calves when in dress or nurse mode
   const clonedScene = useMemo(() => {
     if (!meganScene) return null;
     const clone = SkeletonUtils.clone(meganScene);
     let pantsMesh = null;
+    let bodyMesh = null;
     clone.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
         if (child.name === 'Ch22_Pants' && child.isSkinnedMesh) {
           pantsMesh = child;
+        }
+        if (child.name === 'Ch22_Body' && child.isSkinnedMesh) {
+          bodyMesh = child;
         }
         if (child.material) {
           child.material = child.material.clone();
@@ -314,7 +419,8 @@ const MotherAvatar = forwardRef(({
       }
     });
     if (pantsMesh && isDressStyle) {
-      createSkinnedDressMeshes(pantsMesh, { isNurse });
+      createSkinnedDressMeshes(pantsMesh, bodyMesh, { isNurse });
+      pantsMesh.visible = false;
     }
     return clone;
   }, [meganScene, isDressStyle, isNurse]);
@@ -499,28 +605,40 @@ const MotherAvatar = forwardRef(({
 
       if (child.name === 'Ch22_Shirt') {
         child.material.map = null;
+        child.material.normalMap = null;
         child.material.color.set(isNurse ? '#ffffff' : scheme.primary);
         child.material.roughness = isNurse ? 0.72 : 0.9;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_DressSkirt') {
+        child.visible = isDressStyle;
         child.material.color.set(isNurse ? '#ffffff' : scheme.primary);
         child.material.roughness = isNurse ? 0.72 : 0.88;
         child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_DressBelt') {
+        child.visible = isDressStyle;
         child.material.color.set(isNurse ? '#38bdf8' : scheme.belt);
         child.material.roughness = 0.75;
         child.material.needsUpdate = true;
+      } else if (child.name === 'Ch22_BareLegs') {
+        child.visible = isDressStyle;
+        child.material.color.set('#f5d0a9');
+        child.material.roughness = 0.75;
+        child.material.metalness = 0.0;
+        child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_Pants') {
+        // 100% hide inner trousers when wearing any dress (postpartum_dress or nurse)
+        child.visible = !isDressStyle;
         child.material.map = null;
-        // When wearing a dress (postpartum_dress or nurse), lower calves peek out below the skirt hem -> warm skin tone
-        child.material.color.set(isDressStyle ? '#f5d0a9' : scheme.primary);
-        child.material.roughness = isDressStyle ? 0.75 : 0.92;
+        child.material.normalMap = null;
+        child.material.color.set(scheme.primary);
+        child.material.roughness = 0.92;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
       } else if (child.name === 'Ch22_Sneakers') {
         child.material.map = null;
-        child.material.color.set(barefoot ? '#f5d0a9' : '#f8fafc');
+        child.material.normalMap = null;
+        child.material.color.set(barefoot ? '#b97e58' : '#f8fafc');
         child.material.roughness = barefoot ? 0.78 : 0.55;
         child.material.metalness = 0.0;
         child.material.needsUpdate = true;
@@ -798,15 +916,16 @@ const MotherAvatar = forwardRef(({
     // avatarRig Y must be pulled down so the hip bone lands exactly at seat height
     // Megan hip bone sits at ~0.92m in T-pose → lower rig by (0.92 - seatHeight)
     if (isSitting) {
-      const seatHeight = seatedTarget?.seatOffset?.[1] ?? 0.46;
-      const hipBoneHeight = seatedTarget?.type === 'wheelchair' ? 0.83 : 0.86;
+      const activeSeat = isSittingOverride !== null ? null : seatedTarget;
+      const seatHeight = activeSeat?.seatOffset?.[1] ?? 0.46;
+      const hipBoneHeight = activeSeat?.type === 'wheelchair' ? 0.83 : 0.86;
       const targetY = Math.max(-(hipBoneHeight - seatHeight), -0.44);
       const targetZ =
-        seatedTarget?.type === 'bed'
+        activeSeat?.type === 'bed'
           ? 0.14
-          : seatedTarget?.type === 'sofa'
+          : activeSeat?.type === 'sofa'
             ? 0.14
-            : seatedTarget?.type === 'wheelchair'
+            : activeSeat?.type === 'wheelchair'
               ? 0.09
               : 0.12;
       avatarRigRef.current.position.set(0, targetY, targetZ);

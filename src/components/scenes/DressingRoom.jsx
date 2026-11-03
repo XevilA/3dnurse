@@ -12,6 +12,7 @@ import MedicineCabinet from '../furniture/MedicineCabinet';
 import SteelShelves from '../furniture/SteelShelves';
 import ExaminationLamp from '../decorations/ExaminationLamp';
 import WalkableRoomPortal from '../environment/WalkableRoomPortal';
+import { WindowWithCurtains } from '../ward/WardKit';
 
 const OUTFITS = [
   { id: 'pink', name: 'ชุดคลุมยาวพักฟื้น สีชมพูนวล', desc: 'Maternity Long Robe — ผ้าฝ้ายนุ่มพิเศษ สบายตัว อ่อนโยน สำหรับคุณแม่หลังคลอด', color: '#f472b6', border: '#ec4899', badge: 'แนะนำ' },
@@ -138,8 +139,12 @@ export default function DressingRoom() {
         </group>
       </group>
 
-      {/* ── Luxury Full-Length Dressing Mirrors & Vanity Wall (Back Wall Z = -7.8) ── */}
-      <group position={[0, 0, -7.8]}>
+      {/* หน้าต่างกระจกใสเห็นวิวสวนธรรมชาติขนาบข้างกระจกแต่งตัว (อยู่ในมุมกล้องชัดเจนทั้ง Desktop และ Tablet) */}
+      <WindowWithCurtains position={[-3.85, 2.75, -8.76]} width={2.6} height={2.7} />
+      <WindowWithCurtains position={[3.85, 2.75, -8.76]} width={2.6} height={2.7} />
+
+      {/* ── Luxury Full-Length Dressing Mirrors & Vanity Wall (Flush on Back Wall Z = -8.70) ── */}
+      <group position={[0, 0, -8.70]}>
         {/* Center Grand Mirror Frame */}
         <mesh position={[0, 2.4, 0]} castShadow>
           <boxGeometry args={[3.2, 4.4, 0.14]} />
@@ -183,14 +188,14 @@ export default function DressingRoom() {
       <RealPlant type="succulent" position={[6.8, 0, 5.5]} scale={1.2} />
       <ExaminationLamp position={[-3.2, 0, -4.5]} />
 
-      {/* ── Exit Door back to Grand Lobby (South Wall Z = +7.8) ── */}
+      {/* ── Exit Door back to Grand Lobby (Flush on South Wall Z = +8.78) ── */}
       <WalkableRoomPortal
         roomKey="lobby"
         roomNumber="Main Hall"
         roomTitle="กลับสู่ห้องต้อนรับ (Return to Grand Lobby)"
         icon="🚪"
         theme="lobby"
-        position={[0, 0, 7.8]}
+        position={[0, 0, 8.78]}
         rotation={[0, Math.PI, 0]}
       />
 

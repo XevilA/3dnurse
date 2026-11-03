@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Html } from '@react-three/drei';
+import React, { useState, useEffect, useMemo } from 'react';
+import { RoundedBox } from '@react-three/drei';
+import * as THREE from 'three';
 import ScreenPortal from '../ui/ScreenPortal';
+import BillboardLabel3D from '../ui/BillboardLabel3D';
 import useStore from '../../store/useStore';
 import PlayerController from '../player/PlayerController';
 import BabyAvatar from '../avatars/BabyAvatar';
@@ -9,8 +11,58 @@ import HospitalRoomShell from '../environment/HospitalRoomShell';
 import InteractiveSeat from '../furniture/InteractiveSeat';
 import RealPlant from '../decorations/RealPlant';
 import { useWovenRugTexture, FramedImagePoster3D } from '../furniture/CozyRoomFurniture';
+import { WindowWithCurtains } from '../ward/WardKit';
 import { getQuestionsByRoomKey } from '../../data/quizData';
 import { DiaperStack, BabyBottle } from '../furniture/BabyProps';
+import BabySupplyWardrobe3D from '../furniture/BabySupplyWardrobe3D';
+import { CANVAS_THAI_FONT, fillCenteredText, whenFontsReady } from '../../utils/canvasText';
+import {
+  RealisticThrowPillow3D,
+  RealisticBook3D,
+  RealisticPlushToy3D,
+  RealisticBolsterPillow3D,
+} from '../furniture/RealisticProps3D';
+
+function useWindowInfoPlaqueTexture() {
+  const { tex, paint } = useMemo(() => {
+    const W = 720;
+    const H = 96;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d');
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+
+    const draw = () => {
+      if (!ctx) return;
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(4, 4, W - 8, H - 8);
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fef3c7';
+      ctx.font = `800 32px ${CANVAS_THAI_FONT}`;
+      fillCenteredText(ctx, '🪟 หน้าต่างเปิดเล็กน้อย อากาศถ่ายเท • 25–26 °C', W / 2, H / 2 + 1, W - 44);
+      t.needsUpdate = true;
+    };
+
+    draw();
+    return { tex: t, paint: draw };
+  }, []);
+
+  useEffect(() => {
+    const cancel = whenFontsReady(paint);
+    return () => {
+      cancel();
+      tex.dispose();
+    };
+  }, [tex, paint]);
+
+  return tex;
+}
 
 /**
  * NewbornCare4Room — ห้องที่ 4: การจัดสิ่งแวดล้อมการนอนหลับที่ปลอดภัย (Nursery 204)
@@ -224,6 +276,7 @@ export default function NewbornCare4Room() {
 
   // ── พรมทอสีครีมลายข้าวหลามตัด (ตามภาพตัวอย่าง /images/rev/nb4_room_ref.jpg) ──
   const diamondRugTex = useWovenRugTexture('diamond');
+  const windowPlaqueTex = useWindowInfoPlaqueTexture();
 
   return (
     <group>
@@ -234,6 +287,7 @@ export default function NewbornCare4Room() {
         width={14}
         depth={14}
         height={5.2}
+        doorZ={4.25}
         roomTitle="ห้องที่ 4: การจัดสิ่งแวดล้อมการนอนหลับที่ปลอดภัย (Safe Sleep Room)"
         roomNumber="Nursery 204"
       />
@@ -293,7 +347,7 @@ export default function NewbornCare4Room() {
               <div className="bg-black/30 rounded-xl p-2.5 mb-2 space-y-1.5 border border-white/10 text-[11px]">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-amber-100">
-                    1. หยิบของนุ่มออกจากเตียงลูก (4 ชิ้น):
+                    1. หยิบสิ่งของที่เสี่ยงเกิดอันตรายออกจากเตียง (4 ชิ้น):
                   </span>
                   <span
                     className={`font-black ${
@@ -336,8 +390,17 @@ export default function NewbornCare4Room() {
                       : 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-200 text-white shadow-lg'
                   }`}
                 >
-                  <span>🛏️ 2. แบบทดลองปฏิบัติ: จัดเตียง & พลิกตัวลูก</span>
+                  <span>🛏️ 2. แบบทดลองปฏิบัติ: จัดเตียง &amp; ท่านอนที่ปลอดภัย</span>
                   <span>{isPracticeComplete ? 'สำเร็จ ✓' : 'เริ่มทำ ▶'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveModal('babySupplies')}
+                  className="w-full p-2 rounded-xl border border-pink-300/40 bg-pink-500/20 hover:bg-pink-500/30 text-left font-semibold flex items-center justify-between transition cursor-pointer"
+                >
+                  <span>🗄️ ตู้ของใช้ทารกครบชุด (8 หมวดหมู่)</span>
+                  <span className="text-pink-200 font-bold">เปิดดู ▶</span>
                 </button>
 
                 <button
@@ -355,78 +418,30 @@ export default function NewbornCare4Room() {
       </ScreenPortal>
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          1. ผนังด้านเหนือฝั่งซ้าย (North Wall Left, Flush against inner wall z = -6.78):
-             "หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง" + ผ้าม่านสีครีมอบอุ่น (ไม่ชนหัวเตียงคุณแม่)
+          1. ผนังด้านเหนือฝั่งซ้าย (North Wall Left, Flush against inner wall z = -6.76):
+             "หน้าต่างกระจกใสบานเลื่อนเปิดแง้มเล็กน้อย มองเห็นวิวนอกห้องยามค่ำคืน" + ผ้าม่านสีครีมอบอุ่น
           ══════════════════════════════════════════════════════════════════════════ */}
-      <group position={[-2.35, 2.58, -6.78]}>
-        {/* กรอบหน้าต่างไม้สีอบอุ่น (ฝังแนบผิวกำแพงด้านใน) */}
-        <mesh position={[0, 0, -0.015]} castShadow>
-          <boxGeometry args={[3.15, 2.35, 0.1]} />
-          <meshStandardMaterial color="#8c5a3c" roughness={0.5} />
-        </mesh>
+      <group position={[-2.35, 2.58, -6.76]}>
+        <WindowWithCurtains
+          position={[0, 0, 0]}
+          width={2.6}
+          height={2.15}
+          frameColor="#8c5a3c"
+          timeOfDay="evening"
+          slightlyOpen={true}
+        />
 
-        {/* วิวนอกหน้าต่างยามค่ำคืนที่เงียบสงบ น่านอนพักผ่อน (Calm Night / Twilight Sky View) */}
-        <mesh position={[0, 0, 0.036]}>
-          <planeGeometry args={[2.88, 2.1]} />
-          <meshBasicMaterial color="#1b263b" />
+        {/* ป้ายกำกับหน้าต่าง 3D WebGL Plaque แนบผนังใต้ขอบหน้าต่าง (ไม่ใช้ <Html> จึงไม่ลอยทับหัวตัวละคร) */}
+        <mesh
+          position={[0, -1.25, 0.04]}
+          onClick={(e) => {
+            e.stopPropagation();
+            openWallPoster(0);
+          }}
+        >
+          <planeGeometry args={[2.35, 0.31]} />
+          <meshBasicMaterial map={windowPlaqueTex} toneMapped={false} />
         </mesh>
-        {/* แสงขอบฟ้าและดวงจันทร์เสี้ยว */}
-        <mesh position={[0, -0.52, 0.04]}>
-          <planeGeometry args={[2.88, 0.85]} />
-          <meshBasicMaterial color="#283845" />
-        </mesh>
-        <mesh position={[0.78, 0.54, 0.045]}>
-          <circleGeometry args={[0.2, 24]} />
-          <meshBasicMaterial color="#fef3c7" />
-        </mesh>
-        {/* พุ่มไม้และต้นไม้ด้านนอกหน้าต่าง */}
-        <mesh position={[-0.85, -0.68, 0.048]}>
-          <sphereGeometry args={[0.38, 16, 16]} />
-          <meshBasicMaterial color="#1f4e3d" />
-        </mesh>
-        <mesh position={[-0.25, -0.74, 0.048]}>
-          <sphereGeometry args={[0.32, 16, 16]} />
-          <meshBasicMaterial color="#2d6a4f" />
-        </mesh>
-        <mesh position={[0.9, -0.7, 0.048]}>
-          <sphereGeometry args={[0.36, 16, 16]} />
-          <meshBasicMaterial color="#1f4e3d" />
-        </mesh>
-
-        {/* บานหน้าต่างเลื่อนเปิดแง้มเล็กน้อย ("หน้าต่างเปิดเล็กน้อย มองเห็นวิวนอกห้อง") */}
-        <mesh position={[-0.72, 0, 0.06]}>
-          <boxGeometry args={[1.38, 2.05, 0.04]} />
-          <meshStandardMaterial color="#e0f2fe" transparent opacity={0.22} roughness={0.1} />
-        </mesh>
-        <mesh position={[0.38, 0, 0.08]}>
-          <boxGeometry args={[1.18, 2.05, 0.04]} />
-          <meshStandardMaterial color="#e0f2fe" transparent opacity={0.25} roughness={0.1} />
-        </mesh>
-
-        {/* ผ้าม่านสองฝั่งสีครีมอุ่น */}
-        <mesh position={[-1.45, 0, 0.12]} castShadow>
-          <boxGeometry args={[0.44, 2.45, 0.12]} />
-          <meshStandardMaterial color="#e6ccb2" roughness={0.85} />
-        </mesh>
-        <mesh position={[1.45, 0, 0.12]} castShadow>
-          <boxGeometry args={[0.44, 2.45, 0.12]} />
-          <meshStandardMaterial color="#e6ccb2" roughness={0.85} />
-        </mesh>
-        {/* ราวผ้าม่าน */}
-        <mesh position={[0, 1.24, 0.14]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.026, 0.026, 3.5, 12]} />
-          <meshStandardMaterial color="#5c3a21" />
-        </mesh>
-
-        {/* ป้ายกำกับหน้าต่างเปิดแง้มระบายอากาศ */}
-        <Html position={[0, -0.95, 0.15]} center zIndexRange={[10, 0]}>
-          <div
-            onClick={() => openWallPoster(0)}
-            className="cursor-pointer select-none bg-amber-950/90 text-amber-100 border border-amber-400/70 px-3 py-1 rounded-full text-[11px] font-bold shadow-lg whitespace-nowrap hover:scale-105 transition"
-          >
-            🪟 หน้าต่างเปิดเล็กน้อย อากาศถ่ายเท • 25–26 °C
-          </div>
-        </Html>
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -509,7 +524,7 @@ export default function NewbornCare4Room() {
           3. ผนังด้านซ้าย (West Wall, x = -6.78): ทีวีติดผนัง 3D Mesh + ตู้คอนโซลไม้ลิ้นชักขาวไฟซ่อนด้านล่าง
              + ชุดผ้าอ้อมพับและห่อแพมเพิสบนตู้คอนโซล + ชั้นวางโชว์ไม้
           ══════════════════════════════════════════════════════════════════════════ */}
-      {/* ทีวีจอกว้างติดผนัง 3D Mesh แนบสนิทกับผนังด้านซ้าย (x = -6.78) */}
+      {/* ทีวีจอกว้างติดผนัง 3D Mesh แนบสนิทกับผนังด้านซ้าย (x = -6.78) — คลิกเพื่อดูภาพขยายความรู้ขนาดใหญ่ */}
       <FramedImagePoster3D
         imgSrc="/images/rev/nb4_poster1_env.jpg"
         width={2.55}
@@ -517,11 +532,11 @@ export default function NewbornCare4Room() {
         position={[-6.78, 2.35, -0.75]}
         rotation={[0, Math.PI / 2, 0]}
         title="จัดเตียงนอนลูกอย่างไร? ให้ปลอดภัยและสบายตัว"
-        subtitle="คลิกที่จอทีวีเพื่อเริ่มแบบทดลองปฏิบัติจัดเตียงทารก"
-        badge="📺 SAFE SLEEP TV"
+        subtitle="คลิกที่จอทีวีเพื่อดูภาพขยายความรู้ขนาดใหญ่ (ครบ 5 ภาพ)"
+        badge="🔍 คลิกดูรูปใหญ่"
         frameColor="#1e293b"
         accentColor="#d97706"
-        onClick={() => setActiveModal('practice')}
+        onClick={() => openWallPoster(0)}
       />
 
       <group position={[-6.78, 0, -0.5]} rotation={[0, Math.PI / 2, 0]}>
@@ -627,6 +642,13 @@ export default function NewbornCare4Room() {
         </group>
       </group>
 
+      {/* ── ตู้ของใช้ทารก 3D แบบเปิด 2 คอลัมน์ 8 หมวดหมู่ ชิดผนังซ้ายถัดจากตู้คอนโซลทีวี (ตาม แก้ไขเพิ่มเติม.pdf ห้องนอนทารก) ── */}
+      <BabySupplyWardrobe3D
+        position={[-6.78, 0, -3.45]}
+        rotation={[0, Math.PI / 2, 0]}
+        onClick={() => setActiveModal('babySupplies')}
+      />
+
       {/* ── เก้าอี้นวมสีครีม + หมอนอิงสีชมพู + โต๊ะกลมวางโคมไฟโดมแสงอุ่น & กระถางต้นไม้เล็ก 2 ต้น + ต้นไม้ใหญ่ ── */}
       <InteractiveSeat
         id="nb204_cozy_armchair"
@@ -644,68 +666,64 @@ export default function NewbornCare4Room() {
               <meshStandardMaterial color="#8c5a32" roughness={0.5} />
             </mesh>
           ))}
-          {/* เบาะนั่งและพนักพิงสีครีมเบจ */}
-          <mesh position={[0, 0.34, 0]} castShadow receiveShadow>
-            <boxGeometry args={[0.96, 0.32, 0.9]} />
+          {/* เบาะนั่งและพนักพิงสีครีมเบจขอบโค้งมนสมจริง */}
+          <RoundedBox args={[0.96, 0.32, 0.9]} radius={0.048} smoothness={4} position={[0, 0.34, 0]} castShadow receiveShadow>
             <meshStandardMaterial color="#f5ebe0" roughness={0.85} />
-          </mesh>
-          <mesh position={[0, 0.78, -0.34]} castShadow>
-            <boxGeometry args={[0.94, 0.68, 0.22]} />
+          </RoundedBox>
+          <RoundedBox args={[0.94, 0.68, 0.22]} radius={0.055} smoothness={4} position={[0, 0.78, -0.34]} castShadow receiveShadow>
             <meshStandardMaterial color="#f5ebe0" roughness={0.85} />
-          </mesh>
-          <mesh position={[-0.43, 0.54, 0]} castShadow>
-            <boxGeometry args={[0.16, 0.36, 0.86]} />
+          </RoundedBox>
+          <RoundedBox args={[0.17, 0.36, 0.86]} radius={0.045} smoothness={4} position={[-0.43, 0.54, 0]} castShadow>
             <meshStandardMaterial color="#e6d7c8" roughness={0.85} />
-          </mesh>
-          <mesh position={[0.43, 0.54, 0]} castShadow>
-            <boxGeometry args={[0.16, 0.36, 0.86]} />
+          </RoundedBox>
+          <RoundedBox args={[0.17, 0.36, 0.86]} radius={0.045} smoothness={4} position={[0.43, 0.54, 0]} castShadow>
             <meshStandardMaterial color="#e6d7c8" roughness={0.85} />
-          </mesh>
-          {/* หมอนอิงสีชมพูพาสเทล (ตามภาพ nb4_room_ref.jpg) */}
-          <mesh position={[0.08, 0.58, -0.16]} rotation={[-0.22, -0.15, 0.08]} castShadow>
-            <boxGeometry args={[0.42, 0.34, 0.14]} />
-            <meshStandardMaterial color="#f4acb7" roughness={0.85} />
-          </mesh>
+          </RoundedBox>
+          {/* หมอนอิงผ้าทอ 3D สมจริงสีชมพูพาสเทล (ตามภาพ nb4_room_ref.jpg) */}
+          <RealisticThrowPillow3D
+            color="#f4acb7"
+            variant={0}
+            position={[0.06, 0.63, -0.14]}
+            rotation={[-0.22, -0.15, 0.08]}
+            scale={0.84}
+          />
         </group>
       </InteractiveSeat>
 
-      {/* โต๊ะกลมไม้ข้างเก้าอี้นวม + โคมไฟโดมแสงอุ่น + กระถางต้นไม้เล็ก 2 ต้น (ตามภาพ nb4_room_ref.jpg) */}
+      {/* โต๊ะกลมไม้ข้างเก้าอี้นวม + โคมไฟโดมแสงอุ่น + ต้นไม้ใบจริง + หนังสือคู่มือนอนปลอดภัย */}
       <group position={[-3.35, 0, -5.2]}>
         <mesh position={[0, 0.48, 0]} castShadow receiveShadow>
-          <cylinderGeometry args={[0.42, 0.42, 0.04, 28]} />
-          <meshStandardMaterial color="#b58354" roughness={0.5} />
+          <cylinderGeometry args={[0.42, 0.41, 0.04, 32]} />
+          <meshStandardMaterial color="#b58354" roughness={0.48} />
         </mesh>
         {[[-0.22, -0.22], [0.22, -0.22], [0, 0.26]].map(([lx, lz], i) => (
           <mesh key={`stleg_${i}`} position={[lx, 0.24, lz]} castShadow>
-            <cylinderGeometry args={[0.024, 0.018, 0.48, 12]} />
+            <cylinderGeometry args={[0.024, 0.018, 0.48, 14]} />
             <meshStandardMaterial color="#8c5a32" roughness={0.5} />
           </mesh>
         ))}
         {/* โคมไฟตั้งโต๊ะทรงโดมแสงอุ่น */}
-        <mesh position={[-0.1, 0.58, -0.05]} castShadow>
-          <cylinderGeometry args={[0.07, 0.09, 0.16, 16]} />
-          <meshStandardMaterial color="#e6ccb2" />
+        <mesh position={[-0.12, 0.57, -0.08]} castShadow>
+          <cylinderGeometry args={[0.065, 0.085, 0.14, 18]} />
+          <meshStandardMaterial color="#e6ccb2" roughness={0.35} />
         </mesh>
-        <mesh position={[-0.1, 0.72, -0.05]}>
-          <sphereGeometry args={[0.14, 18, 18]} />
+        <mesh position={[-0.12, 0.70, -0.08]}>
+          <sphereGeometry args={[0.13, 20, 20]} />
           <meshStandardMaterial color="#fef3c7" emissive="#f59e0b" emissiveIntensity={0.75} />
         </mesh>
-        {/* กระถางต้นไม้สีขาวเล็ก 2 ต้นบนโต๊ะกลม */}
-        {[
-          [0.14, 0.08],
-          [0.08, -0.16],
-        ].map(([px, pz], pi) => (
-          <group key={`mini_pl_${pi}`} position={[px, 0.5, pz]}>
-            <mesh position={[0, 0.05, 0]} castShadow>
-              <cylinderGeometry args={[0.055, 0.045, 0.1, 12]} />
-              <meshStandardMaterial color="#ffffff" roughness={0.3} />
-            </mesh>
-            <mesh position={[0, 0.13, 0]}>
-              <sphereGeometry args={[0.075, 12, 12]} />
-              <meshStandardMaterial color="#4d7c0f" roughness={0.75} />
-            </mesh>
-          </group>
-        ))}
+        {/* ต้นไม้ประดับใบจริง 3D และหนังสือคู่มือปกแข็งบนโต๊ะข้างเก้าอี้ */}
+        <RealPlant type="succulent" position={[0.16, 0.535, -0.12]} scale={0.42} />
+        <RealisticBook3D
+          position={[0.06, 0.50, 0.14]}
+          rotation={[0, -0.35, 0]}
+          width={0.19}
+          height={0.028}
+          depth={0.25}
+          color="#0284c7"
+          accent="#e0f2fe"
+          title="การนอนหลับที่ปลอดภัย"
+          subtitle="Safe Sleep สำหรับทารกแรกเกิด"
+        />
       </group>
       {/* ต้นไม้ประดับมุมหน้าต่างซ้ายบน */}
       <RealPlant type="potted" position={[-5.9, 0, -5.8]} scale={1.25} />
@@ -783,15 +801,21 @@ export default function NewbornCare4Room() {
           <meshStandardMaterial color="#fff8f0" roughness={0.75} />
         </mesh>
 
-        {/* หมอนหนุนบนเตียงผู้ปกครอง 2 ใบ (สีชมพูอ่อนและสีขาวครีมตามภาพอ้างอิง) */}
-        <mesh position={[-0.62, 0.68, -1.14]} rotation={[0.16, 0, 0]} castShadow>
-          <boxGeometry args={[0.88, 0.12, 0.48]} />
-          <meshStandardMaterial color="#f4cfd6" roughness={0.78} />
-        </mesh>
-        <mesh position={[0.62, 0.68, -1.12]} rotation={[0.14, 0, 0]} castShadow>
-          <boxGeometry args={[0.88, 0.13, 0.48]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.72} />
-        </mesh>
+        {/* หมอนหนุนผ้าทอ 3D สมจริงบนเตียงผู้ปกครอง 2 ใบ (สีชมพูอ่อนและสีขาวครีม) */}
+        <RealisticThrowPillow3D
+          color="#f4cfd6"
+          variant={0}
+          position={[-0.62, 0.70, -1.14]}
+          rotation={[-Math.PI / 2 + 0.22, 0, 0]}
+          scale={[1.45, 0.92, 0.62]}
+        />
+        <RealisticThrowPillow3D
+          color="#fffaf5"
+          variant={1}
+          position={[0.62, 0.70, -1.12]}
+          rotation={[-Math.PI / 2 + 0.20, 0, 0]}
+          scale={[1.45, 0.92, 0.62]}
+        />
 
         {/* คุณแม่นอนหลับพักผ่อนหนุนหมอนบนเตียงผู้ปกครอง — ถอดรองเท้าเท้าเปล่า 100% ("ไม่ใส่รองเท้า") และซุกตัวอยู่ใต้ผ้าห่ม ("คุณแม่ห่มผ้า") */}
         <group position={[-0.62, 0.60, 0.43]} rotation={[-Math.PI / 2 + 0.14, 0, 0]}>
@@ -864,7 +888,14 @@ export default function NewbornCare4Room() {
 
       {/* ── 4.2 เตียงนอนทารก 1 ชั้น (Single-Tier Oak & Breathable White Mesh Co-Sleeper Crib)
              ขยับมาตั้งชิดข้างเตียงคุณแม่ ("เตียงนอนลูก 1 ชั้น ขยับมาใกล้เตียงแม่อีกนิด") ── */}
-      <group position={[0.36, 0, -5.05]}>
+      <group
+        position={[0.36, 0, -5.05]}
+        onClick={(e) => {
+          if (e.delta > 10) return;
+          e.stopPropagation();
+          setActiveModal('practice');
+        }}
+      >
         {/* เสาขาเตียงไม้โอ๊คกลมมน 4 มุม ยาวลงพื้นโล่งโปร่ง 1 ชั้น (ไม่มีชั้นวางของชั้นที่ 2 ด้านล่าง!) */}
         {[
           [-0.46, -0.66],
@@ -987,106 +1018,91 @@ export default function NewbornCare4Room() {
           />
         </group>
 
-        {/* ── อุปกรณ์นุ่ม ๆ 4 ชิ้นในเตียงทารก ที่คุณแม่ต้องหยิบออก (หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม) ── */}
-        {/* 1. หมอน (Pillow) */}
+        {/* ── อุปกรณ์นุ่ม ๆ 4 ชิ้นในเตียงทารก ที่คุณแม่ต้องหยิบออก (หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม — โมเดล 3D สมจริง) ── */}
+        {/* 1. หมอนหนุนผ้าทอ (Sculpted Pillow) */}
         {cribItems.find((i) => i.id === 'pillow')?.inCrib && (
           <group
-            position={[0, 0.65, -0.36]}
+            position={[0, 0.66, -0.36]}
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveSingleItem('pillow');
             }}
           >
-            <mesh castShadow>
-              <boxGeometry args={[0.5, 0.08, 0.3]} />
-              <meshStandardMaterial color="#fde68a" roughness={0.75} />
-            </mesh>
+            <RealisticThrowPillow3D
+              color="#fde68a"
+              variant={0}
+              rotation={[-Math.PI / 2, 0, 0]}
+              scale={[0.86, 0.64, 0.42]}
+            />
           </group>
         )}
 
-        {/* 2. หมอนข้าง (Bolster) */}
+        {/* 2. หมอนข้างผูกริบบิ้นหัวท้าย (Realistic Thai Bolster) */}
         {cribItems.find((i) => i.id === 'bolster')?.inCrib && (
-          <group
-            position={[-0.26, 0.68, 0.06]}
+          <RealisticBolsterPillow3D
+            position={[-0.26, 0.685, 0.06]}
             rotation={[Math.PI / 2, 0, 0]}
+            color="#fbcfe8"
+            ribbonColor="#ec4899"
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveSingleItem('bolster');
             }}
-          >
-            <mesh castShadow>
-              <cylinderGeometry args={[0.075, 0.075, 0.58, 16]} />
-              <meshStandardMaterial color="#fbcfe8" roughness={0.75} />
-            </mesh>
-          </group>
+          />
         )}
 
-        {/* 3. ตุ๊กตา (Plush Doll / Teddy Bear) */}
+        {/* 3. ตุ๊กตาหมีผ้าขนปุยผูกโบว์ (Sculpted Plush Teddy Bear) */}
         {cribItems.find((i) => i.id === 'doll')?.inCrib && (
-          <group
-            position={[0.26, 0.71, -0.28]}
+          <RealisticPlushToy3D
+            kind="bear"
+            position={[0.25, 0.61, -0.28]}
+            rotation={[0, -0.45, 0]}
+            scale={0.78}
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveSingleItem('doll');
             }}
-          >
-            <mesh position={[0, 0, 0]} castShadow>
-              <sphereGeometry args={[0.1, 14, 14]} />
-              <meshStandardMaterial color="#c08552" roughness={0.85} />
-            </mesh>
-            <mesh position={[0, 0.13, 0]} castShadow>
-              <sphereGeometry args={[0.08, 14, 14]} />
-              <meshStandardMaterial color="#c08552" roughness={0.85} />
-            </mesh>
-            <mesh position={[-0.055, 0.195, 0]} castShadow>
-              <sphereGeometry args={[0.028, 10, 10]} />
-              <meshStandardMaterial color="#8c5a3c" />
-            </mesh>
-            <mesh position={[0.055, 0.195, 0]} castShadow>
-              <sphereGeometry args={[0.028, 10, 10]} />
-              <meshStandardMaterial color="#8c5a3c" />
-            </mesh>
-          </group>
+          />
         )}
 
-        {/* 4. ผ้าห่มหนา (Thick Blanket) */}
+        {/* 4. ผ้านวมพับหนานุ่มขอบมน (Quilted Thick Blanket) */}
         {cribItems.find((i) => i.id === 'blanket')?.inCrib && (
           <group
-            position={[0.03, 0.71, 0.26]}
+            position={[0.03, 0.695, 0.27]}
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveSingleItem('blanket');
             }}
           >
-            <mesh castShadow>
-              <boxGeometry args={[0.64, 0.06, 0.5]} />
-              <meshStandardMaterial color="#bae6fd" roughness={0.85} />
-            </mesh>
+            <RoundedBox args={[0.62, 0.055, 0.46]} radius={0.024} smoothness={4} castShadow receiveShadow>
+              <meshStandardMaterial color="#bae6fd" roughness={0.86} />
+            </RoundedBox>
+            <RoundedBox args={[0.58, 0.035, 0.14]} radius={0.016} smoothness={3} position={[0, 0.032, -0.15]} castShadow>
+              <meshStandardMaterial color="#e0f2fe" roughness={0.85} />
+            </RoundedBox>
           </group>
         )}
 
-        {/* ปุ่มเหนือเตียงทารก 1 ชั้นสำหรับเปิดหน้าต่างแบบทดลองปฏิบัติ */}
-        <Html position={[0, 1.32, 0]} center zIndexRange={[20, 0]}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveModal('practice');
-            }}
-            className={`cursor-pointer px-4 py-1.5 rounded-2xl font-bold text-xs shadow-lg border border-white/90 whitespace-normal text-center leading-snug transition hover:scale-105 ${
-              isPracticeComplete
-                ? 'bg-emerald-700/95 text-white'
-                : 'bg-amber-800/95 text-amber-50'
-            }`}
-            style={{ maxWidth: 'min(84vw, 350px)' }}
-          >
-            {isPracticeComplete
-              ? '✓ จัดเตียงทารกปลอดภัยแล้ว (ลูกนอนหงาย & ไม่มีของนุ่มในเตียง)'
-              : `🛏️ คลิกเตียงทารก: แบบทดลองปฏิบัติ (หยิบของออก ${removedCount}/4 • ${
-                  isBabySupine ? 'ลูกนอนหงายแล้ว ✓' : 'จับลูกพลิกนอนหงาย'
-                })`}
-          </button>
-        </Html>
+        {/* ปุ่มเหนือเตียงทารก 1 ชั้นสำหรับเปิดหน้าต่างแบบทดลองปฏิบัติ (3D WebGL ไม่ลอยทับหัวตัวละคร) */}
+        <BillboardLabel3D
+          position={[0, 1.28, 0]}
+          text={
+            isPracticeComplete
+              ? '✓ จัดเตียงทารกปลอดภัยแล้ว'
+              : '🛏️ คลิกเตียงทารก: แบบทดลองปฏิบัติ'
+          }
+          subtext={
+            isPracticeComplete
+              ? '(ลูกนอนหงาย & ไม่มีของนุ่มในเตียง)'
+              : `(หยิบของออก ${removedCount}/4 • ${isBabySupine ? 'ลูกนอนหงายแล้ว ✓' : 'จับลูกพลิกนอนหงาย'})`
+          }
+          bg={isPracticeComplete ? '#047857' : '#92400e'}
+          subtextColor={isPracticeComplete ? '#d1fae5' : '#fef3c7'}
+          width={1.92}
+          height={0.44}
+          pill={false}
+          onClick={() => setActiveModal('practice')}
+        />
       </group>
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -1112,7 +1128,7 @@ export default function NewbornCare4Room() {
                     Nursery 204 • แบบทดลองปฏิบัติสำหรับคุณแม่
                   </span>
                   <h2 className="text-base sm:text-xl font-black text-slate-900">
-                    🛏️ แบบทดลองปฏิบัติ: จัดเตียงทารกให้ปลอดภัย &amp; จับลูกพลิกตัวเป็นท่านอนหงาย
+                    🛏️ แบบทดลองปฏิบัติ: จัดเตียงทารกให้ปลอดภัย &amp; ท่านอนที่ปลอดภัย
                   </h2>
                   <p className="text-xs text-slate-600 mt-0.5">
                     เมื่อเข้ามาครั้งแรก ลูกนอนคว่ำอยู่และมีสิ่งของนุ่ม ๆ อยู่ในเตียงทารก กรุณาหยิบสิ่งของที่ไม่ปลอดภัยออกให้ครบ 4 ชิ้น และจับลูกพลิกตัวเป็นท่านอนหงายค่ะ
@@ -1132,7 +1148,7 @@ export default function NewbornCare4Room() {
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
                   <div>
                     <h3 className="text-sm sm:text-base font-black text-sky-950">
-                      ภารกิจที่ 1: หยิบสิ่งของนุ่ม ๆ ออกจากเตียงทารก ({removedCount}/4 ชิ้น)
+                      ภารกิจที่ 1: หยิบสิ่งของที่เสี่ยงเกิดอันตรายออกจากเตียงทารก ({removedCount}/4 ชิ้น)
                     </h3>
                     <p className="text-xs text-slate-600">
                       คลิกที่รายการด้านล่างเพื่อหยิบ <strong>หมอน, หมอนข้าง, ตุ๊กตา, ผ้าห่ม</strong> ออกจากที่นอนทารก (ป้องกันการอุดกั้นทางเดินหายใจ)
@@ -1149,13 +1165,19 @@ export default function NewbornCare4Room() {
                   )}
                 </div>
 
-                {/* ภาพเปรียบเทียบ ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ บนที่นอน */}
-                <div className="mb-3 bg-white p-2 rounded-xl border border-sky-200">
+                {/* ภาพเปรียบเทียบ ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ บนที่นอน (คลิกเพื่อดูภาพขยายใหญ่ได้) */}
+                <div
+                  onClick={() => openWallPoster(2)}
+                  className="mb-3 bg-white p-2 rounded-xl border border-sky-200 cursor-zoom-in hover:border-sky-400 transition group"
+                >
                   <img
                     src="/images/rev/nb4_poster3_safe_mattress.jpg"
                     alt="ที่นอนทารกที่ปลอดภัย vs ไม่ควรมีของนุ่ม ๆ บนที่นอนทารก"
                     className="w-full h-44 sm:h-52 object-contain rounded-lg"
                   />
+                  <div className="text-center text-[11px] font-bold text-sky-700 mt-1">
+                    🔍 แตะที่ภาพเพื่อเปิดดูรูปขยายใหญ่เต็มจอ
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1204,12 +1226,18 @@ export default function NewbornCare4Room() {
                   เมื่อเข้ามาครั้งแรก ลูกนอนคว่ำอยู่ ซึ่งเสี่ยงต่อการอุดกั้นทางเดินหายใจและภาวะไหลตาย (SIDS) กรุณาคลิกเลือกจับลูกพลิกตัวเป็น <strong>&ldquo;นอนหงาย&rdquo;</strong>
                 </p>
 
-                <div className="mb-3 bg-white p-2 rounded-xl border border-amber-200">
+                <div
+                  onClick={() => openWallPoster(1)}
+                  className="mb-3 bg-white p-2 rounded-xl border border-amber-200 cursor-zoom-in hover:border-amber-400 transition"
+                >
                   <img
                     src="/images/rev/nb4_poster2_back_vs_prone.jpg"
                     alt="นอนหงาย vs นอนคว่ำ"
                     className="w-full h-44 sm:h-52 object-contain rounded-lg"
                   />
+                  <div className="text-center text-[11px] font-bold text-amber-700 mt-1">
+                    🔍 แตะที่ภาพเพื่อเปิดดูรูปขยายใหญ่เต็มจอ
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1458,6 +1486,90 @@ export default function NewbornCare4Room() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </ScreenPortal>
+      )}
+
+      {/* ── Modal ตู้ของใช้ทารก 8 หมวดหมู่ (เมื่อคลิกที่ตู้ของใช้ทารกข้างชั้นทีวี) ── */}
+      {activeModal === 'babySupplies' && (
+        <ScreenPortal>
+          <div
+            onClick={() => setActiveModal(null)}
+            className="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-[95] flex items-center justify-center p-3 sm:p-4 pointer-events-auto"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl max-w-3xl w-full max-h-[calc(var(--app-h,100dvh)-1.5rem)] overflow-y-auto p-4 sm:p-6 shadow-2xl border-2 border-pink-300 text-slate-800"
+            >
+              <div className="flex items-center justify-between gap-2 border-b border-pink-100 pb-3 mb-4">
+                <div>
+                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-pink-100 text-pink-800 text-[11px] font-extrabold mb-1">
+                    🗄️ ห้องนอนทารก (Nursery 204) • การจัดเก็บอุปกรณ์อย่างเป็นระเบียบ
+                  </span>
+                  <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
+                    ตู้ของใช้ทารกแยกหมวดหมู่ครบชุด (8 หมวดหมู่มาตรฐาน)
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal(null)}
+                  className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center cursor-pointer shrink-0"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                <div
+                  onClick={() =>
+                    openLightbox({
+                      src: '/images/rev/nb4_baby_supply_cabinet.jpg',
+                      title: 'ตู้ของใช้ทารกแยกหมวดหมู่ครบชุด (8 หมวดหมู่มาตรฐาน)',
+                      category: 'ห้องนอนทารก (Nursery 204)',
+                      hideDetails: true,
+                    })
+                  }
+                  className="rounded-xl overflow-hidden border-2 border-pink-200 hover:border-pink-400 bg-rose-50/40 p-2 shadow-sm cursor-zoom-in transition"
+                >
+                  <img
+                    src="/images/rev/nb4_baby_supply_cabinet.jpg"
+                    alt="ตู้ของใช้ทารก 8 หมวดหมู่"
+                    className="w-full h-auto rounded-lg object-contain mx-auto"
+                  />
+                  <div className="text-center text-[11px] font-extrabold text-pink-700 mt-1.5">
+                    🔍 แตะที่รูปเพื่อดูภาพขยายใหญ่เต็มจอ
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs leading-relaxed">
+                  {[
+                    ['1. เสื้อผ้าเด็ก', 'ซักด้วยน้ำยาซักผ้าเด็กอ่อน แขวนแยกเป็นระเบียบ เนื้อผ้านุ่มระบายอากาศดี ไม่ระคายเคืองผิวทารก'],
+                    ['2. ผ้าอ้อมสำเร็จรูป และทิชชู่เปียก', 'จัดเรียงหยิบใช้ง่าย เลือกทิชชู่เปียกสูตรน้ำบริสุทธิ์ ปราศจากแอลกอฮอล์และน้ำหอม'],
+                    ['3. ผ้าสำหรับเช็ดตัว/เช็ดหน้า', 'แยกผ้าเช็ดหน้าและผ้าเช็ดตัวเฉพาะของทารก ซับน้ำดีและซักตากแดดให้แห้งสะอาด'],
+                    ['4. ผ้าห่ม/ผ้าปูที่นอน', 'เก็บผ้าปูที่นอนสำรองให้พร้อมเปลี่ยนทันทีเมื่อเปียกชื้น และใช้ผ้าปูที่ขึงตึงแนบที่นอน'],
+                    ['5. ผ้าอ้อม ผ้าเช็ดตัว ผ้าเช็ดหน้า', 'ผ้าอ้อมผ้าสาลูพับเป็นตั้งสำหรับรองไหล่จับเรอ เช็ดน้ำลาย และห่อตัวทารกอย่างอบอุ่น'],
+                    ['6. ผลิตภัณฑ์ทำความสะอาดและดูแลผิว', 'สบู่เหลว แชมพู โลชั่นทารกสูตรอ่อนโยน (pH สมดุล) สำลีก้าน และแปรงหวีผมขนนุ่ม'],
+                    ['7. อุปกรณ์การให้นม', 'ขวดนมและจุกนมที่ล้างและนึ่งฆ่าเชื้อแห้งสนิทแล้ว เก็บในภาชนะมีฝาปิดมิดชิด'],
+                    ['8. อุปกรณ์ดูแลสุขภาพและของใช้ทั่วไป', 'กรรไกรตัดเล็บทารกปลายมน ปรอทวัดไข้ดิจิทัล ลูกยางดูดน้ำมูก คอตตอนบัด และสำลีสะอาด'],
+                  ].map(([heading, desc]) => (
+                    <div key={heading} className="p-2.5 rounded-xl bg-pink-50/70 border border-pink-200/80">
+                      <div className="font-extrabold text-pink-900">{heading}</div>
+                      <div className="text-slate-600 mt-0.5">{desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setActiveModal(null)}
+                  className="px-5 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs cursor-pointer shadow"
+                >
+                  ✓ เข้าใจการจัดเตรียมตู้ของใช้ทารกแล้ว
+                </button>
+              </div>
             </div>
           </div>
         </ScreenPortal>
