@@ -1,0 +1,48 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native Android / Gradle build outputs & secrets
+.kotlin/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/keystore.properties
+*.keystore
+!android/app/debug.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.apk
+*.aab
+*.orig.*
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS / ExFAT
+.DS_Store
+._*
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# iOS native folder (unused)
+/ios

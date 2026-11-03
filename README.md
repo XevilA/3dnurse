@@ -3,6 +3,7 @@
 **Interactive 3D Virtual Postpartum & Newborn Care Hospital Learning Platform**
 
 [![Production Deployment](https://img.shields.io/badge/Deployment-3dnurse.vercel.app-0f172a?style=for-the-badge&logo=vercel)](https://3dnurse.vercel.app)
+[![Android APK](https://img.shields.io/badge/Android_APK-v1.0.0_Download-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/XevilA/3dnurse/releases/latest/download/3DNURSE-v1.0.0.apk)
 [![React 18](https://img.shields.io/badge/React-18.3-0284c7?style=for-the-badge&logo=react)](https://react.dev/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL_3D-be185d?style=for-the-badge&logo=threedotjs)](https://threejs.org/)
 [![Vite 5](https://img.shields.io/badge/Vite-5.x-7c3aed?style=for-the-badge&logo=vite)](https://vitejs.dev/)
@@ -16,6 +17,7 @@
 ผู้เรียนสามารถสำรวจพื้นที่โรงพยาบาลจำลองในรูปแบบสามมิติ (มุมมองบุคคลที่ 3 และบุคคลที่ 1) ศึกษาสื่ออินโฟกราฟิกทางคลินิก วิดีโอสาธิต ฝึกปฏิบัติผ่านสถานการณ์จำลองเชิงโต้ตอบ (Interactive Clinical Simulations) และประเมินผลการเรียนรู้ด้วยแบบทดสอบก่อนเรียน–หลังเรียน (Pre-test / Post-test) ได้ทั้งบนคอมพิวเตอร์ แท็บเล็ต และสมาร์ทโฟนโดยไม่ต้องติดตั้งโปรแกรมเพิ่มเติม
 
 - **เว็บไซต์ใช้งานจริง (Production URL):** https://3dnurse.vercel.app
+- **แอปพลิเคชัน Android (`.apk` พร้อมติดตั้ง):** https://github.com/XevilA/3dnurse/releases/latest/download/3DNURSE-v1.0.0.apk
 - **ซอร์สโค้ด (GitHub Repository):** https://github.com/XevilA/3dnurse
 
 ---
@@ -70,6 +72,7 @@
 | **State Management** | Zustand (`useStore.js` พร้อมระบบ Persist ลง `localStorage`) |
 | **Animation & UI Styling** | GSAP (`gsap`), Tailwind CSS v4, Sarabun Thai Typography (`canvasText.js`) |
 | **Build Tool & Bundler** | Vite 5 (Manual Vendor & Per-Room Chunk Splitting) |
+| **Android Mobile App** | Pure Native Android (Kotlin + AndroidX WebKit Hardware-Accelerated WebGL, `com.dotmini.threednurse`) |
 | **Hosting & CDN** | Vercel Production Edge Network (`vercel.json`) |
 
 ---
@@ -103,6 +106,9 @@
 │   │   └── canvasText.js    # ระบบวาดอักษรภาษาไทยและสระบนพื้นผิว Canvas2D / WebGL Texture
 │   ├── App.jsx              # โครงสร้างหลักของระบบ 3D Canvas, Lazy Loader และ Error Boundaries
 │   └── main.jsx             # จุดเริ่มต้นการทำงานของแอปพลิเคชัน
+├── android-app/             # ซอร์สโค้ดแอปพลิเคชัน Android แบบ Pure Native (Kotlin + Gradle)
+│   ├── android/             # โครงการ Android Native, MainActivity.kt และ Adaptive Icons
+│   └── assets/              # ต้นฉบับไอคอนความละเอียดสูงของแอปพลิเคชัน 3DNURSE
 ├── .env.example             # แม่แบบการตั้งค่าตัวแปรสภาพแวดล้อม (Environment Variables)
 ├── vercel.json              # กฎการจัดการ Cache-Control และ SPA Rewrites บน Vercel
 ├── vite.config.js           # การตั้งค่าการแบ่งชุดไฟล์ Build (Code Splitting)
@@ -162,7 +168,26 @@ vercel --prod
 
 ---
 
-## 8. การควบคุมการใช้งานเบื้องต้น (User Controls)
+## 8. แอปพลิเคชันสำหรับสมาร์ทโฟนและแท็บเล็ต Android (Android App)
+
+โครงการรองรับการติดตั้งเป็นแอปพลิเคชันเนทีฟบนอุปกรณ์ Android (`Package ID: com.dotmini.threednurse`) พร้อมระบบเร่งความเร็วกราฟิกสามมิติ (Hardware-Accelerated WebGL), ระบบสั่นตอบสนองเมื่อสัมผัสปุ่ม (Native Haptic Feedback) และการจัดการปุ่มย้อนกลับของเครื่อง Android (ปิดภาพขยาย → กลับโถงต้อนรับ → กดซ้ำเพื่อออกจากแอป)
+
+### ดาวน์โหลดและติดตั้งไฟล์ `.apk`
+1. ดาวน์โหลดไฟล์ติดตั้งเวอร์ชันล่าสุดจาก GitHub Releases:  
+   **https://github.com/XevilA/3dnurse/releases/latest/download/3DNURSE-v1.0.0.apk**
+2. เปิดไฟล์ `3DNURSE-v1.0.0.apk` บนโทรศัพท์หรือแท็บเล็ต Android (รองรับ Android 7.0 ขึ้นไป ทุกสถาปัตยกรรม `arm64-v8a`, `armeabi-v7a`, `x86_64`) และกดยืนยันการติดตั้ง
+
+### การสร้างไฟล์ `.apk` จากซอร์สโค้ด (`android-app/`)
+ต้องการ **JDK 17** และ **Android SDK (`compileSdk 36`)**:
+```bash
+cd android-app/android
+./gradlew assembleRelease
+```
+ไฟล์ผลลัพธ์จะอยู่ที่ `android-app/android/app/build/outputs/apk/release/app-release.apk`
+
+---
+
+## 9. การควบคุมการใช้งานเบื้องต้น (User Controls)
 
 - **คอมพิวเตอร์ (Desktop):**
   - เดินเคลื่อนที่: ปุ่ม `W`, `A`, `S`, `D` หรือปุ่มลูกศร `↑ ↓ ← →`
@@ -176,6 +201,6 @@ vercel --prod
 
 ---
 
-## 9. สิทธิบัตรและขอบเขตการใช้งานทางวิชาการ (Academic & Usage Notice)
+## 10. สิทธิบัตรและขอบเขตการใช้งานทางวิชาการ (Academic & Usage Notice)
 
 สื่อการเรียนรู้เสมือนจริง **3DNURSE** พัฒนาขึ้นเพื่อใช้ประโยชน์ด้านการศึกษา การเรียนการสอน และการวิจัยทางการพยาบาลมารดา–ทารกและผดุงครรภ์ ห้ามนำไปดัดแปลงเพื่อการค้าโดยไม่ได้รับอนุญาตจากคณะผู้พัฒนาและคณะผู้วิจัย

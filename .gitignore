@@ -21,7 +21,10 @@ new/
 *.pdf
 test_and_capture.mjs
 *.mjs
-android-app/
+*.apk
+*.aab
+*.keystore
+!android-app/android/app/debug.keystore
 public/models/megan.glb
 public/models/pregnant_megan.glb
 public/models/pregnant_megan_opt.glb
